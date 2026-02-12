@@ -255,6 +255,24 @@ private:
   std::string alanAdi_;
 };
 
+// benim.alan erişimi için özel düğüm.
+class BenimErisimNode final : public ASTNode {
+public:
+  BenimErisimNode(std::string alanAdi, std::size_t satir)
+      : ASTNode(satir), alanAdi_(std::move(alanAdi)) {}
+
+  const std::string &alanAdi() const { return alanAdi_; }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "BenimErisimNode(" << alanAdi_ << ") [satır " << satir()
+          << "]\n";
+  }
+
+private:
+  std::string alanAdi_;
+};
+
 class IslevCagriNode final : public ASTNode {
 public:
   IslevCagriNode(std::string ad,
@@ -279,6 +297,33 @@ public:
 
 private:
   std::string ad_;
+  std::vector<std::unique_ptr<ASTNode>> argumanlar_;
+};
+
+// yeni SinifAdi(...) ifadesi.
+class YeniNesneNode final : public ASTNode {
+public:
+  YeniNesneNode(std::string sinifAdi, std::vector<std::unique_ptr<ASTNode>> argumanlar,
+                std::size_t satir)
+      : ASTNode(satir), sinifAdi_(std::move(sinifAdi)),
+        argumanlar_(std::move(argumanlar)) {}
+
+  const std::string &sinifAdi() const { return sinifAdi_; }
+
+  const std::vector<std::unique_ptr<ASTNode>> &argumanlar() const {
+    return argumanlar_;
+  }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "YeniNesneNode(" << sinifAdi_ << ") [satır " << satir() << "]\n";
+    for (const auto &arg : argumanlar_) {
+      arg->yazdir_agac(cikti, girinti + 2);
+    }
+  }
+
+private:
+  std::string sinifAdi_;
   std::vector<std::unique_ptr<ASTNode>> argumanlar_;
 };
 
@@ -332,23 +377,28 @@ private:
 
 class AtamaNode final : public ASTNode {
 public:
-  AtamaNode(std::string degiskenAdi, std::unique_ptr<ASTNode> ifade,
+  AtamaNode(std::unique_ptr<ASTNode> hedef, std::unique_ptr<ASTNode> ifade,
             std::size_t satir)
-      : ASTNode(satir), degiskenAdi_(std::move(degiskenAdi)),
+      : ASTNode(satir), hedef_(std::move(hedef)),
         ifade_(std::move(ifade)) {}
 
-  const std::string &degiskenAdi() const { return degiskenAdi_; }
+  const ASTNode *hedef() const { return hedef_.get(); }
 
   const ASTNode *ifade() const { return ifade_.get(); }
 
   void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
     yazdirGirinti(cikti, girinti);
-    cikti << "AtamaNode(" << degiskenAdi_ << ") [satır " << satir() << "]\n";
-    ifade_->yazdir_agac(cikti, girinti + 2);
+    cikti << "AtamaNode [satır " << satir() << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Hedef:\n";
+    hedef_->yazdir_agac(cikti, girinti + 4);
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Deger:\n";
+    ifade_->yazdir_agac(cikti, girinti + 4);
   }
 
 private:
-  std::string degiskenAdi_;
+  std::unique_ptr<ASTNode> hedef_;
   std::unique_ptr<ASTNode> ifade_;
 };
 
@@ -527,6 +577,28 @@ public:
 
 private:
   std::string dosyaAdi_;
+};
+
+// tip SinifAdi: ... sınıf tanımı.
+class SinifTanimNode final : public ASTNode {
+public:
+  SinifTanimNode(std::string ad, std::unique_ptr<BlockNode> govde,
+                 std::size_t satir)
+      : ASTNode(satir), ad_(std::move(ad)), govde_(std::move(govde)) {}
+
+  const std::string &ad() const { return ad_; }
+
+  const BlockNode *govde() const { return govde_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "SinifTanimNode(" << ad_ << ") [satır " << satir() << "]\n";
+    govde_->yazdir_agac(cikti, girinti + 2);
+  }
+
+private:
+  std::string ad_;
+  std::unique_ptr<BlockNode> govde_;
 };
 
 class IfadeKomutNode final : public ASTNode {

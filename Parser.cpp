@@ -12,6 +12,11 @@ bool cagrilabilirAdCoz(const ASTNode *dugum, std::string &ad) {
     return true;
   }
 
+  if (const auto *benim = dynamic_cast<const BenimErisimNode *>(dugum)) {
+    ad = "benim." + benim->alanAdi();
+    return true;
+  }
+
   if (const auto *alan = dynamic_cast<const AlanErisimNode *>(dugum)) {
     std::string kok;
     if (!cagrilabilirAdCoz(alan->hedef(), kok)) {
@@ -58,10 +63,19 @@ std::unique_ptr<ProgramNode> Parser::parse() {
 }
 
 std::unique_ptr<ASTNode> Parser::parseKomut() {
-  if (kontrol(TokenType::KIMLIK) &&
-      bakIleri(1).tur == TokenType::ANAHTAR_KELIME &&
-      bakIleri(1).deger == "olsun") {
-    return parseAtama();
+  // Genel atama: hedef olsun ifade
+  // Hedef; kimlik, benim.alan, alan erişimi veya indeks erişimi olabilir.
+  if (kontrol(TokenType::KIMLIK) || kontrol(TokenType::ANAHTAR_KELIME, "benim")) {
+    const std::size_t kayit = konum_;
+    std::unique_ptr<ASTNode> hedef = parsePostfix();
+    if (eslesir(TokenType::ANAHTAR_KELIME, "olsun")) {
+      if (!atanabilirHedefMi(hedef.get())) {
+        syntaxError(bak(), "Atama hedefi yalnızca değişken, alan veya indeks erişimi olabilir.");
+      }
+      const std::size_t satir = hedef->satir();
+      return parseAtama(std::move(hedef), satir);
+    }
+    konum_ = kayit;
   }
 
   if (kontrol(TokenType::ANAHTAR_KELIME, "yazdır")) {
@@ -89,6 +103,9 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
   if (kontrol(TokenType::ANAHTAR_KELIME, "işlev")) {
     return parseIslevTanim();
   }
+  if (kontrol(TokenType::ANAHTAR_KELIME, "tip")) {
+    return parseSinifTanim();
+  }
   if (kontrol(TokenType::ANAHTAR_KELIME, "döndür")) {
     return parseDondur();
   }
@@ -104,18 +121,13 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
   syntaxError(bak(), "Komut bekleniyordu.");
 }
 
-std::unique_ptr<ASTNode> Parser::parseAtama() {
-  const Token adToken =
-      tuket(TokenType::KIMLIK, "Atama için değişken adı bekleniyor.");
-  tuket(TokenType::ANAHTAR_KELIME, "olsun",
-        "Değişken adından sonra 'olsun' bekleniyor.");
-
+std::unique_ptr<ASTNode> Parser::parseAtama(std::unique_ptr<ASTNode> hedef,
+                                            std::size_t satir) {
   if (kontrol(TokenType::YENI_SATIR) || kontrol(TokenType::DOSYA_SONU)) {
     syntaxError(bak(), "'olsun' komutundan sonra bir değer bekleniyor.");
   }
 
-  return std::make_unique<AtamaNode>(adToken.deger, parseIfade(),
-                                     adToken.satir);
+  return std::make_unique<AtamaNode>(std::move(hedef), parseIfade(), satir);
 }
 
 std::unique_ptr<ASTNode> Parser::parseYazdir() {
@@ -192,6 +204,17 @@ std::unique_ptr<ASTNode> Parser::parseIslevTanim() {
   return std::make_unique<IslevTanimNode>(
       adToken.deger, std::move(parametreler),
       parseBlokVeyaTekKomut("işlev", true), token.satir);
+}
+
+std::unique_ptr<ASTNode> Parser::parseSinifTanim() {
+  const Token token =
+      tuket(TokenType::ANAHTAR_KELIME, "tip", "'tip' komutu bekleniyor.");
+  const Token adToken =
+      tuket(TokenType::KIMLIK, "'tip' ifadesinden sonra sınıf adı bekleniyor.");
+  tuket(TokenType::ISLEM, ":", "Sınıf adından sonra ':' bekleniyor.");
+
+  return std::make_unique<SinifTanimNode>(
+      adToken.deger, parseBlokVeyaTekKomut("tip", true), token.satir);
 }
 
 std::unique_ptr<ASTNode> Parser::parseDondur() {
@@ -378,8 +401,14 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
       const Token noktaToken = onceki();
       const Token alanToken = tuket(
           TokenType::KIMLIK, "Nokta erişiminden sonra alan adı bekleniyor.");
-      ifade = std::make_unique<AlanErisimNode>(
-          std::move(ifade), alanToken.deger, noktaToken.satir);
+      if (const auto *kimlik = dynamic_cast<const KimlikNode *>(ifade.get());
+          kimlik != nullptr && kimlik->ad() == "benim") {
+        ifade =
+            std::make_unique<BenimErisimNode>(alanToken.deger, noktaToken.satir);
+      } else {
+        ifade = std::make_unique<AlanErisimNode>(
+            std::move(ifade), alanToken.deger, noktaToken.satir);
+      }
       continue;
     }
 
@@ -405,6 +434,10 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
     return std::make_unique<KimlikNode>(onceki().deger, onceki().satir);
   }
 
+  if (eslesir(TokenType::ANAHTAR_KELIME, "benim")) {
+    return std::make_unique<KimlikNode>("benim", onceki().satir);
+  }
+
   if (eslesir(TokenType::ANAHTAR_KELIME, "doğru")) {
     return std::make_unique<MantikNode>(true, onceki().satir);
   }
@@ -426,6 +459,27 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
     const Token dosya = tuket(
         TokenType::METIN, "'dahil_et' ifadesinden sonra dosya adı bekleniyor.");
     return std::make_unique<DahilEtNode>(dosya.deger, token.satir);
+  }
+
+  if (eslesir(TokenType::ANAHTAR_KELIME, "yeni")) {
+    const Token token = onceki();
+    const Token sinifAdi = tuket(
+        TokenType::KIMLIK, "'yeni' ifadesinden sonra sınıf adı bekleniyor.");
+
+    std::vector<std::unique_ptr<ASTNode>> argumanlar;
+    if (eslesir(TokenType::ISLEM, "(")) {
+      if (!kontrol(TokenType::ISLEM, ")")) {
+        argumanlar.push_back(parseIfade());
+        while (eslesir(TokenType::ISLEM, ",")) {
+          argumanlar.push_back(parseIfade());
+        }
+      }
+      tuket(TokenType::ISLEM, ")",
+            "Kurucu argüman listesinin sonunda ')' bekleniyor.");
+    }
+
+    return std::make_unique<YeniNesneNode>(sinifAdi.deger, std::move(argumanlar),
+                                           token.satir);
   }
 
   if (eslesir(TokenType::ISLEM, "[")) {
@@ -581,11 +635,19 @@ bool Parser::ifadeBaslangiciMi(const Token &token) const {
   if (token.tur == TokenType::ANAHTAR_KELIME &&
       (token.deger == "sor" || token.deger == "doğru" ||
        token.deger == "yanlış" || token.deger == "değil" ||
-       token.deger == "dahil_et")) {
+       token.deger == "dahil_et" || token.deger == "yeni" ||
+       token.deger == "benim")) {
     return true;
   }
 
   return false;
+}
+
+bool Parser::atanabilirHedefMi(const ASTNode *dugum) const {
+  return dynamic_cast<const KimlikNode *>(dugum) != nullptr ||
+         dynamic_cast<const AlanErisimNode *>(dugum) != nullptr ||
+         dynamic_cast<const BenimErisimNode *>(dugum) != nullptr ||
+         dynamic_cast<const IndeksErisimNode *>(dugum) != nullptr;
 }
 
 [[noreturn]] void Parser::syntaxError(const Token &token,

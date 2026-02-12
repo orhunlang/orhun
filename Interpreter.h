@@ -10,16 +10,20 @@
 #include <variant>
 #include <vector>
 
+struct OrhunNesne;
+
 // Orhun çalışma zamanı değeri.
-// v0.6: sayı(int/double), metin, liste ve sözlük desteklenir.
+// v0.8: sayı(int/double), metin, liste, sözlük ve nesne desteklenir.
 struct OrhunDegeri {
   // Recursive variant problemi için konteynerler shared_ptr ile taşınır.
   using ListeVeri = std::vector<OrhunDegeri>;
   using SozlukVeri = std::map<std::string, OrhunDegeri>;
   using ListeTipi = std::shared_ptr<ListeVeri>;
   using SozlukTipi = std::shared_ptr<SozlukVeri>;
+  using NesneTipi = std::shared_ptr<OrhunNesne>;
 
-  std::variant<int, double, std::string, ListeTipi, SozlukTipi> veri;
+  std::variant<int, double, std::string, ListeTipi, SozlukTipi, NesneTipi>
+      veri;
 
   OrhunDegeri() : veri(0) {}
   explicit OrhunDegeri(int v) : veri(v) {}
@@ -34,37 +38,62 @@ struct OrhunDegeri {
       : veri(std::make_shared<ListeVeri>(std::move(v))) {}
   explicit OrhunDegeri(SozlukVeri v)
       : veri(std::make_shared<SozlukVeri>(std::move(v))) {}
+  explicit OrhunDegeri(NesneTipi v) : veri(std::move(v)) {}
 
-  bool operator==(const OrhunDegeri &diger) const {
-    if (veri.index() != diger.veri.index()) {
-      return false;
-    }
+  bool operator==(const OrhunDegeri &diger) const;
+};
 
-    if (const auto *v = std::get_if<int>(&veri)) {
-      return *v == std::get<int>(diger.veri);
-    }
-    if (const auto *v = std::get_if<double>(&veri)) {
-      return *v == std::get<double>(diger.veri);
-    }
-    if (const auto *v = std::get_if<std::string>(&veri)) {
-      return *v == std::get<std::string>(diger.veri);
-    }
-    if (const auto *v = std::get_if<ListeTipi>(&veri)) {
-      const auto &digerListe = std::get<ListeTipi>(diger.veri);
-      if (!(*v) || !digerListe) {
-        return !(*v) && !digerListe;
-      }
-      return **v == *digerListe;
-    }
+// OOP örnek nesne verisi.
+struct OrhunNesne {
+  std::string sinifAdi;
+  OrhunDegeri::SozlukTipi alanlar =
+      std::make_shared<OrhunDegeri::SozlukVeri>();
+  std::unordered_map<std::string, const IslevTanimNode *> metodlar;
+};
 
-    const auto *v = std::get_if<SozlukTipi>(&veri);
+inline bool OrhunDegeri::operator==(const OrhunDegeri &diger) const {
+  if (veri.index() != diger.veri.index()) {
+    return false;
+  }
+
+  if (const auto *v = std::get_if<int>(&veri)) {
+    return *v == std::get<int>(diger.veri);
+  }
+  if (const auto *v = std::get_if<double>(&veri)) {
+    return *v == std::get<double>(diger.veri);
+  }
+  if (const auto *v = std::get_if<std::string>(&veri)) {
+    return *v == std::get<std::string>(diger.veri);
+  }
+  if (const auto *v = std::get_if<ListeTipi>(&veri)) {
+    const auto &digerListe = std::get<ListeTipi>(diger.veri);
+    if (!(*v) || !digerListe) {
+      return !(*v) && !digerListe;
+    }
+    return **v == *digerListe;
+  }
+
+  if (const auto *v = std::get_if<SozlukTipi>(&veri)) {
     const auto &digerSozluk = std::get<SozlukTipi>(diger.veri);
     if (!(*v) || !digerSozluk) {
       return !(*v) && !digerSozluk;
     }
     return **v == *digerSozluk;
   }
-};
+
+  const auto &nesne = std::get<NesneTipi>(veri);
+  const auto &digerNesne = std::get<NesneTipi>(diger.veri);
+  if (!nesne || !digerNesne) {
+    return !nesne && !digerNesne;
+  }
+  if (nesne->sinifAdi != digerNesne->sinifAdi) {
+    return false;
+  }
+  if (!nesne->alanlar || !digerNesne->alanlar) {
+    return !nesne->alanlar && !digerNesne->alanlar;
+  }
+  return *nesne->alanlar == *digerNesne->alanlar;
+}
 
 class Interpreter {
 public:
@@ -82,6 +111,7 @@ private:
   std::vector<DegiskenTablosu> yerelKapsamYigini_;
 
   std::unordered_map<std::string, const IslevTanimNode *> islevTablosu_;
+  std::unordered_map<std::string, const SinifTanimNode *> sinifTablosu_;
   std::unordered_map<std::string, GomuluIslev> gomuluIslevler_;
   std::vector<std::unique_ptr<ProgramNode>> yukluModuller_;
 
@@ -95,6 +125,7 @@ private:
   void calistirTekrarla(const TekrarlaNode *dugum);
   void calistirSurece(const SureceNode *dugum);
   void calistirIslevTanim(const IslevTanimNode *dugum);
+  void calistirSinifTanim(const SinifTanimNode *dugum);
   void calistirDondur(const DondurNode *dugum);
   void calistirDahilEt(const DahilEtNode *dugum);
   void calistirIfadeKomut(const IfadeKomutNode *dugum);
@@ -109,11 +140,18 @@ private:
   OrhunDegeri sozlukOlustur(const SozlukNode *dugum);
   OrhunDegeri indeksErisim(const IndeksErisimNode *dugum);
   OrhunDegeri alanErisim(const AlanErisimNode *dugum);
+  OrhunDegeri benimErisim(const BenimErisimNode *dugum);
+  OrhunDegeri yeniNesneOlustur(const YeniNesneNode *dugum);
   OrhunDegeri islevCagir(const IslevCagriNode *dugum);
   OrhunDegeri dahilEtDegerlendir(const DahilEtNode *dugum);
   OrhunDegeri islevCagirAdaGore(const std::string &ad,
                                 const std::vector<OrhunDegeri> &argumanlar,
                                 std::size_t satir);
+  OrhunDegeri kullaniciIslevCalistir(const IslevTanimNode *islev,
+                                     const std::vector<OrhunDegeri> &argumanlar,
+                                     std::size_t satir,
+                                     const OrhunDegeri *benimDegeri,
+                                     bool dondurZorunlu);
   OrhunDegeri nesneMetoduCagir(const OrhunDegeri &hedef,
                                const std::string &metodAdi,
                                const std::vector<OrhunDegeri> &argumanlar,
@@ -123,8 +161,12 @@ private:
                          std::string &gercekAd) const;
 
   DegiskenTablosu &aktifKapsam();
+  OrhunDegeri &degiskenBulYazilabilir(const std::string &ad,
+                                      std::size_t satir);
   const OrhunDegeri &degiskenBul(const std::string &ad,
                                  std::size_t satir) const;
+  OrhunDegeri &atananHedefYazilabilir(const ASTNode *hedef,
+                                      std::size_t satir, bool sonHedef);
 
   bool dogruMu(const OrhunDegeri &deger) const;
   bool esittir(const OrhunDegeri &sol, const OrhunDegeri &sag) const;

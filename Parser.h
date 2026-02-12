@@ -22,11 +22,13 @@ private:
 
   // Komut ayrıştırma fonksiyonları.
   std::unique_ptr<ASTNode> parseKomut();
-  std::unique_ptr<ASTNode> parseAtama();
+  std::unique_ptr<ASTNode> parseAtama(std::unique_ptr<ASTNode> hedef,
+                                      std::size_t satir);
   std::unique_ptr<ASTNode> parseYazdir();
   std::unique_ptr<ASTNode> parseEger();
   std::unique_ptr<ASTNode> parseTekrarla();
   std::unique_ptr<ASTNode> parseIslevTanim();
+  std::unique_ptr<ASTNode> parseSinifTanim();
   std::unique_ptr<ASTNode> parseDondur();
   std::unique_ptr<ASTNode> parseDahilEt();
 
@@ -44,6 +46,7 @@ private:
   std::unique_ptr<ASTNode> parsePostfix();
   std::unique_ptr<ASTNode> parseBirincil();
   std::string parseSozlukAnahtari();
+  bool atanabilirHedefMi(const ASTNode *dugum) const;
 
   // Token gezinme yardımcıları.
   bool dosyaSonu() const;
