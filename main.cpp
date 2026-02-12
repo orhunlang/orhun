@@ -6,6 +6,7 @@
 #include "VM.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -524,6 +525,53 @@ int dosyaCalistirVM(const std::string& dosyaYolu, bool katiMod) {
   return 0;
 }
 
+template <typename F>
+double olcMilisaniye(F&& fonksiyon, int tekrar) {
+  if (tekrar <= 0) {
+    throw std::runtime_error("hiz komutu icin tekrar sayisi pozitif olmali.");
+  }
+  const auto bas = std::chrono::steady_clock::now();
+  for (int i = 0; i < tekrar; ++i) {
+    fonksiyon();
+  }
+  const auto son = std::chrono::steady_clock::now();
+  return std::chrono::duration<double, std::milli>(son - bas).count();
+}
+
+int komutHiz(const std::string& dosyaYolu, int tekrar) {
+  if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
+    throw std::runtime_error("Hata: hiz komutu icin .oh dosyasi bekleniyor.");
+  }
+
+  const std::string kod = dosyaOku(dosyaYolu);
+  std::ostringstream yut;
+  auto* eskiCout = std::cout.rdbuf(yut.rdbuf());
+  try {
+    const double yorumlayiciMs = olcMilisaniye([&]() {
+      Interpreter yorumlayici;
+      kodCalistir(kod, yorumlayici);
+    }, tekrar);
+
+    const double vmMs = olcMilisaniye([&]() {
+      kodCalistirVM(kod);
+    }, tekrar);
+
+    std::cout.rdbuf(eskiCout);
+
+    std::cout << "Dosya: " << dosyaYolu << "\n";
+    std::cout << "Tekrar: " << tekrar << "\n";
+    std::cout << "Interpreter toplam: " << yorumlayiciMs << " ms\n";
+    std::cout << "VM toplam: " << vmMs << " ms\n";
+    if (vmMs > 0.0) {
+      std::cout << "Hizlanma: " << (yorumlayiciMs / vmMs) << "x\n";
+    }
+    return 0;
+  } catch (...) {
+    std::cout.rdbuf(eskiCout);
+    throw;
+  }
+}
+
 int komutObcCalistir(const std::string& obcDosyaYolu) {
   const std::vector<std::uint8_t> ham = dosyaOkuIkili(obcDosyaYolu);
   BytecodeChunk chunk = chunkCoz(ham);
@@ -573,7 +621,8 @@ int main(int argc, char* argv[]) {
   try {
     auto dahiliKomutMu = [](const std::string& deger) {
       return deger == "fmt" || deger == "paket" || deger == "vm" ||
-             deger == "vm-kati" || deger == "obc" || deger == "derle";
+             deger == "vm-kati" || deger == "obc" || deger == "derle" ||
+             deger == "hiz";
     };
 
     if (argc < 2) {
@@ -626,6 +675,17 @@ int main(int argc, char* argv[]) {
       }
       const std::string ciktiTemel = argc >= 4 ? argv[3] : "";
       return komutDerle(argv[2], argv[0], ciktiTemel);
+    }
+
+    if (komut == "hiz") {
+      if (argc < 3) {
+        throw std::runtime_error("Hata: hiz komutu icin kaynak .oh bekleniyor.");
+      }
+      int tekrar = 20;
+      if (argc >= 4) {
+        tekrar = std::stoi(argv[3]);
+      }
+      return komutHiz(argv[2], tekrar);
     }
 
     // Paketli exe, dahili komut dışındaki çağrılarda gömülü payload'ı
