@@ -6,7 +6,7 @@ OUTPUT="${2:-orhun_test}"
 
 echo "[1/3] Building..."
 "${COMPILER}" -std=c++17 -Wall -Wextra -pedantic \
-  main.cpp Lexer.cpp Parser.cpp Interpreter.cpp \
+  main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp \
   -o "${OUTPUT}"
 
 cases=(

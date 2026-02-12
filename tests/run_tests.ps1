@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "[1/3] Derleniyor..."
 & $Compiler -std=c++17 -Wall -Wextra -pedantic `
-    main.cpp Lexer.cpp Parser.cpp Interpreter.cpp `
+    main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp `
     -o $Output
 
 $cases = @(
