@@ -10,8 +10,22 @@ enum class OpCode : std::uint8_t {
   OP_DOGRU,
   OP_YANLIS,
   OP_POP,
+  OP_KOPYA,
+  OP_GET_LOCAL,
+  OP_SET_LOCAL,
   OP_GET_GLOBAL,
   OP_SET_GLOBAL,
+  OP_ALAN_AL,
+  OP_ALAN_YAZ,
+  OP_METOD_YAZ,
+  OP_INDEKS_AL,
+  OP_INDEKS_YAZ,
+  OP_LISTE_OLUSTUR,
+  OP_SOZLUK_OLUSTUR,
+  OP_ISLEV_OLUSTUR,
+  OP_CAGIR,
+  OP_SINIF,
+  OP_MIRAS_AL,
   OP_TOPLA,
   OP_CIKAR,
   OP_CARP,
@@ -29,4 +43,3 @@ enum class OpCode : std::uint8_t {
   OP_DONGU,
   OP_DON
 };
-

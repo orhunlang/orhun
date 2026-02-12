@@ -52,7 +52,7 @@ void BytecodeChunk::yazU16(std::uint16_t deger, std::size_t satir) {
   yazByte(static_cast<std::uint8_t>(deger & 0xFF), satir);
 }
 
-std::uint16_t BytecodeChunk::sabitEkle(const VMValue& deger) {
+std::uint16_t BytecodeChunk::sabitEkle(const SabitDeger& deger) {
   if (sabitler.size() >= std::numeric_limits<std::uint16_t>::max()) {
     throw std::runtime_error("Sabit havuzu limiti asildi (65535).");
   }
@@ -67,7 +67,7 @@ std::vector<std::uint8_t> chunkSerilestir(const BytecodeChunk& chunk) {
   ham.insert(ham.end(), std::begin(kSihir), std::end(kSihir));
 
   yazU32(ham, static_cast<std::uint32_t>(chunk.sabitler.size()));
-  for (const VMValue& deger : chunk.sabitler) {
+  for (const SabitDeger& deger : chunk.sabitler) {
     if (std::holds_alternative<std::monostate>(deger.veri)) {
       ham.push_back(0);
       continue;
