@@ -2,6 +2,7 @@
 
 #include "AST.h"
 
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
@@ -110,6 +111,7 @@ inline bool OrhunDegeri::operator==(const OrhunDegeri &diger) const {
 class Interpreter {
 public:
   Interpreter();
+  ~Interpreter();
 
   // Program veya herhangi bir komut düğümünü çalıştırır.
   void calistir(const ASTNode *dugum);
@@ -127,6 +129,9 @@ private:
   std::unordered_map<std::string, const SinifTanimNode *> sinifTablosu_;
   std::unordered_map<std::string, GomuluIslev> gomuluIslevler_;
   std::vector<std::unique_ptr<ProgramNode>> yukluModuller_;
+  std::unordered_map<int, std::uintptr_t> ffiKutuphaneTutamaclari_;
+  std::unordered_map<std::string, int> ffiKutuphaneKimlikleri_;
+  int ffiSonrakiKimlik_ = 1;
 
   void gomuluIslevleriYukle();
   void yerlesikModulleriYukle();
