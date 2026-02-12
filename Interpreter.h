@@ -13,8 +13,11 @@
 // Orhun çalışma zamanı değeri.
 // v0.6: sayı(int/double), metin, liste ve sözlük desteklenir.
 struct OrhunDegeri {
-  using ListeTipi = std::vector<OrhunDegeri>;
-  using SozlukTipi = std::map<std::string, OrhunDegeri>;
+  // Recursive variant problemi için konteynerler shared_ptr ile taşınır.
+  using ListeVeri = std::vector<OrhunDegeri>;
+  using SozlukVeri = std::map<std::string, OrhunDegeri>;
+  using ListeTipi = std::shared_ptr<ListeVeri>;
+  using SozlukTipi = std::shared_ptr<SozlukVeri>;
 
   std::variant<int, double, std::string, ListeTipi, SozlukTipi> veri;
 
@@ -23,10 +26,44 @@ struct OrhunDegeri {
   explicit OrhunDegeri(double v) : veri(v) {}
   explicit OrhunDegeri(std::string v) : veri(std::move(v)) {}
   explicit OrhunDegeri(const char *v) : veri(std::string(v)) {}
-  explicit OrhunDegeri(ListeTipi v) : veri(std::move(v)) {}
-  explicit OrhunDegeri(SozlukTipi v) : veri(std::move(v)) {}
+  explicit OrhunDegeri(ListeTipi v)
+      : veri(v ? std::move(v) : std::make_shared<ListeVeri>()) {}
+  explicit OrhunDegeri(SozlukTipi v)
+      : veri(v ? std::move(v) : std::make_shared<SozlukVeri>()) {}
+  explicit OrhunDegeri(ListeVeri v)
+      : veri(std::make_shared<ListeVeri>(std::move(v))) {}
+  explicit OrhunDegeri(SozlukVeri v)
+      : veri(std::make_shared<SozlukVeri>(std::move(v))) {}
 
-  bool operator==(const OrhunDegeri &diger) const { return veri == diger.veri; }
+  bool operator==(const OrhunDegeri &diger) const {
+    if (veri.index() != diger.veri.index()) {
+      return false;
+    }
+
+    if (const auto *v = std::get_if<int>(&veri)) {
+      return *v == std::get<int>(diger.veri);
+    }
+    if (const auto *v = std::get_if<double>(&veri)) {
+      return *v == std::get<double>(diger.veri);
+    }
+    if (const auto *v = std::get_if<std::string>(&veri)) {
+      return *v == std::get<std::string>(diger.veri);
+    }
+    if (const auto *v = std::get_if<ListeTipi>(&veri)) {
+      const auto &digerListe = std::get<ListeTipi>(diger.veri);
+      if (!(*v) || !digerListe) {
+        return !(*v) && !digerListe;
+      }
+      return **v == *digerListe;
+    }
+
+    const auto *v = std::get_if<SozlukTipi>(&veri);
+    const auto &digerSozluk = std::get<SozlukTipi>(diger.veri);
+    if (!(*v) || !digerSozluk) {
+      return !(*v) && !digerSozluk;
+    }
+    return **v == *digerSozluk;
+  }
 };
 
 class Interpreter {

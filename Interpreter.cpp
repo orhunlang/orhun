@@ -40,10 +40,12 @@ void Interpreter::gomuluIslevleriYukle() {
             return OrhunDegeri(static_cast<int>(std::get<std::string>(hedef.veri).size()));
         }
         if (std::holds_alternative<OrhunDegeri::ListeTipi>(hedef.veri)) {
-            return OrhunDegeri(static_cast<int>(std::get<OrhunDegeri::ListeTipi>(hedef.veri).size()));
+            const auto& liste = std::get<OrhunDegeri::ListeTipi>(hedef.veri);
+            return OrhunDegeri(static_cast<int>(liste ? liste->size() : 0));
         }
         if (std::holds_alternative<OrhunDegeri::SozlukTipi>(hedef.veri)) {
-            return OrhunDegeri(static_cast<int>(std::get<OrhunDegeri::SozlukTipi>(hedef.veri).size()));
+            const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+            return OrhunDegeri(static_cast<int>(sozluk ? sozluk->size() : 0));
         }
 
         hataFirlat(satir, "uzunluk yalnızca metin, liste veya sözlük üzerinde kullanılabilir.");
@@ -58,7 +60,8 @@ void Interpreter::gomuluIslevleriYukle() {
             hataFirlat(satir, "listeye_ekle fonksiyonunun ilk argümanı liste olmalıdır.");
         }
 
-        OrhunDegeri::ListeTipi yeniListe = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
+        const auto& mevcutListe = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
+        OrhunDegeri::ListeVeri yeniListe = mevcutListe ? *mevcutListe : OrhunDegeri::ListeVeri{};
         yeniListe.push_back(args[1]);
         return OrhunDegeri(std::move(yeniListe));
     };
@@ -248,7 +251,7 @@ void Interpreter::gomuluIslevleriYukle() {
 
         const std::string metin = std::get<std::string>(args[0].veri);
         const std::string ayirici = std::get<std::string>(args[1].veri);
-        OrhunDegeri::ListeTipi sonuc;
+        OrhunDegeri::ListeVeri sonuc;
 
         if (ayirici.empty()) {
             sonuc.reserve(metin.size());
@@ -281,10 +284,12 @@ void Interpreter::gomuluIslevleriYukle() {
             hataFirlat(satir, "birlestir(liste, ayirici) için liste ve metin bekleniyor.");
         }
 
-        const auto& liste = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
+        const auto& listePtr = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
         const std::string ayirici = std::get<std::string>(args[1].veri);
         std::string sonuc;
 
+        const OrhunDegeri::ListeVeri bosListe;
+        const auto& liste = listePtr ? *listePtr : bosListe;
         for (std::size_t i = 0; i < liste.size(); ++i) {
             if (i > 0) {
                 sonuc += ayirici;
@@ -715,14 +720,19 @@ OrhunDegeri Interpreter::listeIslemi(const OrhunDegeri& sol,
     }
 
     if (solListe && sagListe) {
-        const auto& a = std::get<OrhunDegeri::ListeTipi>(sol.veri);
-        const auto& b = std::get<OrhunDegeri::ListeTipi>(sag.veri);
+        const auto& aPtr = std::get<OrhunDegeri::ListeTipi>(sol.veri);
+        const auto& bPtr = std::get<OrhunDegeri::ListeTipi>(sag.veri);
+        if (!aPtr || !bPtr) {
+            hataFirlat(satir, "Liste işlemi için geçersiz boş liste referansı.");
+        }
+        const auto& a = *aPtr;
+        const auto& b = *bPtr;
 
         if (a.size() != b.size()) {
             hataFirlat(satir, "Matris boyutları eşleşmiyor");
         }
 
-        OrhunDegeri::ListeTipi sonuc;
+        OrhunDegeri::ListeVeri sonuc;
         sonuc.reserve(a.size());
         for (std::size_t i = 0; i < a.size(); ++i) {
             sonuc.push_back(listeIslemi(a[i], b[i], op, satir));
@@ -731,8 +741,12 @@ OrhunDegeri Interpreter::listeIslemi(const OrhunDegeri& sol,
     }
 
     if (solListe && sagSayi) {
-        const auto& a = std::get<OrhunDegeri::ListeTipi>(sol.veri);
-        OrhunDegeri::ListeTipi sonuc;
+        const auto& aPtr = std::get<OrhunDegeri::ListeTipi>(sol.veri);
+        if (!aPtr) {
+            hataFirlat(satir, "Liste işlemi için geçersiz boş liste referansı.");
+        }
+        const auto& a = *aPtr;
+        OrhunDegeri::ListeVeri sonuc;
         sonuc.reserve(a.size());
         for (const auto& oge : a) {
             sonuc.push_back(listeIslemi(oge, sag, op, satir));
@@ -741,8 +755,12 @@ OrhunDegeri Interpreter::listeIslemi(const OrhunDegeri& sol,
     }
 
     if (solSayi && sagListe) {
-        const auto& b = std::get<OrhunDegeri::ListeTipi>(sag.veri);
-        OrhunDegeri::ListeTipi sonuc;
+        const auto& bPtr = std::get<OrhunDegeri::ListeTipi>(sag.veri);
+        if (!bPtr) {
+            hataFirlat(satir, "Liste işlemi için geçersiz boş liste referansı.");
+        }
+        const auto& b = *bPtr;
+        OrhunDegeri::ListeVeri sonuc;
         sonuc.reserve(b.size());
         for (const auto& oge : b) {
             sonuc.push_back(listeIslemi(sol, oge, op, satir));
@@ -768,7 +786,7 @@ OrhunDegeri Interpreter::sorCalistir(const SorNode* dugum) {
 }
 
 OrhunDegeri Interpreter::listeOlustur(const ListeNode* dugum) {
-    OrhunDegeri::ListeTipi liste;
+    OrhunDegeri::ListeVeri liste;
     liste.reserve(dugum->ogeler().size());
 
     for (const auto& oge : dugum->ogeler()) {
@@ -779,7 +797,7 @@ OrhunDegeri Interpreter::listeOlustur(const ListeNode* dugum) {
 }
 
 OrhunDegeri Interpreter::sozlukOlustur(const SozlukNode* dugum) {
-    OrhunDegeri::SozlukTipi sozluk;
+    OrhunDegeri::SozlukVeri sozluk;
     for (const auto& oge : dugum->ogeler()) {
         sozluk[oge.first] = ifadeHesapla(oge.second.get());
     }
@@ -791,7 +809,11 @@ OrhunDegeri Interpreter::indeksErisim(const IndeksErisimNode* dugum) {
     const OrhunDegeri indeks = ifadeHesapla(dugum->indeks());
 
     if (std::holds_alternative<OrhunDegeri::ListeTipi>(hedef.veri)) {
-        const auto& liste = std::get<OrhunDegeri::ListeTipi>(hedef.veri);
+        const auto& listePtr = std::get<OrhunDegeri::ListeTipi>(hedef.veri);
+        if (!listePtr) {
+            hataFirlat(dugum->satir(), "Liste erişiminde geçersiz boş liste referansı.");
+        }
+        const auto& liste = *listePtr;
         const std::size_t idx = listeIndeksiCevir(indeks, dugum->satir(), "liste indeksi");
         if (idx >= liste.size()) {
             hataFirlat(dugum->satir(), "Liste indeksi sınır dışında.");
@@ -805,7 +827,11 @@ OrhunDegeri Interpreter::indeksErisim(const IndeksErisimNode* dugum) {
         }
 
         const std::string& anahtar = std::get<std::string>(indeks.veri);
-        const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+        const auto& sozlukPtr = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+        if (!sozlukPtr) {
+            hataFirlat(dugum->satir(), "Sözlük erişiminde geçersiz boş sözlük referansı.");
+        }
+        const auto& sozluk = *sozlukPtr;
         const auto bulunan = sozluk.find(anahtar);
         if (bulunan == sozluk.end()) {
             hataFirlat(dugum->satir(), "'" + anahtar + "' anahtarı sözlükte bulunamadı!");
@@ -822,7 +848,11 @@ OrhunDegeri Interpreter::alanErisim(const AlanErisimNode* dugum) {
         hataFirlat(dugum->satir(), "Nokta erişimi yalnızca sözlük üzerinde kullanılabilir.");
     }
 
-    const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+    const auto& sozlukPtr = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+    if (!sozlukPtr) {
+        hataFirlat(dugum->satir(), "Nokta erişiminde geçersiz boş sözlük referansı.");
+    }
+    const auto& sozluk = *sozlukPtr;
     const auto bulunan = sozluk.find(dugum->alanAdi());
     if (bulunan == sozluk.end()) {
         hataFirlat(dugum->satir(), "'" + dugum->alanAdi() + "' anahtarı sözlükte bulunamadı!");
@@ -905,9 +935,11 @@ bool Interpreter::dogruMu(const OrhunDegeri& deger) const {
         return !std::get<std::string>(deger.veri).empty();
     }
     if (std::holds_alternative<OrhunDegeri::ListeTipi>(deger.veri)) {
-        return !std::get<OrhunDegeri::ListeTipi>(deger.veri).empty();
+        const auto& liste = std::get<OrhunDegeri::ListeTipi>(deger.veri);
+        return liste && !liste->empty();
     }
-    return !std::get<OrhunDegeri::SozlukTipi>(deger.veri).empty();
+    const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(deger.veri);
+    return sozluk && !sozluk->empty();
 }
 
 bool Interpreter::esittir(const OrhunDegeri& sol, const OrhunDegeri& sag) const {
@@ -947,7 +979,9 @@ std::string Interpreter::metneCevir(const OrhunDegeri& deger) const {
     }
 
     if (std::holds_alternative<OrhunDegeri::ListeTipi>(deger.veri)) {
-        const auto& liste = std::get<OrhunDegeri::ListeTipi>(deger.veri);
+        const auto& listePtr = std::get<OrhunDegeri::ListeTipi>(deger.veri);
+        const OrhunDegeri::ListeVeri bosListe;
+        const auto& liste = listePtr ? *listePtr : bosListe;
         std::string sonuc = "[";
         for (std::size_t i = 0; i < liste.size(); ++i) {
             if (i > 0) {
@@ -959,7 +993,9 @@ std::string Interpreter::metneCevir(const OrhunDegeri& deger) const {
         return sonuc;
     }
 
-    const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(deger.veri);
+    const auto& sozlukPtr = std::get<OrhunDegeri::SozlukTipi>(deger.veri);
+    const OrhunDegeri::SozlukVeri bosSozluk;
+    const auto& sozluk = sozlukPtr ? *sozlukPtr : bosSozluk;
     std::string sonuc = "{";
     bool ilk = true;
     for (const auto& [anahtar, degerIc] : sozluk) {
