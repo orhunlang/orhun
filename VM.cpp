@@ -1,12 +1,11 @@
 
 #include "VM.h"
+#include "Yerlesik.h"
 
 #include <algorithm>
-#include <array>
 #include <chrono>
 #include <cctype>
 #include <cmath>
-#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -46,30 +45,90 @@ std::string asciiKucult(std::string metin) {
   return metin;
 }
 
-std::string kabukKomutuCalistir(const std::string& komut) {
-  std::array<char, 4096> tampon{};
-  std::string sonuc;
-#ifdef _WIN32
-  FILE* boru = _popen(komut.c_str(), "r");
-#else
-  FILE* boru = popen(komut.c_str(), "r");
-#endif
-  if (boru == nullptr) {
-    throw std::runtime_error("Komut calistirilamadi.");
+bool tamSayiMi(double d) {
+  return std::isfinite(d) && std::floor(d) == d;
+}
+
+yerlesik::JsonDeger vmDegerindenJsona(const Value& deger) {
+  if (deger.bosMu()) {
+    return yerlesik::JsonDeger(nullptr);
+  }
+  if (deger.mantikMi()) {
+    return yerlesik::JsonDeger(deger.as.mantik);
+  }
+  if (deger.sayiMi()) {
+    return yerlesik::JsonDeger(deger.as.sayi);
+  }
+  if (!deger.nesneMi() || deger.as.nesne == nullptr) {
+    return yerlesik::JsonDeger(nullptr);
   }
 
-  while (fgets(tampon.data(), static_cast<int>(tampon.size()), boru) != nullptr) {
-    sonuc += tampon.data();
+  Obj* obj = deger.as.nesne;
+  switch (obj->type) {
+    case ObjType::STRING:
+      return yerlesik::JsonDeger(static_cast<ObjString*>(obj)->deger);
+    case ObjType::LIST: {
+      yerlesik::JsonDeger::Liste liste;
+      for (const Value& oge : static_cast<ObjList*>(obj)->ogeler) {
+        liste.push_back(vmDegerindenJsona(oge));
+      }
+      return yerlesik::JsonDeger(std::move(liste));
+    }
+    case ObjType::DICT: {
+      yerlesik::JsonDeger::Sozluk sozluk;
+      for (const auto& [anahtar, alt] : static_cast<ObjDict*>(obj)->alanlar) {
+        sozluk[anahtar] = vmDegerindenJsona(alt);
+      }
+      return yerlesik::JsonDeger(std::move(sozluk));
+    }
+    case ObjType::INSTANCE: {
+      auto* nesne = static_cast<ObjInstance*>(obj);
+      yerlesik::JsonDeger::Sozluk sozluk;
+      if (nesne->sinif != nullptr) {
+        sozluk["__sinif"] = yerlesik::JsonDeger(nesne->sinif->ad);
+      }
+      for (const auto& [anahtar, alt] : nesne->alanlar) {
+        sozluk[anahtar] = vmDegerindenJsona(alt);
+      }
+      return yerlesik::JsonDeger(std::move(sozluk));
+    }
+    default:
+      return yerlesik::JsonDeger(nullptr);
   }
-#ifdef _WIN32
-  const int kod = _pclose(boru);
-#else
-  const int kod = pclose(boru);
-#endif
-  if (kod != 0) {
-    throw std::runtime_error("Komut basarisiz cikti kodu: " + std::to_string(kod));
+}
+
+Value jsondanVmDegerine(VM& vm, const yerlesik::JsonDeger& deger) {
+  if (std::holds_alternative<std::nullptr_t>(deger.veri)) {
+    return Value::bos();
   }
-  return sonuc;
+  if (const auto* m = std::get_if<bool>(&deger.veri)) {
+    return Value::mantik(*m);
+  }
+  if (const auto* s = std::get_if<double>(&deger.veri)) {
+    return Value::sayi(*s);
+  }
+  if (const auto* metin = std::get_if<std::string>(&deger.veri)) {
+    return vm.yeniString(*metin);
+  }
+  if (const auto* listePtr = std::get_if<yerlesik::JsonDeger::ListePtr>(&deger.veri)) {
+    std::vector<Value> liste;
+    if (*listePtr) {
+      liste.reserve((*listePtr)->size());
+      for (const auto& oge : *(*listePtr)) {
+        liste.push_back(jsondanVmDegerine(vm, oge));
+      }
+    }
+    return vm.yeniListe(std::move(liste));
+  }
+
+  const auto* sozlukPtr = std::get_if<yerlesik::JsonDeger::SozlukPtr>(&deger.veri);
+  std::unordered_map<std::string, Value> sozluk;
+  if (sozlukPtr && *sozlukPtr) {
+    for (const auto& [anahtar, alt] : *(*sozlukPtr)) {
+      sozluk[anahtar] = jsondanVmDegerine(vm, alt);
+    }
+  }
+  return vm.yeniSozluk(std::move(sozluk));
 }
 
 }  // namespace
@@ -230,34 +289,67 @@ void VM::yerlesikNativesYukle() {
   internet->alanlar["getir"] = nativeOlustur(
       "internet.getir", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
         const std::string url = vm.metneCevir(a[0]);
-#ifdef _WIN32
-        std::string komut = "powershell -NoProfile -Command \"try { "
-                            "(Invoke-WebRequest -UseBasicParsing -Uri '";
-        komut += url;
-        komut += "').Content } catch { exit 1 }\"";
-#else
-        std::string komut = "curl -fsSL \"" + url + "\"";
-#endif
-        return vm.yeniString(kabukKomutuCalistir(komut));
+        return vm.yeniString(yerlesik::internetIcerigiGetir(url));
       });
   internet->alanlar["indir"] = nativeOlustur(
       "internet.indir", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
         const std::string url = vm.metneCevir(a[0]);
         const std::string yol = vm.metneCevir(a[1]);
-#ifdef _WIN32
-        std::string komut = "powershell -NoProfile -Command \"try { "
-                            "Invoke-WebRequest -UseBasicParsing -Uri '";
-        komut += url;
-        komut += "' -OutFile '";
-        komut += yol;
-        komut += "' } catch { exit 1 }\"";
-#else
-        std::string komut = "curl -fsSL \"" + url + "\" -o \"" + yol + "\"";
-#endif
-        (void)kabukKomutuCalistir(komut);
-        return Value::bos();
+        const std::string icerik = yerlesik::internetIcerigiGetir(url);
+        std::ofstream dosya(yol, std::ios::binary | std::ios::trunc);
+        if (!dosya.is_open()) {
+          throw std::runtime_error("internet.indir: dosya acilamadi: " + yol);
+        }
+        dosya.write(icerik.data(), static_cast<std::streamsize>(icerik.size()));
+        return Value::sayi(static_cast<double>(icerik.size()));
       });
   globaller_["internet"] = Value::nesne(internet);
+
+  auto* json = memory_.allocate<ObjDict>();
+  json->alanlar["coz"] = nativeOlustur(
+      "json.coz", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        try {
+          const std::string metin = vm.metneCevir(a[0]);
+          const yerlesik::JsonDeger json = yerlesik::jsonCoz(metin);
+          return jsondanVmDegerine(vm, json);
+        } catch (const std::exception& ex) {
+          throw std::runtime_error("json.coz hatasi: " + std::string(ex.what()));
+        }
+      });
+  json->alanlar["yaz"] = nativeOlustur(
+      "json.yaz", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        try {
+          const yerlesik::JsonDeger json = vmDegerindenJsona(a[0]);
+          return vm.yeniString(yerlesik::jsonYaz(json, false, 2));
+        } catch (const std::exception& ex) {
+          throw std::runtime_error("json.yaz hatasi: " + std::string(ex.what()));
+        }
+      });
+  json->alanlar["guzel_yaz"] = nativeOlustur(
+      "json.guzel_yaz", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.empty() || a.size() > 2) {
+          throw std::runtime_error(
+              "json.guzel_yaz(deger, [girinti]) bir veya iki arguman alir.");
+        }
+        int girinti = 2;
+        if (a.size() == 2) {
+          const double d = vm.sayiyaCevir(a[1], "json.guzel_yaz");
+          if (!tamSayiMi(d)) {
+            throw std::runtime_error("json.guzel_yaz girinti tam sayi olmali.");
+          }
+          girinti = static_cast<int>(d);
+          if (girinti < 0 || girinti > 16) {
+            throw std::runtime_error("json.guzel_yaz girinti araligi 0..16.");
+          }
+        }
+        try {
+          const yerlesik::JsonDeger json = vmDegerindenJsona(a[0]);
+          return vm.yeniString(yerlesik::jsonYaz(json, true, girinti));
+        } catch (const std::exception& ex) {
+          throw std::runtime_error("json.guzel_yaz hatasi: " + std::string(ex.what()));
+        }
+      });
+  globaller_["json"] = Value::nesne(json);
 
   ekleNative("dahil_et", 1, [](VM& vm, const std::vector<Value>& args) -> Value {
     const std::string yol = vm.metneCevir(args[0]);

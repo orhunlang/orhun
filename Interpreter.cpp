@@ -3,6 +3,7 @@
 #include "Lexer.h"
 #include "Parser.h"
 #include "DynamicLibrary.h"
+#include "Yerlesik.h"
 
 #include <algorithm>
 #include <cctype>
@@ -66,6 +67,91 @@ std::string kodNoktasiUtf8(char32_t cp) {
         sonuc.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
     }
     return sonuc;
+}
+
+bool jsonTamsayiMi(double d) {
+    return std::isfinite(d) && std::floor(d) == d;
+}
+
+yerlesik::JsonDeger orhunDegerindenYerlesikJson(const OrhunDegeri& deger) {
+    if (const auto* tam = std::get_if<int>(&deger.veri)) {
+        return yerlesik::JsonDeger(static_cast<double>(*tam));
+    }
+    if (const auto* ondalik = std::get_if<double>(&deger.veri)) {
+        return yerlesik::JsonDeger(*ondalik);
+    }
+    if (const auto* metin = std::get_if<std::string>(&deger.veri)) {
+        return yerlesik::JsonDeger(*metin);
+    }
+    if (const auto* listePtr = std::get_if<OrhunDegeri::ListeTipi>(&deger.veri)) {
+        yerlesik::JsonDeger::Liste liste;
+        if (*listePtr) {
+            liste.reserve((*listePtr)->size());
+            for (const OrhunDegeri& oge : *(*listePtr)) {
+                liste.push_back(orhunDegerindenYerlesikJson(oge));
+            }
+        }
+        return yerlesik::JsonDeger(std::move(liste));
+    }
+    if (const auto* sozlukPtr = std::get_if<OrhunDegeri::SozlukTipi>(&deger.veri)) {
+        yerlesik::JsonDeger::Sozluk sozluk;
+        if (*sozlukPtr) {
+            for (const auto& [anahtar, alt] : *(*sozlukPtr)) {
+                sozluk[anahtar] = orhunDegerindenYerlesikJson(alt);
+            }
+        }
+        return yerlesik::JsonDeger(std::move(sozluk));
+    }
+    if (const auto* nesnePtr = std::get_if<OrhunDegeri::NesneTipi>(&deger.veri)) {
+        if (!(*nesnePtr) || !(*nesnePtr)->alanlar) {
+            return yerlesik::JsonDeger(nullptr);
+        }
+        yerlesik::JsonDeger::Sozluk sozluk;
+        sozluk["__sinif"] = yerlesik::JsonDeger((*nesnePtr)->sinifAdi);
+        for (const auto& [anahtar, alt] : *(*nesnePtr)->alanlar) {
+            sozluk[anahtar] = orhunDegerindenYerlesikJson(alt);
+        }
+        return yerlesik::JsonDeger(std::move(sozluk));
+    }
+    return yerlesik::JsonDeger(nullptr);
+}
+
+OrhunDegeri yerlesikJsondanOrhunDegere(const yerlesik::JsonDeger& deger) {
+    if (std::holds_alternative<std::nullptr_t>(deger.veri)) {
+        return OrhunDegeri(0);
+    }
+    if (const auto* m = std::get_if<bool>(&deger.veri)) {
+        return OrhunDegeri(*m ? 1 : 0);
+    }
+    if (const auto* s = std::get_if<double>(&deger.veri)) {
+        if (jsonTamsayiMi(*s) &&
+            *s >= static_cast<double>(std::numeric_limits<int>::min()) &&
+            *s <= static_cast<double>(std::numeric_limits<int>::max())) {
+            return OrhunDegeri(static_cast<int>(*s));
+        }
+        return OrhunDegeri(*s);
+    }
+    if (const auto* metin = std::get_if<std::string>(&deger.veri)) {
+        return OrhunDegeri(*metin);
+    }
+    if (const auto* listePtr = std::get_if<yerlesik::JsonDeger::ListePtr>(&deger.veri)) {
+        OrhunDegeri::ListeVeri liste;
+        if (*listePtr) {
+            liste.reserve((*listePtr)->size());
+            for (const auto& oge : *(*listePtr)) {
+                liste.push_back(yerlesikJsondanOrhunDegere(oge));
+            }
+        }
+        return OrhunDegeri(std::move(liste));
+    }
+    const auto* sozlukPtr = std::get_if<yerlesik::JsonDeger::SozlukPtr>(&deger.veri);
+    OrhunDegeri::SozlukVeri sozluk;
+    if (sozlukPtr && *sozlukPtr) {
+        for (const auto& [anahtar, alt] : *(*sozlukPtr)) {
+            sozluk[anahtar] = yerlesikJsondanOrhunDegere(alt);
+        }
+    }
+    return OrhunDegeri(std::move(sozluk));
 }
 
 class JsonCozucu {
@@ -1101,7 +1187,7 @@ WinHttpApi& winHttpApi() {
     return api;
 }
 
-std::string internetIcerigiGetir(const std::string& url) {
+[[maybe_unused]] std::string internetIcerigiGetir(const std::string& url) {
     WinHttpApi& api = winHttpApi();
     const std::wstring urlW = utf8denWstringe(url);
 
@@ -1256,7 +1342,7 @@ std::string komutCalistirVeOku(const std::string& komut, int& cikisKodu) {
     return cikti;
 }
 
-std::string internetIcerigiGetir(const std::string& url) {
+[[maybe_unused]] std::string internetIcerigiGetir(const std::string& url) {
     const std::string komut =
         "curl -L -s --fail '" + shellTekTirnakKacis(url) + "'";
     int kod = 0;
@@ -1472,7 +1558,8 @@ void Interpreter::gomuluIslevleriYukle() {
         }
 
         try {
-            return OrhunDegeri(internetIcerigiGetir(std::get<std::string>(args[0].veri)));
+            return OrhunDegeri(
+                yerlesik::internetIcerigiGetir(std::get<std::string>(args[0].veri)));
         } catch (const std::exception& ex) {
             hataFirlat(satir, "internet.getir başarısız: " + std::string(ex.what()));
         }
@@ -1491,7 +1578,7 @@ void Interpreter::gomuluIslevleriYukle() {
         const std::string url = std::get<std::string>(args[0].veri);
         const std::string hedef = std::get<std::string>(args[1].veri);
         try {
-            const std::string icerik = internetIcerigiGetir(url);
+            const std::string icerik = yerlesik::internetIcerigiGetir(url);
             std::ofstream dosya(hedef, std::ios::binary | std::ios::trunc);
             if (!dosya.is_open()) {
                 hataFirlat(satir, "internet.indir: '" + hedef + "' dosyasına yazılamadı.");
@@ -1512,8 +1599,8 @@ void Interpreter::gomuluIslevleriYukle() {
         }
 
         try {
-            JsonCozucu cozucu(std::get<std::string>(args[0].veri));
-            return cozucu.coz();
+            return yerlesikJsondanOrhunDegere(
+                yerlesik::jsonCoz(std::get<std::string>(args[0].veri)));
         } catch (const std::exception& ex) {
             hataFirlat(satir, "json.coz hatası: " + std::string(ex.what()));
         }
@@ -1525,7 +1612,8 @@ void Interpreter::gomuluIslevleriYukle() {
             hataFirlat(satir, "json.yaz(deger) tek argüman alır.");
         }
         try {
-            return OrhunDegeri(orhunDegeriniJsonaCevir(args[0]));
+            return OrhunDegeri(
+                yerlesik::jsonYaz(orhunDegerindenYerlesikJson(args[0])));
         } catch (const std::exception& ex) {
             hataFirlat(satir, "json.yaz hatası: " + std::string(ex.what()));
         }
@@ -1556,7 +1644,8 @@ void Interpreter::gomuluIslevleriYukle() {
         }
 
         try {
-            return OrhunDegeri(orhunDegeriniJsonaGuzelCevir(args[0], girinti, 0));
+            return OrhunDegeri(
+                yerlesik::jsonYaz(orhunDegerindenYerlesikJson(args[0]), true, girinti));
         } catch (const std::exception& ex) {
             hataFirlat(satir, "json.guzel_yaz hatası: " + std::string(ex.what()));
         }
