@@ -645,6 +645,58 @@ private:
   std::unique_ptr<BlockNode> govde_;
 };
 
+// dış_işlev adı "kutuphane" (arg: tip, ...) -> donusTipi
+// bildirimi için AST düğümü.
+class DisIslevTanimNode final : public ASTNode {
+public:
+  DisIslevTanimNode(std::string ad, std::string kutuphaneYolu,
+                    std::vector<std::string> parametreAdlari,
+                    std::vector<std::string> parametreTipleri,
+                    std::string donusTipi, std::size_t satir)
+      : ASTNode(satir), ad_(std::move(ad)),
+        kutuphaneYolu_(std::move(kutuphaneYolu)),
+        parametreAdlari_(std::move(parametreAdlari)),
+        parametreTipleri_(std::move(parametreTipleri)),
+        donusTipi_(std::move(donusTipi)) {}
+
+  const std::string &ad() const { return ad_; }
+
+  const std::string &kutuphaneYolu() const { return kutuphaneYolu_; }
+
+  const std::vector<std::string> &parametreAdlari() const {
+    return parametreAdlari_;
+  }
+
+  const std::vector<std::string> &parametreTipleri() const {
+    return parametreTipleri_;
+  }
+
+  const std::string &donusTipi() const { return donusTipi_; }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "DisIslevTanimNode(" << ad_ << ") [satır " << satir() << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Kutuphane: " << kutuphaneYolu_ << '\n';
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Imza:\n";
+    for (std::size_t i = 0; i < parametreAdlari_.size(); ++i) {
+      yazdirGirinti(cikti, girinti + 4);
+      cikti << "- " << parametreAdlari_[i] << ": " << parametreTipleri_[i]
+            << '\n';
+    }
+    yazdirGirinti(cikti, girinti + 4);
+    cikti << "-> " << donusTipi_ << '\n';
+  }
+
+private:
+  std::string ad_;
+  std::string kutuphaneYolu_;
+  std::vector<std::string> parametreAdlari_;
+  std::vector<std::string> parametreTipleri_;
+  std::string donusTipi_;
+};
+
 class DondurNode final : public ASTNode {
 public:
   DondurNode(std::unique_ptr<ASTNode> ifade, std::size_t satir)

@@ -118,9 +118,9 @@ std::vector<Token> Lexer::tokenize() {
       continue;
     }
 
-    if (operatorMu(c) || c == U'=' || c == U'(' || c == U')' || c == U'[' ||
-        c == U']' || c == U',' || c == U':' || c == U'{' || c == U'}' ||
-        c == U'.') {
+    if (operatorMu(c) || c == U'=' || c == U'>' || c == U'(' || c == U')' ||
+        c == U'[' || c == U']' || c == U',' || c == U':' || c == U'{' ||
+        c == U'}' || c == U'.') {
       const std::u32string tekKarakter(1, ilerle());
       tokenlar.push_back({TokenType::ISLEM, u32ToUtf8(tekKarakter), satir_});
       continue;
@@ -393,7 +393,7 @@ bool Lexer::anahtarKelimeMi(const std::u32string &metin) const {
   static const std::unordered_set<std::u32string> anahtarKelimeler = {
       U"yazdır", U"olsun",  U"eğer",     U"ise",  U"değilse",
       U"doğru",  U"yanlış", U"tekrarla", U"kez",  U"sor",
-      U"işlev",  U"döndür", U"dahil_et", U"sürece", U"eşit",
+      U"işlev",  U"dış_işlev", U"dis_islev", U"döndür", U"dahil_et", U"sürece", U"eşit",
       U"eşit_değil",
       U"büyük",  U"küçük",  U"ve",       U"veya", U"değil",
       U"tip",    U"yeni",   U"benim",    U"deneme", U"yakala",

@@ -2,6 +2,7 @@
 
 #include "Lexer.h"
 #include "Parser.h"
+#include "DynamicLibrary.h"
 
 #include <algorithm>
 #include <cctype>
@@ -879,78 +880,144 @@ void grafikBekle(int milisaniye) {
     }
 }
 
+#if defined(_WIN32)
+#define ORHUN_FFI_CALLCONV WINAPI
+#else
+#define ORHUN_FFI_CALLCONV
+#endif
+
 template <typename T>
-T farprocDonustur(FARPROC ham) {
+T sembolDonustur(std::uintptr_t ham) {
     T sonuc{};
     static_assert(sizeof(sonuc) == sizeof(ham),
-                  "FARPROC boyutu ile fonksiyon isaretcisi uyusmuyor.");
+                  "Fonksiyon isaretcisi boyutu uyusmuyor.");
     std::memcpy(&sonuc, &ham, sizeof(sonuc));
     return sonuc;
 }
 
-std::intptr_t ffiHamCagir(FARPROC fonksiyon,
+std::intptr_t ffiHamCagir(std::uintptr_t fonksiyon,
                           const std::vector<std::intptr_t>& argumanlar) {
     switch (argumanlar.size()) {
     case 0: {
-        using Fn = std::intptr_t(WINAPI*)();
-        return farprocDonustur<Fn>(fonksiyon)();
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)();
+        return sembolDonustur<Fn>(fonksiyon)();
     }
     case 1: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(argumanlar[0]);
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)(std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0]);
     }
     case 2: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t, std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1]);
+        using Fn =
+            std::intptr_t(ORHUN_FFI_CALLCONV*)(std::intptr_t, std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1]);
     }
     case 3: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t, std::intptr_t, std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
-                                              argumanlar[2]);
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)(
+            std::intptr_t, std::intptr_t, std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2]);
     }
     case 4: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
-                                              argumanlar[2], argumanlar[3]);
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)(
+            std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2], argumanlar[3]);
     }
     case 5: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t,
-                                          std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
-                                              argumanlar[2], argumanlar[3],
-                                              argumanlar[4]);
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)(
+            std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+            std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2], argumanlar[3],
+                                             argumanlar[4]);
     }
     case 6: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
-                                              argumanlar[2], argumanlar[3],
-                                              argumanlar[4], argumanlar[5]);
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)(
+            std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+            std::intptr_t, std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2], argumanlar[3],
+                                             argumanlar[4], argumanlar[5]);
     }
     case 7: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t,
-                                          std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)(
+            std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+            std::intptr_t, std::intptr_t, std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(
             argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3],
             argumanlar[4], argumanlar[5], argumanlar[6]);
     }
     case 8: {
-        using Fn = std::intptr_t(WINAPI*)(std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t,
-                                          std::intptr_t, std::intptr_t);
-        return farprocDonustur<Fn>(fonksiyon)(
+        using Fn = std::intptr_t(ORHUN_FFI_CALLCONV*)(
+            std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+            std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t);
+        return sembolDonustur<Fn>(fonksiyon)(
             argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3],
             argumanlar[4], argumanlar[5], argumanlar[6], argumanlar[7]);
     }
     default:
         throw std::runtime_error(
             "ffi.cagir simdilik en fazla 8 arguman destekliyor.");
+    }
+}
+
+double ffiCiftCagir(std::uintptr_t fonksiyon,
+                    const std::vector<double>& argumanlar) {
+    switch (argumanlar.size()) {
+    case 0: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)();
+        return sembolDonustur<Fn>(fonksiyon)();
+    }
+    case 1: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)(double);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0]);
+    }
+    case 2: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)(double, double);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1]);
+    }
+    case 3: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)(double, double, double);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2]);
+    }
+    case 4: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)(double, double, double, double);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2], argumanlar[3]);
+    }
+    case 5: {
+        using Fn =
+            double(ORHUN_FFI_CALLCONV*)(double, double, double, double, double);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2], argumanlar[3],
+                                             argumanlar[4]);
+    }
+    case 6: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)(
+            double, double, double, double, double, double);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2], argumanlar[3],
+                                             argumanlar[4], argumanlar[5]);
+    }
+    case 7: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)(
+            double, double, double, double, double, double, double);
+        return sembolDonustur<Fn>(fonksiyon)(argumanlar[0], argumanlar[1],
+                                             argumanlar[2], argumanlar[3],
+                                             argumanlar[4], argumanlar[5],
+                                             argumanlar[6]);
+    }
+    case 8: {
+        using Fn = double(ORHUN_FFI_CALLCONV*)(
+            double, double, double, double, double, double, double, double);
+        return sembolDonustur<Fn>(fonksiyon)(
+            argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3],
+            argumanlar[4], argumanlar[5], argumanlar[6], argumanlar[7]);
+    }
+    default:
+        throw std::runtime_error(
+            "ffi.cagir_tanimli simdilik en fazla 8 arguman destekliyor.");
     }
 }
 
@@ -1211,13 +1278,10 @@ Interpreter::Interpreter() {
 Interpreter::~Interpreter() {
 #ifdef _WIN32
     grafikKapat();
-    for (const auto& [kimlik, hamTutamac] : ffiKutuphaneTutamaclari_) {
-        (void)kimlik;
-        if (hamTutamac != static_cast<std::uintptr_t>(0)) {
-            FreeLibrary(reinterpret_cast<HMODULE>(hamTutamac));
-        }
-    }
 #endif
+    ffiIslevBaglantilari_.clear();
+    ffiKutuphaneleri_.clear();
+    ffiKutuphaneKimlikleri_.clear();
 }
 
 void Interpreter::gomuluIslevleriYukle() {
@@ -1515,10 +1579,69 @@ void Interpreter::gomuluIslevleriYukle() {
     };
 
     // FFI (Native C/C++ fonksiyon çağrısı) çekirdeği.
+    auto ffiKimlikCoz = [this](const OrhunDegeri& deger,
+                               std::size_t satir,
+                               const std::string& baglam) -> int {
+        if (std::holds_alternative<int>(deger.veri)) {
+            return std::get<int>(deger.veri);
+        }
+        if (std::holds_alternative<double>(deger.veri)) {
+            const double d = std::get<double>(deger.veri);
+            if (!tamSayiMi(d)) {
+                hataFirlat(satir, baglam + " için tutamac tam sayı olmalıdır.");
+            }
+            return static_cast<int>(d);
+        }
+        if (std::holds_alternative<std::string>(deger.veri)) {
+            const auto yuklenen = gomuluIslevler_.at("ffi.yukle")(
+                std::vector<OrhunDegeri>{deger}, satir);
+            return std::get<int>(yuklenen.veri);
+        }
+        hataFirlat(
+            satir,
+            baglam +
+                " için ilk argüman tutamac(int) veya kütüphane adı(metin) olmalıdır.");
+    };
+
+    auto ffiKutuphaneGetir = [this, ffiKimlikCoz](const OrhunDegeri& deger,
+                                                  std::size_t satir,
+                                                  const std::string& baglam)
+        -> std::pair<int, std::shared_ptr<runtime::DynamicLibrary>> {
+        const int kimlik = ffiKimlikCoz(deger, satir, baglam);
+        const auto it = ffiKutuphaneleri_.find(kimlik);
+        if (it == ffiKutuphaneleri_.end() || !it->second ||
+            !it->second->isLoaded()) {
+            hataFirlat(satir, baglam + ": geçersiz kütüphane tutamacı #" +
+                                  std::to_string(kimlik));
+        }
+        return std::make_pair(kimlik, it->second);
+    };
+
+    auto ffiTipCoz = [this](const std::string& tipMetni,
+                            std::size_t satir) -> FFIType {
+        if (tipMetni == "void" || tipMetni == "bos") {
+            return FFIType::NONE;
+        }
+        if (tipMetni == "int" || tipMetni == "tam" || tipMetni == "int64") {
+            return FFIType::INT64;
+        }
+        if (tipMetni == "double" || tipMetni == "ondalik" ||
+            tipMetni == "sayi") {
+            return FFIType::DOUBLE;
+        }
+        if (tipMetni == "string" || tipMetni == "metin" || tipMetni == "str") {
+            return FFIType::STRING;
+        }
+        if (tipMetni == "pointer" || tipMetni == "isaretci" || tipMetni == "ptr") {
+            return FFIType::POINTER;
+        }
+        hataFirlat(satir, "FFI tipi tanınmıyor: '" + tipMetni + "'.");
+    };
+
     gomuluIslevler_["ffi.yukle"] = [this](const std::vector<OrhunDegeri>& args,
                                           std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
-            hataFirlat(satir, "ffi.yukle(\"kutuphane.dll\") tek argüman alır.");
+            hataFirlat(satir, "ffi.yukle(\"kutuphane\") tek argüman alır.");
         }
         if (!std::holds_alternative<std::string>(args[0].veri)) {
             hataFirlat(satir, "ffi.yukle için metin kütüphane yolu bekleniyor.");
@@ -1530,65 +1653,38 @@ void Interpreter::gomuluIslevleriYukle() {
             return OrhunDegeri(mevcut->second);
         }
 
-#ifdef _WIN32
-        HMODULE tutamac = LoadLibraryW(utf8denWstringe(kutuphaneYolu).c_str());
-        if (tutamac == nullptr) {
-            hataFirlat(satir, "ffi.yukle başarısız: '" + kutuphaneYolu +
-                                  "' (" + windowsHataMesaji(GetLastError()) + ")");
+        auto kutuphane = std::make_shared<runtime::DynamicLibrary>(kutuphaneYolu);
+        std::string hata;
+        if (!kutuphane->load(&hata)) {
+            hataFirlat(satir,
+                       "ffi.yukle başarısız: '" + kutuphaneYolu + "' (" + hata + ")");
         }
 
         const int kimlik = ffiSonrakiKimlik_++;
-        ffiKutuphaneTutamaclari_[kimlik] =
-            reinterpret_cast<std::uintptr_t>(tutamac);
+        ffiKutuphaneleri_[kimlik] = kutuphane;
         ffiKutuphaneKimlikleri_[kutuphaneYolu] = kimlik;
         return OrhunDegeri(kimlik);
-#else
-        hataFirlat(satir, "ffi.yukle şu an yalnızca Windows üzerinde destekleniyor.");
-#endif
     };
 
-    gomuluIslevler_["ffi.cagir"] = [this](const std::vector<OrhunDegeri>& args,
-                                          std::size_t satir) -> OrhunDegeri {
+    gomuluIslevler_["ffi.cagir"] = [this, ffiKutuphaneGetir](
+                                        const std::vector<OrhunDegeri>& args,
+                                        std::size_t satir) -> OrhunDegeri {
         if (args.size() < 2) {
             hataFirlat(satir, "ffi.cagir(tutamac, \"fonksiyon\", ...argumanlar) en az 2 argüman alır.");
         }
         if (!std::holds_alternative<std::string>(args[1].veri)) {
             hataFirlat(satir, "ffi.cagir içinde fonksiyon adı metin olmalıdır.");
         }
-
-        int kimlik = 0;
-        if (std::holds_alternative<int>(args[0].veri)) {
-            kimlik = std::get<int>(args[0].veri);
-        } else if (std::holds_alternative<double>(args[0].veri)) {
-            const double d = std::get<double>(args[0].veri);
-            if (!tamSayiMi(d)) {
-                hataFirlat(satir, "ffi.cagir için tutamac tam sayı olmalıdır.");
-            }
-            kimlik = static_cast<int>(d);
-        } else if (std::holds_alternative<std::string>(args[0].veri)) {
-            // Kolay kullanım: tutamac yerine doğrudan kütüphane adı da verilebilir.
-            const auto yuklenen = gomuluIslevler_.at("ffi.yukle")(
-                std::vector<OrhunDegeri>{args[0]}, satir);
-            kimlik = std::get<int>(yuklenen.veri);
-        } else {
-            hataFirlat(satir, "ffi.cagir için ilk argüman tutamac(int) veya kütüphane adı(metin) olmalıdır.");
-        }
-
-        const auto itTutamac = ffiKutuphaneTutamaclari_.find(kimlik);
-        if (itTutamac == ffiKutuphaneTutamaclari_.end()) {
-            hataFirlat(satir, "ffi.cagir: geçersiz kütüphane tutamacı #" + std::to_string(kimlik));
-        }
-
+        const auto [kimlik, kutuphane] =
+            ffiKutuphaneGetir(args[0], satir, "ffi.cagir");
+        (void)kimlik;
         const std::string fonksiyonAdi = std::get<std::string>(args[1].veri);
-
-#ifdef _WIN32
-        HMODULE kutuphane =
-            reinterpret_cast<HMODULE>(itTutamac->second);
-        FARPROC fonksiyon = GetProcAddress(kutuphane, fonksiyonAdi.c_str());
-        if (fonksiyon == nullptr) {
+        std::string sembolHatasi;
+        std::uintptr_t fonksiyon =
+            kutuphane->getSymbol(fonksiyonAdi, &sembolHatasi);
+        if (fonksiyon == 0) {
             hataFirlat(satir, "ffi.cagir: '" + fonksiyonAdi +
-                                  "' sembolü bulunamadı (" +
-                                  windowsHataMesaji(GetLastError()) + ")");
+                                  "' sembolü bulunamadı (" + sembolHatasi + ")");
         }
 
         std::size_t metinSayisi = 0;
@@ -1639,15 +1735,11 @@ void Interpreter::gomuluIslevleriYukle() {
         } catch (const std::exception& ex) {
             hataFirlat(satir, "ffi.cagir çalışma hatası: " + std::string(ex.what()));
         }
-#else
-        (void)itTutamac;
-        (void)fonksiyonAdi;
-        hataFirlat(satir, "ffi.cagir şu an yalnızca Windows üzerinde destekleniyor.");
-#endif
     };
 
-    gomuluIslevler_["ffi.sembol_var_mi"] = [this](const std::vector<OrhunDegeri>& args,
-                                                  std::size_t satir) -> OrhunDegeri {
+    gomuluIslevler_["ffi.sembol_var_mi"] = [this, ffiKimlikCoz](
+                                               const std::vector<OrhunDegeri>& args,
+                                               std::size_t satir) -> OrhunDegeri {
         if (args.size() != 2) {
             hataFirlat(satir, "ffi.sembol_var_mi(tutamac, \"fonksiyon\") iki argüman alır.");
         }
@@ -1656,41 +1748,29 @@ void Interpreter::gomuluIslevleriYukle() {
         }
 
         int kimlik = 0;
-        if (std::holds_alternative<int>(args[0].veri)) {
-            kimlik = std::get<int>(args[0].veri);
-        } else if (std::holds_alternative<double>(args[0].veri)) {
-            const double d = std::get<double>(args[0].veri);
-            if (!tamSayiMi(d)) {
-                hataFirlat(satir, "ffi.sembol_var_mi için tutamac tam sayı olmalıdır.");
-            }
-            kimlik = static_cast<int>(d);
-        } else if (std::holds_alternative<std::string>(args[0].veri)) {
-            const auto yuklenen = gomuluIslevler_.at("ffi.yukle")(
-                std::vector<OrhunDegeri>{args[0]}, satir);
-            kimlik = std::get<int>(yuklenen.veri);
+        if (std::holds_alternative<int>(args[0].veri) ||
+            std::holds_alternative<double>(args[0].veri) ||
+            std::holds_alternative<std::string>(args[0].veri)) {
+            kimlik = ffiKimlikCoz(args[0], satir, "ffi.sembol_var_mi");
         } else {
             hataFirlat(satir, "ffi.sembol_var_mi için ilk argüman tutamac(int) veya kütüphane adı(metin) olmalıdır.");
         }
 
-        const auto itTutamac = ffiKutuphaneTutamaclari_.find(kimlik);
-        if (itTutamac == ffiKutuphaneTutamaclari_.end()) {
+        const auto itKutuphane = ffiKutuphaneleri_.find(kimlik);
+        if (itKutuphane == ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
             return OrhunDegeri(0);
         }
 
         const std::string fonksiyonAdi = std::get<std::string>(args[1].veri);
-
-#ifdef _WIN32
-        HMODULE kutuphane = reinterpret_cast<HMODULE>(itTutamac->second);
-        FARPROC fonksiyon = GetProcAddress(kutuphane, fonksiyonAdi.c_str());
-        return OrhunDegeri(fonksiyon != nullptr ? 1 : 0);
-#else
-        (void)fonksiyonAdi;
-        hataFirlat(satir, "ffi.sembol_var_mi şu an yalnızca Windows üzerinde destekleniyor.");
-#endif
+        const std::uintptr_t fonksiyon =
+            itKutuphane->second->getSymbol(fonksiyonAdi, nullptr);
+        return OrhunDegeri(fonksiyon != 0 ? 1 : 0);
     };
 
-    gomuluIslevler_["ffi.cagir_metin"] = [this](const std::vector<OrhunDegeri>& args,
-                                                std::size_t satir) -> OrhunDegeri {
+    gomuluIslevler_["ffi.cagir_metin"] = [this, ffiKutuphaneGetir](
+                                             const std::vector<OrhunDegeri>& args,
+                                             std::size_t satir) -> OrhunDegeri {
         if (args.size() < 2) {
             hataFirlat(satir, "ffi.cagir_metin(tutamac, \"fonksiyon\", ...argumanlar) en az 2 argüman alır.");
         }
@@ -1698,37 +1778,16 @@ void Interpreter::gomuluIslevleriYukle() {
             hataFirlat(satir, "ffi.cagir_metin içinde fonksiyon adı metin olmalıdır.");
         }
 
-        int kimlik = 0;
-        if (std::holds_alternative<int>(args[0].veri)) {
-            kimlik = std::get<int>(args[0].veri);
-        } else if (std::holds_alternative<double>(args[0].veri)) {
-            const double d = std::get<double>(args[0].veri);
-            if (!tamSayiMi(d)) {
-                hataFirlat(satir, "ffi.cagir_metin için tutamac tam sayı olmalıdır.");
-            }
-            kimlik = static_cast<int>(d);
-        } else if (std::holds_alternative<std::string>(args[0].veri)) {
-            const auto yuklenen = gomuluIslevler_.at("ffi.yukle")(
-                std::vector<OrhunDegeri>{args[0]}, satir);
-            kimlik = std::get<int>(yuklenen.veri);
-        } else {
-            hataFirlat(satir, "ffi.cagir_metin için ilk argüman tutamac(int) veya kütüphane adı(metin) olmalıdır.");
-        }
-
-        const auto itTutamac = ffiKutuphaneTutamaclari_.find(kimlik);
-        if (itTutamac == ffiKutuphaneTutamaclari_.end()) {
-            hataFirlat(satir, "ffi.cagir_metin: geçersiz kütüphane tutamacı #" + std::to_string(kimlik));
-        }
-
+        const auto [kimlik, kutuphane] =
+            ffiKutuphaneGetir(args[0], satir, "ffi.cagir_metin");
+        (void)kimlik;
         const std::string fonksiyonAdi = std::get<std::string>(args[1].veri);
-
-#ifdef _WIN32
-        HMODULE kutuphane = reinterpret_cast<HMODULE>(itTutamac->second);
-        FARPROC fonksiyon = GetProcAddress(kutuphane, fonksiyonAdi.c_str());
-        if (fonksiyon == nullptr) {
+        std::string sembolHatasi;
+        std::uintptr_t fonksiyon =
+            kutuphane->getSymbol(fonksiyonAdi, &sembolHatasi);
+        if (fonksiyon == 0) {
             hataFirlat(satir, "ffi.cagir_metin: '" + fonksiyonAdi +
-                                  "' sembolü bulunamadı (" +
-                                  windowsHataMesaji(GetLastError()) + ")");
+                                  "' sembolü bulunamadı (" + sembolHatasi + ")");
         }
 
         std::size_t metinSayisi = 0;
@@ -1780,11 +1839,217 @@ void Interpreter::gomuluIslevleriYukle() {
         } catch (const std::exception& ex) {
             hataFirlat(satir, "ffi.cagir_metin çalışma hatası: " + std::string(ex.what()));
         }
-#else
-        (void)itTutamac;
-        (void)fonksiyonAdi;
-        hataFirlat(satir, "ffi.cagir_metin şu an yalnızca Windows üzerinde destekleniyor.");
-#endif
+    };
+
+    gomuluIslevler_["ffi.tanimla"] = [this, ffiKutuphaneGetir, ffiTipCoz](
+                                          const std::vector<OrhunDegeri>& args,
+                                          std::size_t satir) -> OrhunDegeri {
+        if (args.size() < 3 || args.size() > 4) {
+            hataFirlat(
+                satir,
+                "ffi.tanimla(kutuphane, \"sembol\", \"donus\", [argTipleri]) 3 veya 4 argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "ffi.tanimla ikinci argümanda sembol adı bekler.");
+        }
+        if (!std::holds_alternative<std::string>(args[2].veri)) {
+            hataFirlat(satir, "ffi.tanimla üçüncü argümanda dönüş tipi bekler.");
+        }
+
+        const auto [kimlik, kutuphane] =
+            ffiKutuphaneGetir(args[0], satir, "ffi.tanimla");
+        (void)kutuphane;
+
+        FFISignature imza;
+        imza.sembolAdi = std::get<std::string>(args[1].veri);
+        imza.donusTipi = ffiTipCoz(std::get<std::string>(args[2].veri), satir);
+
+        if (args.size() == 4) {
+            if (!std::holds_alternative<OrhunDegeri::ListeTipi>(args[3].veri)) {
+                hataFirlat(satir, "ffi.tanimla dördüncü argümanda tip listesi bekler.");
+            }
+            const auto listePtr = std::get<OrhunDegeri::ListeTipi>(args[3].veri);
+            if (!listePtr) {
+                hataFirlat(satir, "ffi.tanimla için argüman tipi listesi boş olamaz.");
+            }
+            for (const auto& tipDegeri : *listePtr) {
+                if (!std::holds_alternative<std::string>(tipDegeri.veri)) {
+                    hataFirlat(satir, "ffi.tanimla tip listesi metinlerden oluşmalıdır.");
+                }
+                imza.argumanTipleri.push_back(
+                    ffiTipCoz(std::get<std::string>(tipDegeri.veri), satir));
+            }
+        }
+
+        const int islevKimligi = ffiSonrakiIslevKimlik_++;
+        ffiIslevBaglantilari_[islevKimligi] =
+            FFIBinding{kimlik, std::move(imza)};
+        return OrhunDegeri(islevKimligi);
+    };
+
+    gomuluIslevler_["ffi.cagir_tanimli"] = [this](
+                                                const std::vector<OrhunDegeri>& args,
+                                                std::size_t satir) -> OrhunDegeri {
+        if (args.empty()) {
+            hataFirlat(satir, "ffi.cagir_tanimli(islevKimligi, ...argumanlar) en az 1 argüman alır.");
+        }
+
+        int islevKimligi = 0;
+        if (std::holds_alternative<int>(args[0].veri)) {
+            islevKimligi = std::get<int>(args[0].veri);
+        } else if (std::holds_alternative<double>(args[0].veri)) {
+            const double d = std::get<double>(args[0].veri);
+            if (!tamSayiMi(d)) {
+                hataFirlat(satir, "ffi.cagir_tanimli için işlev kimliği tam sayı olmalıdır.");
+            }
+            islevKimligi = static_cast<int>(d);
+        } else {
+            hataFirlat(satir, "ffi.cagir_tanimli için işlev kimliği tam sayı olmalıdır.");
+        }
+
+        const auto itBaglanti = ffiIslevBaglantilari_.find(islevKimligi);
+        if (itBaglanti == ffiIslevBaglantilari_.end()) {
+            hataFirlat(satir, "ffi.cagir_tanimli: geçersiz işlev kimliği #" +
+                                  std::to_string(islevKimligi));
+        }
+
+        const FFIBinding& baglanti = itBaglanti->second;
+        const auto itKutuphane = ffiKutuphaneleri_.find(baglanti.kutuphaneKimligi);
+        if (itKutuphane == ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
+            hataFirlat(satir, "ffi.cagir_tanimli: kütüphane tutamacı geçersiz.");
+        }
+
+        const std::size_t beklenenArguman = baglanti.imza.argumanTipleri.size();
+        const std::size_t gelenArguman = args.size() - 1;
+        if (beklenenArguman != gelenArguman) {
+            hataFirlat(satir,
+                       "ffi.cagir_tanimli: beklenen argüman sayısı " +
+                           std::to_string(beklenenArguman) + ", gelen " +
+                           std::to_string(gelenArguman) + ".");
+        }
+
+        std::string sembolHatasi;
+        std::uintptr_t fonksiyon =
+            itKutuphane->second->getSymbol(baglanti.imza.sembolAdi, &sembolHatasi);
+        if (fonksiyon == 0) {
+            hataFirlat(satir, "ffi.cagir_tanimli: '" + baglanti.imza.sembolAdi +
+                                  "' sembolü bulunamadı (" + sembolHatasi + ")");
+        }
+
+        const bool butunArgumanlarCift =
+            std::all_of(baglanti.imza.argumanTipleri.begin(),
+                        baglanti.imza.argumanTipleri.end(),
+                        [](FFIType tip) { return tip == FFIType::DOUBLE; });
+
+        if (baglanti.imza.donusTipi == FFIType::DOUBLE) {
+            if (!butunArgumanlarCift) {
+                hataFirlat(
+                    satir,
+                    "ffi.cagir_tanimli: DOUBLE dönüş tipi için tüm argümanlar DOUBLE olmalıdır. "
+                    "Karışık ABI için libffi gerekir.");
+            }
+
+            std::vector<double> ciftArgumanlar;
+            ciftArgumanlar.reserve(gelenArguman);
+            for (std::size_t i = 0; i < gelenArguman; ++i) {
+                ciftArgumanlar.push_back(
+                    sayiDegeri(args[i + 1], satir, "ffi.cagir_tanimli"));
+            }
+
+            try {
+                return OrhunDegeri(ffiCiftCagir(fonksiyon, ciftArgumanlar));
+            } catch (const std::exception& ex) {
+                hataFirlat(satir, "ffi.cagir_tanimli çalışma hatası: " +
+                                      std::string(ex.what()));
+            }
+        }
+
+        std::vector<std::intptr_t> hamArgumanlar;
+        hamArgumanlar.reserve(gelenArguman);
+        std::vector<std::string> metinSahipligi;
+        metinSahipligi.reserve(gelenArguman);
+
+        for (std::size_t i = 0; i < gelenArguman; ++i) {
+            const FFIType tip = baglanti.imza.argumanTipleri[i];
+            const OrhunDegeri& arg = args[i + 1];
+
+            switch (tip) {
+            case FFIType::INT64:
+            case FFIType::POINTER: {
+                if (std::holds_alternative<int>(arg.veri)) {
+                    hamArgumanlar.push_back(
+                        static_cast<std::intptr_t>(std::get<int>(arg.veri)));
+                    break;
+                }
+                if (std::holds_alternative<double>(arg.veri)) {
+                    const double d = std::get<double>(arg.veri);
+                    if (!tamSayiMi(d)) {
+                        hataFirlat(
+                            satir,
+                            "ffi.cagir_tanimli: #" + std::to_string(i + 1) +
+                                " argümanı tam sayı/pointer olmalıdır.");
+                    }
+                    hamArgumanlar.push_back(static_cast<std::intptr_t>(d));
+                    break;
+                }
+                hataFirlat(satir,
+                           "ffi.cagir_tanimli: #" + std::to_string(i + 1) +
+                               " argümanı tam sayı/pointer olmalıdır.");
+            }
+            case FFIType::STRING: {
+                if (!std::holds_alternative<std::string>(arg.veri)) {
+                    hataFirlat(satir,
+                               "ffi.cagir_tanimli: #" + std::to_string(i + 1) +
+                                   " argümanı metin olmalıdır.");
+                }
+                metinSahipligi.push_back(std::get<std::string>(arg.veri));
+                hamArgumanlar.push_back(
+                    reinterpret_cast<std::intptr_t>(metinSahipligi.back().c_str()));
+                break;
+            }
+            case FFIType::DOUBLE:
+                hataFirlat(
+                    satir,
+                    "ffi.cagir_tanimli: DOUBLE argümanları için tüm imza DOUBLE olmalıdır. "
+                    "Karışık ABI için libffi gerekir.");
+            case FFIType::NONE:
+                hataFirlat(satir,
+                           "ffi.cagir_tanimli: VOID argüman tipi geçersiz.");
+            }
+        }
+
+        try {
+            const std::intptr_t donus = ffiHamCagir(fonksiyon, hamArgumanlar);
+            switch (baglanti.imza.donusTipi) {
+            case FFIType::NONE:
+                return OrhunDegeri(0);
+            case FFIType::INT64:
+            case FFIType::POINTER:
+                if (donus <=
+                        static_cast<std::intptr_t>(std::numeric_limits<int>::max()) &&
+                    donus >=
+                        static_cast<std::intptr_t>(std::numeric_limits<int>::min())) {
+                    return OrhunDegeri(static_cast<int>(donus));
+                }
+                return OrhunDegeri(static_cast<double>(donus));
+            case FFIType::STRING: {
+                if (donus == 0) {
+                    return OrhunDegeri(std::string{});
+                }
+                const char* metin = reinterpret_cast<const char*>(donus);
+                return OrhunDegeri(std::string(metin));
+            }
+            case FFIType::DOUBLE:
+                hataFirlat(
+                    satir,
+                    "ffi.cagir_tanimli: DOUBLE dönüş tipinde dahili çağrı yolu seçimi başarısız.");
+            }
+        } catch (const std::exception& ex) {
+            hataFirlat(satir, "ffi.cagir_tanimli çalışma hatası: " +
+                                  std::string(ex.what()));
+        }
+        return OrhunDegeri(0);
     };
 
     gomuluIslevler_["ffi.bosalt"] = [this](const std::vector<OrhunDegeri>& args,
@@ -1806,19 +2071,15 @@ void Interpreter::gomuluIslevleriYukle() {
             hataFirlat(satir, "ffi.bosalt için tutamac tam sayı olmalıdır.");
         }
 
-        const auto it = ffiKutuphaneTutamaclari_.find(kimlik);
-        if (it == ffiKutuphaneTutamaclari_.end()) {
+        const auto it = ffiKutuphaneleri_.find(kimlik);
+        if (it == ffiKutuphaneleri_.end()) {
             return OrhunDegeri(0);
         }
 
-#ifdef _WIN32
-        HMODULE tutamac = reinterpret_cast<HMODULE>(it->second);
-        if (!FreeLibrary(tutamac)) {
-            hataFirlat(satir, "ffi.bosalt başarısız: " +
-                                  windowsHataMesaji(GetLastError()));
+        if (it->second) {
+            it->second->close();
         }
-
-        ffiKutuphaneTutamaclari_.erase(it);
+        ffiKutuphaneleri_.erase(it);
         for (auto kimlikIt = ffiKutuphaneKimlikleri_.begin();
              kimlikIt != ffiKutuphaneKimlikleri_.end();) {
             if (kimlikIt->second == kimlik) {
@@ -1827,11 +2088,15 @@ void Interpreter::gomuluIslevleriYukle() {
                 ++kimlikIt;
             }
         }
+        for (auto islevIt = ffiIslevBaglantilari_.begin();
+             islevIt != ffiIslevBaglantilari_.end();) {
+            if (islevIt->second.kutuphaneKimligi == kimlik) {
+                islevIt = ffiIslevBaglantilari_.erase(islevIt);
+            } else {
+                ++islevIt;
+            }
+        }
         return OrhunDegeri(1);
-#else
-        (void)it;
-        hataFirlat(satir, "ffi.bosalt şu an yalnızca Windows üzerinde destekleniyor.");
-#endif
     };
 
     // Dahili grafik modülü (MVP, Windows).
@@ -2356,6 +2621,8 @@ void Interpreter::yerlesikModulleriYukle() {
     OrhunDegeri::SozlukVeri ffi;
     ffi["yukle"] = OrhunDegeri("__islev_ref__:ffi.yukle");
     ffi["cagir"] = OrhunDegeri("__islev_ref__:ffi.cagir");
+    ffi["tanimla"] = OrhunDegeri("__islev_ref__:ffi.tanimla");
+    ffi["cagir_tanimli"] = OrhunDegeri("__islev_ref__:ffi.cagir_tanimli");
     ffi["sembol_var_mi"] = OrhunDegeri("__islev_ref__:ffi.sembol_var_mi");
     ffi["cagir_metin"] = OrhunDegeri("__islev_ref__:ffi.cagir_metin");
     ffi["bosalt"] = OrhunDegeri("__islev_ref__:ffi.bosalt");
@@ -2406,6 +2673,11 @@ void Interpreter::calistir(const ASTNode* dugum) {
 
     if (const auto* islev = dynamic_cast<const IslevTanimNode*>(dugum)) {
         calistirIslevTanim(islev);
+        return;
+    }
+
+    if (const auto* disIslev = dynamic_cast<const DisIslevTanimNode*>(dugum)) {
+        calistirDisIslevTanim(disIslev);
         return;
     }
 
@@ -2528,6 +2800,74 @@ void Interpreter::calistirSurece(const SureceNode* dugum) {
 
 void Interpreter::calistirIslevTanim(const IslevTanimNode* dugum) {
     islevTablosu_[dugum->ad()] = dugum;
+}
+
+void Interpreter::calistirDisIslevTanim(const DisIslevTanimNode* dugum) {
+    if (gomuluIslevler_.find("ffi.yukle") == gomuluIslevler_.end() ||
+        gomuluIslevler_.find("ffi.tanimla") == gomuluIslevler_.end() ||
+        gomuluIslevler_.find("ffi.cagir_tanimli") == gomuluIslevler_.end()) {
+        hataFirlat(dugum->satir(),
+                   "FFI altyapısı hazır değil (ffi.yukle/tanimla/cagir_tanimli bulunamadı).");
+    }
+
+    OrhunDegeri kutuphaneKimligi;
+    try {
+        kutuphaneKimligi = gomuluIslevler_.at("ffi.yukle")(
+            std::vector<OrhunDegeri>{OrhunDegeri(dugum->kutuphaneYolu())},
+            dugum->satir());
+    } catch (const std::exception& ex) {
+        hataFirlat(dugum->satir(),
+                   "Dış işlev için kütüphane yüklenemedi: " + std::string(ex.what()));
+    }
+
+    OrhunDegeri::ListeVeri tipListesi;
+    tipListesi.reserve(dugum->parametreTipleri().size());
+    for (const std::string& tip : dugum->parametreTipleri()) {
+        tipListesi.emplace_back(tip);
+    }
+
+    OrhunDegeri baglantiKimligi;
+    try {
+        baglantiKimligi = gomuluIslevler_.at("ffi.tanimla")(
+            std::vector<OrhunDegeri>{kutuphaneKimligi, OrhunDegeri(dugum->ad()),
+                                     OrhunDegeri(dugum->donusTipi()),
+                                     OrhunDegeri(std::move(tipListesi))},
+            dugum->satir());
+    } catch (const std::exception& ex) {
+        hataFirlat(dugum->satir(),
+                   "Dış işlev imzası oluşturulamadı: " + std::string(ex.what()));
+    }
+
+    int islevKimligi = 0;
+    if (std::holds_alternative<int>(baglantiKimligi.veri)) {
+        islevKimligi = std::get<int>(baglantiKimligi.veri);
+    } else if (std::holds_alternative<double>(baglantiKimligi.veri)) {
+        const double d = std::get<double>(baglantiKimligi.veri);
+        if (!tamSayiMi(d)) {
+            hataFirlat(dugum->satir(),
+                       "Dış işlev kaydı geçersiz kimlik döndürdü.");
+        }
+        islevKimligi = static_cast<int>(d);
+    } else {
+        hataFirlat(dugum->satir(),
+                   "Dış işlev kaydı geçersiz kimlik döndürdü.");
+    }
+
+    const std::string ad = dugum->ad();
+    gomuluIslevler_[ad] =
+        [this, islevKimligi](const std::vector<OrhunDegeri>& argumanlar,
+                             std::size_t satir) -> OrhunDegeri {
+        std::vector<OrhunDegeri> paketliArgumanlar;
+        paketliArgumanlar.reserve(argumanlar.size() + 1);
+        paketliArgumanlar.emplace_back(islevKimligi);
+        paketliArgumanlar.insert(paketliArgumanlar.end(), argumanlar.begin(),
+                                 argumanlar.end());
+        return gomuluIslevler_.at("ffi.cagir_tanimli")(paketliArgumanlar, satir);
+    };
+
+    // Aynı adda user-defined işlev varsa dış işlev tanımı geçerli olsun.
+    islevTablosu_.erase(ad);
+    aktifKapsam()[ad] = OrhunDegeri("__islev_ref__:" + ad);
 }
 
 void Interpreter::calistirSinifTanim(const SinifTanimNode* dugum) {

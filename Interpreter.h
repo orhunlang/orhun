@@ -14,6 +14,9 @@
 
 struct OrhunNesne;
 struct NesneMetodBilgisi;
+namespace runtime {
+class DynamicLibrary;
+}
 
 class OrhunHatasi : public std::runtime_error {
 public:
@@ -117,6 +120,25 @@ public:
   void calistir(const ASTNode *dugum);
 
 private:
+  enum class FFIType {
+    NONE,
+    INT64,
+    DOUBLE,
+    STRING,
+    POINTER,
+  };
+
+  struct FFISignature {
+    std::string sembolAdi;
+    FFIType donusTipi = FFIType::INT64;
+    std::vector<FFIType> argumanTipleri;
+  };
+
+  struct FFIBinding {
+    int kutuphaneKimligi = 0;
+    FFISignature imza;
+  };
+
   using DegiskenTablosu = std::unordered_map<std::string, OrhunDegeri>;
   using GomuluIslev =
       std::function<OrhunDegeri(const std::vector<OrhunDegeri> &, std::size_t)>;
@@ -129,9 +151,12 @@ private:
   std::unordered_map<std::string, const SinifTanimNode *> sinifTablosu_;
   std::unordered_map<std::string, GomuluIslev> gomuluIslevler_;
   std::vector<std::unique_ptr<ProgramNode>> yukluModuller_;
-  std::unordered_map<int, std::uintptr_t> ffiKutuphaneTutamaclari_;
+  std::unordered_map<int, std::shared_ptr<runtime::DynamicLibrary>>
+      ffiKutuphaneleri_;
   std::unordered_map<std::string, int> ffiKutuphaneKimlikleri_;
+  std::unordered_map<int, FFIBinding> ffiIslevBaglantilari_;
   int ffiSonrakiKimlik_ = 1;
+  int ffiSonrakiIslevKimlik_ = 1;
 
   void gomuluIslevleriYukle();
   void yerlesikModulleriYukle();
@@ -143,6 +168,7 @@ private:
   void calistirTekrarla(const TekrarlaNode *dugum);
   void calistirSurece(const SureceNode *dugum);
   void calistirIslevTanim(const IslevTanimNode *dugum);
+  void calistirDisIslevTanim(const DisIslevTanimNode *dugum);
   void calistirSinifTanim(const SinifTanimNode *dugum);
   void calistirDenemeYakala(const DenemeYakalaNode *dugum);
   void calistirKir(const KirNode *dugum);

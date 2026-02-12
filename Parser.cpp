@@ -40,7 +40,8 @@ const std::vector<std::string> &orhunAnahtarKelimeleri() {
   static const std::vector<std::string> anahtarlar = {
       "yazdır", "olsun",   "eğer",  "ise",     "değilse", "doğru",
       "yanlış", "tekrarla", "kez",   "sor",     "işlev",   "döndür",
-      "dahil_et", "sürece", "eşit", "eşit_değil", "büyük", "küçük",
+      "dış_işlev", "dis_islev", "dahil_et", "sürece", "eşit", "eşit_değil",
+      "büyük", "küçük",
       "ve",     "veya",    "değil", "tip",     "yeni",    "benim",
       "deneme", "yakala",  "kır",   "devam",   "ust",     "için",
       "içinde"};
@@ -165,6 +166,10 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
   if (kontrol(TokenType::ANAHTAR_KELIME, "işlev")) {
     return parseIslevTanim();
   }
+  if (kontrol(TokenType::ANAHTAR_KELIME, "dış_işlev") ||
+      kontrol(TokenType::ANAHTAR_KELIME, "dis_islev")) {
+    return parseDisIslevTanim();
+  }
   if (kontrol(TokenType::ANAHTAR_KELIME, "tip")) {
     return parseSinifTanim();
   }
@@ -281,6 +286,65 @@ std::unique_ptr<ASTNode> Parser::parseIslevTanim() {
   return std::make_unique<IslevTanimNode>(
       adToken.deger, std::move(parametreler),
       parseBlokVeyaTekKomut("işlev", true), token.satir);
+}
+
+std::unique_ptr<ASTNode> Parser::parseDisIslevTanim() {
+  const Token token = bak();
+  if (!eslesir(TokenType::ANAHTAR_KELIME, "dış_işlev") &&
+      !eslesir(TokenType::ANAHTAR_KELIME, "dis_islev")) {
+    syntaxError(token, "'dış_işlev' komutu bekleniyor.");
+  }
+  const Token adToken =
+      tuket(TokenType::KIMLIK, "'dış_işlev' ifadesinden sonra işlev adı bekleniyor.");
+  const Token kutuphaneToken =
+      tuket(TokenType::METIN,
+            "'dış_işlev' ifadesinde işlev adından sonra kütüphane metni bekleniyor.");
+
+  tuket(TokenType::ISLEM, "(", "Dış işlev bildiriminde '(' bekleniyor.");
+
+  std::vector<std::string> parametreAdlari;
+  std::vector<std::string> parametreTipleri;
+  if (!kontrol(TokenType::ISLEM, ")")) {
+    while (true) {
+      const Token paramAdi =
+          tuket(TokenType::KIMLIK,
+                "Dış işlev parametrelerinde parametre adı bekleniyor.");
+      tuket(TokenType::ISLEM, ":",
+            "Dış işlev parametre adından sonra ':' bekleniyor.");
+
+      const Token tipToken = bak();
+      if (tipToken.tur != TokenType::KIMLIK &&
+          tipToken.tur != TokenType::ANAHTAR_KELIME) {
+        syntaxError(tipToken,
+                    "Dış işlev parametre tipi bekleniyor (örn: tam, metin, double).");
+      }
+      ilerle();
+
+      parametreAdlari.push_back(paramAdi.deger);
+      parametreTipleri.push_back(tipToken.deger);
+
+      if (!eslesir(TokenType::ISLEM, ",")) {
+        break;
+      }
+    }
+  }
+
+  tuket(TokenType::ISLEM, ")",
+        "Dış işlev parametre listesi kapanırken ')' bekleniyor.");
+  tuket(TokenType::ISLEM, "-", "Dış işlev bildiriminde '->' bekleniyor.");
+  tuket(TokenType::ISLEM, ">", "Dış işlev bildiriminde '->' bekleniyor.");
+
+  const Token donusTipiToken = bak();
+  if (donusTipiToken.tur != TokenType::KIMLIK &&
+      donusTipiToken.tur != TokenType::ANAHTAR_KELIME) {
+    syntaxError(donusTipiToken,
+                "Dış işlev bildiriminde dönüş tipi bekleniyor.");
+  }
+  ilerle();
+
+  return std::make_unique<DisIslevTanimNode>(
+      adToken.deger, kutuphaneToken.deger, std::move(parametreAdlari),
+      std::move(parametreTipleri), donusTipiToken.deger, token.satir);
 }
 
 std::unique_ptr<ASTNode> Parser::parseSinifTanim() {
