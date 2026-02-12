@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-// Orhun v0.4.1 parser'ı:
+// Orhun v0.5 parser'ı:
 // Lexer token akışını AST'ye dönüştürür.
 class Parser {
 public:

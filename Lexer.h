@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-// Orhun v0.4.1 sözcük çözümleyicisi.
+// Orhun v0.5 sözcük çözümleyicisi.
 // Girdi UTF-8 metindir; içeride UTF-32'e dönüştürülerek karakter bazında işlenir.
 class Lexer {
 public:
