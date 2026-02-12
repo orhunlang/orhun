@@ -10,7 +10,7 @@
 #include <vector>
 
 int main(int argc, char* argv[]) {
-    // main artık gömülü test kodu çalıştırmaz.
+    // v0.6: main gömülü test kodu çalıştırmaz.
     // Kullanıcıdan .oh dosya yolu argüman olarak beklenir.
     if (argc < 2) {
         std::cout << "Kullanım: ./orhun <dosya_adi.oh>\n";

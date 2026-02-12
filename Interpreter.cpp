@@ -3,11 +3,17 @@
 #include "Lexer.h"
 #include "Parser.h"
 
+#include <algorithm>
+#include <cctype>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <limits>
+#include <random>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 
 namespace {
@@ -23,6 +29,7 @@ Interpreter::Interpreter() {
 }
 
 void Interpreter::gomuluIslevleriYukle() {
+    // Genel amaçlı yardımcı kütüphane.
     gomuluIslevler_["uzunluk"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
             hataFirlat(satir, "uzunluk(liste_veya_metin) tek argüman alır.");
@@ -42,8 +49,7 @@ void Interpreter::gomuluIslevleriYukle() {
         hataFirlat(satir, "uzunluk yalnızca metin, liste veya sözlük üzerinde kullanılabilir.");
     };
 
-    gomuluIslevler_["listeye_ekle"] =
-        [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+    gomuluIslevler_["listeye_ekle"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 2) {
             hataFirlat(satir, "listeye_ekle(liste, eleman) iki argüman alır.");
         }
@@ -76,8 +82,7 @@ void Interpreter::gomuluIslevleriYukle() {
         return OrhunDegeri(tampon.str());
     };
 
-    gomuluIslevler_["dosyaya_yaz"] =
-        [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+    gomuluIslevler_["dosyaya_yaz"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 2) {
             hataFirlat(satir, "dosyaya_yaz(\"dosya.oh\", icerik) iki argüman alır.");
         }
@@ -95,6 +100,269 @@ void Interpreter::gomuluIslevleriYukle() {
 
         dosya << icerik;
         return OrhunDegeri(1);
+    };
+
+    // Matematik kütüphanesi.
+    gomuluIslevler_["karekok"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "karekok(x) tek argüman alır.");
+        }
+        const double x = sayiDegeri(args[0], satir, "karekok");
+        if (x < 0.0) {
+            hataFirlat(satir, "karekok negatif sayı için tanımsızdır.");
+        }
+        return OrhunDegeri(std::sqrt(x));
+    };
+
+    gomuluIslevler_["us"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "us(taban, kuvvet) iki argüman alır.");
+        }
+        const double taban = sayiDegeri(args[0], satir, "us");
+        const double kuvvet = sayiDegeri(args[1], satir, "us");
+        return OrhunDegeri(std::pow(taban, kuvvet));
+    };
+
+    gomuluIslevler_["mutlak"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "mutlak(x) tek argüman alır.");
+        }
+        if (std::holds_alternative<int>(args[0].veri)) {
+            return OrhunDegeri(std::abs(std::get<int>(args[0].veri)));
+        }
+        return OrhunDegeri(std::fabs(sayiDegeri(args[0], satir, "mutlak")));
+    };
+
+    gomuluIslevler_["sin"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "sin(x) tek argüman alır.");
+        }
+        return OrhunDegeri(std::sin(sayiDegeri(args[0], satir, "sin")));
+    };
+
+    gomuluIslevler_["cos"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "cos(x) tek argüman alır.");
+        }
+        return OrhunDegeri(std::cos(sayiDegeri(args[0], satir, "cos")));
+    };
+
+    gomuluIslevler_["yuvarla"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "yuvarla(x) tek argüman alır.");
+        }
+        const double deger = std::round(sayiDegeri(args[0], satir, "yuvarla"));
+        if (deger > static_cast<double>(std::numeric_limits<int>::max()) ||
+            deger < static_cast<double>(std::numeric_limits<int>::min())) {
+            hataFirlat(satir, "yuvarla sonucu int aralığını aşıyor.");
+        }
+        return OrhunDegeri(static_cast<int>(deger));
+    };
+
+    // Rastgelelik ve zaman.
+    gomuluIslevler_["rastgele"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "rastgele(min, max) iki argüman alır.");
+        }
+        if (!tamSayiMi(args[0]) || !tamSayiMi(args[1])) {
+            hataFirlat(satir, "rastgele(min, max) için min ve max tam sayı olmalıdır.");
+        }
+
+        const long long minDeger = static_cast<long long>(sayiDegeri(args[0], satir, "rastgele"));
+        const long long maxDeger = static_cast<long long>(sayiDegeri(args[1], satir, "rastgele"));
+        if (minDeger > maxDeger) {
+            hataFirlat(satir, "rastgele(min, max) içinde min, max'tan büyük olamaz.");
+        }
+        if (minDeger < static_cast<long long>(std::numeric_limits<int>::min()) ||
+            maxDeger > static_cast<long long>(std::numeric_limits<int>::max())) {
+            hataFirlat(satir, "rastgele aralığı int sınırları içinde olmalıdır.");
+        }
+
+        static std::mt19937 ureteci(std::random_device{}());
+        std::uniform_int_distribution<int> dagilim(static_cast<int>(minDeger), static_cast<int>(maxDeger));
+        return OrhunDegeri(dagilim(ureteci));
+    };
+
+    gomuluIslevler_["bekle"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "bekle(saniye) tek argüman alır.");
+        }
+        const double saniye = sayiDegeri(args[0], satir, "bekle");
+        if (saniye < 0.0) {
+            hataFirlat(satir, "bekle(saniye) negatif olamaz.");
+        }
+        std::this_thread::sleep_for(std::chrono::duration<double>(saniye));
+        return OrhunDegeri(1);
+    };
+
+    gomuluIslevler_["zaman"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "zaman() argüman almaz.");
+        }
+        const auto suan = std::chrono::system_clock::now();
+        const auto epochSaniye = std::chrono::duration_cast<std::chrono::seconds>(suan.time_since_epoch()).count();
+        if (epochSaniye > static_cast<long long>(std::numeric_limits<int>::max()) ||
+            epochSaniye < static_cast<long long>(std::numeric_limits<int>::min())) {
+            return OrhunDegeri(static_cast<double>(epochSaniye));
+        }
+        return OrhunDegeri(static_cast<int>(epochSaniye));
+    };
+
+    // Metin işleme.
+    gomuluIslevler_["buyuk_harf"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "buyuk_harf(metin) tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "buyuk_harf(metin) için metin argümanı bekleniyor.");
+        }
+        std::string metin = std::get<std::string>(args[0].veri);
+        std::transform(metin.begin(), metin.end(), metin.begin(), [](unsigned char c) {
+            return static_cast<char>(std::toupper(c));
+        });
+        return OrhunDegeri(std::move(metin));
+    };
+
+    gomuluIslevler_["kucuk_harf"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "kucuk_harf(metin) tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "kucuk_harf(metin) için metin argümanı bekleniyor.");
+        }
+        std::string metin = std::get<std::string>(args[0].veri);
+        std::transform(metin.begin(), metin.end(), metin.begin(), [](unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+        });
+        return OrhunDegeri(std::move(metin));
+    };
+
+    gomuluIslevler_["parcala"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "parcala(metin, ayirici) iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "parcala(metin, ayirici) yalnızca metin argümanları kabul eder.");
+        }
+
+        const std::string metin = std::get<std::string>(args[0].veri);
+        const std::string ayirici = std::get<std::string>(args[1].veri);
+        OrhunDegeri::ListeTipi sonuc;
+
+        if (ayirici.empty()) {
+            sonuc.reserve(metin.size());
+            for (char c : metin) {
+                sonuc.emplace_back(std::string(1, c));
+            }
+            return OrhunDegeri(std::move(sonuc));
+        }
+
+        std::size_t baslangic = 0;
+        while (true) {
+            const std::size_t konum = metin.find(ayirici, baslangic);
+            if (konum == std::string::npos) {
+                sonuc.emplace_back(metin.substr(baslangic));
+                break;
+            }
+            sonuc.emplace_back(metin.substr(baslangic, konum - baslangic));
+            baslangic = konum + ayirici.size();
+        }
+
+        return OrhunDegeri(std::move(sonuc));
+    };
+
+    gomuluIslevler_["birlestir"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "birlestir(liste, ayirici) iki argüman alır.");
+        }
+        if (!std::holds_alternative<OrhunDegeri::ListeTipi>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "birlestir(liste, ayirici) için liste ve metin bekleniyor.");
+        }
+
+        const auto& liste = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
+        const std::string ayirici = std::get<std::string>(args[1].veri);
+        std::string sonuc;
+
+        for (std::size_t i = 0; i < liste.size(); ++i) {
+            if (i > 0) {
+                sonuc += ayirici;
+            }
+            sonuc += metneCevir(liste[i]);
+        }
+
+        return OrhunDegeri(std::move(sonuc));
+    };
+
+    gomuluIslevler_["metin_uzunluk"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "metin_uzunluk(metin) tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "metin_uzunluk(metin) için metin bekleniyor.");
+        }
+        return OrhunDegeri(static_cast<int>(std::get<std::string>(args[0].veri).size()));
+    };
+
+    gomuluIslevler_["icerir"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "icerir(metin, aranan) iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "icerir(metin, aranan) yalnızca metin argümanları kabul eder.");
+        }
+        const std::string& metin = std::get<std::string>(args[0].veri);
+        const std::string& aranan = std::get<std::string>(args[1].veri);
+        return OrhunDegeri(metin.find(aranan) != std::string::npos ? 1 : 0);
+    };
+
+    // Tip dönüşümleri.
+    gomuluIslevler_["sayiya_cevir"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "sayiya_cevir(metin) tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "sayiya_cevir(metin) için metin bekleniyor.");
+        }
+
+        std::string metin = std::get<std::string>(args[0].veri);
+        const auto sol = metin.find_first_not_of(" \t\r\n");
+        const auto sag = metin.find_last_not_of(" \t\r\n");
+        if (sol == std::string::npos) {
+            hataFirlat(satir, "sayiya_cevir için boş metin verildi.");
+        }
+        metin = metin.substr(sol, sag - sol + 1);
+
+        try {
+            std::size_t idx = 0;
+            const int tam = std::stoi(metin, &idx, 10);
+            if (idx == metin.size()) {
+                return OrhunDegeri(tam);
+            }
+        } catch (...) {
+            // tam sayı değilse aşağıda ondalık denenecek.
+        }
+
+        try {
+            std::size_t idx = 0;
+            const double ondalik = std::stod(metin, &idx);
+            if (idx == metin.size()) {
+                return OrhunDegeri(ondalik);
+            }
+        } catch (...) {
+            // aşağıda hata fırlatılacak.
+        }
+
+        hataFirlat(satir, "'" + metin + "' sayıya çevrilemedi.");
+    };
+
+    gomuluIslevler_["metne_cevir"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "metne_cevir(deger) tek argüman alır.");
+        }
+        return OrhunDegeri(metneCevir(args[0]));
     };
 
     // yazdır ve sor, dilde ayrıca anahtar kelime olarak da var.

@@ -11,7 +11,7 @@
 #include <vector>
 
 // Orhun çalışma zamanı değeri.
-// v0.5: sayı(int/double), metin, liste ve sözlük desteklenir.
+// v0.6: sayı(int/double), metin, liste ve sözlük desteklenir.
 struct OrhunDegeri {
   using ListeTipi = std::vector<OrhunDegeri>;
   using SozlukTipi = std::map<std::string, OrhunDegeri>;
