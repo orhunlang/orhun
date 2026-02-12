@@ -9,6 +9,7 @@ enum class TokenType {
     ANAHTAR_KELIME,
     KIMLIK,
     SAYI,
+    ONDALIK,
     METIN,
     ISLEM,
     YENI_SATIR,

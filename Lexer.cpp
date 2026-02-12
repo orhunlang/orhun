@@ -301,7 +301,8 @@ Token Lexer::sayi() {
     break;
   }
 
-  return {TokenType::SAYI, u32ToUtf8(yazi), baslangicSatir};
+  return {noktaGoruldu ? TokenType::ONDALIK : TokenType::SAYI,
+          u32ToUtf8(yazi), baslangicSatir};
 }
 
 Token Lexer::metin() {
@@ -391,7 +392,8 @@ bool Lexer::anahtarKelimeMi(const std::u32string &metin) const {
   static const std::unordered_set<std::u32string> anahtarKelimeler = {
       U"yazdır", U"olsun",  U"eğer",     U"ise",  U"değilse",
       U"doğru",  U"yanlış", U"tekrarla", U"kez",  U"sor",
-      U"işlev",  U"döndür", U"dahil_et", U"eşit", U"eşit_değil",
+      U"işlev",  U"döndür", U"dahil_et", U"sürece", U"eşit",
+      U"eşit_değil",
       U"büyük",  U"küçük",  U"ve",       U"veya", U"değil"};
 
   return anahtarKelimeler.find(metin) != anahtarKelimeler.end();

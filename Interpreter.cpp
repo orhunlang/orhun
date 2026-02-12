@@ -22,10 +22,26 @@ struct DondurSinyali {
     explicit DondurSinyali(OrhunDegeri v) : deger(std::move(v)) {}
     OrhunDegeri deger;
 };
+
+std::vector<std::string> noktaIleBol(const std::string& metin) {
+    std::vector<std::string> parcalar;
+    std::size_t bas = 0;
+    while (true) {
+        const std::size_t nokta = metin.find('.', bas);
+        if (nokta == std::string::npos) {
+            parcalar.push_back(metin.substr(bas));
+            break;
+        }
+        parcalar.push_back(metin.substr(bas, nokta - bas));
+        bas = nokta + 1;
+    }
+    return parcalar;
+}
 }  // namespace
 
 Interpreter::Interpreter() {
     gomuluIslevleriYukle();
+    yerlesikModulleriYukle();
 }
 
 void Interpreter::gomuluIslevleriYukle() {
@@ -148,6 +164,13 @@ void Interpreter::gomuluIslevleriYukle() {
             hataFirlat(satir, "cos(x) tek argüman alır.");
         }
         return OrhunDegeri(std::cos(sayiDegeri(args[0], satir, "cos")));
+    };
+
+    gomuluIslevler_["tan"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "tan(x) tek argüman alır.");
+        }
+        return OrhunDegeri(std::tan(sayiDegeri(args[0], satir, "tan")));
     };
 
     gomuluIslevler_["yuvarla"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
@@ -395,6 +418,35 @@ void Interpreter::gomuluIslevleriYukle() {
     };
 }
 
+void Interpreter::yerlesikModulleriYukle() {
+    // Modül isim uzayı altında aynı gömülü işlevlerin aliaslarını üret.
+    gomuluIslevler_["matematik.sin"] = gomuluIslevler_["sin"];
+    gomuluIslevler_["matematik.cos"] = gomuluIslevler_["cos"];
+    gomuluIslevler_["matematik.tan"] = gomuluIslevler_["tan"];
+    gomuluIslevler_["matematik.karekok"] = gomuluIslevler_["karekok"];
+    gomuluIslevler_["matematik.us"] = gomuluIslevler_["us"];
+    gomuluIslevler_["matematik.rastgele"] = gomuluIslevler_["rastgele"];
+
+    gomuluIslevler_["zaman.simdi"] = gomuluIslevler_["zaman"];
+    gomuluIslevler_["zaman.bekle"] = gomuluIslevler_["bekle"];
+
+    // Python benzeri erişim için hazır sözlük modülleri.
+    OrhunDegeri::SozlukVeri matematik;
+    matematik["pi"] = OrhunDegeri(3.14159265358979323846);
+    matematik["sin"] = OrhunDegeri("__islev_ref__:matematik.sin");
+    matematik["cos"] = OrhunDegeri("__islev_ref__:matematik.cos");
+    matematik["tan"] = OrhunDegeri("__islev_ref__:matematik.tan");
+    matematik["karekok"] = OrhunDegeri("__islev_ref__:matematik.karekok");
+    matematik["us"] = OrhunDegeri("__islev_ref__:matematik.us");
+    matematik["rastgele"] = OrhunDegeri("__islev_ref__:matematik.rastgele");
+    globalHafiza_["matematik"] = OrhunDegeri(std::move(matematik));
+
+    OrhunDegeri::SozlukVeri zaman;
+    zaman["simdi"] = OrhunDegeri("__islev_ref__:zaman.simdi");
+    zaman["bekle"] = OrhunDegeri("__islev_ref__:zaman.bekle");
+    globalHafiza_["zaman"] = OrhunDegeri(std::move(zaman));
+}
+
 void Interpreter::calistir(const ASTNode* dugum) {
     if (dugum == nullptr) {
         hataFirlat(0, "Boş AST düğümü çalıştırılamaz.");
@@ -429,6 +481,11 @@ void Interpreter::calistir(const ASTNode* dugum) {
 
     if (const auto* tekrarla = dynamic_cast<const TekrarlaNode*>(dugum)) {
         calistirTekrarla(tekrarla);
+        return;
+    }
+
+    if (const auto* surece = dynamic_cast<const SureceNode*>(dugum)) {
+        calistirSurece(surece);
         return;
     }
 
@@ -494,6 +551,12 @@ void Interpreter::calistirTekrarla(const TekrarlaNode* dugum) {
     }
 }
 
+void Interpreter::calistirSurece(const SureceNode* dugum) {
+    while (dogruMu(ifadeHesapla(dugum->kosul()))) {
+        calistirBlock(dugum->govde());
+    }
+}
+
 void Interpreter::calistirIslevTanim(const IslevTanimNode* dugum) {
     islevTablosu_[dugum->ad()] = dugum;
 }
@@ -506,6 +569,10 @@ void Interpreter::calistirDondur(const DondurNode* dugum) {
 }
 
 void Interpreter::calistirDahilEt(const DahilEtNode* dugum) {
+    static_cast<void>(dahilEtDegerlendir(dugum));
+}
+
+OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode* dugum) {
     std::ifstream dosya(dugum->dosyaAdi(), std::ios::binary);
     if (!dosya.is_open()) {
         hataFirlat(dugum->satir(), "dahil_et: '" + dugum->dosyaAdi() + "' dosyası açılamadı.");
@@ -515,14 +582,55 @@ void Interpreter::calistirDahilEt(const DahilEtNode* dugum) {
     tampon << dosya.rdbuf();
 
     try {
+        // Modül içeriğini parse et.
         Lexer lexer(tampon.str());
         std::vector<Token> tokenlar = lexer.tokenize();
         Parser parser(std::move(tokenlar));
         std::unique_ptr<ProgramNode> program = parser.parse();
 
+        // Modül AST'sini yaşam döngüsü boyunca elde tut.
         ProgramNode* programHam = program.get();
         yukluModuller_.push_back(std::move(program));
+
+        // Modül kapsamını mevcut global ortamdan izole etmek için anlık görüntü al.
+        const DegiskenTablosu globalOncesi = globalHafiza_;
+        const auto islevOncesi = islevTablosu_;
+
         calistir(programHam);
+
+        // Modülde üretilen değerleri sözlükte topla.
+        OrhunDegeri::SozlukVeri modulSozlugu;
+        for (const auto& [ad, deger] : globalHafiza_) {
+            const auto onceki = globalOncesi.find(ad);
+            if (onceki == globalOncesi.end() || !(onceki->second == deger)) {
+                modulSozlugu[ad] = deger;
+            }
+        }
+
+        // Modül işlevlerini isim uzayına (module.func) bağlamak için takma ad üret.
+        static std::size_t modulSayaci = 0;
+        const std::string modulOnEki =
+            "__modul__" + std::to_string(++modulSayaci) + "__";
+
+        std::vector<std::pair<std::string, const IslevTanimNode*>> aliaslar;
+        for (const auto& [islevAdi, islevDugumu] : islevTablosu_) {
+            const auto onceki = islevOncesi.find(islevAdi);
+            if (onceki != islevOncesi.end() && onceki->second == islevDugumu) {
+                continue;
+            }
+            const std::string alias = modulOnEki + islevAdi;
+            aliaslar.push_back({alias, islevDugumu});
+            modulSozlugu[islevAdi] = OrhunDegeri("__islev_ref__:" + alias);
+        }
+
+        // Ortamı geri al ve yalnızca modül alias işlevleri sistemde bırak.
+        globalHafiza_ = globalOncesi;
+        islevTablosu_ = islevOncesi;
+        for (const auto& [alias, islevDugumu] : aliaslar) {
+            islevTablosu_[alias] = islevDugumu;
+        }
+
+        return OrhunDegeri(std::move(modulSozlugu));
     } catch (const std::exception& ex) {
         hataFirlat(dugum->satir(), "dahil_et içinde hata: " + std::string(ex.what()));
     }
@@ -601,6 +709,10 @@ OrhunDegeri Interpreter::ifadeHesapla(const ASTNode* dugum) {
 
     if (const auto* cagri = dynamic_cast<const IslevCagriNode*>(dugum)) {
         return islevCagir(cagri);
+    }
+
+    if (const auto* dahilEt = dynamic_cast<const DahilEtNode*>(dugum)) {
+        return dahilEtDegerlendir(dahilEt);
     }
 
     hataFirlat(dugum->satir(), "İfade değerlendirme sırasında geçersiz düğüm türü alındı.");
@@ -861,16 +973,42 @@ OrhunDegeri Interpreter::alanErisim(const AlanErisimNode* dugum) {
 }
 
 OrhunDegeri Interpreter::islevCagir(const IslevCagriNode* dugum) {
-    const auto yerelIslev = islevTablosu_.find(dugum->ad());
+    std::vector<OrhunDegeri> argumanDegerleri;
+    argumanDegerleri.reserve(dugum->argumanlar().size());
+    for (const auto& arg : dugum->argumanlar()) {
+        argumanDegerleri.push_back(ifadeHesapla(arg.get()));
+    }
+
+    const std::string& cagriAdi = dugum->ad();
+    if (islevTablosu_.find(cagriAdi) != islevTablosu_.end() ||
+        gomuluIslevler_.find(cagriAdi) != gomuluIslevler_.end()) {
+        return islevCagirAdaGore(cagriAdi, argumanDegerleri, dugum->satir());
+    }
+
+    const std::size_t nokta = cagriAdi.rfind('.');
+    if (nokta == std::string::npos || nokta == 0 || nokta + 1 >= cagriAdi.size()) {
+        hataFirlat(dugum->satir(), "'" + cagriAdi + "' adlı işlev bulunamadı.");
+    }
+
+    const std::string hedefYolu = cagriAdi.substr(0, nokta);
+    const std::string metodAdi = cagriAdi.substr(nokta + 1);
+    const OrhunDegeri hedef = noktaYoluDegeri(hedefYolu, dugum->satir());
+    return nesneMetoduCagir(hedef, metodAdi, argumanDegerleri, dugum->satir());
+}
+
+OrhunDegeri Interpreter::islevCagirAdaGore(
+    const std::string& ad, const std::vector<OrhunDegeri>& argumanlar,
+    std::size_t satir) {
+    const auto yerelIslev = islevTablosu_.find(ad);
     if (yerelIslev != islevTablosu_.end()) {
         const IslevTanimNode* islev = yerelIslev->second;
-        if (dugum->argumanlar().size() != islev->parametreler().size()) {
-            hataFirlat(dugum->satir(), "'" + dugum->ad() + "' için argüman sayısı uyuşmuyor.");
+        if (argumanlar.size() != islev->parametreler().size()) {
+            hataFirlat(satir, "'" + ad + "' için argüman sayısı uyuşmuyor.");
         }
 
         DegiskenTablosu yeniKapsam;
-        for (std::size_t i = 0; i < dugum->argumanlar().size(); ++i) {
-            yeniKapsam[islev->parametreler()[i]] = ifadeHesapla(dugum->argumanlar()[i].get());
+        for (std::size_t i = 0; i < argumanlar.size(); ++i) {
+            yeniKapsam[islev->parametreler()[i]] = argumanlar[i];
         }
 
         yerelKapsamYigini_.push_back(std::move(yeniKapsam));
@@ -885,20 +1023,249 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode* dugum) {
         }
 
         yerelKapsamYigini_.pop_back();
-        hataFirlat(dugum->satir(), "'" + dugum->ad() + "' işlevi bir değer döndürmedi.");
+        hataFirlat(satir, "'" + ad + "' işlevi bir değer döndürmedi.");
     }
 
-    const auto gomulu = gomuluIslevler_.find(dugum->ad());
+    const auto gomulu = gomuluIslevler_.find(ad);
     if (gomulu != gomuluIslevler_.end()) {
-        std::vector<OrhunDegeri> argumanDegerleri;
-        argumanDegerleri.reserve(dugum->argumanlar().size());
-        for (const auto& arg : dugum->argumanlar()) {
-            argumanDegerleri.push_back(ifadeHesapla(arg.get()));
-        }
-        return gomulu->second(argumanDegerleri, dugum->satir());
+        return gomulu->second(argumanlar, satir);
     }
 
-    hataFirlat(dugum->satir(), "'" + dugum->ad() + "' adlı işlev bulunamadı.");
+    hataFirlat(satir, "'" + ad + "' adlı işlev bulunamadı.");
+}
+
+OrhunDegeri Interpreter::noktaYoluDegeri(const std::string& yol,
+                                         std::size_t satir) const {
+    const std::vector<std::string> parcalar = noktaIleBol(yol);
+    if (parcalar.empty() || parcalar.front().empty()) {
+        throw std::runtime_error("Satır " + std::to_string(satir) +
+                                 ": Geçersiz nokta erişim yolu: '" + yol + "'");
+    }
+
+    const OrhunDegeri* aktif = &degiskenBul(parcalar.front(), satir);
+    for (std::size_t i = 1; i < parcalar.size(); ++i) {
+        if (!std::holds_alternative<OrhunDegeri::SozlukTipi>(aktif->veri)) {
+            throw std::runtime_error("Satır " + std::to_string(satir) +
+                                     ": '" + parcalar[i - 1] +
+                                     "' üzerinde nokta erişimi yapılamaz.");
+        }
+
+        const auto& sozlukPtr = std::get<OrhunDegeri::SozlukTipi>(aktif->veri);
+        if (!sozlukPtr) {
+            throw std::runtime_error("Satır " + std::to_string(satir) +
+                                     ": Boş sözlük üzerinden nokta erişimi yapılamaz.");
+        }
+
+        const auto bulunan = sozlukPtr->find(parcalar[i]);
+        if (bulunan == sozlukPtr->end()) {
+            throw std::runtime_error("Satır " + std::to_string(satir) + ": '" +
+                                     parcalar[i] + "' anahtarı bulunamadı.");
+        }
+        aktif = &bulunan->second;
+    }
+
+    return *aktif;
+}
+
+bool Interpreter::islevReferansiCoz(const OrhunDegeri& deger,
+                                    std::string& gercekAd) const {
+    if (!std::holds_alternative<std::string>(deger.veri)) {
+        return false;
+    }
+    const std::string& metin = std::get<std::string>(deger.veri);
+    const std::string onEk = "__islev_ref__:";
+    if (metin.rfind(onEk, 0) != 0) {
+        return false;
+    }
+    gercekAd = metin.substr(onEk.size());
+    return !gercekAd.empty();
+}
+
+OrhunDegeri Interpreter::nesneMetoduCagir(
+    const OrhunDegeri& hedef, const std::string& metodAdi,
+    const std::vector<OrhunDegeri>& argumanlar, std::size_t satir) {
+    // Liste metodları: ekle, sil, uzunluk
+    if (std::holds_alternative<OrhunDegeri::ListeTipi>(hedef.veri)) {
+        const auto& listePtr = std::get<OrhunDegeri::ListeTipi>(hedef.veri);
+        if (!listePtr) {
+            hataFirlat(satir, "Liste metodu boş liste üzerinde çağrılamaz.");
+        }
+
+        if (metodAdi == "ekle") {
+            if (argumanlar.size() != 1) {
+                hataFirlat(satir, "liste.ekle(eleman) bir argüman alır.");
+            }
+            listePtr->push_back(argumanlar[0]);
+            return hedef;
+        }
+
+        if (metodAdi == "sil") {
+            if (argumanlar.size() != 1) {
+                hataFirlat(satir, "liste.sil(indeks) bir argüman alır.");
+            }
+            const std::size_t idx = listeIndeksiCevir(argumanlar[0], satir, "liste.sil indeksi");
+            if (idx >= listePtr->size()) {
+                hataFirlat(satir, "liste.sil indeksi sınır dışında.");
+            }
+            listePtr->erase(listePtr->begin() + static_cast<std::ptrdiff_t>(idx));
+            return hedef;
+        }
+
+        if (metodAdi == "uzunluk") {
+            if (!argumanlar.empty()) {
+                hataFirlat(satir, "liste.uzunluk() argüman almaz.");
+            }
+            return OrhunDegeri(static_cast<int>(listePtr->size()));
+        }
+
+        hataFirlat(satir, "Liste için bilinmeyen metod: '" + metodAdi + "'");
+    }
+
+    // Sözlük metodları: anahtarlar, degerler, sil (+ çağrılabilir alanlar)
+    if (std::holds_alternative<OrhunDegeri::SozlukTipi>(hedef.veri)) {
+        const auto& sozlukPtr = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+        if (!sozlukPtr) {
+            hataFirlat(satir, "Sözlük metodu boş sözlük üzerinde çağrılamaz.");
+        }
+
+        const auto uye = sozlukPtr->find(metodAdi);
+        if (uye != sozlukPtr->end()) {
+            std::string gercekAd;
+            if (islevReferansiCoz(uye->second, gercekAd)) {
+                // Modül işlevleri modül içi sabitlere erişebilsin diye sözlüğü scope'a koy.
+                DegiskenTablosu modulKapsami;
+                for (const auto& [anahtar, deger] : *sozlukPtr) {
+                    std::string dummy;
+                    if (!islevReferansiCoz(deger, dummy)) {
+                        modulKapsami[anahtar] = deger;
+                    }
+                }
+
+                yerelKapsamYigini_.push_back(std::move(modulKapsami));
+                try {
+                    OrhunDegeri sonuc = islevCagirAdaGore(gercekAd, argumanlar, satir);
+                    yerelKapsamYigini_.pop_back();
+                    return sonuc;
+                } catch (...) {
+                    yerelKapsamYigini_.pop_back();
+                    throw;
+                }
+            }
+        }
+
+        if (metodAdi == "anahtarlar") {
+            if (!argumanlar.empty()) {
+                hataFirlat(satir, "sozluk.anahtarlar() argüman almaz.");
+            }
+            OrhunDegeri::ListeVeri sonuc;
+            sonuc.reserve(sozlukPtr->size());
+            for (const auto& kv : *sozlukPtr) {
+                sonuc.emplace_back(kv.first);
+            }
+            return OrhunDegeri(std::move(sonuc));
+        }
+
+        if (metodAdi == "degerler") {
+            if (!argumanlar.empty()) {
+                hataFirlat(satir, "sozluk.degerler() argüman almaz.");
+            }
+            OrhunDegeri::ListeVeri sonuc;
+            sonuc.reserve(sozlukPtr->size());
+            for (const auto& kv : *sozlukPtr) {
+                sonuc.push_back(kv.second);
+            }
+            return OrhunDegeri(std::move(sonuc));
+        }
+
+        if (metodAdi == "sil") {
+            if (argumanlar.size() != 1 ||
+                !std::holds_alternative<std::string>(argumanlar[0].veri)) {
+                hataFirlat(satir, "sozluk.sil(anahtar) için metin anahtar bekleniyor.");
+            }
+            const std::string& anahtar = std::get<std::string>(argumanlar[0].veri);
+            const auto silinen = sozlukPtr->erase(anahtar);
+            if (silinen == 0) {
+                hataFirlat(satir, "'" + anahtar + "' anahtarı sözlükte bulunamadı!");
+            }
+            return hedef;
+        }
+
+        if (metodAdi == "uzunluk") {
+            if (!argumanlar.empty()) {
+                hataFirlat(satir, "sozluk.uzunluk() argüman almaz.");
+            }
+            return OrhunDegeri(static_cast<int>(sozlukPtr->size()));
+        }
+
+        hataFirlat(satir, "Sözlük için bilinmeyen metod: '" + metodAdi + "'");
+    }
+
+    // Metin metodları: buyuk, kucuk, parcala, uzunluk
+    if (std::holds_alternative<std::string>(hedef.veri)) {
+        const std::string metin = std::get<std::string>(hedef.veri);
+
+        if (metodAdi == "buyuk") {
+            if (!argumanlar.empty()) {
+                hataFirlat(satir, "metin.buyuk() argüman almaz.");
+            }
+            std::string sonuc = metin;
+            std::transform(sonuc.begin(), sonuc.end(), sonuc.begin(), [](unsigned char c) {
+                return static_cast<char>(std::toupper(c));
+            });
+            return OrhunDegeri(std::move(sonuc));
+        }
+
+        if (metodAdi == "kucuk") {
+            if (!argumanlar.empty()) {
+                hataFirlat(satir, "metin.kucuk() argüman almaz.");
+            }
+            std::string sonuc = metin;
+            std::transform(sonuc.begin(), sonuc.end(), sonuc.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
+            return OrhunDegeri(std::move(sonuc));
+        }
+
+        if (metodAdi == "parcala") {
+            if (argumanlar.size() != 1 ||
+                !std::holds_alternative<std::string>(argumanlar[0].veri)) {
+                hataFirlat(satir, "metin.parcala(ayirici) için metin ayırıcı bekleniyor.");
+            }
+            const std::string ayirici = std::get<std::string>(argumanlar[0].veri);
+            OrhunDegeri::ListeVeri sonuc;
+
+            if (ayirici.empty()) {
+                sonuc.reserve(metin.size());
+                for (char c : metin) {
+                    sonuc.emplace_back(std::string(1, c));
+                }
+                return OrhunDegeri(std::move(sonuc));
+            }
+
+            std::size_t bas = 0;
+            while (true) {
+                const std::size_t konum = metin.find(ayirici, bas);
+                if (konum == std::string::npos) {
+                    sonuc.emplace_back(metin.substr(bas));
+                    break;
+                }
+                sonuc.emplace_back(metin.substr(bas, konum - bas));
+                bas = konum + ayirici.size();
+            }
+            return OrhunDegeri(std::move(sonuc));
+        }
+
+        if (metodAdi == "uzunluk") {
+            if (!argumanlar.empty()) {
+                hataFirlat(satir, "metin.uzunluk() argüman almaz.");
+            }
+            return OrhunDegeri(static_cast<int>(metin.size()));
+        }
+
+        hataFirlat(satir, "Metin için bilinmeyen metod: '" + metodAdi + "'");
+    }
+
+    hataFirlat(satir, "Bu tipte nesne metodu çağrılamaz: '" + metodAdi + "'");
 }
 
 Interpreter::DegiskenTablosu& Interpreter::aktifKapsam() {

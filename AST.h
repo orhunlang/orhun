@@ -431,6 +431,33 @@ private:
   std::unique_ptr<BlockNode> govde_;
 };
 
+// sürece KOŞUL: KOMUT/BLOK
+class SureceNode final : public ASTNode {
+public:
+  SureceNode(std::unique_ptr<ASTNode> kosul, std::unique_ptr<BlockNode> govde,
+             std::size_t satir)
+      : ASTNode(satir), kosul_(std::move(kosul)), govde_(std::move(govde)) {}
+
+  const ASTNode *kosul() const { return kosul_.get(); }
+
+  const BlockNode *govde() const { return govde_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "SureceNode [satır " << satir() << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Kosul:\n";
+    kosul_->yazdir_agac(cikti, girinti + 4);
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Govde:\n";
+    govde_->yazdir_agac(cikti, girinti + 4);
+  }
+
+private:
+  std::unique_ptr<ASTNode> kosul_;
+  std::unique_ptr<BlockNode> govde_;
+};
+
 class IslevTanimNode final : public ASTNode {
 public:
   IslevTanimNode(std::string ad, std::vector<std::string> parametreler,

@@ -1,7 +1,29 @@
 #include "Parser.h"
 
 #include <stdexcept>
+#include <string>
 #include <utility>
+
+namespace {
+// Kimlik ve nokta erişim zincirini "modul.islev" biçimine dönüştürür.
+bool cagrilabilirAdCoz(const ASTNode *dugum, std::string &ad) {
+  if (const auto *kimlik = dynamic_cast<const KimlikNode *>(dugum)) {
+    ad = kimlik->ad();
+    return true;
+  }
+
+  if (const auto *alan = dynamic_cast<const AlanErisimNode *>(dugum)) {
+    std::string kok;
+    if (!cagrilabilirAdCoz(alan->hedef(), kok)) {
+      return false;
+    }
+    ad = kok + "." + alan->alanAdi();
+    return true;
+  }
+
+  return false;
+}
+} // namespace
 
 Parser::Parser(std::vector<Token> tokenlar) : tokenlar_(std::move(tokenlar)) {
   if (tokenlar_.empty()) {
@@ -50,6 +72,19 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
   }
   if (kontrol(TokenType::ANAHTAR_KELIME, "tekrarla")) {
     return parseTekrarla();
+  }
+  if (kontrol(TokenType::ANAHTAR_KELIME, "sürece")) {
+    const Token token = tuket(TokenType::ANAHTAR_KELIME, "sürece",
+                              "'sürece' komutu bekleniyor.");
+    if (kontrol(TokenType::YENI_SATIR) || kontrol(TokenType::DOSYA_SONU)) {
+      syntaxError(bak(), "'sürece' komutundan sonra koşul bekleniyor.");
+    }
+
+    std::unique_ptr<ASTNode> kosul = parseIfade();
+    tuket(TokenType::ISLEM, ":",
+          "'sürece' koşulundan sonra ':' bekleniyor.");
+    return std::make_unique<SureceNode>(
+        std::move(kosul), parseBlokVeyaTekKomut("sürece", false), token.satir);
   }
   if (kontrol(TokenType::ANAHTAR_KELIME, "işlev")) {
     return parseIslevTanim();
@@ -319,14 +354,14 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
       tuket(TokenType::ISLEM, ")",
             "Argüman listesinin sonunda ')' bekleniyor.");
 
-      auto *kimlik = dynamic_cast<KimlikNode *>(ifade.get());
-      if (kimlik == nullptr) {
+      std::string cagriAdi;
+      if (!cagrilabilirAdCoz(ifade.get(), cagriAdi)) {
         syntaxError(acilisParantezi,
-                    "Sadece kimlikler işlev gibi çağrılabilir.");
+                    "Sadece kimlikler veya alan erişimleri çağrılabilir.");
       }
 
       ifade = std::make_unique<IslevCagriNode>(
-          kimlik->ad(), std::move(argumanlar), kimlik->satir());
+          std::move(cagriAdi), std::move(argumanlar), acilisParantezi.satir);
       continue;
     }
 
@@ -358,6 +393,9 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
   if (eslesir(TokenType::SAYI)) {
     return std::make_unique<SayiNode>(onceki().deger, onceki().satir);
   }
+  if (eslesir(TokenType::ONDALIK)) {
+    return std::make_unique<SayiNode>(onceki().deger, onceki().satir);
+  }
 
   if (eslesir(TokenType::METIN)) {
     return std::make_unique<MetinNode>(onceki().deger, onceki().satir);
@@ -381,6 +419,13 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
       syntaxError(bak(), "'sor' komutundan sonra bir soru ifadesi bekleniyor.");
     }
     return std::make_unique<SorNode>(parseIfade(), token.satir);
+  }
+
+  if (eslesir(TokenType::ANAHTAR_KELIME, "dahil_et")) {
+    const Token token = onceki();
+    const Token dosya = tuket(
+        TokenType::METIN, "'dahil_et' ifadesinden sonra dosya adı bekleniyor.");
+    return std::make_unique<DahilEtNode>(dosya.deger, token.satir);
   }
 
   if (eslesir(TokenType::ISLEM, "[")) {
@@ -522,8 +567,8 @@ void Parser::yeniSatirlariAtla() {
 }
 
 bool Parser::ifadeBaslangiciMi(const Token &token) const {
-  if (token.tur == TokenType::SAYI || token.tur == TokenType::METIN ||
-      token.tur == TokenType::KIMLIK) {
+  if (token.tur == TokenType::SAYI || token.tur == TokenType::ONDALIK ||
+      token.tur == TokenType::METIN || token.tur == TokenType::KIMLIK) {
     return true;
   }
 
@@ -535,7 +580,8 @@ bool Parser::ifadeBaslangiciMi(const Token &token) const {
 
   if (token.tur == TokenType::ANAHTAR_KELIME &&
       (token.deger == "sor" || token.deger == "doğru" ||
-       token.deger == "yanlış" || token.deger == "değil")) {
+       token.deger == "yanlış" || token.deger == "değil" ||
+       token.deger == "dahil_et")) {
     return true;
   }
 

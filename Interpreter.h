@@ -86,12 +86,14 @@ private:
   std::vector<std::unique_ptr<ProgramNode>> yukluModuller_;
 
   void gomuluIslevleriYukle();
+  void yerlesikModulleriYukle();
 
   void calistirBlock(const BlockNode *block);
   void calistirAtama(const AtamaNode *dugum);
   void calistirYazdir(const YazdirNode *dugum);
   void calistirEger(const EgerNode *dugum);
   void calistirTekrarla(const TekrarlaNode *dugum);
+  void calistirSurece(const SureceNode *dugum);
   void calistirIslevTanim(const IslevTanimNode *dugum);
   void calistirDondur(const DondurNode *dugum);
   void calistirDahilEt(const DahilEtNode *dugum);
@@ -108,6 +110,17 @@ private:
   OrhunDegeri indeksErisim(const IndeksErisimNode *dugum);
   OrhunDegeri alanErisim(const AlanErisimNode *dugum);
   OrhunDegeri islevCagir(const IslevCagriNode *dugum);
+  OrhunDegeri dahilEtDegerlendir(const DahilEtNode *dugum);
+  OrhunDegeri islevCagirAdaGore(const std::string &ad,
+                                const std::vector<OrhunDegeri> &argumanlar,
+                                std::size_t satir);
+  OrhunDegeri nesneMetoduCagir(const OrhunDegeri &hedef,
+                               const std::string &metodAdi,
+                               const std::vector<OrhunDegeri> &argumanlar,
+                               std::size_t satir);
+  OrhunDegeri noktaYoluDegeri(const std::string &yol, std::size_t satir) const;
+  bool islevReferansiCoz(const OrhunDegeri &deger,
+                         std::string &gercekAd) const;
 
   DegiskenTablosu &aktifKapsam();
   const OrhunDegeri &degiskenBul(const std::string &ad,
