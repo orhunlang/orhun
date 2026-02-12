@@ -1689,6 +1689,57 @@ void Interpreter::gomuluIslevleriYukle() {
         }
     };
 
+    gomuluIslevler_["sunucu.baslat"] = [this](const std::vector<OrhunDegeri>& args,
+                                              std::size_t satir) -> OrhunDegeri {
+        if (args.empty() || args.size() > 2) {
+            hataFirlat(satir, "sunucu.baslat(port, [\"klasor\"]) bir veya iki argüman alır.");
+        }
+
+        int port = 0;
+        if (std::holds_alternative<int>(args[0].veri)) {
+            port = std::get<int>(args[0].veri);
+        } else if (std::holds_alternative<double>(args[0].veri)) {
+            const double d = std::get<double>(args[0].veri);
+            if (!tamSayiMi(d)) {
+                hataFirlat(satir, "sunucu.baslat için port tam sayı olmalıdır.");
+            }
+            port = static_cast<int>(d);
+        } else {
+            hataFirlat(satir, "sunucu.baslat için ilk argüman port sayısı olmalıdır.");
+        }
+
+        std::string klasor = ".";
+        if (args.size() == 2) {
+            if (!std::holds_alternative<std::string>(args[1].veri)) {
+                hataFirlat(satir, "sunucu.baslat için ikinci argüman klasör yolu (metin) olmalıdır.");
+            }
+            klasor = std::get<std::string>(args[1].veri);
+        }
+
+        std::string hata;
+        if (!yerlesik::paylasimliHttpSunucu().baslat(port, klasor, &hata)) {
+            hataFirlat(satir, "sunucu.baslat başarısız: " + hata);
+        }
+        return OrhunDegeri(1);
+    };
+
+    gomuluIslevler_["sunucu.durdur"] = [this](const std::vector<OrhunDegeri>& args,
+                                              std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "sunucu.durdur() argüman almaz.");
+        }
+        yerlesik::paylasimliHttpSunucu().durdur();
+        return OrhunDegeri(1);
+    };
+
+    gomuluIslevler_["sunucu.calisiyor_mu"] = [this](const std::vector<OrhunDegeri>& args,
+                                                     std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "sunucu.calisiyor_mu() argüman almaz.");
+        }
+        return OrhunDegeri(yerlesik::paylasimliHttpSunucu().calisiyorMu() ? 1 : 0);
+    };
+
     gomuluIslevler_["sistem.komut"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
             hataFirlat(satir, "sistem.komut(komut) tek argüman alır.");
@@ -2704,6 +2755,12 @@ void Interpreter::yerlesikModulleriYukle() {
     internet["getir"] = OrhunDegeri("__islev_ref__:internet.getir");
     internet["indir"] = OrhunDegeri("__islev_ref__:internet.indir");
     globalHafiza_["internet"] = OrhunDegeri(std::move(internet));
+
+    OrhunDegeri::SozlukVeri sunucu;
+    sunucu["baslat"] = OrhunDegeri("__islev_ref__:sunucu.baslat");
+    sunucu["durdur"] = OrhunDegeri("__islev_ref__:sunucu.durdur");
+    sunucu["calisiyor_mu"] = OrhunDegeri("__islev_ref__:sunucu.calisiyor_mu");
+    globalHafiza_["sunucu"] = OrhunDegeri(std::move(sunucu));
 
     OrhunDegeri::SozlukVeri json;
     json["coz"] = OrhunDegeri("__islev_ref__:json.coz");
