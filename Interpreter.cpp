@@ -516,6 +516,79 @@ std::string orhunDegeriniJsonaCevir(const OrhunDegeri& deger) {
     return "null";
 }
 
+std::string jsonGirintiUret(int seviye, int adim) {
+    if (seviye <= 0 || adim <= 0) {
+        return std::string();
+    }
+    return std::string(static_cast<std::size_t>(seviye * adim), ' ');
+}
+
+std::string orhunDegeriniJsonaGuzelCevir(const OrhunDegeri& deger, int adim,
+                                         int seviye) {
+    if (const auto* tam = std::get_if<int>(&deger.veri)) {
+        return std::to_string(*tam);
+    }
+    if (const auto* ondalik = std::get_if<double>(&deger.veri)) {
+        std::ostringstream oss;
+        oss << *ondalik;
+        return oss.str();
+    }
+    if (const auto* metin = std::get_if<std::string>(&deger.veri)) {
+        return "\"" + jsonMetniKacisla(*metin) + "\"";
+    }
+    if (const auto* listePtr = std::get_if<OrhunDegeri::ListeTipi>(&deger.veri)) {
+        const OrhunDegeri::ListeVeri bosListe;
+        const auto& liste = (*listePtr) ? *(*listePtr) : bosListe;
+        if (liste.empty()) {
+            return "[]";
+        }
+
+        std::string json = "[\n";
+        for (std::size_t i = 0; i < liste.size(); ++i) {
+            json += jsonGirintiUret(seviye + 1, adim);
+            json += orhunDegeriniJsonaGuzelCevir(liste[i], adim, seviye + 1);
+            if (i + 1 < liste.size()) {
+                json += ",";
+            }
+            json += "\n";
+        }
+        json += jsonGirintiUret(seviye, adim) + "]";
+        return json;
+    }
+    if (const auto* sozlukPtr =
+            std::get_if<OrhunDegeri::SozlukTipi>(&deger.veri)) {
+        const OrhunDegeri::SozlukVeri bosSozluk;
+        const auto& sozluk = (*sozlukPtr) ? *(*sozlukPtr) : bosSozluk;
+        if (sozluk.empty()) {
+            return "{}";
+        }
+
+        std::string json = "{\n";
+        std::size_t i = 0;
+        for (const auto& [anahtar, altDeger] : sozluk) {
+            json += jsonGirintiUret(seviye + 1, adim);
+            json += "\"" + jsonMetniKacisla(anahtar) + "\": ";
+            json += orhunDegeriniJsonaGuzelCevir(altDeger, adim, seviye + 1);
+            if (i + 1 < sozluk.size()) {
+                json += ",";
+            }
+            json += "\n";
+            ++i;
+        }
+        json += jsonGirintiUret(seviye, adim) + "}";
+        return json;
+    }
+    if (const auto* nesnePtr = std::get_if<OrhunDegeri::NesneTipi>(&deger.veri)) {
+        if (!(*nesnePtr) || !(*nesnePtr)->alanlar) {
+            return "null";
+        }
+        return orhunDegeriniJsonaGuzelCevir(
+            OrhunDegeri(*(*nesnePtr)->alanlar), adim, seviye);
+    }
+
+    return "null";
+}
+
 #ifdef _WIN32
 std::wstring utf8denWstringe(const std::string& metin) {
     if (metin.empty()) {
@@ -1031,6 +1104,52 @@ void Interpreter::gomuluIslevleriYukle() {
         return OrhunDegeri(1);
     };
 
+    gomuluIslevler_["dosya.listele"] = [this](const std::vector<OrhunDegeri>& args,
+                                              std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "dosya.listele(\"klasor\") tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "dosya.listele için klasör yolu metin olmalıdır.");
+        }
+
+        const std::string yol = std::get<std::string>(args[0].veri);
+        std::error_code ec;
+        if (!std::filesystem::exists(yol, ec)) {
+            if (ec) {
+                hataFirlat(satir, "dosya.listele başarısız: " + ec.message());
+            }
+            hataFirlat(satir, "dosya.listele: '" + yol + "' bulunamadı.");
+        }
+
+        OrhunDegeri::ListeVeri sonuc;
+        for (const auto& giris : std::filesystem::directory_iterator(yol, ec)) {
+            if (ec) {
+                hataFirlat(satir, "dosya.listele başarısız: " + ec.message());
+            }
+            sonuc.emplace_back(giris.path().filename().u8string());
+        }
+        return OrhunDegeri(std::move(sonuc));
+    };
+
+    gomuluIslevler_["dosya.klasor_olustur"] = [this](const std::vector<OrhunDegeri>& args,
+                                                     std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "dosya.klasor_olustur(\"yol\") tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "dosya.klasor_olustur için yol metin olmalıdır.");
+        }
+
+        const std::string yol = std::get<std::string>(args[0].veri);
+        std::error_code ec;
+        const bool olustu = std::filesystem::create_directories(yol, ec);
+        if (ec) {
+            hataFirlat(satir, "dosya.klasor_olustur başarısız: " + ec.message());
+        }
+        return OrhunDegeri(olustu ? 1 : 0);
+    };
+
     // Ağ / JSON / sistem modülleri.
     gomuluIslevler_["internet.getir"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
@@ -1044,6 +1163,31 @@ void Interpreter::gomuluIslevleriYukle() {
             return OrhunDegeri(internetIcerigiGetir(std::get<std::string>(args[0].veri)));
         } catch (const std::exception& ex) {
             hataFirlat(satir, "internet.getir başarısız: " + std::string(ex.what()));
+        }
+    };
+
+    gomuluIslevler_["internet.indir"] = [this](const std::vector<OrhunDegeri>& args,
+                                               std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "internet.indir(url, \"hedef_dosya\") iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "internet.indir için url ve dosya yolu metin olmalıdır.");
+        }
+
+        const std::string url = std::get<std::string>(args[0].veri);
+        const std::string hedef = std::get<std::string>(args[1].veri);
+        try {
+            const std::string icerik = internetIcerigiGetir(url);
+            std::ofstream dosya(hedef, std::ios::binary | std::ios::trunc);
+            if (!dosya.is_open()) {
+                hataFirlat(satir, "internet.indir: '" + hedef + "' dosyasına yazılamadı.");
+            }
+            dosya.write(icerik.data(), static_cast<std::streamsize>(icerik.size()));
+            return OrhunDegeri(static_cast<int>(icerik.size()));
+        } catch (const std::exception& ex) {
+            hataFirlat(satir, "internet.indir başarısız: " + std::string(ex.what()));
         }
     };
 
@@ -1072,6 +1216,37 @@ void Interpreter::gomuluIslevleriYukle() {
             return OrhunDegeri(orhunDegeriniJsonaCevir(args[0]));
         } catch (const std::exception& ex) {
             hataFirlat(satir, "json.yaz hatası: " + std::string(ex.what()));
+        }
+    };
+
+    gomuluIslevler_["json.guzel_yaz"] = [this](const std::vector<OrhunDegeri>& args,
+                                               std::size_t satir) -> OrhunDegeri {
+        if (args.empty() || args.size() > 2) {
+            hataFirlat(satir, "json.guzel_yaz(deger, [girinti]) bir veya iki argüman alır.");
+        }
+
+        int girinti = 2;
+        if (args.size() == 2) {
+            if (std::holds_alternative<int>(args[1].veri)) {
+                girinti = std::get<int>(args[1].veri);
+            } else if (std::holds_alternative<double>(args[1].veri)) {
+                const double d = std::get<double>(args[1].veri);
+                if (!tamSayiMi(d)) {
+                    hataFirlat(satir, "json.guzel_yaz girinti değeri tam sayı olmalıdır.");
+                }
+                girinti = static_cast<int>(d);
+            } else {
+                hataFirlat(satir, "json.guzel_yaz girinti değeri sayı olmalıdır.");
+            }
+            if (girinti < 0 || girinti > 16) {
+                hataFirlat(satir, "json.guzel_yaz girinti aralığı 0..16 olmalıdır.");
+            }
+        }
+
+        try {
+            return OrhunDegeri(orhunDegeriniJsonaGuzelCevir(args[0], girinti, 0));
+        } catch (const std::exception& ex) {
+            hataFirlat(satir, "json.guzel_yaz hatası: " + std::string(ex.what()));
         }
     };
 
@@ -1746,11 +1921,13 @@ void Interpreter::yerlesikModulleriYukle() {
 
     OrhunDegeri::SozlukVeri internet;
     internet["getir"] = OrhunDegeri("__islev_ref__:internet.getir");
+    internet["indir"] = OrhunDegeri("__islev_ref__:internet.indir");
     globalHafiza_["internet"] = OrhunDegeri(std::move(internet));
 
     OrhunDegeri::SozlukVeri json;
     json["coz"] = OrhunDegeri("__islev_ref__:json.coz");
     json["yaz"] = OrhunDegeri("__islev_ref__:json.yaz");
+    json["guzel_yaz"] = OrhunDegeri("__islev_ref__:json.guzel_yaz");
     globalHafiza_["json"] = OrhunDegeri(std::move(json));
 
     OrhunDegeri::SozlukVeri sistem;
@@ -1763,6 +1940,8 @@ void Interpreter::yerlesikModulleriYukle() {
     dosya["var_mi"] = OrhunDegeri("__islev_ref__:dosya.var_mi");
     dosya["sil"] = OrhunDegeri("__islev_ref__:dosya.sil");
     dosya["ekle_satir"] = OrhunDegeri("__islev_ref__:dosya.ekle_satir");
+    dosya["listele"] = OrhunDegeri("__islev_ref__:dosya.listele");
+    dosya["klasor_olustur"] = OrhunDegeri("__islev_ref__:dosya.klasor_olustur");
     globalHafiza_["dosya"] = OrhunDegeri(std::move(dosya));
 
     OrhunDegeri::SozlukVeri metin;

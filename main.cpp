@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -490,6 +491,128 @@ int komutPaketYeni(const std::string& projeAdi) {
   return 0;
 }
 
+std::string paketAdiCikar(const std::string& kaynak) {
+  if (kaynak.empty()) {
+    return "paket";
+  }
+
+  std::string temiz = kaynak;
+  while (!temiz.empty() && (temiz.back() == '/' || temiz.back() == '\\')) {
+    temiz.pop_back();
+  }
+  const std::size_t slash = temiz.find_last_of("/\\");
+  std::string ad = slash == std::string::npos ? temiz : temiz.substr(slash + 1);
+  if (ad.size() > 4 && ad.substr(ad.size() - 4) == ".git") {
+    ad = ad.substr(0, ad.size() - 4);
+  }
+  if (ad.empty()) {
+    return "paket";
+  }
+  return ad;
+}
+
+bool uzakKaynakMi(const std::string& kaynak) {
+  return kaynak.rfind("http://", 0) == 0 ||
+         kaynak.rfind("https://", 0) == 0 ||
+         kaynak.rfind("git@", 0) == 0 ||
+         kaynak.rfind("ssh://", 0) == 0;
+}
+
+void orhunYapBagimlilikEkle(const std::string& paketAdi) {
+  namespace fs = std::filesystem;
+  const fs::path yapDosyasi = fs::current_path() / "orhun.yap";
+  if (!fs::exists(yapDosyasi)) {
+    return;
+  }
+
+  std::string icerik = dosyaOku(yapDosyasi.string());
+  if (icerik.find("- " + paketAdi) != std::string::npos) {
+    return;
+  }
+
+  if (icerik.find("bagimliliklar:") == std::string::npos) {
+    if (!icerik.empty() && icerik.back() != '\n') {
+      icerik.push_back('\n');
+    }
+    icerik += "bagimliliklar:\n";
+  }
+
+  if (!icerik.empty() && icerik.back() != '\n') {
+    icerik.push_back('\n');
+  }
+  icerik += "- " + paketAdi + "\n";
+  dosyaYaz(yapDosyasi.string(), icerik);
+}
+
+int komutPaketKur(const std::string& kaynak, const std::string& hedefAdi) {
+  namespace fs = std::filesystem;
+  if (kaynak.empty()) {
+    throw std::runtime_error("Hata: paket kur icin kaynak belirtilmeli.");
+  }
+
+  fs::path libKlasoru = fs::current_path() / "lib";
+  fs::create_directories(libKlasoru);
+
+  const std::string paketAdi = hedefAdi.empty() ? paketAdiCikar(kaynak) : hedefAdi;
+  const fs::path hedefYol = libKlasoru / paketAdi;
+  if (fs::exists(hedefYol)) {
+    throw std::runtime_error("Hata: '" + hedefYol.string() + "' zaten mevcut.");
+  }
+
+  std::error_code ec;
+  if (fs::exists(kaynak, ec) && !ec) {
+    fs::copy(kaynak, hedefYol,
+             fs::copy_options::recursive | fs::copy_options::copy_symlinks, ec);
+    if (ec) {
+      throw std::runtime_error("Hata: Yerel paket kopyalanamadi: " + ec.message());
+    }
+  } else if (uzakKaynakMi(kaynak)) {
+    const std::string komut = "git clone --depth 1 \"" + kaynak + "\" \"" +
+                              hedefYol.string() + "\"";
+    const int kod = std::system(komut.c_str());
+    if (kod != 0) {
+      throw std::runtime_error(
+          "Hata: Paket indirilemedi. Git clone cikis kodu: " +
+          std::to_string(kod));
+    }
+  } else {
+    throw std::runtime_error(
+        "Hata: Paket kaynagi bulunamadi. Yerel yol ya da git URL verin.");
+  }
+
+  orhunYapBagimlilikEkle(paketAdi);
+  std::cout << "Paket kuruldu: " << paketAdi << " -> " << hedefYol.string() << "\n";
+  return 0;
+}
+
+int komutPaketListe() {
+  namespace fs = std::filesystem;
+  const fs::path libKlasoru = fs::current_path() / "lib";
+  if (!fs::exists(libKlasoru)) {
+    std::cout << "Kurulu paket yok (lib klasoru bulunamadi).\n";
+    return 0;
+  }
+
+  std::vector<std::string> paketler;
+  for (const auto& giris : fs::directory_iterator(libKlasoru)) {
+    if (giris.is_directory()) {
+      paketler.push_back(giris.path().filename().u8string());
+    }
+  }
+  std::sort(paketler.begin(), paketler.end());
+
+  if (paketler.empty()) {
+    std::cout << "Kurulu paket yok.\n";
+    return 0;
+  }
+
+  std::cout << "Kurulu paketler:\n";
+  for (const auto& ad : paketler) {
+    std::cout << "- " << ad << "\n";
+  }
+  return 0;
+}
+
 int dosyaCalistir(const std::string& dosyaYolu) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error("Hata: Orhun kaynak dosyasi .oh uzantili olmalidir.");
@@ -641,11 +764,35 @@ int main(int argc, char* argv[]) {
     }
 
     if (komut == "paket") {
-      if (argc < 4 || std::string(argv[2]) != "yeni") {
+      if (argc < 3) {
         throw std::runtime_error(
-            "Hata: paket komutu icin 'paket yeni <proje_adi>' kullanin.");
+            "Hata: paket komutlari: yeni | kur | liste");
       }
-      return komutPaketYeni(argv[3]);
+
+      const std::string alt = argv[2];
+      if (alt == "yeni") {
+        if (argc < 4) {
+          throw std::runtime_error(
+              "Hata: paket yeni icin proje adi bekleniyor.");
+        }
+        return komutPaketYeni(argv[3]);
+      }
+
+      if (alt == "kur") {
+        if (argc < 4) {
+          throw std::runtime_error(
+              "Hata: paket kur <kaynak> [paket_adi] kullanin.");
+        }
+        const std::string hedefAdi = argc >= 5 ? argv[4] : "";
+        return komutPaketKur(argv[3], hedefAdi);
+      }
+
+      if (alt == "liste") {
+        return komutPaketListe();
+      }
+
+      throw std::runtime_error(
+          "Hata: bilinmeyen paket komutu. 'yeni', 'kur' veya 'liste' kullanin.");
     }
 
     if (komut == "vm") {
