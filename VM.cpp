@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cctype>
 #include <cmath>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -846,6 +847,51 @@ void VM::yerlesikNativesYukle() {
         return Value::mantik(silindi);
       });
   globaller_["veritabani"] = Value::nesne(veritabani);
+
+  auto* sunucu = memory_.allocate<ObjDict>();
+  sunucu->alanlar["baslat"] = nativeOlustur(
+      "sunucu.baslat", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.empty() || a.size() > 2) {
+          throw std::runtime_error(
+              "sunucu.baslat(port, [\"klasor\"]) bir veya iki arguman alir.");
+        }
+        const double portDegeri = vm.sayiyaCevir(a[0], "sunucu.baslat");
+        if (!tamSayiMi(portDegeri)) {
+          throw std::runtime_error("sunucu.baslat icin port tam sayi olmalidir.");
+        }
+        const int port = static_cast<int>(std::llround(portDegeri));
+        std::string klasor = ".";
+        if (a.size() == 2) {
+          klasor = vm.metneCevir(a[1]);
+        }
+        std::string hata;
+        if (!yerlesik::paylasimliHttpSunucu().baslat(port, klasor, &hata)) {
+          throw std::runtime_error("sunucu.baslat basarisiz: " + hata);
+        }
+        return Value::mantik(true);
+      });
+  sunucu->alanlar["durdur"] = nativeOlustur(
+      "sunucu.durdur", 0, [](VM&, const std::vector<Value>&) -> Value {
+        yerlesik::paylasimliHttpSunucu().durdur();
+        return Value::mantik(true);
+      });
+  sunucu->alanlar["calisiyor_mu"] = nativeOlustur(
+      "sunucu.calisiyor_mu", 0, [](VM&, const std::vector<Value>&) -> Value {
+        return Value::mantik(yerlesik::paylasimliHttpSunucu().calisiyorMu());
+      });
+  globaller_["sunucu"] = Value::nesne(sunucu);
+
+  auto* sistem = memory_.allocate<ObjDict>();
+  sistem->alanlar["komut"] = nativeOlustur(
+      "sistem.komut", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string komut = vm.metneCevir(a[0]);
+        const int cikis = std::system(komut.c_str());
+        if (cikis == -1) {
+          throw std::runtime_error("sistem.komut calistirilamadi.");
+        }
+        return Value::sayi(static_cast<double>(cikis));
+      });
+  globaller_["sistem"] = Value::nesne(sistem);
 
   auto* ffi = memory_.allocate<ObjDict>();
   ffi->alanlar["yukle"] = nativeOlustur(
