@@ -1,0 +1,2 @@
+Yakalanan: Satır 4: Sıfıra bölme yapılamaz.
+Toplam: 7

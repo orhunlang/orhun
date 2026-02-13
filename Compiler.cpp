@@ -169,7 +169,7 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
 
   if (const auto* metin = dynamic_cast<const MetinNode*>(dugum)) {
     const std::string& s = metin->deger();
-    if (s.find('{') == std::string::npos) {
+    if (s.find('{') == std::string::npos && s.find('}') == std::string::npos) {
       sabitYaz(SabitDeger(s), metin->satir());
       return;
     }
@@ -190,6 +190,14 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
       if (s[i] == '{' && i + 1 < s.size() && s[i + 1] == '{') {
         metinParcasiEkle(parcaBaslangic, i);
         sabitYaz(SabitDeger(std::string("{")), metin->satir());
+        opcodeYaz(OpCode::OP_TOPLA, metin->satir());
+        i += 2;
+        parcaBaslangic = i;
+        continue;
+      }
+      if (s[i] == '}' && i + 1 < s.size() && s[i + 1] == '}') {
+        metinParcasiEkle(parcaBaslangic, i);
+        sabitYaz(SabitDeger(std::string("}")), metin->satir());
         opcodeYaz(OpCode::OP_TOPLA, metin->satir());
         i += 2;
         parcaBaslangic = i;

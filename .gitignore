@@ -3,3 +3,4 @@
 *.pdb
 *.ilk
 *.txt
+!tests/cases/*.expected.txt

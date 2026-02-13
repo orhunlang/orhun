@@ -1,5 +1,8 @@
 
 #include "VM.h"
+#include "Compiler.h"
+#include "Lexer.h"
+#include "Parser.h"
 #include "Yerlesik.h"
 
 #include <algorithm>
@@ -12,9 +15,12 @@
 #include <iostream>
 #include <limits>
 #include <random>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <thread>
+#include <unordered_set>
+#include <ctime>
 
 namespace {
 
@@ -47,6 +53,18 @@ std::string asciiKucult(std::string metin) {
 
 bool tamSayiMi(double d) {
   return std::isfinite(d) && std::floor(d) == d;
+}
+
+std::string zamanBicimlendir(const char* bicim, std::time_t zaman) {
+  std::tm tmDegeri{};
+#ifdef _WIN32
+  localtime_s(&tmDegeri, &zaman);
+#else
+  localtime_r(&zaman, &tmDegeri);
+#endif
+  std::ostringstream ss;
+  ss << std::put_time(&tmDegeri, bicim);
+  return ss.str();
 }
 
 yerlesik::JsonDeger vmDegerindenJsona(const Value& deger) {
@@ -239,6 +257,36 @@ void VM::yerlesikNativesYukle() {
     }
   });
 
+  ekleNative("uzunluk", 1, [](VM&, const std::vector<Value>& args) -> Value {
+    const Value& d = args[0];
+    if (d.nesneMi() && d.as.nesne != nullptr) {
+      if (d.as.nesne->type == ObjType::STRING) {
+        return Value::sayi(static_cast<double>(
+            static_cast<ObjString*>(d.as.nesne)->deger.size()));
+      }
+      if (d.as.nesne->type == ObjType::LIST) {
+        return Value::sayi(static_cast<double>(
+            static_cast<ObjList*>(d.as.nesne)->ogeler.size()));
+      }
+      if (d.as.nesne->type == ObjType::DICT) {
+        return Value::sayi(static_cast<double>(
+            static_cast<ObjDict*>(d.as.nesne)->alanlar.size()));
+      }
+    }
+    throw std::runtime_error("uzunluk: metin/liste/sozluk bekleniyor.");
+  });
+
+  ekleNative("listeye_ekle", 2,
+             [](VM&, const std::vector<Value>& args) -> Value {
+               const Value& hedef = args[0];
+               if (!hedef.nesneMi() || hedef.as.nesne == nullptr ||
+                   hedef.as.nesne->type != ObjType::LIST) {
+                 throw std::runtime_error("listeye_ekle: ilk arguman liste olmali.");
+               }
+               static_cast<ObjList*>(hedef.as.nesne)->ogeler.push_back(args[1]);
+               return Value::bos();
+             });
+
   ekleNative("dilim_al", 3, [](VM& vm, const std::vector<Value>& args) -> Value {
     const Value& hedef = args[0];
     const Value& basDeger = args[1];
@@ -333,8 +381,8 @@ void VM::yerlesikNativesYukle() {
   globaller_["matematik"] = Value::nesne(matematik);
 
   auto* dosya = memory_.allocate<ObjDict>();
-  dosya->alanlar["oku"] = nativeOlustur("dosya.oku", 1,
-      [](VM& vm, const std::vector<Value>& a) -> Value {
+  dosya->alanlar["oku"] = nativeOlustur(
+      "dosya.oku", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
         const std::string yol = vm.metneCevir(a[0]);
         std::ifstream in(yol, std::ios::binary);
         if (!in.is_open()) {
@@ -344,8 +392,8 @@ void VM::yerlesikNativesYukle() {
         ss << in.rdbuf();
         return vm.yeniString(ss.str());
       });
-  dosya->alanlar["yaz"] = nativeOlustur("dosya.yaz", 2,
-      [](VM& vm, const std::vector<Value>& a) -> Value {
+  dosya->alanlar["yaz"] = nativeOlustur(
+      "dosya.yaz", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
         const std::string yol = vm.metneCevir(a[0]);
         const std::string icerik = vm.metneCevir(a[1]);
         std::ofstream out(yol, std::ios::binary | std::ios::trunc);
@@ -354,6 +402,73 @@ void VM::yerlesikNativesYukle() {
         }
         out << icerik;
         return Value::bos();
+      });
+  dosya->alanlar["var_mi"] = nativeOlustur(
+      "dosya.var_mi", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string yol = vm.metneCevir(a[0]);
+        std::error_code ec;
+        const bool var = std::filesystem::exists(yol, ec);
+        if (ec) {
+          throw std::runtime_error("dosya.var_mi: " + ec.message());
+        }
+        return Value::mantik(var);
+      });
+  dosya->alanlar["sil"] = nativeOlustur(
+      "dosya.sil", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string yol = vm.metneCevir(a[0]);
+        std::error_code ec;
+        const bool silindi = std::filesystem::remove(yol, ec);
+        if (ec) {
+          throw std::runtime_error("dosya.sil: " + ec.message());
+        }
+        return Value::mantik(silindi);
+      });
+  dosya->alanlar["ekle_satir"] = nativeOlustur(
+      "dosya.ekle_satir", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string yol = vm.metneCevir(a[0]);
+        const std::string icerik = vm.metneCevir(a[1]);
+        std::ofstream out(yol, std::ios::binary | std::ios::app);
+        if (!out.is_open()) {
+          throw std::runtime_error("dosya.ekle_satir: acilamadi: " + yol);
+        }
+        out << icerik << '\n';
+        return Value::bos();
+      });
+  dosya->alanlar["listele"] = nativeOlustur(
+      "dosya.listele", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string yol = vm.metneCevir(a[0]);
+        std::error_code ec;
+        if (!std::filesystem::exists(yol, ec)) {
+          if (ec) {
+            throw std::runtime_error("dosya.listele: " + ec.message());
+          }
+          throw std::runtime_error("dosya.listele: klasor bulunamadi: " + yol);
+        }
+        std::vector<std::string> adlar;
+        for (const auto& giris : std::filesystem::directory_iterator(yol, ec)) {
+          if (ec) {
+            throw std::runtime_error("dosya.listele: " + ec.message());
+          }
+          adlar.push_back(giris.path().filename().u8string());
+        }
+        std::sort(adlar.begin(), adlar.end());
+        std::vector<Value> liste;
+        liste.reserve(adlar.size());
+        for (const auto& ad : adlar) {
+          liste.push_back(vm.yeniString(ad));
+        }
+        return vm.yeniListe(std::move(liste));
+      });
+  dosya->alanlar["klasor_olustur"] = nativeOlustur(
+      "dosya.klasor_olustur", 1,
+      [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string yol = vm.metneCevir(a[0]);
+        std::error_code ec;
+        const bool olustu = std::filesystem::create_directories(yol, ec);
+        if (ec) {
+          throw std::runtime_error("dosya.klasor_olustur: " + ec.message());
+        }
+        return Value::mantik(olustu || std::filesystem::exists(yol));
       });
   globaller_["dosya"] = Value::nesne(dosya);
 
@@ -423,21 +538,300 @@ void VM::yerlesikNativesYukle() {
       });
   globaller_["json"] = Value::nesne(json);
 
+  auto* metin = memory_.allocate<ObjDict>();
+  metin->alanlar["buyuk"] = nativeOlustur(
+      "metin.buyuk", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        return vm.yeniString(asciiBuyut(vm.metneCevir(a[0])));
+      });
+  metin->alanlar["kucuk"] = nativeOlustur(
+      "metin.kucuk", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        return vm.yeniString(asciiKucult(vm.metneCevir(a[0])));
+      });
+  metin->alanlar["uzunluk"] = nativeOlustur(
+      "metin.uzunluk", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        return Value::sayi(static_cast<double>(vm.metneCevir(a[0]).size()));
+      });
+  metin->alanlar["icerir"] = nativeOlustur(
+      "metin.icerir", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string kaynak = vm.metneCevir(a[0]);
+        const std::string aranan = vm.metneCevir(a[1]);
+        return Value::mantik(kaynak.find(aranan) != std::string::npos);
+      });
+  metin->alanlar["parcala"] = globaller_["parcala"];
+  metin->alanlar["birlestir"] = nativeOlustur(
+      "metin.birlestir", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (!a[0].nesneMi() || a[0].as.nesne == nullptr ||
+            a[0].as.nesne->type != ObjType::LIST) {
+          throw std::runtime_error("metin.birlestir ilk argumanda liste bekler.");
+        }
+        const std::string ayirici = vm.metneCevir(a[1]);
+        const auto* liste = static_cast<ObjList*>(a[0].as.nesne);
+        std::string sonuc;
+        for (std::size_t i = 0; i < liste->ogeler.size(); ++i) {
+          if (i > 0) {
+            sonuc += ayirici;
+          }
+          sonuc += vm.metneCevir(liste->ogeler[i]);
+        }
+        return vm.yeniString(sonuc);
+      });
+  globaller_["metin"] = Value::nesne(metin);
+
+  auto* regex = memory_.allocate<ObjDict>();
+  regex->alanlar["eslesir"] = nativeOlustur(
+      "regex.eslesir", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
+        try {
+          const std::regex desen(vm.metneCevir(a[1]));
+          return Value::mantik(
+              std::regex_search(vm.metneCevir(a[0]), desen));
+        } catch (const std::regex_error& ex) {
+          throw std::runtime_error("regex.eslesir deseni gecersiz: " +
+                                   std::string(ex.what()));
+        }
+      });
+  regex->alanlar["ilk"] = nativeOlustur(
+      "regex.ilk", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
+        try {
+          const std::regex desen(vm.metneCevir(a[1]));
+          std::smatch sonuc;
+          const std::string kaynak = vm.metneCevir(a[0]);
+          if (!std::regex_search(kaynak, sonuc, desen)) {
+            return vm.yeniString("");
+          }
+          return vm.yeniString(sonuc.str(0));
+        } catch (const std::regex_error& ex) {
+          throw std::runtime_error("regex.ilk deseni gecersiz: " +
+                                   std::string(ex.what()));
+        }
+      });
+  regex->alanlar["tum"] = nativeOlustur(
+      "regex.tum", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
+        try {
+          const std::regex desen(vm.metneCevir(a[1]));
+          const std::string kaynak = vm.metneCevir(a[0]);
+          std::vector<Value> liste;
+          for (std::sregex_iterator it(kaynak.begin(), kaynak.end(), desen), son;
+               it != son; ++it) {
+            liste.push_back(vm.yeniString((*it).str(0)));
+          }
+          return vm.yeniListe(std::move(liste));
+        } catch (const std::regex_error& ex) {
+          throw std::runtime_error("regex.tum deseni gecersiz: " +
+                                   std::string(ex.what()));
+        }
+      });
+  regex->alanlar["degistir"] = nativeOlustur(
+      "regex.degistir", 3, [](VM& vm, const std::vector<Value>& a) -> Value {
+        try {
+          const std::regex desen(vm.metneCevir(a[1]));
+          return vm.yeniString(std::regex_replace(
+              vm.metneCevir(a[0]), desen, vm.metneCevir(a[2])));
+        } catch (const std::regex_error& ex) {
+          throw std::runtime_error("regex.degistir deseni gecersiz: " +
+                                   std::string(ex.what()));
+        }
+      });
+  globaller_["regex"] = Value::nesne(regex);
+
+  auto* tarih = memory_.allocate<ObjDict>();
+  tarih->alanlar["simdi"] = nativeOlustur(
+      "tarih.simdi", 0, [](VM& vm, const std::vector<Value>&) -> Value {
+        const std::time_t t = std::time(nullptr);
+        return vm.yeniString(zamanBicimlendir("%Y-%m-%d %H:%M:%S", t));
+      });
+  tarih->alanlar["bugun"] = nativeOlustur(
+      "tarih.bugun", 0, [](VM& vm, const std::vector<Value>&) -> Value {
+        const std::time_t t = std::time(nullptr);
+        return vm.yeniString(zamanBicimlendir("%Y-%m-%d", t));
+      });
+  tarih->alanlar["unix"] = nativeOlustur(
+      "tarih.unix", 0, [](VM&, const std::vector<Value>&) -> Value {
+        return Value::sayi(static_cast<double>(std::time(nullptr)));
+      });
+  globaller_["tarih"] = Value::nesne(tarih);
+
+  auto* veritabani = memory_.allocate<ObjDict>();
+  veritabani->alanlar["kaydet"] = nativeOlustur(
+      "veritabani.kaydet", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() != 2 && a.size() != 3) {
+          throw std::runtime_error(
+              "veritabani.kaydet(anahtar, deger, [dosya]) iki veya uc arguman alir.");
+        }
+        const std::string anahtar = vm.metneCevir(a[0]);
+        const std::string yol =
+            (a.size() == 3) ? vm.metneCevir(a[2]) : "_orhun_veritabani.json";
+
+        std::unordered_map<std::string, Value> tablo;
+        {
+          std::ifstream in(yol, std::ios::binary);
+          if (in.is_open()) {
+            std::ostringstream ss;
+            ss << in.rdbuf();
+            const std::string icerik = ss.str();
+            if (!icerik.empty()) {
+              const yerlesik::JsonDeger kokJson = yerlesik::jsonCoz(icerik);
+              Value kok = jsondanVmDegerine(vm, kokJson);
+              if (kok.nesneMi() && kok.as.nesne != nullptr &&
+                  kok.as.nesne->type == ObjType::DICT) {
+                tablo = static_cast<ObjDict*>(kok.as.nesne)->alanlar;
+              }
+            }
+          }
+        }
+
+        tablo[anahtar] = a[1];
+        yerlesik::JsonDeger::Sozluk jsonSozluk;
+        for (const auto& [k, v] : tablo) {
+          jsonSozluk[k] = vmDegerindenJsona(v);
+        }
+        const std::string jsonMetin =
+            yerlesik::jsonYaz(yerlesik::JsonDeger(std::move(jsonSozluk)), true, 2);
+        std::ofstream out(yol, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) {
+          throw std::runtime_error("veritabani.kaydet: yazilamadi: " + yol);
+        }
+        out << jsonMetin;
+        return Value::mantik(true);
+      });
+  veritabani->alanlar["oku"] = nativeOlustur(
+      "veritabani.oku", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() != 1 && a.size() != 2) {
+          throw std::runtime_error(
+              "veritabani.oku(anahtar, [dosya]) bir veya iki arguman alir.");
+        }
+        const std::string anahtar = vm.metneCevir(a[0]);
+        const std::string yol =
+            (a.size() == 2) ? vm.metneCevir(a[1]) : "_orhun_veritabani.json";
+
+        std::ifstream in(yol, std::ios::binary);
+        if (!in.is_open()) {
+          throw std::runtime_error("veritabani.oku: dosya acilamadi: " + yol);
+        }
+        std::ostringstream ss;
+        ss << in.rdbuf();
+        Value kok = jsondanVmDegerine(vm, yerlesik::jsonCoz(ss.str()));
+        if (!kok.nesneMi() || kok.as.nesne == nullptr ||
+            kok.as.nesne->type != ObjType::DICT) {
+          throw std::runtime_error("veritabani.oku: gecersiz veritabani formati.");
+        }
+        auto* sozluk = static_cast<ObjDict*>(kok.as.nesne);
+        const auto it = sozluk->alanlar.find(anahtar);
+        if (it == sozluk->alanlar.end()) {
+          throw std::runtime_error("veritabani.oku: anahtar bulunamadi: " + anahtar);
+        }
+        return it->second;
+      });
+  veritabani->alanlar["listele"] = nativeOlustur(
+      "veritabani.listele", -1,
+      [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() > 1) {
+          throw std::runtime_error(
+              "veritabani.listele([dosya]) sifir veya bir arguman alir.");
+        }
+        const std::string yol =
+            (a.size() == 1) ? vm.metneCevir(a[0]) : "_orhun_veritabani.json";
+        std::ifstream in(yol, std::ios::binary);
+        if (!in.is_open()) {
+          return vm.yeniListe({});
+        }
+        std::ostringstream ss;
+        ss << in.rdbuf();
+        Value kok = jsondanVmDegerine(vm, yerlesik::jsonCoz(ss.str()));
+        if (!kok.nesneMi() || kok.as.nesne == nullptr ||
+            kok.as.nesne->type != ObjType::DICT) {
+          throw std::runtime_error(
+              "veritabani.listele: gecersiz veritabani formati.");
+        }
+        auto* sozluk = static_cast<ObjDict*>(kok.as.nesne);
+        std::vector<Value> anahtarlar;
+        anahtarlar.reserve(sozluk->alanlar.size());
+        for (const auto& [k, _] : sozluk->alanlar) {
+          anahtarlar.push_back(vm.yeniString(k));
+        }
+        return vm.yeniListe(std::move(anahtarlar));
+      });
+  veritabani->alanlar["sil"] = nativeOlustur(
+      "veritabani.sil", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() != 1 && a.size() != 2) {
+          throw std::runtime_error(
+              "veritabani.sil(anahtar, [dosya]) bir veya iki arguman alir.");
+        }
+        const std::string anahtar = vm.metneCevir(a[0]);
+        const std::string yol =
+            (a.size() == 2) ? vm.metneCevir(a[1]) : "_orhun_veritabani.json";
+
+        std::unordered_map<std::string, Value> tablo;
+        {
+          std::ifstream in(yol, std::ios::binary);
+          if (!in.is_open()) {
+            return Value::mantik(false);
+          }
+          std::ostringstream ss;
+          ss << in.rdbuf();
+          Value kok = jsondanVmDegerine(vm, yerlesik::jsonCoz(ss.str()));
+          if (kok.nesneMi() && kok.as.nesne != nullptr &&
+              kok.as.nesne->type == ObjType::DICT) {
+            tablo = static_cast<ObjDict*>(kok.as.nesne)->alanlar;
+          }
+        }
+
+        const bool silindi = tablo.erase(anahtar) > 0;
+        yerlesik::JsonDeger::Sozluk jsonSozluk;
+        for (const auto& [k, v] : tablo) {
+          jsonSozluk[k] = vmDegerindenJsona(v);
+        }
+        std::ofstream out(yol, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) {
+          throw std::runtime_error("veritabani.sil: yazilamadi: " + yol);
+        }
+        out << yerlesik::jsonYaz(yerlesik::JsonDeger(std::move(jsonSozluk)), true,
+                                 2);
+        return Value::mantik(silindi);
+      });
+  globaller_["veritabani"] = Value::nesne(veritabani);
+
   ekleNative("dahil_et", 1, [](VM& vm, const std::vector<Value>& args) -> Value {
     const std::string yol = vm.metneCevir(args[0]);
-    if (yol == "matematik.oh") {
-      auto* modul = vm.memory_.allocate<ObjDict>();
-      modul->alanlar["pi"] = Value::sayi(3.14159);
-      modul->alanlar["kare_al"] = vm.nativeOlustur(
-          "matematik.kare_al", 1,
-          [](VM& vm2, const std::vector<Value>& a) -> Value {
-            const double x = vm2.sayiyaCevir(a[0], "kare_al");
-            return Value::sayi(x * x);
-          });
-      return Value::nesne(modul);
+    std::ifstream in(yol, std::ios::binary);
+    if (!in.is_open()) {
+      throw std::runtime_error("dahil_et: dosya acilamadi: " + yol);
     }
-    throw std::runtime_error(
-        "dahil_et: VM Faz 2 su an sadece 'matematik.oh' icin hazir.");
+    std::ostringstream ss;
+    ss << in.rdbuf();
+    const std::string kaynak = ss.str();
+
+    Lexer lexer(kaynak);
+    std::vector<Token> tokenlar = lexer.tokenize();
+    Parser parser(std::move(tokenlar));
+    std::unique_ptr<ProgramNode> program = parser.parse();
+    Compiler derleyici;
+    BytecodeChunk chunk = derleyici.derle(program.get());
+
+    auto modulVm = std::make_shared<VM>();
+    std::unordered_set<std::string> yerlesikAdlar;
+    for (const auto& [ad, _] : modulVm->globaller_) {
+      yerlesikAdlar.insert(ad);
+    }
+    modulVm->calistir(chunk);
+
+    auto* modul = vm.memory_.allocate<ObjDict>();
+    for (const auto& [ad, deger] : modulVm->globaller_) {
+      if (yerlesikAdlar.find(ad) != yerlesikAdlar.end()) {
+        continue;
+      }
+      if (deger.nesneMi() && deger.as.nesne != nullptr) {
+        const ObjType tip = deger.as.nesne->type;
+        if (tip == ObjType::FUNCTION || tip == ObjType::NATIVE ||
+            tip == ObjType::CLASS || tip == ObjType::BOUND_METHOD ||
+            tip == ObjType::SUPER_REF) {
+          // VM'ler arasi islev/sinif tasima henuz yok; veri odakli export.
+          continue;
+        }
+      }
+      modul->alanlar[ad] = jsondanVmDegerine(vm, vmDegerindenJsona(deger));
+    }
+
+    return Value::nesne(modul);
   });
 }
 
@@ -841,7 +1235,7 @@ void VM::calistir(const BytecodeChunk& chunk) {
           yiginPush(Value::sayi(sol * sag));
         } else {
           if (std::abs(sag) <= std::numeric_limits<double>::epsilon()) {
-            calismaHatasi("Sifira bolme hatasi.");
+            calismaHatasi("Sıfıra bölme yapılamaz.");
           }
           yiginPush(Value::sayi(sol / sag));
         }
@@ -970,7 +1364,25 @@ void VM::calistir(const BytecodeChunk& chunk) {
         throw;
       }
       aktif.ip = hedef.catchIp;
-      yiginPush(yeniString(ex.what()));
+      std::string yakalanan = ex.what();
+      const std::string onEk = "VM Calisma Hatasi";
+      if (yakalanan.rfind(onEk, 0) == 0) {
+        const std::size_t satirBas = yakalanan.find("(satir ");
+        const std::size_t blokSon = yakalanan.find("): ");
+        if (satirBas != std::string::npos && blokSon != std::string::npos &&
+            blokSon > satirBas + 7) {
+          const std::string satirNo =
+              yakalanan.substr(satirBas + 7, blokSon - (satirBas + 7));
+          const std::string mesaj = yakalanan.substr(blokSon + 3);
+          yakalanan = "Satır " + satirNo + ": " + mesaj;
+        } else {
+          const std::size_t ikiNokta = yakalanan.find(": ");
+          if (ikiNokta != std::string::npos && ikiNokta + 2 < yakalanan.size()) {
+            yakalanan = yakalanan.substr(ikiNokta + 2);
+          }
+        }
+      }
+      yiginPush(yeniString(yakalanan));
     }
     gcGerekirseCalistir();
   }

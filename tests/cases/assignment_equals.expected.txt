@@ -1,0 +1,1 @@
+Eşittir ile atama çalıştı: 10

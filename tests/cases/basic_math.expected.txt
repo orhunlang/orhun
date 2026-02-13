@@ -1,0 +1,4 @@
+Toplam: 12
+Carpim: 35
+Bolum: 1.4
+Esit mi: 0

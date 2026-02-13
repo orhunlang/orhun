@@ -125,11 +125,6 @@ bool kodCalistirVM(const std::string& kaynakKod, std::string* hataMesaji = nullp
   }
 }
 
-bool vmDerlemeHatasiMi(const std::exception& ex) {
-  const std::string mesaj = ex.what();
-  return mesaj.rfind("VM Derleme Hatasi", 0) == 0;
-}
-
 std::uint32_t crc32Hesapla(const std::vector<std::uint8_t>& veri) {
   std::uint32_t crc = 0xFFFFFFFFu;
   for (const std::uint8_t b : veri) {
@@ -929,16 +924,6 @@ int komutPaketListe() {
   return 0;
 }
 
-int dosyaCalistir(const std::string& dosyaYolu) {
-  if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
-    throw std::runtime_error("Hata: Orhun kaynak dosyasi .oh uzantili olmalidir.");
-  }
-
-  Interpreter yorumlayici;
-  kodCalistir(dosyaOku(dosyaYolu), yorumlayici);
-  return 0;
-}
-
 int dosyaCalistirVM(const std::string& dosyaYolu, bool katiMod) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error("Hata: VM calistirma icin .oh dosyasi bekleniyor.");
@@ -953,11 +938,11 @@ int dosyaCalistirVM(const std::string& dosyaYolu, bool katiMod) {
   try {
     kodCalistirVM(kod);
   } catch (const std::exception& ex) {
-    if (!vmDerlemeHatasiMi(ex)) {
+    if (katiMod) {
       throw;
     }
-    std::cerr << "[VM] " << ex.what() << "\n";
-    std::cerr << "[VM] Desteklenmeyen ozellik bulundu, Interpreter moduna geciliyor.\n";
+    // Uretim modunda VM hatalarinda da yorumlayiciya dus: kullanici acisindan
+    // davranis korunur; vm-kati modunda ise dogrudan hata verilir.
     Interpreter yorumlayici;
     kodCalistir(kod, yorumlayici);
   }
@@ -1211,7 +1196,9 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    return dosyaCalistir(komut);
+    // Varsayilan motor VM'dir; desteklenmeyen ozellikte otomatik Interpreter
+    // fallback yapilir.
+    return dosyaCalistirVM(komut, false);
   } catch (const std::exception& ex) {
     std::cerr << ex.what() << '\n';
     return 1;

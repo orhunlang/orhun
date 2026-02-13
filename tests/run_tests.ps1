@@ -66,9 +66,21 @@ foreach ($case in $cases) {
 
 Write-Host "[3/4] VM-kati secili testler..."
 $vmCases = @(
+    "tests/cases/basic_math",
     "tests/cases/assignment_equals",
+    "tests/cases/oop_super",
+    "tests/cases/f_string",
+    "tests/cases/f_string_escape",
+    "tests/cases/json_parse",
+    "tests/cases/dict_nested",
     "tests/cases/while_float",
     "tests/cases/list_comprehension",
+    "tests/cases/try_break_continue",
+    "tests/cases/try_catch_runtime",
+    "tests/cases/stdlib_modules",
+    "tests/cases/stdlib_database",
+    "tests/cases/stdlib_regex_date",
+    "tests/cases/module_stdlib",
     "tests/cases/vm_loop_control",
     "tests/cases/slicing",
     "tests/cases/vm_try_catch"

@@ -1,0 +1,3 @@
+Merhaba Orhun! Puanın 99.
+Profil: Bilge / 3
+Düz metin JSON: {"ad":"X"}
