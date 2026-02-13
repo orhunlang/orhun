@@ -57,6 +57,36 @@ bool tamSayiMi(double d) {
   return std::isfinite(d) && std::floor(d) == d;
 }
 
+bool ortamDegiskeniAcik(const char* ad) {
+  const char* v = std::getenv(ad);
+  if (v == nullptr) {
+    return false;
+  }
+  std::string s(v);
+  std::transform(s.begin(), s.end(), s.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+  return !(s.empty() || s == "0" || s == "false" || s == "off" || s == "hayir" ||
+           s == "no");
+}
+
+bool sistemKomutuKisitliModDisi() {
+  return ortamDegiskeniAcik("ORHUN_UNSAFE") ||
+         ortamDegiskeniAcik("ORHUN_SYSTEM_UNSAFE");
+}
+
+bool sistemKomutuGuvenliMi(const std::string& komut) {
+  if (komut.empty()) {
+    return false;
+  }
+  for (char c : komut) {
+    if (c == '&' || c == '|' || c == ';' || c == '<' || c == '>' || c == '`' ||
+        c == '$' || c == '\n' || c == '\r' || c == '"' || c == '\'') {
+      return false;
+    }
+  }
+  return true;
+}
+
 std::string zamanBicimlendir(const char* bicim, std::time_t zaman) {
   std::tm tmDegeri{};
 #ifdef _WIN32
@@ -929,7 +959,12 @@ void VM::yerlesikNativesYukle() {
   sistem->alanlar["komut"] = nativeOlustur(
       "sistem.komut", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
         const std::string komut = vm.metneCevir(a[0]);
-        const int cikis = std::system(komut.c_str());
+        if (!sistemKomutuKisitliModDisi() && !sistemKomutuGuvenliMi(komut)) {
+          throw std::runtime_error(
+              "sistem.komut kisitli modda tehlikeli karakter iceremez. "
+              "Gerekiyorsa ORHUN_UNSAFE=1 ile acin.");
+        }
+        const int cikis = yerlesik::komutCalistirGuvenli(komut);
         if (cikis == -1) {
           throw std::runtime_error("sistem.komut calistirilamadi.");
         }
@@ -960,10 +995,15 @@ void VM::yerlesikNativesYukle() {
   gorev->alanlar["baslat_komut"] = nativeOlustur(
       "gorev.baslat_komut", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
         const std::string komut = vm.metneCevir(a[0]);
+        if (!sistemKomutuKisitliModDisi() && !sistemKomutuGuvenliMi(komut)) {
+          throw std::runtime_error(
+              "gorev.baslat_komut kisitli modda tehlikeli karakter iceremez. "
+              "Gerekiyorsa ORHUN_UNSAFE=1 ile acin.");
+        }
         const int kimlik = vm.gorevSonrakiKimlik_++;
         VM::GorevKaydi kayit{
             std::async(std::launch::async, [komut]() -> double {
-              const int cikis = std::system(komut.c_str());
+              const int cikis = yerlesik::komutCalistirGuvenli(komut);
               return static_cast<double>(cikis);
             })};
         vm.gorevler_.emplace(kimlik, std::move(kayit));
@@ -1506,6 +1546,122 @@ void VM::yerlesikNativesYukle() {
       });
   globaller_["ffi"] = Value::nesne(ffi);
 
+  ekleNative(
+      "ffi_dis_islev_tanimla", 4,
+      [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() != 4) {
+          throw std::runtime_error(
+              "ffi_dis_islev_tanimla(ad, kutuphane, donus, argTipleri) 4 arguman alir.");
+        }
+        if (!objTipiMi(a[0], ObjType::STRING) || !objTipiMi(a[1], ObjType::STRING) ||
+            !objTipiMi(a[2], ObjType::STRING)) {
+          throw std::runtime_error(
+              "ffi_dis_islev_tanimla: ad/kutuphane/donus tipleri metin olmalidir.");
+        }
+        if (!a[3].nesneMi() || a[3].as.nesne == nullptr ||
+            a[3].as.nesne->type != ObjType::LIST) {
+          throw std::runtime_error(
+              "ffi_dis_islev_tanimla: argTipleri liste olmalidir.");
+        }
+
+        const std::string ad = static_cast<ObjString*>(a[0].as.nesne)->deger;
+        const std::string kutuphaneYolu =
+            static_cast<ObjString*>(a[1].as.nesne)->deger;
+        const std::string donusTipi = static_cast<ObjString*>(a[2].as.nesne)->deger;
+        const auto* argTipleri = static_cast<ObjList*>(a[3].as.nesne);
+
+        int kutuphaneKimligi = 0;
+        const auto mevcut = vm.ffiKutuphaneKimlikleri_.find(kutuphaneYolu);
+        if (mevcut != vm.ffiKutuphaneKimlikleri_.end()) {
+          kutuphaneKimligi = mevcut->second;
+        } else {
+          std::string hata;
+          auto kutuphane =
+              std::make_shared<runtime::DynamicLibrary>(kutuphaneYolu);
+          if (!kutuphane->load(&hata)) {
+            throw std::runtime_error("ffi_dis_islev_tanimla: kutuphane yuklenemedi: '" +
+                                     kutuphaneYolu + "' (" + hata + ")");
+          }
+          kutuphaneKimligi = vm.ffiSonrakiKimlik_++;
+          vm.ffiKutuphaneleri_[kutuphaneKimligi] = std::move(kutuphane);
+          vm.ffiKutuphaneKimlikleri_[kutuphaneYolu] = kutuphaneKimligi;
+        }
+
+        auto tipCoz = [](const std::string& tip) -> VM::FFIType {
+          std::string t = tip;
+          std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+          });
+          if (t == "int" || t == "tam" || t == "tamsayi" || t == "i64") {
+            return VM::FFIType::INT64;
+          }
+          if (t == "double" || t == "ondalik" || t == "sayi") {
+            return VM::FFIType::DOUBLE;
+          }
+          if (t == "metin" || t == "string") {
+            return VM::FFIType::STRING;
+          }
+          if (t == "pointer" || t == "ptr") {
+            return VM::FFIType::POINTER;
+          }
+          if (t == "void" || t == "bos") {
+            return VM::FFIType::NONE;
+          }
+          throw std::runtime_error("ffi_dis_islev_tanimla: taninmayan tip '" + tip + "'.");
+        };
+
+        VM::FFISignature imza;
+        imza.sembolAdi = ad;
+        imza.donusTipi = tipCoz(donusTipi);
+        imza.argumanTipleri.reserve(argTipleri->ogeler.size());
+        for (const Value& tipDegeri : argTipleri->ogeler) {
+          if (!objTipiMi(tipDegeri, ObjType::STRING)) {
+            throw std::runtime_error(
+                "ffi_dis_islev_tanimla: argTipleri yalnizca metinlerden olusmali.");
+          }
+          imza.argumanTipleri.push_back(
+              tipCoz(static_cast<ObjString*>(tipDegeri.as.nesne)->deger));
+        }
+
+        const auto itKutuphane = vm.ffiKutuphaneleri_.find(kutuphaneKimligi);
+        if (itKutuphane == vm.ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
+          throw std::runtime_error("ffi_dis_islev_tanimla: gecersiz kutuphane.");
+        }
+        std::string sembolHatasi;
+        if (itKutuphane->second->getSymbol(imza.sembolAdi, &sembolHatasi) == 0) {
+          throw std::runtime_error("ffi_dis_islev_tanimla: '" + imza.sembolAdi +
+                                   "' sembolu bulunamadi (" + sembolHatasi + ").");
+        }
+
+        const int islevKimligi = vm.ffiSonrakiIslevKimlik_++;
+        vm.ffiIslevBaglantilari_[islevKimligi] = VM::FFIBinding{kutuphaneKimligi,
+                                                                 std::move(imza)};
+
+        vm.globaller_[ad] = vm.nativeOlustur(
+            ad, static_cast<int>(argTipleri->ogeler.size()),
+            [islevKimligi](VM& inner, const std::vector<Value>& argumanlar) -> Value {
+              std::vector<Value> paketli;
+              paketli.reserve(argumanlar.size() + 1);
+              paketli.push_back(Value::sayi(static_cast<double>(islevKimligi)));
+              paketli.insert(paketli.end(), argumanlar.begin(), argumanlar.end());
+
+              auto itFfi = inner.globaller_.find("ffi");
+              if (itFfi == inner.globaller_.end() || !itFfi->second.nesneMi() ||
+                  itFfi->second.as.nesne == nullptr ||
+                  itFfi->second.as.nesne->type != ObjType::DICT) {
+                throw std::runtime_error("ffi_dis_islev_tanimla: ffi modulu bulunamadi.");
+              }
+              auto* ffiModul = static_cast<ObjDict*>(itFfi->second.as.nesne);
+              auto itCagir = ffiModul->alanlar.find("cagir_tanimli");
+              if (itCagir == ffiModul->alanlar.end()) {
+                throw std::runtime_error("ffi_dis_islev_tanimla: ffi.cagir_tanimli yok.");
+              }
+              return inner.cagir(itCagir->second, paketli);
+            });
+        return Value::mantik(true);
+      });
+
   ekleNative("dahil_et", 1, [](VM& vm, const std::vector<Value>& args) -> Value {
     const std::string yol = vm.metneCevir(args[0]);
     std::ifstream in(yol, std::ios::binary);
@@ -1523,28 +1679,43 @@ void VM::yerlesikNativesYukle() {
     Compiler derleyici;
     BytecodeChunk chunk = derleyici.derle(program.get());
 
-    auto modulVm = std::make_shared<VM>();
-    std::unordered_set<std::string> yerlesikAdlar;
-    for (const auto& [ad, _] : modulVm->globaller_) {
-      yerlesikAdlar.insert(ad);
+    const auto oncekiGloballer = vm.globaller_;
+
+    const BytecodeChunk* kayitChunk = vm.chunk_;
+    auto kayitFrameYigini = std::move(vm.frameYigini_);
+    auto kayitBekleyenKurucular = std::move(vm.bekleyenKurucular_);
+    auto kayitTryYigini = std::move(vm.tryYigini_);
+    auto kayitYigin = std::move(vm.yigin_);
+    const std::size_t kayitGcEsigi = vm.gcEsigi_;
+
+    // İç içe çalıştırmada eski stack/frame değerlerini GC'den korumak için
+    // module evaluation boyunca GC tetiklenmesini fiilen kapatıyoruz.
+    vm.gcEsigi_ = std::numeric_limits<std::size_t>::max() / 2;
+    try {
+      vm.calistir(chunk);
+    } catch (...) {
+      vm.chunk_ = kayitChunk;
+      vm.frameYigini_ = std::move(kayitFrameYigini);
+      vm.bekleyenKurucular_ = std::move(kayitBekleyenKurucular);
+      vm.tryYigini_ = std::move(kayitTryYigini);
+      vm.yigin_ = std::move(kayitYigin);
+      vm.gcEsigi_ = kayitGcEsigi;
+      throw;
     }
-    modulVm->calistir(chunk);
+    vm.chunk_ = kayitChunk;
+    vm.frameYigini_ = std::move(kayitFrameYigini);
+    vm.bekleyenKurucular_ = std::move(kayitBekleyenKurucular);
+    vm.tryYigini_ = std::move(kayitTryYigini);
+    vm.yigin_ = std::move(kayitYigin);
+    vm.gcEsigi_ = kayitGcEsigi;
 
     auto* modul = vm.memory_.allocate<ObjDict>();
-    for (const auto& [ad, deger] : modulVm->globaller_) {
-      if (yerlesikAdlar.find(ad) != yerlesikAdlar.end()) {
+    for (const auto& [ad, deger] : vm.globaller_) {
+      const auto onceki = oncekiGloballer.find(ad);
+      if (onceki != oncekiGloballer.end() && vm.esitMi(onceki->second, deger)) {
         continue;
       }
-      if (deger.nesneMi() && deger.as.nesne != nullptr) {
-        const ObjType tip = deger.as.nesne->type;
-        if (tip == ObjType::FUNCTION || tip == ObjType::NATIVE ||
-            tip == ObjType::CLASS || tip == ObjType::BOUND_METHOD ||
-            tip == ObjType::SUPER_REF) {
-          // VM'ler arasi islev/sinif tasima henuz yok; veri odakli export.
-          continue;
-        }
-      }
-      modul->alanlar[ad] = jsondanVmDegerine(vm, vmDegerindenJsona(deger));
+      modul->alanlar[ad] = deger;
     }
 
     return Value::nesne(modul);

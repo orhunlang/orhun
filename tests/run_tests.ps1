@@ -29,7 +29,9 @@ $cases = @(
     "tests/cases/module_stdlib",
     "tests/cases/try_catch_runtime",
     "tests/cases/f_string_escape",
-    "tests/cases/vm_loop_control"
+    "tests/cases/vm_loop_control",
+    "tests/cases/module_callable",
+    "tests/cases/security_system_command_block"
 )
 
 if ($env:OS -eq "Windows_NT") {
@@ -37,6 +39,7 @@ if ($env:OS -eq "Windows_NT") {
     $cases += "tests/cases/ffi_text"
     $cases += "tests/cases/ffi_symbol"
     $cases += "tests/cases/ffi_tanimli_kernel32"
+    $cases += "tests/cases/ffi_dis_islev"
 }
 
 $failed = $false
@@ -88,6 +91,8 @@ $vmCases = @(
     "tests/cases/module_stdlib",
     "tests/cases/vm_loop_control",
     "tests/cases/slicing",
+    "tests/cases/module_callable",
+    "tests/cases/security_system_command_block",
     "tests/cases/vm_try_catch"
 )
 
@@ -96,6 +101,7 @@ if ($env:OS -eq "Windows_NT") {
     $vmCases += "tests/cases/ffi_text"
     $vmCases += "tests/cases/ffi_symbol"
     $vmCases += "tests/cases/ffi_tanimli_kernel32"
+    $vmCases += "tests/cases/ffi_dis_islev"
 }
 
 foreach ($case in $vmCases) {

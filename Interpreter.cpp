@@ -109,6 +109,36 @@ std::string kodNoktasiUtf8(char32_t cp) {
     return sonuc;
 }
 
+bool ortamDegiskeniAcik(const char* ad) {
+    const char* v = std::getenv(ad);
+    if (v == nullptr) {
+        return false;
+    }
+    std::string s(v);
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return !(s.empty() || s == "0" || s == "false" || s == "off" ||
+             s == "hayir" || s == "no");
+}
+
+bool sistemKomutuKisitliModDisi() {
+    return ortamDegiskeniAcik("ORHUN_UNSAFE") ||
+           ortamDegiskeniAcik("ORHUN_SYSTEM_UNSAFE");
+}
+
+bool sistemKomutuGuvenliMi(const std::string& komut) {
+    if (komut.empty()) {
+        return false;
+    }
+    for (char c : komut) {
+        if (c == '&' || c == '|' || c == ';' || c == '<' || c == '>' || c == '`' ||
+            c == '$' || c == '\n' || c == '\r' || c == '"' || c == '\'') {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool jsonTamsayiMi(double d) {
     return std::isfinite(d) && std::floor(d) == d;
 }
@@ -1900,7 +1930,12 @@ void Interpreter::gomuluIslevleriYukle() {
         }
 
         const std::string komut = std::get<std::string>(args[0].veri);
-        const int cikis = std::system(komut.c_str());
+        if (!sistemKomutuKisitliModDisi() && !sistemKomutuGuvenliMi(komut)) {
+            hataFirlat(satir,
+                       "sistem.komut kısıtlı modda tehlikeli karakter içeremez. "
+                       "Gerekirse ORHUN_UNSAFE=1 ile açın.");
+        }
+        const int cikis = yerlesik::komutCalistirGuvenli(komut);
         if (cikis == -1) {
             hataFirlat(satir, "sistem.komut çalıştırılamadı.");
         }

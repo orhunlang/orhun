@@ -35,6 +35,7 @@ private:
   void ifadeKomutDerle(const IfadeKomutNode *dugum);
   void cagrilanAdYukle(const std::string &ad, std::size_t satir);
   void islevTanimDerle(const IslevTanimNode *dugum);
+  void disIslevTanimDerle(const DisIslevTanimNode *dugum);
   void sinifTanimDerle(const SinifTanimNode *dugum);
   void dondurDerle(const DondurNode *dugum);
   void islevLiteralDerle(const IslevTanimNode *dugum, bool metodMu,

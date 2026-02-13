@@ -3,6 +3,8 @@ set -euo pipefail
 
 COMPILER="${1:-g++}"
 OUTPUT="${2:-orhun_bench}"
+TEKRAR="${3:-30}"
+JSON_OUT="${4:-benchmark_results.jsonl}"
 
 if [[ ! -f "${OUTPUT}" ]]; then
   echo "[build] ${OUTPUT} bulunamadi, derleniyor..."
@@ -16,13 +18,31 @@ cases=(
   "tests/cases/assignment_equals.oh"
   "tests/cases/while_float.oh"
   "tests/cases/list_comprehension.oh"
+  "tests/cases/oop_super.oh"
+  "tests/cases/json_parse.oh"
+  "tests/cases/f_string.oh"
+  "tests/cases/f_string_escape.oh"
+  "tests/cases/slicing.oh"
+  "tests/cases/dict_nested.oh"
+  "tests/cases/try_break_continue.oh"
+  "tests/cases/try_catch_runtime.oh"
+  "tests/cases/module_stdlib.oh"
+  "tests/cases/stdlib_modules.oh"
+  "tests/cases/stdlib_database.oh"
+  "tests/cases/stdlib_regex_date.oh"
+  "tests/cases/stdlib_async.oh"
+  "tests/cases/vm_loop_control.oh"
 )
 
-echo "[bench] Orhun hiz karsilastirma"
+rm -f "${JSON_OUT}"
+echo "[bench] Orhun hiz karsilastirma (JSONL: ${JSON_OUT})"
 for src in "${cases[@]}"; do
   echo ""
   echo "=== ${src} ==="
-  if ! "./${OUTPUT}" hiz "${src}" 40; then
+  if ! json="$("./${OUTPUT}" hiz "${src}" "--tekrar=${TEKRAR}" --json 2>&1)"; then
     echo "[skip] ${src} benchmark atlandi (VM destek disi olabilir)."
+  else
+    echo "${json}" | tr -d '\r' >> "${JSON_OUT}"
+    echo "${json}"
   fi
 done

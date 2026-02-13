@@ -21,6 +21,7 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <cerrno>
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -37,11 +38,13 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <winhttp.h>
+#include <process.h>
 #else
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #endif
 
@@ -732,6 +735,70 @@ inline std::string internetIcerigiGetir(const std::string& url) {
   return icerik;
 }
 
+inline std::vector<std::string> komutArgumanlarinaBol(const std::string& komut) {
+  std::vector<std::string> argumanlar;
+  std::string mevcut;
+  bool tekTirnak = false;
+  bool ciftTirnak = false;
+  bool kacis = false;
+
+  auto flush = [&]() {
+    if (!mevcut.empty()) {
+      argumanlar.push_back(mevcut);
+      mevcut.clear();
+    }
+  };
+
+  for (char c : komut) {
+    if (kacis) {
+      mevcut.push_back(c);
+      kacis = false;
+      continue;
+    }
+    if (c == '\\') {
+      kacis = true;
+      continue;
+    }
+    if (!ciftTirnak && c == '\'') {
+      tekTirnak = !tekTirnak;
+      continue;
+    }
+    if (!tekTirnak && c == '"') {
+      ciftTirnak = !ciftTirnak;
+      continue;
+    }
+    if (!tekTirnak && !ciftTirnak &&
+        std::isspace(static_cast<unsigned char>(c))) {
+      flush();
+      continue;
+    }
+    mevcut.push_back(c);
+  }
+  if (kacis || tekTirnak || ciftTirnak) {
+    throw std::runtime_error("Komut ayrıştırılamadı: kaçış/tırnak dengesi hatalı.");
+  }
+  flush();
+  return argumanlar;
+}
+
+inline int komutCalistirGuvenli(const std::string& komut) {
+  const std::vector<std::string> argumanlar = komutArgumanlarinaBol(komut);
+  if (argumanlar.empty()) {
+    throw std::runtime_error("Komut boş olamaz.");
+  }
+  std::vector<char*> ham;
+  ham.reserve(argumanlar.size() + 1);
+  for (const std::string& s : argumanlar) {
+    ham.push_back(const_cast<char*>(s.c_str()));
+  }
+  ham.push_back(nullptr);
+  const int kod = _spawnvp(_P_WAIT, argumanlar[0].c_str(), ham.data());
+  if (kod == -1) {
+    throw std::runtime_error("Komut çalıştırılamadı: " + std::string(std::strerror(errno)));
+  }
+  return kod;
+}
+
 #else
 inline std::string shellTekTirnakKacis(const std::string& metin) {
   std::string sonuc;
@@ -744,6 +811,95 @@ inline std::string shellTekTirnakKacis(const std::string& metin) {
     }
   }
   return sonuc;
+}
+
+inline std::vector<std::string> komutArgumanlarinaBol(const std::string& komut) {
+  std::vector<std::string> argumanlar;
+  std::string mevcut;
+  bool tekTirnak = false;
+  bool ciftTirnak = false;
+  bool kacis = false;
+
+  auto flush = [&]() {
+    if (!mevcut.empty()) {
+      argumanlar.push_back(mevcut);
+      mevcut.clear();
+    }
+  };
+
+  for (char c : komut) {
+    if (kacis) {
+      mevcut.push_back(c);
+      kacis = false;
+      continue;
+    }
+    if (c == '\\') {
+      kacis = true;
+      continue;
+    }
+    if (!ciftTirnak && c == '\'') {
+      tekTirnak = !tekTirnak;
+      continue;
+    }
+    if (!tekTirnak && c == '"') {
+      ciftTirnak = !ciftTirnak;
+      continue;
+    }
+    if (!tekTirnak && !ciftTirnak &&
+        std::isspace(static_cast<unsigned char>(c))) {
+      flush();
+      continue;
+    }
+    mevcut.push_back(c);
+  }
+  if (kacis || tekTirnak || ciftTirnak) {
+    throw std::runtime_error("Komut ayrıştırılamadı: kaçış/tırnak dengesi hatalı.");
+  }
+  flush();
+  return argumanlar;
+}
+
+inline int komutCalistirGuvenli(const std::string& komut) {
+  const std::vector<std::string> argumanlar = komutArgumanlarinaBol(komut);
+  if (argumanlar.empty()) {
+    throw std::runtime_error("Komut boş olamaz.");
+  }
+#ifdef _WIN32
+  std::vector<char*> ham;
+  ham.reserve(argumanlar.size() + 1);
+  for (const std::string& s : argumanlar) {
+    ham.push_back(const_cast<char*>(s.c_str()));
+  }
+  ham.push_back(nullptr);
+  const int kod = _spawnvp(_P_WAIT, argumanlar[0].c_str(), ham.data());
+  if (kod == -1) {
+    throw std::runtime_error("Komut çalıştırılamadı: " + std::string(std::strerror(errno)));
+  }
+  return kod;
+#else
+  std::vector<char*> ham;
+  ham.reserve(argumanlar.size() + 1);
+  for (const std::string& s : argumanlar) {
+    ham.push_back(const_cast<char*>(s.c_str()));
+  }
+  ham.push_back(nullptr);
+  const pid_t pid = fork();
+  if (pid < 0) {
+    throw std::runtime_error("Komut çalıştırılamadı: fork hatası.");
+  }
+  if (pid == 0) {
+    execvp(ham[0], ham.data());
+    _exit(127);
+  }
+  int durum = 0;
+  if (waitpid(pid, &durum, 0) < 0) {
+    throw std::runtime_error("Komut çalıştırılamadı: waitpid hatası.");
+  }
+  if (WIFEXITED(durum)) {
+    return WEXITSTATUS(durum);
+  }
+  return 1;
+#endif
 }
 
 inline std::string komutCalistirVeOku(const std::string& komut, int& cikisKodu) {

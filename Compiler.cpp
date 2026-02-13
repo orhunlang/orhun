@@ -57,6 +57,38 @@ std::string kirpilmisKopya(const std::string& metin) {
   return metin.substr(sol, sag - sol);
 }
 
+bool sabitSayiCoz(const ASTNode* dugum, double* sonuc) {
+  const auto* sayi = dynamic_cast<const SayiNode*>(dugum);
+  if (sayi == nullptr || sonuc == nullptr) {
+    return false;
+  }
+  char* bitis = nullptr;
+  const double deger = std::strtod(sayi->deger().c_str(), &bitis);
+  if (bitis == sayi->deger().c_str() || (bitis != nullptr && *bitis != '\0')) {
+    return false;
+  }
+  *sonuc = deger;
+  return true;
+}
+
+bool sabitMantikCoz(const ASTNode* dugum, bool* sonuc) {
+  const auto* mantik = dynamic_cast<const MantikNode*>(dugum);
+  if (mantik == nullptr || sonuc == nullptr) {
+    return false;
+  }
+  *sonuc = mantik->deger();
+  return true;
+}
+
+bool sabitMetinCoz(const ASTNode* dugum, std::string* sonuc) {
+  const auto* metin = dynamic_cast<const MetinNode*>(dugum);
+  if (metin == nullptr || sonuc == nullptr) {
+    return false;
+  }
+  *sonuc = metin->deger();
+  return true;
+}
+
 }  // namespace
 
 BytecodeChunk Compiler::derle(const ProgramNode* program) {
@@ -123,6 +155,10 @@ void Compiler::komutDerle(const ASTNode* dugum) {
     islevTanimDerle(islev);
     return;
   }
+  if (const auto* disIslev = dynamic_cast<const DisIslevTanimNode*>(dugum)) {
+    disIslevTanimDerle(disIslev);
+    return;
+  }
   if (const auto* sinif = dynamic_cast<const SinifTanimNode*>(dugum)) {
     sinifTanimDerle(sinif);
     return;
@@ -139,7 +175,7 @@ void Compiler::komutDerle(const ASTNode* dugum) {
   }
 
   derlemeHatasi(dugum->satir(),
-                "Bu komut VM derleyicisinin Faz 2 kapsaminda degil.");
+                "ORH-COMP-001: Bu komut VM derleyicisinin Faz 2 kapsaminda degil.");
 }
 
 void Compiler::blokDerle(const BlockNode* dugum) {
@@ -257,10 +293,73 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
   }
 
   if (const auto* ikili = dynamic_cast<const IkiliIslemNode*>(dugum)) {
+    double solSayi = 0.0;
+    double sagSayi = 0.0;
+    bool solMantik = false;
+    bool sagMantik = false;
+    std::string solMetin;
+    std::string sagMetin;
+    const std::string& op = ikili->op();
+    if (sabitSayiCoz(ikili->sol(), &solSayi) && sabitSayiCoz(ikili->sag(), &sagSayi)) {
+      if (opEsitMi(op, "+")) {
+        sabitYaz(SabitDeger(solSayi + sagSayi), ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "-")) {
+        sabitYaz(SabitDeger(solSayi - sagSayi), ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "*")) {
+        sabitYaz(SabitDeger(solSayi * sagSayi), ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "/") && sagSayi != 0.0) {
+        sabitYaz(SabitDeger(solSayi / sagSayi), ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "eşit") || opEsitMi(op, "esit") || opEsitMi(op, "==")) {
+        opcodeYaz((solSayi == sagSayi) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "eşit_değil") || opEsitMi(op, "esit_degil") ||
+          opEsitMi(op, "!=")) {
+        opcodeYaz((solSayi != sagSayi) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "büyük") || opEsitMi(op, "buyuk") || opEsitMi(op, ">")) {
+        opcodeYaz((solSayi > sagSayi) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "küçük") || opEsitMi(op, "kucuk") || opEsitMi(op, "<")) {
+        opcodeYaz((solSayi < sagSayi) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
+    }
+    if (sabitMetinCoz(ikili->sol(), &solMetin) && sabitMetinCoz(ikili->sag(), &sagMetin) &&
+        opEsitMi(op, "+")) {
+      sabitYaz(SabitDeger(solMetin + sagMetin), ikili->satir());
+      return;
+    }
+    if (sabitMantikCoz(ikili->sol(), &solMantik) && sabitMantikCoz(ikili->sag(), &sagMantik)) {
+      if (opEsitMi(op, "ve")) {
+        opcodeYaz((solMantik && sagMantik) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "veya")) {
+        opcodeYaz((solMantik || sagMantik) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
+    }
+
     ifadeDerle(ikili->sol());
     ifadeDerle(ikili->sag());
 
-    const std::string& op = ikili->op();
     if (opEsitMi(op, "+")) {
       opcodeYaz(OpCode::OP_TOPLA, ikili->satir());
       return;
@@ -435,7 +534,7 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
   }
 
   derlemeHatasi(dugum->satir(),
-                "Bu ifade VM derleyicisinin Faz 2 kapsaminda degil.");
+                "ORH-COMP-002: Bu ifade VM derleyicisinin Faz 2 kapsaminda degil.");
 }
 
 void Compiler::listeUretecDerle(const ListeUretecNode* dugum) {
@@ -574,7 +673,7 @@ void Compiler::atamaDerle(const AtamaNode* dugum) {
   }
 
   derlemeHatasi(dugum->satir(),
-                "Atama hedefi VM Faz 2 tarafinda desteklenmiyor.");
+                "ORH-COMP-003: Atama hedefi VM Faz 2 tarafinda desteklenmiyor.");
 }
 
 void Compiler::yazdirDerle(const YazdirNode* dugum) {
@@ -741,6 +840,25 @@ void Compiler::ifadeKomutDerle(const IfadeKomutNode* dugum) {
 void Compiler::islevTanimDerle(const IslevTanimNode* dugum) {
   islevLiteralDerle(dugum, false, false, dugum->ad(), "");
   globalOperandYaz(OpCode::OP_SET_GLOBAL, dugum->ad(), dugum->satir());
+  opcodeYaz(OpCode::OP_POP, dugum->satir());
+}
+
+void Compiler::disIslevTanimDerle(const DisIslevTanimNode* dugum) {
+  // ffi_dis_islev_tanimla(ad, kutuphane, donusTipi, [argTipleri])
+  globalOperandYaz(OpCode::OP_GET_GLOBAL, "ffi_dis_islev_tanimla", dugum->satir());
+  sabitYaz(SabitDeger(dugum->ad()), dugum->satir());
+  sabitYaz(SabitDeger(dugum->kutuphaneYolu()), dugum->satir());
+  sabitYaz(SabitDeger(dugum->donusTipi()), dugum->satir());
+
+  for (const std::string& tip : dugum->parametreTipleri()) {
+    sabitYaz(SabitDeger(tip), dugum->satir());
+  }
+  chunk_.yazOpCode(OpCode::OP_LISTE_OLUSTUR, dugum->satir());
+  chunk_.yazU16(static_cast<std::uint16_t>(dugum->parametreTipleri().size()),
+                dugum->satir());
+
+  chunk_.yazOpCode(OpCode::OP_CAGIR, dugum->satir());
+  chunk_.yazU16(4, dugum->satir());
   opcodeYaz(OpCode::OP_POP, dugum->satir());
 }
 
