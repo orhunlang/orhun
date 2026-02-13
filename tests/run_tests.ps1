@@ -69,7 +69,9 @@ $vmCases = @(
     "tests/cases/assignment_equals",
     "tests/cases/while_float",
     "tests/cases/list_comprehension",
-    "tests/cases/vm_loop_control"
+    "tests/cases/vm_loop_control",
+    "tests/cases/slicing",
+    "tests/cases/vm_try_catch"
 )
 
 foreach ($case in $vmCases) {

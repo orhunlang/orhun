@@ -79,6 +79,10 @@ void Compiler::komutDerle(const ASTNode* dugum) {
     devamDerle(devam);
     return;
   }
+  if (const auto* deneme = dynamic_cast<const DenemeYakalaNode*>(dugum)) {
+    denemeYakalaDerle(deneme);
+    return;
+  }
   if (const auto* blok = dynamic_cast<const BlockNode*>(dugum)) {
     blokDerle(blok);
     return;
@@ -259,6 +263,24 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
     ifadeDerle(indeks->hedef());
     ifadeDerle(indeks->indeks());
     opcodeYaz(OpCode::OP_INDEKS_AL, indeks->satir());
+    return;
+  }
+
+  if (const auto* dilim = dynamic_cast<const DilimErisimNode*>(dugum)) {
+    globalOperandYaz(OpCode::OP_GET_GLOBAL, "dilim_al", dilim->satir());
+    ifadeDerle(dilim->hedef());
+    if (dilim->baslangic() != nullptr) {
+      ifadeDerle(dilim->baslangic());
+    } else {
+      opcodeYaz(OpCode::OP_BOS, dilim->satir());
+    }
+    if (dilim->bitis() != nullptr) {
+      ifadeDerle(dilim->bitis());
+    } else {
+      opcodeYaz(OpCode::OP_BOS, dilim->satir());
+    }
+    chunk_.yazOpCode(OpCode::OP_CAGIR, dilim->satir());
+    chunk_.yazU16(3, dilim->satir());
     return;
   }
 
@@ -592,6 +614,28 @@ void Compiler::devamDerle(const DevamNode* dugum) {
 
   const std::size_t ileriAtlama = atlaYaz(OpCode::OP_ATLA, dugum->satir());
   loop.continueJumps.push_back(ileriAtlama);
+}
+
+void Compiler::denemeYakalaDerle(const DenemeYakalaNode* dugum) {
+  // deneme baslangici: runtime hatasi olursa yakala bloguna atlayacak isaret.
+  const std::size_t yakalaAtlama =
+      atlaYaz(OpCode::OP_TRY_BASLA, dugum->satir());
+
+  blokDerle(dugum->denemeBlogu());
+  opcodeYaz(OpCode::OP_TRY_BITIR, dugum->satir());
+
+  // deneme basariliysa yakala blogunu atla.
+  const std::size_t sonAtlama = atlaYaz(OpCode::OP_ATLA, dugum->satir());
+
+  // Hata yakalama hedefi.
+  atlaYamala(yakalaAtlama);
+
+  // VM, yakalanan hata metnini stack'e birakir.
+  degiskenYaz(dugum->hataDegiskeni(), dugum->satir());
+  opcodeYaz(OpCode::OP_POP, dugum->satir());
+
+  blokDerle(dugum->yakalaBlogu());
+  atlaYamala(sonAtlama);
 }
 
 void Compiler::ifadeKomutDerle(const IfadeKomutNode* dugum) {

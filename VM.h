@@ -31,10 +31,16 @@ private:
     std::size_t frameDerinligi = 0;
     Value olusanNesne = Value::bos();
   };
+  struct TryFrame {
+    std::size_t frameDerinligi = 0;
+    std::size_t stackBoyutu = 0;
+    std::size_t catchIp = 0;
+  };
 
   const BytecodeChunk* chunk_ = nullptr;
   std::vector<CallFrame> frameYigini_;
   std::vector<BekleyenKurucu> bekleyenKurucular_;
+  std::vector<TryFrame> tryYigini_;
   std::vector<Value> yigin_;
   std::unordered_map<std::string, Value> globaller_;
 

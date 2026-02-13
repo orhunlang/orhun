@@ -41,5 +41,7 @@ enum class OpCode : std::uint8_t {
   OP_ATLA,
   OP_ATLA_EGER_YANLIS,
   OP_DONGU,
+  OP_TRY_BASLA,
+  OP_TRY_BITIR,
   OP_DON
 };

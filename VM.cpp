@@ -139,6 +139,7 @@ void VM::sifirla() {
   chunk_ = nullptr;
   frameYigini_.clear();
   bekleyenKurucular_.clear();
+  tryYigini_.clear();
   yigin_.clear();
   globaller_.clear();
   gcEsigi_ = 1024;
@@ -228,6 +229,69 @@ void VM::yerlesikNativesYukle() {
     } catch (...) {
       throw std::runtime_error("sayiya_cevir: gecersiz sayi.");
     }
+  });
+
+  ekleNative("dilim_al", 3, [](VM& vm, const std::vector<Value>& args) -> Value {
+    const Value& hedef = args[0];
+    const Value& basDeger = args[1];
+    const Value& bitDeger = args[2];
+
+    auto sinirCevir = [&vm](const Value& deger, long long varsayilan, long long uzunluk,
+                            const std::string& baglam) -> long long {
+      if (deger.bosMu()) {
+        return varsayilan;
+      }
+      const double d = vm.sayiyaCevir(deger, baglam);
+      long long idx = static_cast<long long>(std::llround(d));
+      if (idx < 0) {
+        idx = uzunluk + idx;
+      }
+      if (idx < 0) {
+        idx = 0;
+      }
+      if (idx > uzunluk) {
+        idx = uzunluk;
+      }
+      return idx;
+    };
+
+    if (!hedef.nesneMi() || hedef.as.nesne == nullptr) {
+      throw std::runtime_error("dilim_al: hedef liste veya metin olmali.");
+    }
+
+    if (hedef.as.nesne->type == ObjType::LIST) {
+      auto* liste = static_cast<ObjList*>(hedef.as.nesne);
+      const long long uzunluk = static_cast<long long>(liste->ogeler.size());
+      long long bas =
+          sinirCevir(basDeger, 0, uzunluk, "liste dilim baslangici");
+      long long bit = sinirCevir(bitDeger, uzunluk, uzunluk, "liste dilim bitisi");
+      if (bit < bas) {
+        bit = bas;
+      }
+
+      std::vector<Value> sonuc;
+      sonuc.reserve(static_cast<std::size_t>(bit - bas));
+      for (long long i = bas; i < bit; ++i) {
+        sonuc.push_back(liste->ogeler[static_cast<std::size_t>(i)]);
+      }
+      return vm.yeniListe(std::move(sonuc));
+    }
+
+    if (hedef.as.nesne->type == ObjType::STRING) {
+      const std::string& metin = static_cast<ObjString*>(hedef.as.nesne)->deger;
+      const long long uzunluk = static_cast<long long>(metin.size());
+      long long bas =
+          sinirCevir(basDeger, 0, uzunluk, "metin dilim baslangici");
+      long long bit = sinirCevir(bitDeger, uzunluk, uzunluk, "metin dilim bitisi");
+      if (bit < bas) {
+        bit = bas;
+      }
+
+      return vm.yeniString(metin.substr(static_cast<std::size_t>(bas),
+                                        static_cast<std::size_t>(bit - bas)));
+    }
+
+    throw std::runtime_error("dilim_al: hedef liste veya metin olmali.");
   });
 
   ekleNative("parcala", 2, [](VM& vm, const std::vector<Value>& args) -> Value {
@@ -409,6 +473,11 @@ void VM::popFrameVeDon(Value donusDegeri) {
   const CallFrame frame = frameYigini_.back();
   frameYigini_.pop_back();
 
+  while (!tryYigini_.empty() &&
+         tryYigini_.back().frameDerinligi > frameYigini_.size()) {
+    tryYigini_.pop_back();
+  }
+
   if (frameYigini_.empty()) {
     yigin_.clear();
     return;
@@ -440,13 +509,15 @@ void VM::calistir(const BytecodeChunk& chunk) {
   yigin_.clear();
   frameYigini_.clear();
   bekleyenKurucular_.clear();
+  tryYigini_.clear();
 
   auto* kok = memory_.allocate<ObjFunction>("<program>", 0, &chunk, 0, 0);
   pushFrame(kok, 0);
 
   while (!frameYigini_.empty()) {
-    const OpCode op = static_cast<OpCode>(byteOku());
-    switch (op) {
+    try {
+      const OpCode op = static_cast<OpCode>(byteOku());
+      switch (op) {
       case OpCode::OP_SABIT:
         yiginPush(sabitDegeriniRuntimeaCevir(sabitOku(u16Oku())));
         break;
@@ -825,6 +896,21 @@ void VM::calistir(const BytecodeChunk& chunk) {
         frameYigini_.back().ip -= ofset;
         break;
       }
+      case OpCode::OP_TRY_BASLA: {
+        const std::uint16_t ofset = u16Oku();
+        TryFrame tf;
+        tf.frameDerinligi = frameYigini_.size();
+        tf.stackBoyutu = yigin_.size();
+        tf.catchIp = frameYigini_.back().ip + ofset;
+        tryYigini_.push_back(tf);
+        break;
+      }
+      case OpCode::OP_TRY_BITIR:
+        if (tryYigini_.empty()) {
+          calismaHatasi("TRY_BITIR eslesen TRY_BASLA olmadan kullanildi.");
+        }
+        tryYigini_.pop_back();
+        break;
       case OpCode::OP_DON: {
         Value donus = yiginPop();
         if (!bekleyenKurucular_.empty() &&
@@ -839,6 +925,44 @@ void VM::calistir(const BytecodeChunk& chunk) {
         }
         break;
       }
+      }
+    } catch (const std::exception& ex) {
+      if (tryYigini_.empty()) {
+        throw;
+      }
+
+      const TryFrame hedef = tryYigini_.back();
+      tryYigini_.pop_back();
+
+      if (hedef.frameDerinligi == 0 || frameYigini_.size() < hedef.frameDerinligi) {
+        throw;
+      }
+      while (frameYigini_.size() > hedef.frameDerinligi) {
+        frameYigini_.pop_back();
+      }
+      while (!tryYigini_.empty() &&
+             tryYigini_.back().frameDerinligi > frameYigini_.size()) {
+        tryYigini_.pop_back();
+      }
+
+      if (frameYigini_.empty()) {
+        throw;
+      }
+      if (yigin_.size() > hedef.stackBoyutu) {
+        yigin_.resize(hedef.stackBoyutu);
+      } else {
+        while (yigin_.size() < hedef.stackBoyutu) {
+          yiginPush(Value::bos());
+        }
+      }
+
+      CallFrame& aktif = frameYigini_.back();
+      if (aktif.function == nullptr || aktif.function->chunk == nullptr ||
+          hedef.catchIp > aktif.function->chunk->kod.size()) {
+        throw;
+      }
+      aktif.ip = hedef.catchIp;
+      yiginPush(yeniString(ex.what()));
     }
     gcGerekirseCalistir();
   }

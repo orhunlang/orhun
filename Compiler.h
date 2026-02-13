@@ -31,6 +31,7 @@ private:
   void tekrarlaDerle(const TekrarlaNode *dugum);
   void kirDerle(const KirNode *dugum);
   void devamDerle(const DevamNode *dugum);
+  void denemeYakalaDerle(const DenemeYakalaNode *dugum);
   void ifadeKomutDerle(const IfadeKomutNode *dugum);
   void cagrilanAdYukle(const std::string &ad, std::size_t satir);
   void islevTanimDerle(const IslevTanimNode *dugum);

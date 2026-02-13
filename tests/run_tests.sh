@@ -60,6 +60,8 @@ vm_cases=(
   "tests/cases/while_float"
   "tests/cases/list_comprehension"
   "tests/cases/vm_loop_control"
+  "tests/cases/slicing"
+  "tests/cases/vm_try_catch"
 )
 
 echo "[3/4] Running strict VM subset..."
