@@ -12,13 +12,13 @@ Bu belge, "en kolay + en guclu" hedefi icin kalan buyuk isleri siralar.
 ## 2) Gelistirici Deneyimi
 - [ ] Orhun formatter (`orhun fmt`)
 - [ ] Orhun linter (`orhun lint`)
-- [ ] VS Code extension (syntax highlight + snippets)
+- [x] VS Code extension (syntax highlight + snippets)
 - [ ] LSP (completion, go-to-definition, diagnostics)
 
 ## 3) Ekosistem
 - [ ] Paket yoneticisi (`orhun paket ekle ...`)
 - [ ] Merkezi paket deposu taslagi
-- [ ] Standart kutuphane genisletme (http/json/regex/date)
+- [~] Standart kutuphane genisletme (http/json/sunucu/veritabani; regex/date sirada)
 - [ ] Dokumantasyon sitesi + 30 dk hizli baslangic
 
 ## 4) Calisma Zamani Mimarisi

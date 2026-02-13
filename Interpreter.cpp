@@ -1689,6 +1689,155 @@ void Interpreter::gomuluIslevleriYukle() {
         }
     };
 
+    // Basit kalıcı sözlük tabanlı veritabanı.
+    auto veritabaniYolCoz =
+        [this](const std::vector<OrhunDegeri>& args, std::size_t argIndex,
+               std::size_t satir) -> std::string {
+        if (args.size() > argIndex) {
+            if (!std::holds_alternative<std::string>(args[argIndex].veri)) {
+                hataFirlat(satir, "veritabani için dosya yolu metin olmalıdır.");
+            }
+            return std::get<std::string>(args[argIndex].veri);
+        }
+        return "_orhun_veritabani.json";
+    };
+
+    auto veritabaniOku =
+        [this](const std::string& yol,
+               std::size_t satir) -> OrhunDegeri::SozlukVeri {
+        std::ifstream dosya(yol, std::ios::binary);
+        if (!dosya.is_open()) {
+            return {};
+        }
+        std::ostringstream tampon;
+        tampon << dosya.rdbuf();
+        const std::string icerik = tampon.str();
+        if (icerik.empty()) {
+            return {};
+        }
+
+        try {
+            OrhunDegeri kok =
+                yerlesikJsondanOrhunDegere(yerlesik::jsonCoz(icerik));
+            if (!std::holds_alternative<OrhunDegeri::SozlukTipi>(kok.veri)) {
+                hataFirlat(
+                    satir,
+                    "veritabani dosyası sözlük/nesne formatında değil: " + yol);
+            }
+            const auto& ptr = std::get<OrhunDegeri::SozlukTipi>(kok.veri);
+            return ptr ? *ptr : OrhunDegeri::SozlukVeri{};
+        } catch (const std::exception& ex) {
+            hataFirlat(satir, "veritabani.oku çözümlenemedi: " +
+                                   std::string(ex.what()));
+        }
+    };
+
+    auto veritabaniYaz = [this](const std::string& yol,
+                                const OrhunDegeri::SozlukVeri& veri,
+                                std::size_t satir) {
+        std::ofstream dosya(yol, std::ios::binary | std::ios::trunc);
+        if (!dosya.is_open()) {
+            hataFirlat(satir, "veritabani dosyasına yazılamadı: " + yol);
+        }
+
+        const std::string json = yerlesik::jsonYaz(
+            orhunDegerindenYerlesikJson(OrhunDegeri(veri)), true, 2);
+        dosya.write(json.data(), static_cast<std::streamsize>(json.size()));
+    };
+
+    gomuluIslevler_["veritabani.kaydet"] =
+        [this, veritabaniYolCoz, veritabaniOku,
+         veritabaniYaz](const std::vector<OrhunDegeri>& args,
+                        std::size_t satir) -> OrhunDegeri {
+        if (args.size() < 2 || args.size() > 3) {
+            hataFirlat(
+                satir,
+                "veritabani.kaydet(\"anahtar\", deger, [\"dosya\"]) iki veya üç argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "veritabani.kaydet için anahtar metin olmalıdır.");
+        }
+
+        const std::string anahtar = std::get<std::string>(args[0].veri);
+        const std::string yol = veritabaniYolCoz(args, 2, satir);
+        OrhunDegeri::SozlukVeri db = veritabaniOku(yol, satir);
+        db[anahtar] = args[1];
+        veritabaniYaz(yol, db, satir);
+        return OrhunDegeri(1);
+    };
+
+    gomuluIslevler_["veritabani.oku"] =
+        [this, veritabaniYolCoz,
+         veritabaniOku](const std::vector<OrhunDegeri>& args,
+                        std::size_t satir) -> OrhunDegeri {
+        if (args.size() < 1 || args.size() > 2) {
+            hataFirlat(
+                satir,
+                "veritabani.oku(\"anahtar\", [\"dosya\"]) bir veya iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "veritabani.oku için anahtar metin olmalıdır.");
+        }
+
+        const std::string anahtar = std::get<std::string>(args[0].veri);
+        const std::string yol = veritabaniYolCoz(args, 1, satir);
+        const OrhunDegeri::SozlukVeri db = veritabaniOku(yol, satir);
+        const auto it = db.find(anahtar);
+        if (it == db.end()) {
+            std::vector<std::string> adaylar;
+            adaylar.reserve(db.size());
+            for (const auto& [k, _] : db) {
+                adaylar.push_back(k);
+            }
+            hataFirlat(
+                satir,
+                oneriliMesaj("'" + anahtar + "' anahtarı veritabanında bulunamadı.",
+                             anahtar, adaylar));
+        }
+        return it->second;
+    };
+
+    gomuluIslevler_["veritabani.sil"] =
+        [this, veritabaniYolCoz, veritabaniOku,
+         veritabaniYaz](const std::vector<OrhunDegeri>& args,
+                        std::size_t satir) -> OrhunDegeri {
+        if (args.size() < 1 || args.size() > 2) {
+            hataFirlat(
+                satir,
+                "veritabani.sil(\"anahtar\", [\"dosya\"]) bir veya iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "veritabani.sil için anahtar metin olmalıdır.");
+        }
+
+        const std::string anahtar = std::get<std::string>(args[0].veri);
+        const std::string yol = veritabaniYolCoz(args, 1, satir);
+        OrhunDegeri::SozlukVeri db = veritabaniOku(yol, satir);
+        const std::size_t silinen = db.erase(anahtar);
+        if (silinen > 0) {
+            veritabaniYaz(yol, db, satir);
+        }
+        return OrhunDegeri(static_cast<int>(silinen));
+    };
+
+    gomuluIslevler_["veritabani.listele"] =
+        [this, veritabaniYolCoz,
+         veritabaniOku](const std::vector<OrhunDegeri>& args,
+                        std::size_t satir) -> OrhunDegeri {
+        if (args.size() > 1) {
+            hataFirlat(satir,
+                       "veritabani.listele([\"dosya\"]) sıfır veya bir argüman alır.");
+        }
+        const std::string yol = veritabaniYolCoz(args, 0, satir);
+        const OrhunDegeri::SozlukVeri db = veritabaniOku(yol, satir);
+        OrhunDegeri::ListeVeri anahtarlar;
+        anahtarlar.reserve(db.size());
+        for (const auto& [anahtar, _] : db) {
+            anahtarlar.emplace_back(anahtar);
+        }
+        return OrhunDegeri(std::move(anahtarlar));
+    };
+
     gomuluIslevler_["sunucu.baslat"] = [this](const std::vector<OrhunDegeri>& args,
                                               std::size_t satir) -> OrhunDegeri {
         if (args.empty() || args.size() > 2) {
@@ -2755,6 +2904,13 @@ void Interpreter::yerlesikModulleriYukle() {
     internet["getir"] = OrhunDegeri("__islev_ref__:internet.getir");
     internet["indir"] = OrhunDegeri("__islev_ref__:internet.indir");
     globalHafiza_["internet"] = OrhunDegeri(std::move(internet));
+
+    OrhunDegeri::SozlukVeri veritabani;
+    veritabani["kaydet"] = OrhunDegeri("__islev_ref__:veritabani.kaydet");
+    veritabani["oku"] = OrhunDegeri("__islev_ref__:veritabani.oku");
+    veritabani["sil"] = OrhunDegeri("__islev_ref__:veritabani.sil");
+    veritabani["listele"] = OrhunDegeri("__islev_ref__:veritabani.listele");
+    globalHafiza_["veritabani"] = OrhunDegeri(std::move(veritabani));
 
     OrhunDegeri::SozlukVeri sunucu;
     sunucu["baslat"] = OrhunDegeri("__islev_ref__:sunucu.baslat");
