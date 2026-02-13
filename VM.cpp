@@ -1747,11 +1747,12 @@ void VM::gcCalistir() {
   });
 }
 
-void VM::pushFrame(ObjFunction* fn, std::size_t slotBase) {
+void VM::pushFrame(ObjFunction* fn, std::size_t slotBase, std::size_t callBase) {
   CallFrame frame;
   frame.function = fn;
   frame.ip = fn->girisIp;
   frame.slotBase = slotBase;
+  frame.callBase = callBase;
   frameYigini_.push_back(frame);
 }
 
@@ -1772,7 +1773,7 @@ void VM::popFrameVeDon(Value donusDegeri) {
     return;
   }
 
-  const std::size_t cagribaslangic = frame.slotBase - 1;
+  const std::size_t cagribaslangic = frame.callBase;
   if (cagribaslangic > yigin_.size()) {
     calismaHatasi("Ic hata: gecersiz call stack temizligi.");
   }
@@ -1782,15 +1783,19 @@ void VM::popFrameVeDon(Value donusDegeri) {
 
 void VM::islevCagrisiHazirla(std::size_t calleeIndex, std::uint16_t argc,
                              ObjFunction* fn) {
+  islevCagrisiHazirla(calleeIndex, argc, fn, calleeIndex + 1);
+}
+
+void VM::islevCagrisiHazirla(std::size_t calleeIndex, std::uint16_t argc,
+                             ObjFunction* fn, std::size_t slotBase) {
   if (static_cast<int>(argc) != fn->arity) {
     calismaHatasi("Arguman sayisi uyusmuyor: '" + fn->ad + "'.");
   }
-  const std::size_t slotBase = calleeIndex + 1;
   const std::size_t hedefBoyut = slotBase + fn->localSayisi;
   while (yigin_.size() < hedefBoyut) {
     yiginPush(Value::bos());
   }
-  pushFrame(fn, slotBase);
+  pushFrame(fn, slotBase, calleeIndex);
 }
 
 void VM::calistir(const BytecodeChunk& chunk) {
@@ -1801,7 +1806,7 @@ void VM::calistir(const BytecodeChunk& chunk) {
   tryYigini_.clear();
 
   auto* kok = memory_.allocate<ObjFunction>("<program>", 0, &chunk, 0, 0);
-  pushFrame(kok, 0);
+  pushFrame(kok, 0, 0);
 
   while (!frameYigini_.empty()) {
     try {
@@ -2007,14 +2012,14 @@ void VM::calistir(const BytecodeChunk& chunk) {
 
         if (objTipiMi(cagrilan, ObjType::BOUND_METHOD)) {
           auto* bm = static_cast<ObjBoundMethod*>(cagrilan.as.nesne);
-          yigin_[calleeIndex] = bm->metod;
-          yigin_.insert(yigin_.begin() + static_cast<std::ptrdiff_t>(calleeIndex + 1),
-                        bm->alici);
-          cagrilan = yigin_[calleeIndex];
-          std::uint16_t yeniArgc = static_cast<std::uint16_t>(argc + 1);
-
-          if (objTipiMi(cagrilan, ObjType::FUNCTION)) {
-            auto* fn = static_cast<ObjFunction*>(cagrilan.as.nesne);
+          if (objTipiMi(bm->metod, ObjType::FUNCTION)) {
+            auto* fn = static_cast<ObjFunction*>(bm->metod.as.nesne);
+            if (fn->arity == static_cast<int>(argc) + 1) {
+              yigin_[calleeIndex] = bm->alici;
+              islevCagrisiHazirla(calleeIndex, static_cast<std::uint16_t>(argc + 1),
+                                  fn, calleeIndex);
+              break;
+            }
             if (fn->arity == static_cast<int>(argc) + 2) {
               if (!objTipiMi(bm->alici, ObjType::INSTANCE)) {
                 calismaHatasi("Bagli metod super baglami olusturamadi.");
@@ -2025,15 +2030,26 @@ void VM::calistir(const BytecodeChunk& chunk) {
               }
               Value ustRef =
                   Value::nesne(memory_.allocate<ObjSuperRef>(bm->alici, inst->sinif->ebeveyn));
-              yigin_.insert(
-                  yigin_.begin() + static_cast<std::ptrdiff_t>(calleeIndex + 2), ustRef);
-              yeniArgc = static_cast<std::uint16_t>(yeniArgc + 1);
+              yigin_.push_back(Value::bos());
+              for (std::size_t i = yigin_.size() - 1; i > calleeIndex + 1; --i) {
+                yigin_[i] = yigin_[i - 1];
+              }
+              yigin_[calleeIndex] = bm->alici;
+              yigin_[calleeIndex + 1] = ustRef;
+              islevCagrisiHazirla(calleeIndex, static_cast<std::uint16_t>(argc + 2),
+                                  fn, calleeIndex);
+              break;
             }
           }
 
+          yigin_[calleeIndex] = bm->metod;
+          yigin_.insert(yigin_.begin() + static_cast<std::ptrdiff_t>(calleeIndex + 1),
+                        bm->alici);
+          cagrilan = yigin_[calleeIndex];
+          std::uint16_t yeniArgc = static_cast<std::uint16_t>(argc + 1);
           if (objTipiMi(cagrilan, ObjType::FUNCTION)) {
-            islevCagrisiHazirla(calleeIndex, yeniArgc,
-                                static_cast<ObjFunction*>(cagrilan.as.nesne));
+            auto* fn = static_cast<ObjFunction*>(cagrilan.as.nesne);
+            islevCagrisiHazirla(calleeIndex, yeniArgc, fn);
             break;
           }
           std::vector<Value> args;
@@ -2061,24 +2077,43 @@ void VM::calistir(const BytecodeChunk& chunk) {
 
           auto ctorIt = sinif->metodlar.find("kur");
           if (ctorIt != sinif->metodlar.end()) {
-            yigin_[calleeIndex] = ctorIt->second;
-            yigin_.insert(yigin_.begin() + static_cast<std::ptrdiff_t>(calleeIndex + 1),
-                          instDegeri);
-            std::uint16_t yeniArgc = static_cast<std::uint16_t>(argc + 1);
-            if (objTipiMi(yigin_[calleeIndex], ObjType::FUNCTION)) {
-              auto* fn = static_cast<ObjFunction*>(yigin_[calleeIndex].as.nesne);
+            if (objTipiMi(ctorIt->second, ObjType::FUNCTION)) {
+              auto* fn = static_cast<ObjFunction*>(ctorIt->second.as.nesne);
+              if (fn->arity == static_cast<int>(argc) + 1) {
+                yigin_[calleeIndex] = instDegeri;
+                islevCagrisiHazirla(calleeIndex, static_cast<std::uint16_t>(argc + 1),
+                                    fn, calleeIndex);
+                bekleyenKurucular_.push_back(
+                    BekleyenKurucu{frameYigini_.size(), instDegeri});
+                break;
+              }
               if (fn->arity == static_cast<int>(argc) + 2) {
                 if (sinif->ebeveyn == nullptr) {
                   calismaHatasi("Kurucu super baglami icin ebeveyn sinif bulunamadi.");
                 }
                 Value ustRef =
                     Value::nesne(memory_.allocate<ObjSuperRef>(instDegeri, sinif->ebeveyn));
-                yigin_.insert(yigin_.begin() + static_cast<std::ptrdiff_t>(calleeIndex + 2),
-                              ustRef);
-                yeniArgc = static_cast<std::uint16_t>(yeniArgc + 1);
+                yigin_.push_back(Value::bos());
+                for (std::size_t i = yigin_.size() - 1; i > calleeIndex + 1; --i) {
+                  yigin_[i] = yigin_[i - 1];
+                }
+                yigin_[calleeIndex] = instDegeri;
+                yigin_[calleeIndex + 1] = ustRef;
+                islevCagrisiHazirla(calleeIndex, static_cast<std::uint16_t>(argc + 2),
+                                    fn, calleeIndex);
+                bekleyenKurucular_.push_back(
+                    BekleyenKurucu{frameYigini_.size(), instDegeri});
+                break;
               }
-              islevCagrisiHazirla(calleeIndex, yeniArgc,
-                                  fn);
+            }
+
+            yigin_[calleeIndex] = ctorIt->second;
+            yigin_.insert(yigin_.begin() + static_cast<std::ptrdiff_t>(calleeIndex + 1),
+                          instDegeri);
+            std::uint16_t yeniArgc = static_cast<std::uint16_t>(argc + 1);
+            if (objTipiMi(yigin_[calleeIndex], ObjType::FUNCTION)) {
+              auto* fn = static_cast<ObjFunction*>(yigin_[calleeIndex].as.nesne);
+              islevCagrisiHazirla(calleeIndex, yeniArgc, fn);
               bekleyenKurucular_.push_back(
                   BekleyenKurucu{frameYigini_.size(), instDegeri});
               break;

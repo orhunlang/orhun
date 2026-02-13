@@ -32,6 +32,7 @@ private:
     ObjFunction* function = nullptr;
     std::size_t ip = 0;
     std::size_t slotBase = 0;
+    std::size_t callBase = 0;
   };
   struct BekleyenKurucu {
     std::size_t frameDerinligi = 0;
@@ -109,7 +110,9 @@ private:
   Value cagir(const Value& cagrilan, const std::vector<Value>& argumanlar);
   void islevCagrisiHazirla(std::size_t calleeIndex, std::uint16_t argc,
                            ObjFunction* fn);
-  void pushFrame(ObjFunction* fn, std::size_t slotBase);
+  void islevCagrisiHazirla(std::size_t calleeIndex, std::uint16_t argc,
+                           ObjFunction* fn, std::size_t slotBase);
+  void pushFrame(ObjFunction* fn, std::size_t slotBase, std::size_t callBase);
   void popFrameVeDon(Value donusDegeri);
 
   [[noreturn]] void calismaHatasi(const std::string& mesaj) const;
