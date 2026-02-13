@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cctype>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -41,6 +42,7 @@
 #include <process.h>
 #else
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -902,29 +904,171 @@ inline int komutCalistirGuvenli(const std::string& komut) {
 #endif
 }
 
-inline std::string komutCalistirVeOku(const std::string& komut, int& cikisKodu) {
-  FILE* boru = popen(komut.c_str(), "r");
-  if (boru == nullptr) {
-    throw std::runtime_error("Alt komut çalıştırılamadı.");
+struct HttpUrlParcasi {
+  std::string host;
+  std::string yol;
+  int port = 80;
+};
+
+inline std::string asciiKucukYap(std::string metin) {
+  std::transform(
+      metin.begin(), metin.end(), metin.begin(),
+      [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+  return metin;
+}
+
+inline HttpUrlParcasi httpUrlCoz(const std::string& url) {
+  std::size_t baslangic = 0;
+  if (url.rfind("http://", 0) == 0) {
+    baslangic = 7;
+  } else if (url.rfind("https://", 0) == 0) {
+    throw std::runtime_error(
+        "ORH-NET-HTTPS-UNSUPPORTED: HTTPS bu platformda harici bagimlilik olmadan desteklenmiyor.");
+  } else {
+    throw std::runtime_error("Yalnizca http:// URL destegi var.");
   }
-  std::string cikti;
-  char tampon[4096];
-  while (std::fgets(tampon, static_cast<int>(sizeof(tampon)), boru) != nullptr) {
-    cikti += tampon;
+
+  const std::size_t slash = url.find('/', baslangic);
+  const std::string hostPort =
+      slash == std::string::npos ? url.substr(baslangic)
+                                 : url.substr(baslangic, slash - baslangic);
+  if (hostPort.empty()) {
+    throw std::runtime_error("HTTP URL host bos olamaz.");
   }
-  cikisKodu = pclose(boru);
-  return cikti;
+  HttpUrlParcasi parca;
+  parca.yol = slash == std::string::npos ? "/" : url.substr(slash);
+  const std::size_t colon = hostPort.find(':');
+  if (colon == std::string::npos) {
+    parca.host = hostPort;
+    parca.port = 80;
+  } else {
+    parca.host = hostPort.substr(0, colon);
+    const std::string portStr = hostPort.substr(colon + 1);
+    if (parca.host.empty() || portStr.empty()) {
+      throw std::runtime_error("HTTP URL host/port gecersiz.");
+    }
+    parca.port = std::stoi(portStr);
+    if (parca.port <= 0 || parca.port > 65535) {
+      throw std::runtime_error("HTTP URL port araligi gecersiz.");
+    }
+  }
+  return parca;
+}
+
+inline std::string chunkedCoz(const std::string& govde) {
+  std::string sonuc;
+  std::size_t pos = 0;
+  while (pos < govde.size()) {
+    const std::size_t satirSonu = govde.find("\r\n", pos);
+    if (satirSonu == std::string::npos) {
+      throw std::runtime_error("Chunked yanit bozuk: boyut satiri eksik.");
+    }
+    const std::string boyutHex = govde.substr(pos, satirSonu - pos);
+    std::size_t kullanilan = 0;
+    const std::size_t chunkBoyut = std::stoul(boyutHex, &kullanilan, 16);
+    if (kullanilan == 0) {
+      throw std::runtime_error("Chunked yanit bozuk: boyut parse edilemedi.");
+    }
+    pos = satirSonu + 2;
+    if (chunkBoyut == 0) {
+      break;
+    }
+    if (pos + chunkBoyut > govde.size()) {
+      throw std::runtime_error("Chunked yanit bozuk: govde kisaldi.");
+    }
+    sonuc.append(govde, pos, chunkBoyut);
+    pos += chunkBoyut;
+    if (pos + 2 > govde.size() || govde.compare(pos, 2, "\r\n") != 0) {
+      throw std::runtime_error("Chunked yanit bozuk: chunk sonu CRLF eksik.");
+    }
+    pos += 2;
+  }
+  return sonuc;
 }
 
 inline std::string internetIcerigiGetir(const std::string& url) {
-  const std::string komut = "curl -L -s --fail '" + shellTekTirnakKacis(url) + "'";
-  int kod = 0;
-  std::string icerik = komutCalistirVeOku(komut, kod);
-  if (kod != 0) {
-    throw std::runtime_error("HTTP isteği başarısız oldu (çıkış kodu: " +
-                             std::to_string(kod) + ").");
+  const HttpUrlParcasi parca = httpUrlCoz(url);
+  struct addrinfo hints {};
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_family = AF_UNSPEC;
+
+  struct addrinfo* sonuc = nullptr;
+  const std::string portMetin = std::to_string(parca.port);
+  const int gai = getaddrinfo(parca.host.c_str(), portMetin.c_str(), &hints, &sonuc);
+  if (gai != 0 || sonuc == nullptr) {
+    throw std::runtime_error("HTTP DNS cozulemedi: " + parca.host);
   }
-  return icerik;
+
+  int soket = -1;
+  for (struct addrinfo* it = sonuc; it != nullptr; it = it->ai_next) {
+    soket = static_cast<int>(socket(it->ai_family, it->ai_socktype, it->ai_protocol));
+    if (soket < 0) {
+      continue;
+    }
+    if (connect(soket, it->ai_addr, static_cast<socklen_t>(it->ai_addrlen)) == 0) {
+      break;
+    }
+    close(soket);
+    soket = -1;
+  }
+  freeaddrinfo(sonuc);
+  if (soket < 0) {
+    throw std::runtime_error("HTTP baglanti kurulamadı: " + parca.host);
+  }
+
+  const std::string istek =
+      "GET " + parca.yol + " HTTP/1.1\r\nHost: " + parca.host +
+      "\r\nUser-Agent: Orhun/2.0\r\nConnection: close\r\nAccept: */*\r\n\r\n";
+  std::size_t gonderilenToplam = 0;
+  while (gonderilenToplam < istek.size()) {
+    const ssize_t gonderilen = send(
+        soket, istek.data() + static_cast<std::ptrdiff_t>(gonderilenToplam),
+        istek.size() - gonderilenToplam, 0);
+    if (gonderilen <= 0) {
+      close(soket);
+      throw std::runtime_error("HTTP istek gonderimi basarisiz.");
+    }
+    gonderilenToplam += static_cast<std::size_t>(gonderilen);
+  }
+
+  std::string ham;
+  char tampon[4096];
+  while (true) {
+    const ssize_t okunan = recv(soket, tampon, sizeof(tampon), 0);
+    if (okunan < 0) {
+      close(soket);
+      throw std::runtime_error("HTTP veri okuma basarisiz.");
+    }
+    if (okunan == 0) {
+      break;
+    }
+    ham.append(tampon, static_cast<std::size_t>(okunan));
+  }
+  close(soket);
+
+  const std::size_t headerSonu = ham.find("\r\n\r\n");
+  if (headerSonu == std::string::npos) {
+    throw std::runtime_error("HTTP yanit basligi gecersiz.");
+  }
+  const std::string baslik = ham.substr(0, headerSonu);
+  std::string govde = ham.substr(headerSonu + 4);
+
+  const std::size_t satirSonu = baslik.find("\r\n");
+  const std::string durumSatiri =
+      satirSonu == std::string::npos ? baslik : baslik.substr(0, satirSonu);
+  std::istringstream ss(durumSatiri);
+  std::string protokol;
+  int kod = 0;
+  ss >> protokol >> kod;
+  if (kod >= 400 || kod == 0) {
+    throw std::runtime_error("HTTP durum kodu: " + std::to_string(kod));
+  }
+
+  const std::string baslikLc = asciiKucukYap(baslik);
+  if (baslikLc.find("transfer-encoding: chunked") != std::string::npos) {
+    govde = chunkedCoz(govde);
+  }
+  return govde;
 }
 #endif
 

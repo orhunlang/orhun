@@ -29,6 +29,8 @@ cases=(
   "tests/cases/try_catch_runtime"
   "tests/cases/f_string_escape"
   "tests/cases/vm_loop_control"
+  "tests/cases/module_callable"
+  "tests/cases/security_system_command_block"
 )
 
 uname_lc="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -38,6 +40,7 @@ if [[ "${uname_lc}" == *mingw* || "${uname_lc}" == *msys* || "${uname_lc}" == *c
     "tests/cases/ffi_text"
     "tests/cases/ffi_symbol"
     "tests/cases/ffi_tanimli_kernel32"
+    "tests/cases/ffi_dis_islev"
   )
 fi
 
@@ -88,6 +91,7 @@ vm_cases=(
   "tests/cases/vm_loop_control"
   "tests/cases/slicing"
   "tests/cases/vm_try_catch"
+  "tests/cases/security_system_command_block"
 )
 
 if [[ "${uname_lc}" == *mingw* || "${uname_lc}" == *msys* || "${uname_lc}" == *cygwin* ]]; then
@@ -96,6 +100,7 @@ if [[ "${uname_lc}" == *mingw* || "${uname_lc}" == *msys* || "${uname_lc}" == *c
     "tests/cases/ffi_text"
     "tests/cases/ffi_symbol"
     "tests/cases/ffi_tanimli_kernel32"
+    "tests/cases/ffi_dis_islev"
   )
 fi
 

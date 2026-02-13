@@ -1383,45 +1383,8 @@ WinHttpApi& winHttpApi() {
     return icerik;
 }
 #else
-std::string shellTekTirnakKacis(const std::string& metin) {
-    std::string sonuc;
-    sonuc.reserve(metin.size() + 8);
-    for (const char c : metin) {
-        if (c == '\'') {
-            sonuc += "'\\''";
-        } else {
-            sonuc.push_back(c);
-        }
-    }
-    return sonuc;
-}
-
-std::string komutCalistirVeOku(const std::string& komut, int& cikisKodu) {
-    FILE* boru = popen(komut.c_str(), "r");
-    if (boru == nullptr) {
-        throw std::runtime_error("Alt komut çalıştırılamadı.");
-    }
-
-    std::string cikti;
-    char tampon[4096];
-    while (std::fgets(tampon, static_cast<int>(sizeof(tampon)), boru) != nullptr) {
-        cikti += tampon;
-    }
-
-    cikisKodu = pclose(boru);
-    return cikti;
-}
-
 [[maybe_unused]] std::string internetIcerigiGetir(const std::string& url) {
-    const std::string komut =
-        "curl -L -s --fail '" + shellTekTirnakKacis(url) + "'";
-    int kod = 0;
-    std::string icerik = komutCalistirVeOku(komut, kod);
-    if (kod != 0) {
-        throw std::runtime_error("HTTP isteği başarısız oldu (çıkış kodu: " +
-                                 std::to_string(kod) + ").");
-    }
-    return icerik;
+    return yerlesik::internetIcerigiGetir(url);
 }
 #endif
 }  // namespace

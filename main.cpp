@@ -3,6 +3,7 @@
 #include "Interpreter.h"
 #include "Lexer.h"
 #include "Parser.h"
+#include "Security/Hash.h"
 #include "VM.h"
 
 #include <algorithm>
@@ -20,6 +21,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -1004,41 +1006,186 @@ std::string crc32Hex(const std::string& metin) {
   return ss.str();
 }
 
-void orhunLockKaydet(const std::string& paketAdi, const std::string& kaynak) {
+struct LockKaydi {
+  std::string ad;
+  std::string kaynak;
+  std::string ozet;
+  std::string surum;
+};
+
+std::vector<std::string> boruIleBol(const std::string& metin) {
+  std::vector<std::string> parcalar;
+  std::string biriken;
+  for (char c : metin) {
+    if (c == '|') {
+      parcalar.push_back(biriken);
+      biriken.clear();
+    } else {
+      biriken.push_back(c);
+    }
+  }
+  parcalar.push_back(biriken);
+  return parcalar;
+}
+
+std::string lockKaydiOzetIcerigi(const std::string& ad, const std::string& kaynak,
+                                 const std::string& surum) {
+  return kaynak + "|" + ad + "|" + surum;
+}
+
+std::string lockKaydiSha256(const std::string& ad, const std::string& kaynak,
+                            const std::string& surum) {
+  return security::sha256Hex(lockKaydiOzetIcerigi(ad, kaynak, surum));
+}
+
+std::optional<LockKaydi> lockKaydiCoz(const std::string& satir) {
+  const std::string trim = solaSagaKirp(satir);
+  if (trim.empty() || trim[0] == '#') {
+    return std::nullopt;
+  }
+  const std::vector<std::string> parcalar = boruIleBol(trim);
+  if (parcalar.size() == 3) {
+    // Eski v1: ad|kaynak|crc32
+    return LockKaydi{parcalar[0], parcalar[1], parcalar[2], "v1"};
+  }
+  if (parcalar.size() == 4) {
+    return LockKaydi{parcalar[0], parcalar[1], parcalar[2], parcalar[3]};
+  }
+  throw std::runtime_error("Hata: orhun.lock satiri gecersiz: '" + trim + "'");
+}
+
+std::vector<LockKaydi> lockKayitlariniOku(const std::filesystem::path& lockDosyasi) {
+  std::vector<LockKaydi> kayitlar;
+  if (!std::filesystem::exists(lockDosyasi)) {
+    return kayitlar;
+  }
+  std::istringstream ak(dosyaOku(lockDosyasi.string()));
+  for (std::string satir; std::getline(ak, satir);) {
+    auto kayit = lockKaydiCoz(satir);
+    if (kayit.has_value()) {
+      kayitlar.push_back(std::move(*kayit));
+    }
+  }
+  return kayitlar;
+}
+
+void lockKayitlariniYaz(const std::filesystem::path& lockDosyasi,
+                        const std::vector<LockKaydi>& kayitlar) {
+  std::ostringstream yeni;
+  yeni << "# ad|kaynak|sha256|surum\n";
+  for (std::size_t i = 0; i < kayitlar.size(); ++i) {
+    const auto& k = kayitlar[i];
+    yeni << k.ad << "|" << k.kaynak << "|" << k.ozet << "|" << k.surum;
+    if (i + 1 < kayitlar.size()) {
+      yeni << '\n';
+    }
+  }
+  dosyaYaz(lockDosyasi.string(), yeni.str());
+}
+
+void orhunLockKaydet(const std::string& paketAdi, const std::string& kaynak,
+                     bool kilitliMod) {
+  if (!kilitliMod) {
+    return;
+  }
   namespace fs = std::filesystem;
   const fs::path lockDosyasi = fs::current_path() / "orhun.lock";
-  std::vector<std::string> satirlar;
-  if (fs::exists(lockDosyasi)) {
-    std::istringstream ak(dosyaOku(lockDosyasi.string()));
-    for (std::string satir; std::getline(ak, satir);) {
-      satirlar.push_back(satir);
-    }
-  } else {
-    satirlar.push_back("# ad|kaynak|crc32");
-  }
+  std::vector<LockKaydi> kayitlar = lockKayitlariniOku(lockDosyasi);
 
-  const std::string kayit =
-      paketAdi + "|" + kaynak + "|" + crc32Hex(kaynak + "|" + paketAdi);
+  LockKaydi yeniKayit;
+  yeniKayit.ad = paketAdi;
+  yeniKayit.kaynak = kaynak;
+  yeniKayit.surum = "v2";
+  yeniKayit.ozet = lockKaydiSha256(yeniKayit.ad, yeniKayit.kaynak, yeniKayit.surum);
+
   bool guncellendi = false;
-  for (std::string& satir : satirlar) {
-    if (satir.rfind(paketAdi + "|", 0) == 0) {
-      satir = kayit;
+  for (auto& kayit : kayitlar) {
+    if (kayit.ad == paketAdi) {
+      kayit = yeniKayit;
       guncellendi = true;
       break;
     }
   }
   if (!guncellendi) {
-    satirlar.push_back(kayit);
+    kayitlar.push_back(std::move(yeniKayit));
+  }
+  lockKayitlariniYaz(lockDosyasi, kayitlar);
+}
+
+bool lockKaydiDogrula(const LockKaydi& kayit, std::string* hata) {
+  if (kayit.ad.empty() || kayit.kaynak.empty()) {
+    if (hata != nullptr) {
+      *hata = "kayit alanlari bos";
+    }
+    return false;
+  }
+  if (kayit.surum == "v1") {
+    const std::string beklenen = crc32Hex(kayit.kaynak + "|" + kayit.ad);
+    if (asciiKucuk(kayit.ozet) != asciiKucuk(beklenen)) {
+      if (hata != nullptr) {
+        *hata = "v1 CRC32 ozeti uyusmuyor";
+      }
+      return false;
+    }
+    return true;
+  }
+  if (kayit.surum != "v2") {
+    if (hata != nullptr) {
+      *hata = "desteklenmeyen lock surumu: " + kayit.surum;
+    }
+    return false;
+  }
+  const std::string beklenen = lockKaydiSha256(kayit.ad, kayit.kaynak, kayit.surum);
+  if (asciiKucuk(kayit.ozet) != asciiKucuk(beklenen)) {
+    if (hata != nullptr) {
+      *hata = "SHA-256 uyusmuyor";
+    }
+    return false;
+  }
+  return true;
+}
+
+int komutPaketDogrula() {
+  namespace fs = std::filesystem;
+  const fs::path lockDosyasi = fs::current_path() / "orhun.lock";
+  if (!fs::exists(lockDosyasi)) {
+    std::cout << "orhun.lock bulunamadi.\n";
+    return 1;
   }
 
-  std::ostringstream yeni;
-  for (std::size_t i = 0; i < satirlar.size(); ++i) {
-    yeni << satirlar[i];
-    if (i + 1 < satirlar.size()) {
-      yeni << '\n';
-    }
+  const std::vector<LockKaydi> kayitlar = lockKayitlariniOku(lockDosyasi);
+  if (kayitlar.empty()) {
+    std::cout << "orhun.lock bos.\n";
+    return 1;
   }
-  dosyaYaz(lockDosyasi.string(), yeni.str());
+
+  bool basarisiz = false;
+  for (const auto& kayit : kayitlar) {
+    std::string neden;
+    if (!lockKaydiDogrula(kayit, &neden)) {
+      std::cout << "[HATA] " << kayit.ad << ": " << neden << "\n";
+      basarisiz = true;
+      continue;
+    }
+    if (uzakKaynakMi(kayit.kaynak)) {
+      if (!uzakKaynakGuvenliMi(kayit.kaynak) || !paketKaynakAllowlistteMi(kayit.kaynak)) {
+        std::cout << "[HATA] " << kayit.ad
+                  << ": kaynak allowlist/guvenlik kosullarini saglamiyor.\n";
+        basarisiz = true;
+        continue;
+      }
+    }
+    const fs::path paketKlasoru = fs::current_path() / "lib" / kayit.ad;
+    if (!fs::exists(paketKlasoru)) {
+      std::cout << "[HATA] " << kayit.ad << ": lib/" << kayit.ad
+                << " klasoru bulunamadi.\n";
+      basarisiz = true;
+      continue;
+    }
+    std::cout << "[OK] " << kayit.ad << " (" << kayit.surum << ")\n";
+  }
+
+  return basarisiz ? 1 : 0;
 }
 
 void orhunYapBagimlilikEkle(const std::string& paketAdi) {
@@ -1067,7 +1214,8 @@ void orhunYapBagimlilikEkle(const std::string& paketAdi) {
   dosyaYaz(yapDosyasi.string(), icerik);
 }
 
-int komutPaketKur(const std::string& kaynak, const std::string& hedefAdi) {
+int komutPaketKur(const std::string& kaynak, const std::string& hedefAdi,
+                  bool noLock) {
   namespace fs = std::filesystem;
   if (kaynak.empty()) {
     throw std::runtime_error("Hata: paket kur icin kaynak belirtilmeli.");
@@ -1127,7 +1275,10 @@ int komutPaketKur(const std::string& kaynak, const std::string& hedefAdi) {
   }
 
   orhunYapBagimlilikEkle(paketAdi);
-  orhunLockKaydet(paketAdi, cozulmusKaynak);
+  orhunLockKaydet(paketAdi, cozulmusKaynak, !noLock);
+  if (noLock) {
+    std::cout << "[uyari] --no-lock etkin: orhun.lock guncellenmedi.\n";
+  }
   std::cout << "Paket kuruldu: " << paketAdi << " -> " << hedefYol.string() << "\n";
   return 0;
 }
@@ -1174,8 +1325,7 @@ bool vmFallbackAcikMi() {
 
 bool vmFallbackIzinliHata(const std::string& hata) {
   static const std::vector<std::string> izinliImzalar = {
-      "ORH-COMP-001", "ORH-COMP-002", "ORH-COMP-003",
-      "Faz 2 kapsaminda degil", "Atama hedefi VM Faz 2 tarafinda desteklenmiyor"};
+      "ORH-COMP-001", "ORH-COMP-002", "ORH-COMP-003"};
   for (const auto& imza : izinliImzalar) {
     if (hata.find(imza) != std::string::npos) {
       return true;
@@ -1286,7 +1436,63 @@ std::string jsonKacis(const std::string& metin) {
   return ss.str();
 }
 
-int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti) {
+std::optional<double> jsonAlanSayisiBul(const std::string& json,
+                                        const std::string& alan) {
+  const std::string etiket = "\"" + alan + "\":";
+  std::size_t i = json.find(etiket);
+  if (i == std::string::npos) {
+    return std::nullopt;
+  }
+  i += etiket.size();
+  while (i < json.size() && std::isspace(static_cast<unsigned char>(json[i]))) {
+    ++i;
+  }
+  std::size_t j = i;
+  if (j < json.size() && (json[j] == '-' || json[j] == '+')) {
+    ++j;
+  }
+  bool nokta = false;
+  while (j < json.size()) {
+    const char c = json[j];
+    if (std::isdigit(static_cast<unsigned char>(c))) {
+      ++j;
+      continue;
+    }
+    if (c == '.' && !nokta) {
+      nokta = true;
+      ++j;
+      continue;
+    }
+    break;
+  }
+  if (j <= i) {
+    return std::nullopt;
+  }
+  return std::stod(json.substr(i, j - i));
+}
+
+std::optional<std::pair<double, double>> benchmarkBazHizBul(
+    const std::string& baselineJsonl, const std::string& dosyaYolu) {
+  if (baselineJsonl.empty()) {
+    return std::nullopt;
+  }
+  std::istringstream ak(dosyaOku(baselineJsonl));
+  const std::string hedef = "\"dosya\":\"" + jsonKacis(dosyaYolu) + "\"";
+  for (std::string satir; std::getline(ak, satir);) {
+    if (satir.find(hedef) == std::string::npos) {
+      continue;
+    }
+    const auto p50 = jsonAlanSayisiBul(satir, "p50_x");
+    const auto p90 = jsonAlanSayisiBul(satir, "p90_x");
+    if (p50.has_value() && p90.has_value()) {
+      return std::make_pair(*p50, *p90);
+    }
+  }
+  return std::nullopt;
+}
+
+int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti,
+             const std::string& baselineJsonl, double gateP50, double gateP90) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error("Hata: hiz komutu icin .oh dosyasi bekleniyor.");
   }
@@ -1315,6 +1521,18 @@ int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti) {
     const double hizlanma = vmToplam > 0.0 ? (yorumlayiciToplam / vmToplam) : 0.0;
     const double p50Hizlanma = vmP50 > 0.0 ? (yorumlayiciP50 / vmP50) : 0.0;
     const double p90Hizlanma = vmP90 > 0.0 ? (yorumlayiciP90 / vmP90) : 0.0;
+    const auto baseline = benchmarkBazHizBul(baselineJsonl, dosyaYolu);
+    const double bazP50 = baseline.has_value() ? baseline->first : 0.0;
+    const double bazP90 = baseline.has_value() ? baseline->second : 0.0;
+    const double p50Oran = (baseline.has_value() && bazP50 > 0.0)
+                               ? (p50Hizlanma / bazP50)
+                               : p50Hizlanma;
+    const double p90Oran = (baseline.has_value() && bazP90 > 0.0)
+                               ? (p90Hizlanma / bazP90)
+                               : p90Hizlanma;
+    const bool gateP50Gecerli = gateP50 <= 0.0 || p50Oran >= gateP50;
+    const bool gateP90Gecerli = gateP90 <= 0.0 || p90Oran >= gateP90;
+    const bool gateGecerli = gateP50Gecerli && gateP90Gecerli;
 
     if (jsonCikti) {
       std::cout << "{"
@@ -1326,9 +1544,12 @@ int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti) {
                 << "\"vm\":{\"toplam_ms\":" << vmToplam << ",\"p50_ms\":" << vmP50
                 << ",\"p90_ms\":" << vmP90 << "},"
                 << "\"hizlanma\":{\"toplam_x\":" << hizlanma << ",\"p50_x\":" << p50Hizlanma
-                << ",\"p90_x\":" << p90Hizlanma << "}"
+                << ",\"p90_x\":" << p90Hizlanma << "},"
+                << "\"gate\":{\"p50_oran\":" << p50Oran << ",\"p90_oran\":" << p90Oran
+                << ",\"gecerli\":" << (gateGecerli ? "true" : "false")
+                << ",\"baseline\":\"" << jsonKacis(baselineJsonl) << "\"}"
                 << "}\n";
-      return 0;
+      return gateGecerli ? 0 : 2;
     }
 
     std::cout << "Dosya: " << dosyaYolu << "\n";
@@ -1347,7 +1568,20 @@ int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti) {
     if (vmP90 > 0.0) {
       std::cout << "Hizlanma (P90): " << p90Hizlanma << "x\n";
     }
-    return 0;
+    if (!baselineJsonl.empty()) {
+      std::cout << "Baseline: " << baselineJsonl << "\n";
+      if (baseline.has_value()) {
+        std::cout << "P50 oran (simdiki/baseline): " << p50Oran << "x\n";
+        std::cout << "P90 oran (simdiki/baseline): " << p90Oran << "x\n";
+      } else {
+        std::cout << "[uyari] Baseline dosyasinda bu test bulunamadi, mutlak hizlanma kullanildi.\n";
+      }
+    }
+    if (gateP50 > 0.0 || gateP90 > 0.0) {
+      std::cout << "Gate durumu: " << (gateGecerli ? "GECTI" : "BASARISIZ")
+                << " (P50>=" << gateP50 << ", P90>=" << gateP90 << ")\n";
+    }
+    return gateGecerli ? 0 : 2;
   } catch (...) {
     std::cout.rdbuf(eskiCout);
     throw;
@@ -1418,6 +1652,8 @@ int komutDoctor() {
   const bool hasLspTool = fs::exists("tools/vscode/package.json") ||
                           fs::exists("tools/vscode-orhun/package.json");
   const bool lockVar = fs::exists("orhun.lock");
+  const bool hasBenchmarkGate =
+      fs::exists("tests/benchmark_gate.ps1") || fs::exists("tests/benchmark_gate.sh");
   const bool fallback = vmFallbackAcikMi();
 
   const bool gitVar = programYoldaVarMi("git");
@@ -1429,6 +1665,22 @@ int komutDoctor() {
   std::cout << "Test altyapisi: " << evetHayir(hasTests && hasCases) << "\n";
   std::cout << "LSP/VSCode araclari: " << evetHayir(hasLspTool) << "\n";
   std::cout << "Paket lock dosyasi (orhun.lock): " << evetHayir(lockVar) << "\n";
+  if (lockVar) {
+    try {
+      const auto kayitlar = lockKayitlariniOku("orhun.lock");
+      bool v2 = !kayitlar.empty();
+      for (const auto& k : kayitlar) {
+        if (k.surum != "v2") {
+          v2 = false;
+          break;
+        }
+      }
+      std::cout << "Lock surumu v2: " << evetHayir(v2) << "\n";
+    } catch (...) {
+      std::cout << "Lock surumu v2: hayir\n";
+    }
+  }
+  std::cout << "Benchmark gate scriptleri: " << evetHayir(hasBenchmarkGate) << "\n";
   std::cout << "Git erisimi: " << evetHayir(gitVar) << "\n";
   std::cout << "VM fallback varsayilan durumu: "
             << (fallback ? "acik (ORHUN_VM_FALLBACK=0 ile kapat)" : "kapali")
@@ -1751,6 +2003,62 @@ std::string lspDocumentSymbolJson(const std::string& uri, const std::string& met
   return ss.str();
 }
 
+std::string lspWorkspaceSymbolJson(
+    const std::unordered_map<std::string, std::string>& acikBelgeler,
+    const std::string& sorgu) {
+  const std::string sorguLc = asciiKucuk(solaSagaKirp(sorgu));
+  std::ostringstream ss;
+  ss << "[";
+  bool ilk = true;
+  for (const auto& [uri, metin] : acikBelgeler) {
+    const auto satirlar = metniSatirlaraBol(metin);
+    for (std::size_t i = 0; i < satirlar.size(); ++i) {
+      const std::string trim = soldanBoslukKirp(sagaBoslukKirp(satirlar[i]));
+      if (trim.empty() || trim[0] == '#') {
+        continue;
+      }
+      std::string ad;
+      int kind = 13;
+      if (auto v = satirdanTanimAdiBul(trim, "işlev "); v.has_value()) {
+        ad = *v;
+        kind = 12;
+      } else if (auto v = satirdanTanimAdiBul(trim, "islev "); v.has_value()) {
+        ad = *v;
+        kind = 12;
+      } else if (auto v = satirdanTanimAdiBul(trim, "tip "); v.has_value()) {
+        ad = *v;
+        kind = 5;
+      } else {
+        const std::size_t olsunPos = trim.find(" olsun ");
+        const std::size_t esitPos = trim.find(" = ");
+        const std::size_t pos = (olsunPos != std::string::npos) ? olsunPos : esitPos;
+        if (pos != std::string::npos) {
+          ad = sagaBoslukKirp(trim.substr(0, pos));
+          kind = 13;
+        }
+      }
+      if (ad.empty()) {
+        continue;
+      }
+      if (!sorguLc.empty() &&
+          asciiKucuk(ad).find(sorguLc) == std::string::npos) {
+        continue;
+      }
+      if (!ilk) {
+        ss << ",";
+      }
+      ilk = false;
+      ss << "{\"name\":\"" << jsonKacis(ad) << "\",\"kind\":" << kind
+         << ",\"location\":{\"uri\":\"" << jsonKacis(uri)
+         << "\",\"range\":{\"start\":{\"line\":" << i
+         << ",\"character\":0},\"end\":{\"line\":" << i
+         << ",\"character\":1}}}}";
+    }
+  }
+  ss << "]";
+  return ss.str();
+}
+
 int hataMesajindanSatirBul(const std::string& mesaj) {
   const std::string etiket = "satir ";
   std::size_t p = mesaj.find(etiket);
@@ -1774,7 +2082,7 @@ int hataMesajindanSatirBul(const std::string& mesaj) {
 
 std::string lspDiagnosticJson(const std::string& metin) {
   try {
-    static_cast<void>(parseEt(metin));
+    static_cast<void>(bytecodeDerle(metin));
     return "{\"kind\":\"full\",\"items\":[]}";
   } catch (const std::exception& ex) {
     const std::string mesaj = ex.what();
@@ -1866,6 +2174,7 @@ int komutLsp(bool stdioModu) {
                     "\"completionProvider\":{\"resolveProvider\":false},"
                     "\"definitionProvider\":true,"
                     "\"documentSymbolProvider\":true,"
+                    "\"workspaceSymbolProvider\":true,"
                     "\"diagnosticProvider\":{\"interFileDependencies\":false,"
                     "\"workspaceDiagnostics\":false}}}");
       }
@@ -1944,6 +2253,15 @@ int komutLsp(bool stdioModu) {
         const auto it = acikBelgeler.find(*uri);
         const std::string metin = it == acikBelgeler.end() ? "" : it->second;
         lspYanitYaz(std::cout, *idToken, lspDocumentSymbolJson(*uri, metin));
+      }
+      continue;
+    }
+    if (lspMethodMu(mesaj, "workspace/symbol")) {
+      if (idToken.has_value()) {
+        const auto sorgu = lspJsonStringAlanBul(mesaj, "query");
+        lspYanitYaz(std::cout, *idToken,
+                    lspWorkspaceSymbolJson(acikBelgeler,
+                                           sorgu.value_or("")));
       }
       continue;
     }
@@ -2034,7 +2352,7 @@ int main(int argc, char* argv[]) {
     if (komut == "paket") {
       if (argc < 3) {
         throw std::runtime_error(
-            "Hata: paket komutlari: yeni | kur | ekle | liste | ara | depo-baslat | depo-ekle");
+            "Hata: paket komutlari: yeni | kur | ekle | liste | dogrula | ara | depo-baslat | depo-ekle");
       }
 
       const std::string alt = argv[2];
@@ -2051,8 +2369,22 @@ int main(int argc, char* argv[]) {
           throw std::runtime_error(
               "Hata: paket kur <kaynak> [paket_adi] kullanin.");
         }
-        const std::string hedefAdi = argc >= 5 ? argv[4] : "";
-        return komutPaketKur(argv[3], hedefAdi);
+        std::string hedefAdi;
+        bool noLock = false;
+        for (int i = 4; i < argc; ++i) {
+          const std::string secenek = argv[i];
+          if (secenek == "--no-lock") {
+            noLock = true;
+            continue;
+          }
+          if (hedefAdi.empty()) {
+            hedefAdi = secenek;
+            continue;
+          }
+          throw std::runtime_error(
+              "Hata: paket kur yalnizca [paket_adi] ve [--no-lock] alir.");
+        }
+        return komutPaketKur(argv[3], hedefAdi, noLock);
       }
 
       if (alt == "ekle") {
@@ -2060,12 +2392,30 @@ int main(int argc, char* argv[]) {
           throw std::runtime_error(
               "Hata: paket ekle <kaynak> [paket_adi] kullanin.");
         }
-        const std::string hedefAdi = argc >= 5 ? argv[4] : "";
-        return komutPaketKur(argv[3], hedefAdi);
+        std::string hedefAdi;
+        bool noLock = false;
+        for (int i = 4; i < argc; ++i) {
+          const std::string secenek = argv[i];
+          if (secenek == "--no-lock") {
+            noLock = true;
+            continue;
+          }
+          if (hedefAdi.empty()) {
+            hedefAdi = secenek;
+            continue;
+          }
+          throw std::runtime_error(
+              "Hata: paket ekle yalnizca [paket_adi] ve [--no-lock] alir.");
+        }
+        return komutPaketKur(argv[3], hedefAdi, noLock);
       }
 
       if (alt == "liste") {
         return komutPaketListe();
+      }
+
+      if (alt == "dogrula") {
+        return komutPaketDogrula();
       }
 
       if (alt == "ara") {
@@ -2097,7 +2447,7 @@ int main(int argc, char* argv[]) {
       }
 
       throw std::runtime_error(
-          "Hata: bilinmeyen paket komutu. 'yeni', 'kur', 'ekle', 'liste', 'ara', 'depo-baslat' veya 'depo-ekle' kullanin.");
+          "Hata: bilinmeyen paket komutu. 'yeni', 'kur', 'ekle', 'liste', 'dogrula', 'ara', 'depo-baslat' veya 'depo-ekle' kullanin.");
     }
 
     if (komut == "vm") {
@@ -2135,10 +2485,46 @@ int main(int argc, char* argv[]) {
       }
       int tekrar = 20;
       bool json = false;
+      std::string baselineJsonl;
+      double gateP50 = 0.0;
+      double gateP90 = 0.0;
       for (int i = 3; i < argc; ++i) {
         const std::string secenek = argv[i];
         if (secenek == "--json") {
           json = true;
+          continue;
+        }
+        if (secenek == "--baseline") {
+          if (i + 1 >= argc) {
+            throw std::runtime_error("Hata: --baseline icin dosya yolu bekleniyor.");
+          }
+          baselineJsonl = argv[++i];
+          continue;
+        }
+        if (secenek.rfind("--baseline=", 0) == 0) {
+          baselineJsonl = secenek.substr(11);
+          continue;
+        }
+        if (secenek == "--gate-p50") {
+          if (i + 1 >= argc) {
+            throw std::runtime_error("Hata: --gate-p50 icin sayi bekleniyor.");
+          }
+          gateP50 = std::stod(argv[++i]);
+          continue;
+        }
+        if (secenek == "--gate-p90") {
+          if (i + 1 >= argc) {
+            throw std::runtime_error("Hata: --gate-p90 icin sayi bekleniyor.");
+          }
+          gateP90 = std::stod(argv[++i]);
+          continue;
+        }
+        if (secenek.rfind("--gate-p50=", 0) == 0) {
+          gateP50 = std::stod(secenek.substr(11));
+          continue;
+        }
+        if (secenek.rfind("--gate-p90=", 0) == 0) {
+          gateP90 = std::stod(secenek.substr(11));
           continue;
         }
         if (secenek.rfind("--tekrar=", 0) == 0) {
@@ -2150,9 +2536,9 @@ int main(int argc, char* argv[]) {
           continue;
         }
         throw std::runtime_error(
-            "Hata: hiz secenekleri: [tekrar] [--json] [--tekrar=N]");
+            "Hata: hiz secenekleri: [tekrar] [--json] [--tekrar=N] [--baseline dosya.jsonl] [--gate-p50=X] [--gate-p90=Y]");
       }
-      return komutHiz(argv[2], tekrar, json);
+      return komutHiz(argv[2], tekrar, json, baselineJsonl, gateP50, gateP90);
     }
 
     if (komut == "lsp") {

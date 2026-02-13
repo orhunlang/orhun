@@ -91,7 +91,6 @@ $vmCases = @(
     "tests/cases/module_stdlib",
     "tests/cases/vm_loop_control",
     "tests/cases/slicing",
-    "tests/cases/module_callable",
     "tests/cases/security_system_command_block",
     "tests/cases/vm_try_catch"
 )

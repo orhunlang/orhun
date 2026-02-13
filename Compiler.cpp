@@ -682,6 +682,15 @@ void Compiler::yazdirDerle(const YazdirNode* dugum) {
 }
 
 void Compiler::egerDerle(const EgerNode* dugum) {
+  if (const auto* mantik = dynamic_cast<const MantikNode*>(dugum->kosul())) {
+    if (mantik->deger()) {
+      blokDerle(dugum->dogruBlok());
+    } else if (dugum->yanlisBlok() != nullptr) {
+      blokDerle(dugum->yanlisBlok());
+    }
+    return;
+  }
+
   ifadeDerle(dugum->kosul());
   const std::size_t yanlisaAtla = atlaYaz(OpCode::OP_ATLA_EGER_YANLIS, dugum->satir());
   opcodeYaz(OpCode::OP_POP, dugum->satir());
@@ -701,6 +710,13 @@ void Compiler::egerDerle(const EgerNode* dugum) {
 }
 
 void Compiler::sureceDerle(const SureceNode* dugum) {
+  if (const auto* mantik = dynamic_cast<const MantikNode*>(dugum->kosul())) {
+    if (!mantik->deger()) {
+      // sürece yanlış: hiç kod üretme
+      return;
+    }
+  }
+
   const std::size_t loopBaslangic = chunk_.kod.size();
   Loop loop;
   loop.loopStart = loopBaslangic;
@@ -734,6 +750,16 @@ void Compiler::sureceDerle(const SureceNode* dugum) {
 }
 
 void Compiler::tekrarlaDerle(const TekrarlaNode* dugum) {
+  if (const auto* sayi = dynamic_cast<const SayiNode*>(dugum->kacKezIfadesi())) {
+    char* bitis = nullptr;
+    const double adet = std::strtod(sayi->deger().c_str(), &bitis);
+    if (bitis != sayi->deger().c_str() &&
+        (bitis == nullptr || *bitis == '\0') && adet <= 0.0) {
+      // tekrarla 0 kez: kod üretme
+      return;
+    }
+  }
+
   // Sayac degeri dongu boyunca stack'te tutulur.
   ifadeDerle(dugum->kacKezIfadesi());
   const std::size_t loopKontrol = chunk_.kod.size();

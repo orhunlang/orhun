@@ -5,6 +5,9 @@ COMPILER="${1:-g++}"
 OUTPUT="${2:-orhun_bench}"
 TEKRAR="${3:-30}"
 JSON_OUT="${4:-benchmark_results.jsonl}"
+BASELINE="${5:-}"
+GATE_P50="${6:-0}"
+GATE_P90="${7:-0}"
 
 if [[ ! -f "${OUTPUT}" ]]; then
   echo "[build] ${OUTPUT} bulunamadi, derleniyor..."
@@ -39,10 +42,26 @@ echo "[bench] Orhun hiz karsilastirma (JSONL: ${JSON_OUT})"
 for src in "${cases[@]}"; do
   echo ""
   echo "=== ${src} ==="
-  if ! json="$("./${OUTPUT}" hiz "${src}" "--tekrar=${TEKRAR}" --json 2>&1)"; then
+  cmd=("./${OUTPUT}" hiz "${src}" "--tekrar=${TEKRAR}" --json)
+  if [[ -n "${BASELINE}" ]]; then
+    cmd+=("--baseline" "${BASELINE}")
+  fi
+  if [[ "${GATE_P50}" != "0" ]]; then
+    cmd+=("--gate-p50=${GATE_P50}")
+  fi
+  if [[ "${GATE_P90}" != "0" ]]; then
+    cmd+=("--gate-p90=${GATE_P90}")
+  fi
+  if ! json="$("${cmd[@]}" 2>&1)"; then
     echo "[skip] ${src} benchmark atlandi (VM destek disi olabilir)."
   else
     echo "${json}" | tr -d '\r' >> "${JSON_OUT}"
     echo "${json}"
   fi
 done
+
+if [[ "${GATE_P50}" != "0" || "${GATE_P90}" != "0" ]]; then
+  echo ""
+  echo "[gate] KPI kontrolu"
+  ./tests/benchmark_gate.sh "${JSON_OUT}" "${GATE_P50}" "${GATE_P90}"
+fi
