@@ -564,11 +564,8 @@ void Compiler::listeUretecDerle(const ListeUretecNode* dugum) {
   // indeks < kaynak.uzunluk()
   degiskenYukle(indeksAd, satir);
   degiskenYukle(kaynakAd, satir);
-  const std::uint16_t uzunlukSabit = chunk_.sabitEkle(SabitDeger("uzunluk"));
-  chunk_.yazOpCode(OpCode::OP_ALAN_AL, satir);
-  chunk_.yazU16(uzunlukSabit, satir);
-  chunk_.yazOpCode(OpCode::OP_CAGIR, satir);
-  chunk_.yazU16(0, satir);
+  // Hot-path: uzunluk() native cagrisi yerine dogrudan OP_UZUNLUK.
+  chunk_.yazOpCode(OpCode::OP_UZUNLUK, satir);
   opcodeYaz(OpCode::OP_KUCUK, satir);
 
   const std::size_t cikisAtlamasi =
@@ -590,14 +587,10 @@ void Compiler::listeUretecDerle(const ListeUretecNode* dugum) {
     opcodeYaz(OpCode::OP_POP, satir);  // true kosul bool
   }
 
-  // sonuc.ekle(<ifade>)
+  // sonuc.push(<ifade>) hot-path: metot cagrisi yerine dogrudan opcode.
   degiskenYukle(sonucAd, satir);
-  const std::uint16_t ekleSabit = chunk_.sabitEkle(SabitDeger("ekle"));
-  chunk_.yazOpCode(OpCode::OP_ALAN_AL, satir);
-  chunk_.yazU16(ekleSabit, satir);
   ifadeDerle(dugum->ifade());
-  chunk_.yazOpCode(OpCode::OP_CAGIR, satir);
-  chunk_.yazU16(1, satir);
+  chunk_.yazOpCode(OpCode::OP_LISTE_PUSH, satir);
   opcodeYaz(OpCode::OP_POP, satir);  // liste.ekle donus degeri
 
   if (dugum->kosul() != nullptr) {

@@ -1910,7 +1910,11 @@ void VM::calistir(const BytecodeChunk& chunk) {
         }
         if (hedef.as.nesne->type == ObjType::LIST) {
           auto* liste = static_cast<ObjList*>(hedef.as.nesne);
-          const int i = static_cast<int>(std::llround(sayiyaCevir(indeks, "liste atama")));
+          const double indeksSayi =
+              indeks.type == ValueType::SAYI
+                  ? indeks.as.sayi
+                  : sayiyaCevir(indeks, "liste atama");
+          const int i = static_cast<int>(std::llround(indeksSayi));
           if (i < 0 || static_cast<std::size_t>(i) >= liste->ogeler.size()) {
             calismaHatasi("Liste indeksi sinir disi.");
           }
@@ -1924,6 +1928,25 @@ void VM::calistir(const BytecodeChunk& chunk) {
         yiginPush(deger);
         break;
       }
+      case OpCode::OP_UZUNLUK: {
+        const Value hedef = yiginPop();
+        if (objTipiMi(hedef, ObjType::LIST)) {
+          const auto* liste = static_cast<ObjList*>(hedef.as.nesne);
+          yiginPush(Value::sayi(static_cast<double>(liste->ogeler.size())));
+          break;
+        }
+        if (objTipiMi(hedef, ObjType::DICT)) {
+          const auto* sozluk = static_cast<ObjDict*>(hedef.as.nesne);
+          yiginPush(Value::sayi(static_cast<double>(sozluk->alanlar.size())));
+          break;
+        }
+        if (objTipiMi(hedef, ObjType::STRING)) {
+          const auto* metin = static_cast<ObjString*>(hedef.as.nesne);
+          yiginPush(Value::sayi(static_cast<double>(metin->deger.size())));
+          break;
+        }
+        calismaHatasi("uzunluk yalnizca liste/sozluk/metin uzerinde calisir.");
+      }
       case OpCode::OP_LISTE_OLUSTUR: {
         const std::uint16_t adet = u16Oku();
         if (adet > yigin_.size()) {
@@ -1934,6 +1957,16 @@ void VM::calistir(const BytecodeChunk& chunk) {
           ogeler[adet - 1 - i] = yiginPop();
         }
         yiginPush(yeniListe(std::move(ogeler)));
+        break;
+      }
+      case OpCode::OP_LISTE_PUSH: {
+        const Value deger = yiginPop();
+        const Value hedef = yiginPop();
+        if (!objTipiMi(hedef, ObjType::LIST)) {
+          calismaHatasi("LISTE_PUSH yalnizca listelerde calisir.");
+        }
+        static_cast<ObjList*>(hedef.as.nesne)->ogeler.push_back(deger);
+        yiginPush(Value::bos());
         break;
       }
       case OpCode::OP_SOZLUK_OLUSTUR: {
@@ -2103,7 +2136,9 @@ void VM::calistir(const BytecodeChunk& chunk) {
       case OpCode::OP_TOPLA: {
         const Value sag = yiginPop();
         const Value sol = yiginPop();
-        if (objTipiMi(sol, ObjType::STRING) || objTipiMi(sag, ObjType::STRING)) {
+        if (sol.type == ValueType::SAYI && sag.type == ValueType::SAYI) {
+          yiginPush(Value::sayi(sol.as.sayi + sag.as.sayi));
+        } else if (objTipiMi(sol, ObjType::STRING) || objTipiMi(sag, ObjType::STRING)) {
           yiginPush(yeniString(metneCevir(sol) + metneCevir(sag)));
         } else {
           yiginPush(Value::sayi(sayiyaCevir(sol, "toplama") +
@@ -2114,8 +2149,14 @@ void VM::calistir(const BytecodeChunk& chunk) {
       case OpCode::OP_CIKAR:
       case OpCode::OP_CARP:
       case OpCode::OP_BOL: {
-        const double sag = sayiyaCevir(yiginPop(), "sayisal islem");
-        const double sol = sayiyaCevir(yiginPop(), "sayisal islem");
+        const Value sagV = yiginPop();
+        const Value solV = yiginPop();
+        const double sag = sagV.type == ValueType::SAYI
+                               ? sagV.as.sayi
+                               : sayiyaCevir(sagV, "sayisal islem");
+        const double sol = solV.type == ValueType::SAYI
+                               ? solV.as.sayi
+                               : sayiyaCevir(solV, "sayisal islem");
         if (op == OpCode::OP_CIKAR) {
           yiginPush(Value::sayi(sol - sag));
         } else if (op == OpCode::OP_CARP) {
@@ -2129,7 +2170,14 @@ void VM::calistir(const BytecodeChunk& chunk) {
         break;
       }
       case OpCode::OP_NEGATE:
-        yiginPush(Value::sayi(-sayiyaCevir(yiginPop(), "isaret degistirme")));
+      {
+        const Value deger = yiginPop();
+        if (deger.type == ValueType::SAYI) {
+          yiginPush(Value::sayi(-deger.as.sayi));
+        } else {
+          yiginPush(Value::sayi(-sayiyaCevir(deger, "isaret degistirme")));
+        }
+      }
         break;
       case OpCode::OP_NOT:
         yiginPush(Value::mantik(falseMi(yiginPop())));
@@ -2610,7 +2658,11 @@ Value VM::indeksAl(const Value& hedef, const Value& indeks) {
   }
   if (hedef.as.nesne->type == ObjType::LIST) {
     auto* liste = static_cast<ObjList*>(hedef.as.nesne);
-    const int i = static_cast<int>(std::llround(sayiyaCevir(indeks, "liste indeksi")));
+    const double indeksSayi =
+        indeks.type == ValueType::SAYI
+            ? indeks.as.sayi
+            : sayiyaCevir(indeks, "liste indeksi");
+    const int i = static_cast<int>(std::llround(indeksSayi));
     if (i < 0 || static_cast<std::size_t>(i) >= liste->ogeler.size()) {
       calismaHatasi("Liste indeksi sinir disi.");
     }
@@ -2627,7 +2679,11 @@ Value VM::indeksAl(const Value& hedef, const Value& indeks) {
   }
   if (hedef.as.nesne->type == ObjType::STRING) {
     const std::string& metin = static_cast<ObjString*>(hedef.as.nesne)->deger;
-    const int i = static_cast<int>(std::llround(sayiyaCevir(indeks, "metin indeksi")));
+    const double indeksSayi =
+        indeks.type == ValueType::SAYI
+            ? indeks.as.sayi
+            : sayiyaCevir(indeks, "metin indeksi");
+    const int i = static_cast<int>(std::llround(indeksSayi));
     if (i < 0 || static_cast<std::size_t>(i) >= metin.size()) {
       calismaHatasi("Metin indeksi sinir disi.");
     }
@@ -2646,7 +2702,13 @@ Value VM::cagir(const Value& cagrilan, const std::vector<Value>& argumanlar) {
         static_cast<int>(argumanlar.size()) != native->arity) {
       calismaHatasi("Arguman sayisi uyusmuyor: '" + native->ad + "'.");
     }
-    std::vector<Value> tumArgumanlar = native->bagliDegerler;
+    if (native->bagliDegerler.empty()) {
+      return native->fn(*this, argumanlar);
+    }
+    std::vector<Value> tumArgumanlar;
+    tumArgumanlar.reserve(native->bagliDegerler.size() + argumanlar.size());
+    tumArgumanlar.insert(tumArgumanlar.end(), native->bagliDegerler.begin(),
+                         native->bagliDegerler.end());
     tumArgumanlar.insert(tumArgumanlar.end(), argumanlar.begin(), argumanlar.end());
     return native->fn(*this, tumArgumanlar);
   }
