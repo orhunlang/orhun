@@ -56,10 +56,28 @@ private:
   };
   std::unordered_map<int, GorevKaydi> gorevler_;
   int gorevSonrakiKimlik_ = 1;
+  enum class FFIType {
+    NONE = 0,
+    INT64,
+    DOUBLE,
+    STRING,
+    POINTER,
+  };
+  struct FFISignature {
+    std::string sembolAdi;
+    FFIType donusTipi = FFIType::INT64;
+    std::vector<FFIType> argumanTipleri;
+  };
+  struct FFIBinding {
+    int kutuphaneKimligi = 0;
+    FFISignature imza;
+  };
   std::unordered_map<int, std::shared_ptr<runtime::DynamicLibrary>>
       ffiKutuphaneleri_;
   std::unordered_map<std::string, int> ffiKutuphaneKimlikleri_;
+  std::unordered_map<int, FFIBinding> ffiIslevBaglantilari_;
   int ffiSonrakiKimlik_ = 1;
+  int ffiSonrakiIslevKimlik_ = 1;
 
   MemoryManager memory_;
   std::size_t gcEsigi_ = 1024;

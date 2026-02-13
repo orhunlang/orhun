@@ -37,6 +37,7 @@ if [[ "${uname_lc}" == *mingw* || "${uname_lc}" == *msys* || "${uname_lc}" == *c
     "tests/cases/ffi_kernel32"
     "tests/cases/ffi_text"
     "tests/cases/ffi_symbol"
+    "tests/cases/ffi_tanimli_kernel32"
   )
 fi
 
@@ -94,6 +95,7 @@ if [[ "${uname_lc}" == *mingw* || "${uname_lc}" == *msys* || "${uname_lc}" == *c
     "tests/cases/ffi_kernel32"
     "tests/cases/ffi_text"
     "tests/cases/ffi_symbol"
+    "tests/cases/ffi_tanimli_kernel32"
   )
 fi
 

@@ -117,6 +117,46 @@ std::intptr_t ffiHamCagir(std::uintptr_t fonksiyon,
   }
 }
 
+double ffiCiftCagir(std::uintptr_t fonksiyon, const std::vector<double>& argumanlar) {
+  switch (argumanlar.size()) {
+    case 0:
+      return reinterpret_cast<double (*)()>(fonksiyon)();
+    case 1:
+      return reinterpret_cast<double (*)(double)>(fonksiyon)(argumanlar[0]);
+    case 2:
+      return reinterpret_cast<double (*)(double, double)>(fonksiyon)(argumanlar[0],
+                                                                      argumanlar[1]);
+    case 3:
+      return reinterpret_cast<double (*)(double, double, double)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2]);
+    case 4:
+      return reinterpret_cast<double (*)(double, double, double, double)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3]);
+    case 5:
+      return reinterpret_cast<double (*)(
+          double, double, double, double, double)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3], argumanlar[4]);
+    case 6:
+      return reinterpret_cast<double (*)(
+          double, double, double, double, double, double)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3], argumanlar[4],
+          argumanlar[5]);
+    case 7:
+      return reinterpret_cast<double (*)(
+          double, double, double, double, double, double, double)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3], argumanlar[4],
+          argumanlar[5], argumanlar[6]);
+    case 8:
+      return reinterpret_cast<double (*)(
+          double, double, double, double, double, double, double, double)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3], argumanlar[4],
+          argumanlar[5], argumanlar[6], argumanlar[7]);
+    default:
+      throw std::runtime_error(
+          "ffi.cagir_tanimli simdilik en fazla 8 arguman destekliyor.");
+  }
+}
+
 yerlesik::JsonDeger vmDegerindenJsona(const Value& deger) {
   if (deger.bosMu()) {
     return yerlesik::JsonDeger(nullptr);
@@ -214,7 +254,9 @@ void VM::sifirla() {
   gorevSonrakiKimlik_ = 1;
   ffiKutuphaneleri_.clear();
   ffiKutuphaneKimlikleri_.clear();
+  ffiIslevBaglantilari_.clear();
   ffiSonrakiKimlik_ = 1;
+  ffiSonrakiIslevKimlik_ = 1;
   gcEsigi_ = 1024;
   yerlesikNativesYukle();
 }
@@ -1260,6 +1302,207 @@ void VM::yerlesikNativesYukle() {
           }
         }
         return Value::mantik(true);
+      });
+  ffi->alanlar["tanimla"] = nativeOlustur(
+      "ffi.tanimla", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() < 3 || a.size() > 4) {
+          throw std::runtime_error(
+              "ffi.tanimla(kutuphane, \"sembol\", \"donus\", [argTipleri]) 3 veya 4 arguman alir.");
+        }
+        if (!objTipiMi(a[1], ObjType::STRING) || !objTipiMi(a[2], ObjType::STRING)) {
+          throw std::runtime_error(
+              "ffi.tanimla ikinci ve ucuncu argumanlarda metin bekler.");
+        }
+
+        int kimlik = 0;
+        if (a[0].sayiMi()) {
+          if (!tamSayiMi(a[0].as.sayi)) {
+            throw std::runtime_error("ffi.tanimla icin kutuphane tutamaci tam sayi olmalidir.");
+          }
+          kimlik = static_cast<int>(std::llround(a[0].as.sayi));
+        } else if (objTipiMi(a[0], ObjType::STRING)) {
+          const std::string yol = static_cast<ObjString*>(a[0].as.nesne)->deger;
+          const auto itYol = vm.ffiKutuphaneKimlikleri_.find(yol);
+          if (itYol != vm.ffiKutuphaneKimlikleri_.end()) {
+            kimlik = itYol->second;
+          } else {
+            auto kutuphane = std::make_shared<runtime::DynamicLibrary>(yol);
+            std::string hata;
+            if (!kutuphane->load(&hata)) {
+              throw std::runtime_error("ffi.tanimla: '" + yol +
+                                       "' kutuphanesi yuklenemedi (" + hata + ")");
+            }
+            kimlik = vm.ffiSonrakiKimlik_++;
+            vm.ffiKutuphaneleri_[kimlik] = std::move(kutuphane);
+            vm.ffiKutuphaneKimlikleri_[yol] = kimlik;
+          }
+        } else {
+          throw std::runtime_error(
+              "ffi.tanimla icin ilk arguman tutamac(int) veya kutuphane adi(metin) olmalidir.");
+        }
+
+        const auto itKutuphane = vm.ffiKutuphaneleri_.find(kimlik);
+        if (itKutuphane == vm.ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
+          throw std::runtime_error("ffi.tanimla: gecersiz kutuphane tutamaci #" +
+                                   std::to_string(kimlik));
+        }
+
+        auto tipCoz = [](const std::string& metin) -> VM::FFIType {
+          const std::string tip = asciiKucult(metin);
+          if (tip == "void" || tip == "bos") {
+            return VM::FFIType::NONE;
+          }
+          if (tip == "int" || tip == "tam" || tip == "int64") {
+            return VM::FFIType::INT64;
+          }
+          if (tip == "double" || tip == "ondalik" || tip == "sayi") {
+            return VM::FFIType::DOUBLE;
+          }
+          if (tip == "string" || tip == "metin" || tip == "str") {
+            return VM::FFIType::STRING;
+          }
+          if (tip == "pointer" || tip == "isaretci" || tip == "ptr") {
+            return VM::FFIType::POINTER;
+          }
+          throw std::runtime_error("ffi.tanimla: taninmayan tip '" + metin + "'.");
+        };
+
+        VM::FFISignature imza;
+        imza.sembolAdi = static_cast<ObjString*>(a[1].as.nesne)->deger;
+        imza.donusTipi = tipCoz(static_cast<ObjString*>(a[2].as.nesne)->deger);
+
+        if (a.size() == 4) {
+          if (!a[3].nesneMi() || a[3].as.nesne == nullptr ||
+              a[3].as.nesne->type != ObjType::LIST) {
+            throw std::runtime_error("ffi.tanimla dorduncu argumanda tip listesi bekler.");
+          }
+          const auto* tipler = static_cast<ObjList*>(a[3].as.nesne);
+          for (const Value& tipDegeri : tipler->ogeler) {
+            if (!objTipiMi(tipDegeri, ObjType::STRING)) {
+              throw std::runtime_error("ffi.tanimla tip listesi metinlerden olusmalidir.");
+            }
+            imza.argumanTipleri.push_back(
+                tipCoz(static_cast<ObjString*>(tipDegeri.as.nesne)->deger));
+          }
+        }
+
+        const int islevKimligi = vm.ffiSonrakiIslevKimlik_++;
+        vm.ffiIslevBaglantilari_[islevKimligi] = VM::FFIBinding{kimlik, std::move(imza)};
+        return Value::sayi(static_cast<double>(islevKimligi));
+      });
+  ffi->alanlar["cagir_tanimli"] = nativeOlustur(
+      "ffi.cagir_tanimli", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.empty()) {
+          throw std::runtime_error(
+              "ffi.cagir_tanimli(islevKimligi, ...argumanlar) en az 1 arguman alir.");
+        }
+        if (!a[0].sayiMi() || !tamSayiMi(a[0].as.sayi)) {
+          throw std::runtime_error(
+              "ffi.cagir_tanimli icin ilk arguman islev kimligi tam sayi olmalidir.");
+        }
+        const int islevKimligi = static_cast<int>(std::llround(a[0].as.sayi));
+        const auto itBaglanti = vm.ffiIslevBaglantilari_.find(islevKimligi);
+        if (itBaglanti == vm.ffiIslevBaglantilari_.end()) {
+          throw std::runtime_error("ffi.cagir_tanimli: gecersiz islev kimligi #" +
+                                   std::to_string(islevKimligi));
+        }
+        const VM::FFIBinding& baglanti = itBaglanti->second;
+        const auto itKutuphane = vm.ffiKutuphaneleri_.find(baglanti.kutuphaneKimligi);
+        if (itKutuphane == vm.ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
+          throw std::runtime_error("ffi.cagir_tanimli: kutuphane tutamaci gecersiz.");
+        }
+
+        const std::size_t beklenen = baglanti.imza.argumanTipleri.size();
+        const std::size_t gelen = a.size() - 1;
+        if (beklenen != gelen) {
+          throw std::runtime_error("ffi.cagir_tanimli: beklenen arguman sayisi " +
+                                   std::to_string(beklenen) + ", gelen " +
+                                   std::to_string(gelen) + ".");
+        }
+
+        std::string sembolHatasi;
+        const std::uintptr_t fonksiyon =
+            itKutuphane->second->getSymbol(baglanti.imza.sembolAdi, &sembolHatasi);
+        if (fonksiyon == 0) {
+          throw std::runtime_error("ffi.cagir_tanimli: '" + baglanti.imza.sembolAdi +
+                                   "' sembolu bulunamadi (" + sembolHatasi + ")");
+        }
+
+        const bool tumArgumanlarCift = std::all_of(
+            baglanti.imza.argumanTipleri.begin(), baglanti.imza.argumanTipleri.end(),
+            [](VM::FFIType tip) { return tip == VM::FFIType::DOUBLE; });
+
+        if (baglanti.imza.donusTipi == VM::FFIType::DOUBLE) {
+          if (!tumArgumanlarCift) {
+            throw std::runtime_error(
+                "ffi.cagir_tanimli: DOUBLE donus icin tum arguman tipleri DOUBLE olmalidir.");
+          }
+          std::vector<double> ciftArgumanlar;
+          ciftArgumanlar.reserve(gelen);
+          for (std::size_t i = 0; i < gelen; ++i) {
+            ciftArgumanlar.push_back(
+                vm.sayiyaCevir(a[i + 1], "ffi.cagir_tanimli"));
+          }
+          return Value::sayi(ffiCiftCagir(fonksiyon, ciftArgumanlar));
+        }
+
+        std::vector<std::intptr_t> hamArgumanlar;
+        std::vector<std::string> metinSahipligi;
+        hamArgumanlar.reserve(gelen);
+        metinSahipligi.reserve(gelen);
+
+        for (std::size_t i = 0; i < gelen; ++i) {
+          const VM::FFIType tip = baglanti.imza.argumanTipleri[i];
+          const Value& arg = a[i + 1];
+          switch (tip) {
+            case VM::FFIType::INT64:
+            case VM::FFIType::POINTER: {
+              const double d = vm.sayiyaCevir(arg, "ffi.cagir_tanimli");
+              if (!tamSayiMi(d)) {
+                throw std::runtime_error(
+                    "ffi.cagir_tanimli: #" + std::to_string(i + 1) +
+                    " argumani tam sayi/pointer olmalidir.");
+              }
+              hamArgumanlar.push_back(static_cast<std::intptr_t>(std::llround(d)));
+              break;
+            }
+            case VM::FFIType::STRING: {
+              if (!objTipiMi(arg, ObjType::STRING)) {
+                throw std::runtime_error(
+                    "ffi.cagir_tanimli: #" + std::to_string(i + 1) +
+                    " argumani metin olmalidir.");
+              }
+              metinSahipligi.push_back(static_cast<ObjString*>(arg.as.nesne)->deger);
+              hamArgumanlar.push_back(
+                  reinterpret_cast<std::intptr_t>(metinSahipligi.back().c_str()));
+              break;
+            }
+            case VM::FFIType::DOUBLE:
+              throw std::runtime_error(
+                  "ffi.cagir_tanimli: DOUBLE argumanlari icin tum imza DOUBLE olmali.");
+            case VM::FFIType::NONE:
+              throw std::runtime_error("ffi.cagir_tanimli: VOID arguman tipi gecersiz.");
+          }
+        }
+
+        const std::intptr_t donus = ffiHamCagir(fonksiyon, hamArgumanlar);
+        switch (baglanti.imza.donusTipi) {
+          case VM::FFIType::NONE:
+            return Value::sayi(0.0);
+          case VM::FFIType::INT64:
+          case VM::FFIType::POINTER:
+            return Value::sayi(static_cast<double>(donus));
+          case VM::FFIType::STRING:
+            if (donus == 0) {
+              return vm.yeniString("");
+            }
+            return vm.yeniString(std::string(reinterpret_cast<const char*>(donus)));
+          case VM::FFIType::DOUBLE:
+            break;
+        }
+        throw std::runtime_error("ffi.cagir_tanimli: gecersiz donus tipi.");
       });
   globaller_["ffi"] = Value::nesne(ffi);
 

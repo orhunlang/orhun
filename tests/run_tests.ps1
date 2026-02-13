@@ -36,6 +36,7 @@ if ($env:OS -eq "Windows_NT") {
     $cases += "tests/cases/ffi_kernel32"
     $cases += "tests/cases/ffi_text"
     $cases += "tests/cases/ffi_symbol"
+    $cases += "tests/cases/ffi_tanimli_kernel32"
 }
 
 $failed = $false
@@ -94,6 +95,7 @@ if ($env:OS -eq "Windows_NT") {
     $vmCases += "tests/cases/ffi_kernel32"
     $vmCases += "tests/cases/ffi_text"
     $vmCases += "tests/cases/ffi_symbol"
+    $vmCases += "tests/cases/ffi_tanimli_kernel32"
 }
 
 foreach ($case in $vmCases) {
