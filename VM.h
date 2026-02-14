@@ -79,6 +79,8 @@ private:
   std::unordered_map<int, FFIBinding> ffiIslevBaglantilari_;
   int ffiSonrakiKimlik_ = 1;
   int ffiSonrakiIslevKimlik_ = 1;
+  std::vector<Value> geciciArgumanBuffer_;
+  std::vector<Value> geciciBirlesikArgumanBuffer_;
 
   MemoryManager memory_;
   std::size_t gcEsigi_ = 1024;
@@ -108,6 +110,7 @@ private:
   Value alanAl(const Value& hedef, const std::string& alanAdi);
   Value indeksAl(const Value& hedef, const Value& indeks);
   Value cagir(const Value& cagrilan, const std::vector<Value>& argumanlar);
+  Value cagir(const Value& cagrilan, std::size_t argBaslangic, std::size_t argSayisi);
   void islevCagrisiHazirla(std::size_t calleeIndex, std::uint16_t argc,
                            ObjFunction* fn);
   void islevCagrisiHazirla(std::size_t calleeIndex, std::uint16_t argc,

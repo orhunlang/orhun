@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <future>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -157,6 +158,13 @@ private:
   std::unordered_map<int, FFIBinding> ffiIslevBaglantilari_;
   int ffiSonrakiKimlik_ = 1;
   int ffiSonrakiIslevKimlik_ = 1;
+  struct GorevKaydi {
+    std::future<double> future;
+    bool sonucHazir = false;
+    double sonuc = 0.0;
+  };
+  std::unordered_map<int, GorevKaydi> gorevler_;
+  int gorevSonrakiKimlik_ = 1;
 
   void gomuluIslevleriYukle();
   void yerlesikModulleriYukle();

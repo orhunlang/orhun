@@ -2,10 +2,15 @@ param(
     [string]$Compiler = "g++",
     [string]$Output = "orhun_bench.exe",
     [int]$Tekrar = 30,
+    [int]$Warmup = 10,
+    [ValidateSet("runtime", "full")]
+    [string]$OlcumModu = "runtime",
     [string]$JsonCikti = "benchmark_results.jsonl",
     [string]$Baseline = "",
     [double]$GateP50 = 0.0,
-    [double]$GateP90 = 0.0
+    [double]$GateP90 = 0.0,
+    [ValidateSet("suite", "per_case")]
+    [string]$GateMode = "suite"
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,15 +51,9 @@ Write-Host "[bench] Orhun hiz karsilastirma (JSONL: $JsonCikti)"
 foreach ($src in $cases) {
     Write-Host ""
     Write-Host "=== $src ==="
-    $args = @("hiz", $src, "--tekrar=$Tekrar", "--json")
+    $args = @("hiz", $src, "--tekrar=$Tekrar", "--warmup=$Warmup", "--olcum-modu=$OlcumModu", "--json")
     if ($Baseline -ne "") {
         $args += @("--baseline", $Baseline)
-    }
-    if ($GateP50 -gt 0) {
-        $args += "--gate-p50=$GateP50"
-    }
-    if ($GateP90 -gt 0) {
-        $args += "--gate-p90=$GateP90"
     }
     $json = & ".\$Output" @args 2>&1 | Out-String
     if ($LASTEXITCODE -ne 0) {
@@ -69,5 +68,5 @@ foreach ($src in $cases) {
 if ($GateP50 -gt 0 -or $GateP90 -gt 0) {
     Write-Host ""
     Write-Host "[gate] KPI kontrolu"
-    ./tests/benchmark_gate.ps1 -JsonL $JsonCikti -MinP50 ([Math]::Max($GateP50, 0.0)) -MinP90 ([Math]::Max($GateP90, 0.0))
+    ./tests/benchmark_gate.ps1 -JsonL $JsonCikti -MinP50 ([Math]::Max($GateP50, 0.0)) -MinP90 ([Math]::Max($GateP90, 0.0)) -Mode $GateMode
 }

@@ -12,6 +12,11 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      ORHUN_BENCH_GATE_P50: "1.4"
+      ORHUN_BENCH_GATE_P90: "1.2"
+      ORHUN_BENCH_GATE_MODE: "suite"
+      ORHUN_CHANNEL: "nightly"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,13 +43,25 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          ./tests/benchmark.ps1 -Output orhun_bench.exe -Tekrar 5 -JsonCikti benchmark_results.jsonl
+          ./tests/benchmark.ps1 -Output orhun_bench.exe -Tekrar 5 -Warmup 3 -OlcumModu runtime -JsonCikti benchmark_results.jsonl
+
+      - name: Benchmark gate (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./tests/benchmark_gate.ps1 -JsonL benchmark_results.jsonl -MinP50 $env:ORHUN_BENCH_GATE_P50 -MinP90 $env:ORHUN_BENCH_GATE_P90 -Mode $env:ORHUN_BENCH_GATE_MODE
 
       - name: Benchmark smoke (Linux)
         if: runner.os == 'Linux'
         run: |
           chmod +x tests/benchmark.sh
-          ./tests/benchmark.sh g++ orhun_bench 5 benchmark_results.jsonl
+          ./tests/benchmark.sh g++ orhun_bench 5 benchmark_results.jsonl "" 0 0 runtime 3
+
+      - name: Benchmark gate (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x tests/benchmark_gate.sh
+          ./tests/benchmark_gate.sh benchmark_results.jsonl "${ORHUN_BENCH_GATE_P50}" "${ORHUN_BENCH_GATE_P90}" "${ORHUN_BENCH_GATE_MODE}"
 
       - name: Upload benchmark artifact
         uses: actions/upload-artifact@v4

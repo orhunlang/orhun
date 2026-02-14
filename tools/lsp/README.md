@@ -1,23 +1,20 @@
-# Orhun LSP (MVP)
+# Orhun LSP (Arsiv / Prototip)
 
-Bu klasör Orhun için minimal Language Server içerir:
+Bu klasor **Python tabanli eski MVP prototipini** tutar.
 
-- Dosya: `orhun_lsp.py`
-- Özellikler:
-  - `initialize` / `shutdown` / `exit`
-  - `textDocument/completion` (anahtar kelime tamamlama)
-  - `textDocument/definition` (temel tanıma git)
-  - `textDocument/documentSymbol` (belge sembolleri)
-  - `didOpen` / `didChange` için temel diagnostics
-    - tab karakteri uyarısı
-    - satır sonu boşluk uyarısı
-    - 4'ün katı olmayan girinti uyarısı
+## Resmi hat
 
-## Çalıştırma
+Uretim icin resmi LSP hattı C++ calistirici icindedir:
 
 ```bash
-python tools/lsp/orhun_lsp.py
+orhun lsp --stdio
 ```
 
-VS Code tarafında bu process bir language client ile bağlanmalıdır.
-Bu sürüm MVP+ düzeyindedir; parse tabanlı derin diagnostics sonraki adımdır.
+VS Code eklentisi tarafinda resmi klasor:
+
+- `tools/vscode-orhun`
+
+## Not
+
+`tools/lsp/orhun_lsp.py` referans amaclidir; yeni ozellikler bu prototipe
+degil C++ LSP hattina eklenmelidir.

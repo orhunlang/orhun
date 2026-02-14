@@ -2070,12 +2070,8 @@ void VM::calistir(const BytecodeChunk& chunk) {
             islevCagrisiHazirla(calleeIndex, yeniArgc, fn);
             break;
           }
-          std::vector<Value> args;
-          args.reserve(yeniArgc);
-          for (std::size_t i = 0; i < yeniArgc; ++i) {
-            args.push_back(yigin_[calleeIndex + 1 + i]);
-          }
-          const Value sonuc = cagir(cagrilan, args);
+          const Value sonuc =
+              cagir(cagrilan, calleeIndex + 1, static_cast<std::size_t>(yeniArgc));
           yigin_.resize(calleeIndex);
           yiginPush(sonuc);
           break;
@@ -2136,12 +2132,8 @@ void VM::calistir(const BytecodeChunk& chunk) {
                   BekleyenKurucu{frameYigini_.size(), instDegeri});
               break;
             }
-            std::vector<Value> args;
-            args.reserve(yeniArgc);
-            for (std::size_t i = 0; i < yeniArgc; ++i) {
-              args.push_back(yigin_[calleeIndex + 1 + i]);
-            }
-            (void)cagir(yigin_[calleeIndex], args);
+            (void)cagir(yigin_[calleeIndex], calleeIndex + 1,
+                        static_cast<std::size_t>(yeniArgc));
           }
 
           yigin_.resize(calleeIndex);
@@ -2149,12 +2141,8 @@ void VM::calistir(const BytecodeChunk& chunk) {
           break;
         }
 
-        std::vector<Value> args;
-        args.reserve(argc);
-        for (std::size_t i = 0; i < argc; ++i) {
-          args.push_back(yigin_[calleeIndex + 1 + i]);
-        }
-        const Value sonuc = cagir(cagrilan, args);
+        const Value sonuc =
+            cagir(cagrilan, calleeIndex + 1, static_cast<std::size_t>(argc));
         yigin_.resize(calleeIndex);
         yiginPush(sonuc);
         break;
@@ -2191,8 +2179,22 @@ void VM::calistir(const BytecodeChunk& chunk) {
         const Value sol = yiginPop();
         if (sol.type == ValueType::SAYI && sag.type == ValueType::SAYI) {
           yiginPush(Value::sayi(sol.as.sayi + sag.as.sayi));
+        } else if (objTipiMi(sol, ObjType::STRING) && objTipiMi(sag, ObjType::STRING)) {
+          const auto* solStr = static_cast<const ObjString*>(sol.as.nesne);
+          const auto* sagStr = static_cast<const ObjString*>(sag.as.nesne);
+          std::string birlesik;
+          birlesik.reserve(solStr->deger.size() + sagStr->deger.size());
+          birlesik += solStr->deger;
+          birlesik += sagStr->deger;
+          yiginPush(yeniString(birlesik));
         } else if (objTipiMi(sol, ObjType::STRING) || objTipiMi(sag, ObjType::STRING)) {
-          yiginPush(yeniString(metneCevir(sol) + metneCevir(sag)));
+          const std::string solMetin = metneCevir(sol);
+          const std::string sagMetin = metneCevir(sag);
+          std::string birlesik;
+          birlesik.reserve(solMetin.size() + sagMetin.size());
+          birlesik += solMetin;
+          birlesik += sagMetin;
+          yiginPush(yeniString(birlesik));
         } else {
           yiginPush(Value::sayi(sayiyaCevir(sol, "toplama") +
                                 sayiyaCevir(sag, "toplama")));
@@ -2758,14 +2760,32 @@ Value VM::cagir(const Value& cagrilan, const std::vector<Value>& argumanlar) {
     if (native->bagliDegerler.empty()) {
       return native->fn(*this, argumanlar);
     }
-    std::vector<Value> tumArgumanlar;
-    tumArgumanlar.reserve(native->bagliDegerler.size() + argumanlar.size());
-    tumArgumanlar.insert(tumArgumanlar.end(), native->bagliDegerler.begin(),
-                         native->bagliDegerler.end());
-    tumArgumanlar.insert(tumArgumanlar.end(), argumanlar.begin(), argumanlar.end());
-    return native->fn(*this, tumArgumanlar);
+    geciciBirlesikArgumanBuffer_.clear();
+    geciciBirlesikArgumanBuffer_.reserve(native->bagliDegerler.size() +
+                                         argumanlar.size());
+    geciciBirlesikArgumanBuffer_.insert(geciciBirlesikArgumanBuffer_.end(),
+                                        native->bagliDegerler.begin(),
+                                        native->bagliDegerler.end());
+    geciciBirlesikArgumanBuffer_.insert(geciciBirlesikArgumanBuffer_.end(),
+                                        argumanlar.begin(), argumanlar.end());
+    return native->fn(*this, geciciBirlesikArgumanBuffer_);
   }
   calismaHatasi("Bu deger cagrilamaz.");
+}
+
+Value VM::cagir(const Value& cagrilan, std::size_t argBaslangic,
+                std::size_t argSayisi) {
+  if (argBaslangic + argSayisi > yigin_.size()) {
+    calismaHatasi("CAGIR: arguman araligi gecersiz.");
+  }
+  if (geciciArgumanBuffer_.capacity() < argSayisi) {
+    geciciArgumanBuffer_.reserve(argSayisi);
+  }
+  geciciArgumanBuffer_.assign(yigin_.begin() +
+                                  static_cast<std::ptrdiff_t>(argBaslangic),
+                              yigin_.begin() +
+                                  static_cast<std::ptrdiff_t>(argBaslangic + argSayisi));
+  return cagir(cagrilan, geciciArgumanBuffer_);
 }
 
 [[noreturn]] void VM::calismaHatasi(const std::string& mesaj) const {

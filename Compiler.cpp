@@ -89,6 +89,37 @@ bool sabitMetinCoz(const ASTNode* dugum, std::string* sonuc) {
   return true;
 }
 
+std::string dugumTipiAdi(const ASTNode* dugum) {
+  if (dugum == nullptr) {
+    return "bos";
+  }
+  if (dynamic_cast<const AtamaNode*>(dugum) != nullptr) return "AtamaNode";
+  if (dynamic_cast<const YazdirNode*>(dugum) != nullptr) return "YazdirNode";
+  if (dynamic_cast<const EgerNode*>(dugum) != nullptr) return "EgerNode";
+  if (dynamic_cast<const SureceNode*>(dugum) != nullptr) return "SureceNode";
+  if (dynamic_cast<const TekrarlaNode*>(dugum) != nullptr) return "TekrarlaNode";
+  if (dynamic_cast<const IslevTanimNode*>(dugum) != nullptr) return "IslevTanimNode";
+  if (dynamic_cast<const SinifTanimNode*>(dugum) != nullptr) return "SinifTanimNode";
+  if (dynamic_cast<const DenemeYakalaNode*>(dugum) != nullptr) return "DenemeYakalaNode";
+  if (dynamic_cast<const IslevCagriNode*>(dugum) != nullptr) return "IslevCagriNode";
+  if (dynamic_cast<const IkiliIslemNode*>(dugum) != nullptr) return "IkiliIslemNode";
+  if (dynamic_cast<const TekliIslemNode*>(dugum) != nullptr) return "TekliIslemNode";
+  if (dynamic_cast<const KimlikNode*>(dugum) != nullptr) return "KimlikNode";
+  if (dynamic_cast<const MetinNode*>(dugum) != nullptr) return "MetinNode";
+  if (dynamic_cast<const SayiNode*>(dugum) != nullptr) return "SayiNode";
+  if (dynamic_cast<const MantikNode*>(dugum) != nullptr) return "MantikNode";
+  if (dynamic_cast<const ListeNode*>(dugum) != nullptr) return "ListeNode";
+  if (dynamic_cast<const SozlukNode*>(dugum) != nullptr) return "SozlukNode";
+  if (dynamic_cast<const AlanErisimNode*>(dugum) != nullptr) return "AlanErisimNode";
+  if (dynamic_cast<const IndeksErisimNode*>(dugum) != nullptr) return "IndeksErisimNode";
+  if (dynamic_cast<const DilimErisimNode*>(dugum) != nullptr) return "DilimErisimNode";
+  if (dynamic_cast<const BenimErisimNode*>(dugum) != nullptr) return "BenimErisimNode";
+  if (dynamic_cast<const UstErisimNode*>(dugum) != nullptr) return "UstErisimNode";
+  if (dynamic_cast<const DahilEtNode*>(dugum) != nullptr) return "DahilEtNode";
+  if (dynamic_cast<const SorNode*>(dugum) != nullptr) return "SorNode";
+  return "BilinmeyenNode";
+}
+
 }  // namespace
 
 BytecodeChunk Compiler::derle(const ProgramNode* program) {
@@ -174,8 +205,10 @@ void Compiler::komutDerle(const ASTNode* dugum) {
     return;
   }
 
-  derlemeHatasi(dugum->satir(),
-                "ORH-COMP-001: Bu komut VM derleyicisinin Faz 2 kapsaminda degil.");
+  derlemeHatasi(
+      dugum->satir(),
+      "ORH-COMP-001: VM bu komutu derleyemedi (dugum=" + dugumTipiAdi(dugum) +
+          "). Gecici fallback icin ORHUN_VM_FALLBACK=1 acik olmali.");
 }
 
 void Compiler::blokDerle(const BlockNode* dugum) {
@@ -533,8 +566,10 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
     return;
   }
 
-  derlemeHatasi(dugum->satir(),
-                "ORH-COMP-002: Bu ifade VM derleyicisinin Faz 2 kapsaminda degil.");
+  derlemeHatasi(
+      dugum->satir(),
+      "ORH-COMP-002: VM bu ifadeyi derleyemedi (dugum=" + dugumTipiAdi(dugum) +
+          ").");
 }
 
 void Compiler::listeUretecDerle(const ListeUretecNode* dugum) {
@@ -674,8 +709,10 @@ void Compiler::atamaDerle(const AtamaNode* dugum) {
     return;
   }
 
-  derlemeHatasi(dugum->satir(),
-                "ORH-COMP-003: Atama hedefi VM Faz 2 tarafinda desteklenmiyor.");
+  derlemeHatasi(
+      dugum->satir(),
+      "ORH-COMP-003: Atama hedefi desteklenmiyor (hedef=" +
+          dugumTipiAdi(dugum->hedef()) + ").");
 }
 
 void Compiler::yazdirDerle(const YazdirNode* dugum) {

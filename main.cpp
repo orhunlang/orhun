@@ -1311,16 +1311,45 @@ int komutPaketListe() {
   return 0;
 }
 
-bool vmFallbackAcikMi() {
-  const char* deger = std::getenv("ORHUN_VM_FALLBACK");
-  if (deger == nullptr) {
-    return true;
+std::string calismaKanali() {
+  const char* deger = std::getenv("ORHUN_CHANNEL");
+  if (deger == nullptr || std::string(deger).empty()) {
+    deger = std::getenv("ORHUN_RELEASE_CHANNEL");
   }
-  std::string metin(deger);
+  std::string kanal = (deger == nullptr || std::string(deger).empty())
+                          ? "stable"
+                          : std::string(deger);
+  std::transform(kanal.begin(), kanal.end(), kanal.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+  return kanal;
+}
+
+bool boolMetinAcikMi(std::string metin) {
   std::transform(metin.begin(), metin.end(), metin.begin(),
                  [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-  return !(metin == "0" || metin == "false" || metin == "off" || metin == "hayir" ||
-           metin == "no");
+  return !(metin.empty() || metin == "0" || metin == "false" || metin == "off" ||
+           metin == "hayir" || metin == "no");
+}
+
+bool vmFallbackAcikMi() {
+  const char* deger = std::getenv("ORHUN_VM_FALLBACK");
+  if (deger != nullptr) {
+    return boolMetinAcikMi(std::string(deger));
+  }
+
+  // Varsayilan politika:
+  // - stable: fallback kapali
+  // - beta/nightly/dev: fallback acik
+  const std::string kanal = calismaKanali();
+  return kanal == "beta" || kanal == "nightly" || kanal == "dev";
+}
+
+bool ortamBayragiAcikMi(const char* ad) {
+  const char* deger = std::getenv(ad);
+  if (deger == nullptr) {
+    return false;
+  }
+  return boolMetinAcikMi(std::string(deger));
 }
 
 bool vmFallbackIzinliHata(const std::string& hata) {
@@ -1354,9 +1383,14 @@ int dosyaCalistirVM(const std::string& dosyaYolu, bool katiMod) {
     // Uretim modunda VM hatalarinda da yorumlayiciya dus: kullanici acisindan
     // davranis korunur; vm-kati modunda ise dogrudan hata verilir.
     static bool uyariYazildi = false;
+    static std::size_t fallbackSayaci = 0;
+    ++fallbackSayaci;
     if (!uyariYazildi) {
       std::cerr << "[uyari] VM fallback devrede. ORHUN_VM_FALLBACK=0 ile kapatabilirsiniz.\n";
       uyariYazildi = true;
+    }
+    if (ortamBayragiAcikMi("ORHUN_VM_FALLBACK_RAPOR")) {
+      std::cerr << "[bilgi] VM fallback sayaci: " << fallbackSayaci << "\n";
     }
     Interpreter yorumlayici;
     kodCalistir(kod, yorumlayici);
@@ -1491,24 +1525,115 @@ std::optional<std::pair<double, double>> benchmarkBazHizBul(
   return std::nullopt;
 }
 
+enum class OlcumModu {
+  Runtime,
+  Full,
+};
+
+OlcumModu olcumModuCoz(const std::string& metin) {
+  if (metin == "runtime") {
+    return OlcumModu::Runtime;
+  }
+  if (metin == "full") {
+    return OlcumModu::Full;
+  }
+  throw std::runtime_error(
+      "Hata: --olcum-modu sadece 'runtime' veya 'full' olabilir.");
+}
+
+std::string olcumModuAdi(OlcumModu mod) {
+  return mod == OlcumModu::Runtime ? "runtime" : "full";
+}
+
+template <typename F>
+void warmupCalistir(F&& fonksiyon, int warmup) {
+  if (warmup < 0) {
+    throw std::runtime_error("hiz komutu icin warmup negatif olamaz.");
+  }
+  for (int i = 0; i < warmup; ++i) {
+    fonksiyon();
+  }
+}
+
 int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti,
-             const std::string& baselineJsonl, double gateP50, double gateP90) {
+             const std::string& baselineJsonl, double gateP50, double gateP90,
+             OlcumModu olcumModu, int warmup) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error("Hata: hiz komutu icin .oh dosyasi bekleniyor.");
+  }
+  if (tekrar <= 0) {
+    throw std::runtime_error("Hata: hiz komutu icin tekrar pozitif olmali.");
+  }
+  if (warmup < 0) {
+    throw std::runtime_error("Hata: warmup negatif olamaz.");
   }
 
   const std::string kod = dosyaOku(dosyaYolu);
   std::ostringstream yut;
   auto* eskiCout = std::cout.rdbuf(yut.rdbuf());
   try {
-    const std::vector<double> yorumlayiciOlcumleri = dagilimOlcMilisaniye([&]() {
-      Interpreter yorumlayici;
-      kodCalistir(kod, yorumlayici);
-    }, tekrar);
+    std::vector<double> yorumlayiciOlcumleri;
+    std::vector<double> vmOlcumleri;
+    double parseMs = 0.0;
+    double vmCompileMs = 0.0;
 
-    const std::vector<double> vmOlcumleri = dagilimOlcMilisaniye([&]() {
-      kodCalistirVM(kod);
-    }, tekrar);
+    if (olcumModu == OlcumModu::Runtime) {
+      std::unique_ptr<ProgramNode> yorumProgram;
+      std::unique_ptr<ProgramNode> vmProgram;
+      BytecodeChunk chunk;
+
+      parseMs = tekOlcumMilisaniye([&]() { yorumProgram = parseEt(kod); });
+      vmCompileMs = tekOlcumMilisaniye([&]() {
+        vmProgram = parseEt(kod);
+        Compiler derleyici;
+        chunk = derleyici.derle(vmProgram.get());
+      });
+
+      warmupCalistir([&]() {
+        Interpreter yorumlayici;
+        yorumlayici.calistir(yorumProgram.get());
+      }, warmup);
+      warmupCalistir([&]() {
+        VM vm;
+        vm.calistir(chunk);
+      }, warmup);
+
+      yorumlayiciOlcumleri = dagilimOlcMilisaniye([&]() {
+        Interpreter yorumlayici;
+        yorumlayici.calistir(yorumProgram.get());
+      }, tekrar);
+      vmOlcumleri = dagilimOlcMilisaniye([&]() {
+        VM vm;
+        vm.calistir(chunk);
+      }, tekrar);
+    } else {
+      parseMs = tekOlcumMilisaniye([&]() {
+        std::unique_ptr<ProgramNode> program = parseEt(kod);
+        (void)program;
+      });
+      vmCompileMs = tekOlcumMilisaniye([&]() {
+        std::unique_ptr<ProgramNode> program = parseEt(kod);
+        Compiler derleyici;
+        BytecodeChunk chunk = derleyici.derle(program.get());
+        (void)chunk;
+      });
+
+      warmupCalistir([&]() {
+        Interpreter yorumlayici;
+        kodCalistir(kod, yorumlayici);
+      }, warmup);
+      warmupCalistir([&]() {
+        kodCalistirVM(kod);
+      }, warmup);
+
+      yorumlayiciOlcumleri = dagilimOlcMilisaniye([&]() {
+        Interpreter yorumlayici;
+        kodCalistir(kod, yorumlayici);
+      }, tekrar);
+      vmOlcumleri = dagilimOlcMilisaniye([&]() {
+        kodCalistirVM(kod);
+      }, tekrar);
+    }
 
     std::cout.rdbuf(eskiCout);
 
@@ -1533,11 +1658,16 @@ int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti,
     const bool gateP50Gecerli = gateP50 <= 0.0 || p50Oran >= gateP50;
     const bool gateP90Gecerli = gateP90 <= 0.0 || p90Oran >= gateP90;
     const bool gateGecerli = gateP50Gecerli && gateP90Gecerli;
+    const std::string gateResult = gateGecerli ? "pass" : "fail";
 
     if (jsonCikti) {
       std::cout << "{"
                 << "\"dosya\":\"" << jsonKacis(dosyaYolu) << "\","
                 << "\"tekrar\":" << tekrar << ","
+                << "\"olcum_modu\":\"" << olcumModuAdi(olcumModu) << "\","
+                << "\"warmup\":" << warmup << ","
+                << "\"parse_ms\":" << parseMs << ","
+                << "\"vm_compile_ms\":" << vmCompileMs << ","
                 << "\"interpreter\":{\"toplam_ms\":" << yorumlayiciToplam
                 << ",\"p50_ms\":" << yorumlayiciP50 << ",\"p90_ms\":" << yorumlayiciP90
                 << "},"
@@ -1545,6 +1675,7 @@ int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti,
                 << ",\"p90_ms\":" << vmP90 << "},"
                 << "\"hizlanma\":{\"toplam_x\":" << hizlanma << ",\"p50_x\":" << p50Hizlanma
                 << ",\"p90_x\":" << p90Hizlanma << "},"
+                << "\"gate_result\":\"" << gateResult << "\","
                 << "\"gate\":{\"p50_oran\":" << p50Oran << ",\"p90_oran\":" << p90Oran
                 << ",\"gecerli\":" << (gateGecerli ? "true" : "false")
                 << ",\"baseline\":\"" << jsonKacis(baselineJsonl) << "\"}"
@@ -1554,6 +1685,10 @@ int komutHiz(const std::string& dosyaYolu, int tekrar, bool jsonCikti,
 
     std::cout << "Dosya: " << dosyaYolu << "\n";
     std::cout << "Tekrar: " << tekrar << "\n";
+    std::cout << "Olcum modu: " << olcumModuAdi(olcumModu) << "\n";
+    std::cout << "Warmup: " << warmup << "\n";
+    std::cout << "Parse (tek sefer): " << parseMs << " ms\n";
+    std::cout << "VM compile (tek sefer): " << vmCompileMs << " ms\n";
     std::cout << "Interpreter toplam: " << yorumlayiciToplam << " ms\n";
     std::cout << "Interpreter P50/P90: " << yorumlayiciP50 << " / " << yorumlayiciP90
               << " ms\n";
@@ -1655,6 +1790,7 @@ int komutDoctor() {
   const bool hasBenchmarkGate =
       fs::exists("tests/benchmark_gate.ps1") || fs::exists("tests/benchmark_gate.sh");
   const bool fallback = vmFallbackAcikMi();
+  const std::string kanal = calismaKanali();
 
   const bool gitVar = programYoldaVarMi("git");
 
@@ -1681,10 +1817,14 @@ int komutDoctor() {
     }
   }
   std::cout << "Benchmark gate scriptleri: " << evetHayir(hasBenchmarkGate) << "\n";
+  std::cout << "benchmark_gate_hazir: " << evetHayir(hasBenchmarkGate) << "\n";
   std::cout << "Git erisimi: " << evetHayir(gitVar) << "\n";
+  std::cout << "Calisma kanali: " << kanal << "\n";
   std::cout << "VM fallback varsayilan durumu: "
-            << (fallback ? "acik (ORHUN_VM_FALLBACK=0 ile kapat)" : "kapali")
+            << (fallback ? "acik (ORHUN_VM_FALLBACK=0 ile kapat)"
+                         : "kapali (ORHUN_VM_FALLBACK=1 ile ac)")
             << "\n";
+  std::cout << "fallback_whitelist_aktif: " << evetHayir(fallback) << "\n";
 #ifdef _WIN32
   std::cout << "Windows Console UTF-8: "
             << evetHayir(GetConsoleOutputCP() == CP_UTF8 && GetConsoleCP() == CP_UTF8)
@@ -2488,6 +2628,8 @@ int main(int argc, char* argv[]) {
       std::string baselineJsonl;
       double gateP50 = 0.0;
       double gateP90 = 0.0;
+      std::string olcumModuMetni = "runtime";
+      int warmup = 10;
       for (int i = 3; i < argc; ++i) {
         const std::string secenek = argv[i];
         if (secenek == "--json") {
@@ -2531,14 +2673,37 @@ int main(int argc, char* argv[]) {
           tekrar = std::stoi(secenek.substr(9));
           continue;
         }
+        if (secenek == "--olcum-modu") {
+          if (i + 1 >= argc) {
+            throw std::runtime_error("Hata: --olcum-modu icin deger bekleniyor.");
+          }
+          olcumModuMetni = argv[++i];
+          continue;
+        }
+        if (secenek.rfind("--olcum-modu=", 0) == 0) {
+          olcumModuMetni = secenek.substr(13);
+          continue;
+        }
+        if (secenek == "--warmup") {
+          if (i + 1 >= argc) {
+            throw std::runtime_error("Hata: --warmup icin sayi bekleniyor.");
+          }
+          warmup = std::stoi(argv[++i]);
+          continue;
+        }
+        if (secenek.rfind("--warmup=", 0) == 0) {
+          warmup = std::stoi(secenek.substr(9));
+          continue;
+        }
         if (!secenek.empty() && secenek[0] != '-') {
           tekrar = std::stoi(secenek);
           continue;
         }
         throw std::runtime_error(
-            "Hata: hiz secenekleri: [tekrar] [--json] [--tekrar=N] [--baseline dosya.jsonl] [--gate-p50=X] [--gate-p90=Y]");
+            "Hata: hiz secenekleri: [tekrar] [--json] [--tekrar=N] [--warmup=N] [--olcum-modu=runtime|full] [--baseline dosya.jsonl] [--gate-p50=X] [--gate-p90=Y]");
       }
-      return komutHiz(argv[2], tekrar, json, baselineJsonl, gateP50, gateP90);
+      return komutHiz(argv[2], tekrar, json, baselineJsonl, gateP50, gateP90,
+                      olcumModuCoz(olcumModuMetni), warmup);
     }
 
     if (komut == "lsp") {

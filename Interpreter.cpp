@@ -1905,6 +1905,136 @@ void Interpreter::gomuluIslevleriYukle() {
         return OrhunDegeri(cikis);
     };
 
+    // Görev modülü (VM parity): baslat_bekle, baslat_komut, tamamlandi_mi, bekle, hepsi_bekle
+    gomuluIslevler_["gorev.baslat_bekle"] = [this](const std::vector<OrhunDegeri>& args,
+                                                   std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "gorev.baslat_bekle(saniye) tek argüman alır.");
+        }
+        const double saniye = sayiDegeri(args[0], satir, "gorev.baslat_bekle");
+        if (!std::isfinite(saniye) || saniye < 0.0) {
+            hataFirlat(satir, "gorev.baslat_bekle için sıfırdan büyük sayı beklenir.");
+        }
+
+        const int kimlik = gorevSonrakiKimlik_++;
+        GorevKaydi kayit;
+        kayit.future = std::async(std::launch::async, [saniye]() -> double {
+            const auto ms = std::chrono::milliseconds(
+                static_cast<int>(std::llround(saniye * 1000.0)));
+            if (ms.count() > 0) {
+                std::this_thread::sleep_for(ms);
+            }
+            return 1.0;
+        });
+        gorevler_.emplace(kimlik, std::move(kayit));
+        return OrhunDegeri(kimlik);
+    };
+
+    gomuluIslevler_["gorev.baslat_komut"] = [this](const std::vector<OrhunDegeri>& args,
+                                                   std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1 || !std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "gorev.baslat_komut(\"komut\") tek metin argüman alır.");
+        }
+        const std::string komut = std::get<std::string>(args[0].veri);
+        if (!sistemKomutuKisitliModDisi() && !sistemKomutuGuvenliMi(komut)) {
+            hataFirlat(satir,
+                       "gorev.baslat_komut kısıtlı modda tehlikeli karakter içeremez. "
+                       "Gerekirse ORHUN_UNSAFE=1 ile açın.");
+        }
+
+        const int kimlik = gorevSonrakiKimlik_++;
+        GorevKaydi kayit;
+        kayit.future = std::async(std::launch::async, [komut]() -> double {
+            return static_cast<double>(yerlesik::komutCalistirGuvenli(komut));
+        });
+        gorevler_.emplace(kimlik, std::move(kayit));
+        return OrhunDegeri(kimlik);
+    };
+
+    gomuluIslevler_["gorev.tamamlandi_mi"] = [this](const std::vector<OrhunDegeri>& args,
+                                                    std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "gorev.tamamlandi_mi(gorev_id) tek argüman alır.");
+        }
+        const int kimlik = static_cast<int>(
+            std::llround(sayiDegeri(args[0], satir, "gorev.tamamlandi_mi")));
+        const auto it = gorevler_.find(kimlik);
+        if (it == gorevler_.end()) {
+            return OrhunDegeri(0);
+        }
+        if (it->second.sonucHazir) {
+            return OrhunDegeri(1);
+        }
+        if (it->second.future.valid() &&
+            it->second.future.wait_for(std::chrono::seconds(0)) ==
+                std::future_status::ready) {
+            it->second.sonuc = it->second.future.get();
+            it->second.sonucHazir = true;
+            return OrhunDegeri(1);
+        }
+        return OrhunDegeri(0);
+    };
+
+    gomuluIslevler_["gorev.bekle"] = [this](const std::vector<OrhunDegeri>& args,
+                                            std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "gorev.bekle(gorev_id) tek argüman alır.");
+        }
+        const int kimlik = static_cast<int>(
+            std::llround(sayiDegeri(args[0], satir, "gorev.bekle")));
+        const auto it = gorevler_.find(kimlik);
+        if (it == gorevler_.end()) {
+            hataFirlat(satir, "gorev.bekle: geçersiz görev kimliği.");
+        }
+        if (!it->second.sonucHazir) {
+            if (!it->second.future.valid()) {
+                hataFirlat(satir, "gorev.bekle: görev sonucu kullanılamaz durumda.");
+            }
+            it->second.sonuc = it->second.future.get();
+            it->second.sonucHazir = true;
+        }
+        if (tamSayiMi(it->second.sonuc)) {
+            return OrhunDegeri(static_cast<int>(std::llround(it->second.sonuc)));
+        }
+        return OrhunDegeri(it->second.sonuc);
+    };
+
+    gomuluIslevler_["gorev.hepsi_bekle"] = [this](const std::vector<OrhunDegeri>& args,
+                                                  std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1 ||
+            !std::holds_alternative<OrhunDegeri::ListeTipi>(args[0].veri)) {
+            hataFirlat(satir, "gorev.hepsi_bekle([gorev_id...]) tek liste argümanı alır.");
+        }
+        const auto& listePtr = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
+        if (!listePtr) {
+            return OrhunDegeri(OrhunDegeri::ListeVeri{});
+        }
+
+        OrhunDegeri::ListeVeri sonuc;
+        sonuc.reserve(listePtr->size());
+        for (const auto& oge : *listePtr) {
+            const int kimlik = static_cast<int>(
+                std::llround(sayiDegeri(oge, satir, "gorev.hepsi_bekle")));
+            const auto it = gorevler_.find(kimlik);
+            if (it == gorevler_.end()) {
+                hataFirlat(satir, "gorev.hepsi_bekle: geçersiz görev kimliği.");
+            }
+            if (!it->second.sonucHazir) {
+                if (!it->second.future.valid()) {
+                    hataFirlat(satir, "gorev.hepsi_bekle: görev sonucu kullanılamaz durumda.");
+                }
+                it->second.sonuc = it->second.future.get();
+                it->second.sonucHazir = true;
+            }
+            if (tamSayiMi(it->second.sonuc)) {
+                sonuc.emplace_back(static_cast<int>(std::llround(it->second.sonuc)));
+            } else {
+                sonuc.emplace_back(it->second.sonuc);
+            }
+        }
+        return OrhunDegeri(std::move(sonuc));
+    };
+
     // FFI (Native C/C++ fonksiyon çağrısı) çekirdeği.
     auto ffiKimlikCoz = [this](const OrhunDegeri& deger,
                                std::size_t satir,
@@ -3066,6 +3196,14 @@ void Interpreter::yerlesikModulleriYukle() {
     OrhunDegeri::SozlukVeri sistem;
     sistem["komut"] = OrhunDegeri("__islev_ref__:sistem.komut");
     globalHafiza_["sistem"] = OrhunDegeri(std::move(sistem));
+
+    OrhunDegeri::SozlukVeri gorev;
+    gorev["baslat_bekle"] = OrhunDegeri("__islev_ref__:gorev.baslat_bekle");
+    gorev["baslat_komut"] = OrhunDegeri("__islev_ref__:gorev.baslat_komut");
+    gorev["tamamlandi_mi"] = OrhunDegeri("__islev_ref__:gorev.tamamlandi_mi");
+    gorev["bekle"] = OrhunDegeri("__islev_ref__:gorev.bekle");
+    gorev["hepsi_bekle"] = OrhunDegeri("__islev_ref__:gorev.hepsi_bekle");
+    globalHafiza_["gorev"] = OrhunDegeri(std::move(gorev));
 
     OrhunDegeri::SozlukVeri dosya;
     dosya["oku"] = OrhunDegeri("__islev_ref__:dosya.oku");
