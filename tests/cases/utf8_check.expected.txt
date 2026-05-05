@@ -1,0 +1,13 @@
+--- Uzunluk Testi ---
+merhaba: 7
+merhaba dünya: 14
+ÇŞĞİÖÜçşğüöı: 24
+--- Dilimleme (Slicing) Testi ---
+Ç
+Ş�
+düny
+--- Buyuk/Kucuk Harf Testi ---
+MERHABA
+dÜnya
+ISTANBUL
+İstanbul

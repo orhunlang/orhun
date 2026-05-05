@@ -1,0 +1,16 @@
+tip Sayac:
+    deger olsun 0
+    işlev kur(baslangic):
+        benim.deger = baslangic
+    işlev arttir():
+        benim.deger = benim.deger + 1
+    işlev al():
+        döndür benim.deger
+
+s olsun yeni Sayac(0)
+i olsun 0
+sürece i küçük 1000000:
+    s.arttir()
+    i = i + 1
+
+yazdır s.al()

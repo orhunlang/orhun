@@ -33,6 +33,7 @@ enum class OpCode : std::uint8_t {
   OP_CIKAR,
   OP_CARP,
   OP_BOL,
+  OP_MOD,
   OP_NEGATE,
   OP_NOT,
   OP_ESIT,
@@ -46,5 +47,7 @@ enum class OpCode : std::uint8_t {
   OP_DONGU,
   OP_TRY_BASLA,
   OP_TRY_BITIR,
-  OP_DON
+  OP_DON,
+  OP_NOP,
+  OP_GUVENLI_ALAN_AL
 };

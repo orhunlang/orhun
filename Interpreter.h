@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <functional>
-#include <future>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -18,6 +17,9 @@ struct NesneMetodBilgisi;
 namespace runtime {
 class DynamicLibrary;
 }
+
+#define ORHUN_SURUM "0.8.0"
+#define ORHUN_INSA_NO "50"
 
 class OrhunHatasi : public std::runtime_error {
 public:
@@ -34,8 +36,7 @@ struct OrhunDegeri {
   using SozlukTipi = std::shared_ptr<SozlukVeri>;
   using NesneTipi = std::shared_ptr<OrhunNesne>;
 
-  std::variant<int, double, std::string, ListeTipi, SozlukTipi, NesneTipi>
-      veri;
+  std::variant<int, double, std::string, ListeTipi, SozlukTipi, NesneTipi> veri;
 
   OrhunDegeri() : veri(0) {}
   explicit OrhunDegeri(int v) : veri(v) {}
@@ -63,8 +64,7 @@ struct NesneMetodBilgisi {
 
 struct OrhunNesne {
   std::string sinifAdi;
-  OrhunDegeri::SozlukTipi alanlar =
-      std::make_shared<OrhunDegeri::SozlukVeri>();
+  OrhunDegeri::SozlukTipi alanlar = std::make_shared<OrhunDegeri::SozlukVeri>();
   std::unordered_map<std::string, NesneMetodBilgisi> metodlar;
 };
 
@@ -149,6 +149,8 @@ private:
   int donguDerinligi_ = 0;
 
   std::unordered_map<std::string, const IslevTanimNode *> islevTablosu_;
+  std::unordered_map<std::string, const IsimsizIslevNode *>
+      anonimIslevTablosu_;
   std::unordered_map<std::string, const SinifTanimNode *> sinifTablosu_;
   std::unordered_map<std::string, GomuluIslev> gomuluIslevler_;
   std::vector<std::unique_ptr<ProgramNode>> yukluModuller_;
@@ -158,19 +160,19 @@ private:
   std::unordered_map<int, FFIBinding> ffiIslevBaglantilari_;
   int ffiSonrakiKimlik_ = 1;
   int ffiSonrakiIslevKimlik_ = 1;
-  struct GorevKaydi {
-    std::future<double> future;
-    bool sonucHazir = false;
-    double sonuc = 0.0;
+  std::size_t anonimIslevSayaci_ = 0;
+  struct CagriCercevesi {
+    std::string ad;
+    std::size_t satir = 0;
   };
-  std::unordered_map<int, GorevKaydi> gorevler_;
-  int gorevSonrakiKimlik_ = 1;
+  std::vector<CagriCercevesi> cagriYigini_;
 
   void gomuluIslevleriYukle();
   void yerlesikModulleriYukle();
 
   void calistirBlock(const BlockNode *block);
   void calistirAtama(const AtamaNode *dugum);
+  void calistirCokluAtama(const CokluAtamaNode *dugum);
   void calistirYazdir(const YazdirNode *dugum);
   void calistirEger(const EgerNode *dugum);
   void calistirTekrarla(const TekrarlaNode *dugum);
@@ -196,10 +198,12 @@ private:
   OrhunDegeri sozlukOlustur(const SozlukNode *dugum);
   OrhunDegeri dilimErisim(const DilimErisimNode *dugum);
   OrhunDegeri indeksErisim(const IndeksErisimNode *dugum);
+  OrhunDegeri guvenliAlanErisim(const GuvenliAlanErisimNode *dugum);
   OrhunDegeri alanErisim(const AlanErisimNode *dugum);
   OrhunDegeri benimErisim(const BenimErisimNode *dugum);
   OrhunDegeri yeniNesneOlustur(const YeniNesneNode *dugum);
   OrhunDegeri islevCagir(const IslevCagriNode *dugum);
+  OrhunDegeri anonimIslevOlustur(const IsimsizIslevNode *dugum);
   OrhunDegeri dahilEtDegerlendir(const DahilEtNode *dugum);
   OrhunDegeri ustIslevCagir(const std::string &metodAdi,
                             const std::vector<OrhunDegeri> &argumanlar,
@@ -213,21 +217,25 @@ private:
                                      const OrhunDegeri *benimDegeri,
                                      const std::string *etkinSinifAdi,
                                      bool dondurZorunlu);
+  OrhunDegeri anonimIslevCalistir(const IsimsizIslevNode *islev,
+                                  const std::vector<OrhunDegeri> &argumanlar,
+                                  std::size_t satir,
+                                  const OrhunDegeri *benimDegeri,
+                                  const std::string *etkinSinifAdi,
+                                  bool dondurZorunlu);
   OrhunDegeri nesneMetoduCagir(const OrhunDegeri &hedef,
                                const std::string &metodAdi,
                                const std::vector<OrhunDegeri> &argumanlar,
                                std::size_t satir);
   OrhunDegeri noktaYoluDegeri(const std::string &yol, std::size_t satir) const;
-  bool islevReferansiCoz(const OrhunDegeri &deger,
-                         std::string &gercekAd) const;
+  bool islevReferansiCoz(const OrhunDegeri &deger, std::string &gercekAd) const;
 
   DegiskenTablosu &aktifKapsam();
-  OrhunDegeri &degiskenBulYazilabilir(const std::string &ad,
-                                      std::size_t satir);
+  OrhunDegeri &degiskenBulYazilabilir(const std::string &ad, std::size_t satir);
   const OrhunDegeri &degiskenBul(const std::string &ad,
                                  std::size_t satir) const;
-  OrhunDegeri &atananHedefYazilabilir(const ASTNode *hedef,
-                                      std::size_t satir, bool sonHedef);
+  OrhunDegeri &atananHedefYazilabilir(const ASTNode *hedef, std::size_t satir,
+                                      bool sonHedef);
 
   bool dogruMu(const OrhunDegeri &deger) const;
   bool esittir(const OrhunDegeri &sol, const OrhunDegeri &sag) const;
@@ -246,6 +254,7 @@ private:
                              const std::string &baglam);
   std::size_t listeIndeksiCevir(const OrhunDegeri &deger, std::size_t satir,
                                 const std::string &baglam) const;
+  std::string stackTraceOlustur() const;
 
   [[noreturn]] void hataFirlat(std::size_t satir,
                                const std::string &mesaj) const;

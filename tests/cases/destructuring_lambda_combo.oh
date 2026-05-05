@@ -1,0 +1,4 @@
+a, b olsun [5, 6]
+f olsun işlev(x, y olsun 6): x + y
+yazdır f(a)
+yazdır f(a, b)

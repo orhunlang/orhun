@@ -1,0 +1,5 @@
+işlev selam(ad olsun "Orhun"):
+    döndür "Merhaba " + ad
+
+yazdır selam()
+yazdır selam("Dunya")

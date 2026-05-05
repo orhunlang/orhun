@@ -1,0 +1,4 @@
+sayi_falsy
+metin_falsy
+liste_falsy
+4

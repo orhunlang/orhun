@@ -1,0 +1,8 @@
+Ali
+28
+bos
+bos
+Alan erisimi yalnizca nesnelerde yapilabilir.
+
+Stack Trace:
+  [satir 9] <program>

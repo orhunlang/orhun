@@ -1,0 +1,7 @@
+veri olsun {"ad": "orhun", "deger": 42, "liste": [1, 2, 3, 4, 5]}
+cozulmus olsun {"deger": 0}
+tekrarla 3000 kez
+    metin olsun json.yaz(veri)
+    cozulmus olsun json.coz(metin)
+
+yazdır cozulmus["deger"]

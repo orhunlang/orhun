@@ -1,0 +1,4 @@
+Arguman sayisi uyusmuyor: 'topla' (beklenen 1-2).
+
+Stack Trace:
+  [satir 4] <program>

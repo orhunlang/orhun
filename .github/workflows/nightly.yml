@@ -10,12 +10,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     env:
       ORHUN_BENCH_GATE_P50: "1.4"
       ORHUN_BENCH_GATE_P90: "1.2"
       ORHUN_BENCH_GATE_MODE: "suite"
+      ORHUN_BENCH_BASELINE_JSONL: ""
+      ORHUN_BENCH_BASELINE_P50_RATIO: "0"
+      ORHUN_BENCH_BASELINE_P90_RATIO: "0"
+      ORHUN_PY_GATE_MEDIAN: "1.05"
+      ORHUN_PY_GATE_FAST_CASES: "6"
       ORHUN_CHANNEL: "nightly"
     steps:
       - name: Checkout
@@ -25,46 +30,373 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++
+          sudo apt-get install -y g++ python3 gcovr
+
+      - name: Setup C++ toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install gcovr || true
 
       - name: Run tests (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          ./tests/run_tests.ps1
+          ./tests/run_tests.ps1 -Output build/orhun_test.exe
+
+      - name: VM strict parity (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./tests/vm_parity.ps1 -Output build/orhun_test.exe
 
       - name: Run tests (Linux)
         if: runner.os == 'Linux'
         run: |
           chmod +x tests/run_tests.sh
-          ./tests/run_tests.sh
+          ./tests/run_tests.sh g++ build/orhun_test
+
+      - name: VM strict parity (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x tests/vm_parity.sh
+          ./tests/vm_parity.sh g++ build/orhun_test
+
+      - name: Run tests (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x tests/run_tests.sh
+          ./tests/run_tests.sh clang++ build/orhun_test
+
+      - name: VM strict parity (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x tests/vm_parity.sh
+          ./tests/vm_parity.sh clang++ build/orhun_test
+
+      - name: Fallback matrix (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/fallback_matrix.py .\build\orhun_test.exe
+
+      - name: Fallback matrix (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/fallback_matrix.py ./build/orhun_test
+
+      - name: Fallback matrix (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/fallback_matrix.py ./build/orhun_test
+
+      - name: Doctor JSON smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/doctor_json_smoke.py .\build\orhun_test.exe
+
+      - name: Doctor JSON smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/doctor_json_smoke.py ./build/orhun_test
+
+      - name: Doctor JSON smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/doctor_json_smoke.py ./build/orhun_test
+
+      - name: Fallback ORH-COMP smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/fallback_orh_comp_smoke.py .\build\orhun_test.exe
+
+      - name: Fallback ORH-COMP smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/fallback_orh_comp_smoke.py ./build/orhun_test
+
+      - name: Fallback ORH-COMP smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/fallback_orh_comp_smoke.py ./build/orhun_test
+
+      - name: Benchmark contract (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/benchmark_contract.py .\build\orhun_test.exe
+
+      - name: Benchmark contract (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/benchmark_contract.py ./build/orhun_test
+
+      - name: Benchmark contract (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/benchmark_contract.py ./build/orhun_test
+
+      - name: Benchmark pipeline smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/benchmark_pipeline_smoke.py
+
+      - name: Benchmark pipeline smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/benchmark_pipeline_smoke.py
+
+      - name: Benchmark pipeline smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/benchmark_pipeline_smoke.py
+
+      - name: DX fmt/lint smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/dx_fmt_lint_smoke.py .\build\orhun_test.exe
+
+      - name: DX fmt/lint smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/dx_fmt_lint_smoke.py ./build/orhun_test
+
+      - name: DX fmt/lint smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/dx_fmt_lint_smoke.py ./build/orhun_test
+
+      - name: Lock v3 smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/lock_v3_smoke.py .\build\orhun_test.exe
+
+      - name: Lock v3 smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/lock_v3_smoke.py ./build/orhun_test
+
+      - name: Lock v3 smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/lock_v3_smoke.py ./build/orhun_test
+
+      - name: Package --ref smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/package_ref_smoke.py .\build\orhun_test.exe
+
+      - name: Package --ref smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/package_ref_smoke.py ./build/orhun_test
+
+      - name: Package --ref smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/package_ref_smoke.py ./build/orhun_test
+
+      - name: FFI policy smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/ffi_policy_smoke.py .\build\orhun_test.exe
+
+      - name: FFI policy smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/ffi_policy_smoke.py ./build/orhun_test
+
+      - name: FFI policy smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/ffi_policy_smoke.py ./build/orhun_test
+
+      - name: Package allowlist smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/package_allowlist_smoke.py .\build\orhun_test.exe
+
+      - name: Package allowlist smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/package_allowlist_smoke.py ./build/orhun_test
+
+      - name: Package allowlist smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/package_allowlist_smoke.py ./build/orhun_test
+
+      - name: System command policy smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/system_command_policy_smoke.py .\build\orhun_test.exe
+
+      - name: System command policy smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/system_command_policy_smoke.py ./build/orhun_test
+
+      - name: System command policy smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/system_command_policy_smoke.py ./build/orhun_test
+
+      - name: Fuzz smoke (advanced)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/fuzz_smoke.py ./build/orhun_test --count 100 --seed 2026 --timeout 2.5 --profile advanced
+
+      - name: Fuzz smoke (advanced vm-strict)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/fuzz_smoke.py ./build/orhun_test --count 80 --seed 2027 --timeout 2.5 --profile advanced --vm-strict
+
+      - name: Coverage report (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x tests/coverage.sh
+          ./tests/coverage.sh g++ build/orhun_cov coverage
+
+      - name: Coverage gate (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/coverage_gate.py --summary coverage/summary.txt --min-lines 55
+
+      - name: LSP smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/lsp_smoke.py ./build/orhun_test
+
+      - name: LSP smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/lsp_smoke.py ./build/orhun_test
+
+      - name: LSP smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/lsp_smoke.py .\build\orhun_test.exe
+
+      - name: LSP workspace smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/lsp_workspace_smoke.py ./build/orhun_test
+
+      - name: LSP workspace smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/lsp_workspace_smoke.py ./build/orhun_test
+
+      - name: LSP workspace smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/lsp_workspace_smoke.py .\build\orhun_test.exe
 
       - name: Benchmark smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          ./tests/benchmark.ps1 -Output orhun_bench.exe -Tekrar 5 -Warmup 3 -OlcumModu runtime -JsonCikti benchmark_results.jsonl
+          ./tests/benchmark.ps1 -Output build/orhun_bench.exe -Tekrar 5 -Warmup 3 -OlcumModu runtime -JsonCikti build/benchmark_results.jsonl
+
+      - name: Benchmark JSON guard (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (!(Test-Path build/benchmark_results.jsonl)) {
+            throw "Benchmark dosyasi bulunamadi: build/benchmark_results.jsonl"
+          }
+          $lineCount = (Get-Content build/benchmark_results.jsonl -Encoding utf8 | Where-Object { $_.Trim().Length -gt 0 }).Count
+          if ($lineCount -le 0) {
+            throw "Benchmark dosyasi bos: build/benchmark_results.jsonl"
+          }
+          Write-Host "benchmark_lines=$lineCount"
 
       - name: Benchmark gate (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          ./tests/benchmark_gate.ps1 -JsonL benchmark_results.jsonl -MinP50 $env:ORHUN_BENCH_GATE_P50 -MinP90 $env:ORHUN_BENCH_GATE_P90 -Mode $env:ORHUN_BENCH_GATE_MODE
+          ./tests/benchmark_gate.ps1 -JsonL build/benchmark_results.jsonl -MinP50 $env:ORHUN_BENCH_GATE_P50 -MinP90 $env:ORHUN_BENCH_GATE_P90 -Mode $env:ORHUN_BENCH_GATE_MODE -BaselineJsonL $env:ORHUN_BENCH_BASELINE_JSONL -MinBaselineP50Ratio $env:ORHUN_BENCH_BASELINE_P50_RATIO -MinBaselineP90Ratio $env:ORHUN_BENCH_BASELINE_P90_RATIO
 
       - name: Benchmark smoke (Linux)
         if: runner.os == 'Linux'
         run: |
           chmod +x tests/benchmark.sh
-          ./tests/benchmark.sh g++ orhun_bench 5 benchmark_results.jsonl "" 0 0 runtime 3
+          ./tests/benchmark.sh g++ build/orhun_bench 5 build/benchmark_results.jsonl "" 0 0 runtime 3
+
+      - name: Benchmark JSON guard (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          test -f build/benchmark_results.jsonl
+          line_count="$(grep -cve '^[[:space:]]*$' build/benchmark_results.jsonl || true)"
+          if [ "${line_count}" -le 0 ]; then
+            echo "Benchmark dosyasi bos: build/benchmark_results.jsonl"
+            exit 1
+          fi
+          echo "benchmark_lines=${line_count}"
 
       - name: Benchmark gate (Linux)
         if: runner.os == 'Linux'
         run: |
           chmod +x tests/benchmark_gate.sh
-          ./tests/benchmark_gate.sh benchmark_results.jsonl "${ORHUN_BENCH_GATE_P50}" "${ORHUN_BENCH_GATE_P90}" "${ORHUN_BENCH_GATE_MODE}"
+          ./tests/benchmark_gate.sh build/benchmark_results.jsonl "${ORHUN_BENCH_GATE_P50}" "${ORHUN_BENCH_GATE_P90}" "${ORHUN_BENCH_GATE_MODE}" "${ORHUN_BENCH_BASELINE_JSONL}" "${ORHUN_BENCH_BASELINE_P50_RATIO}" "${ORHUN_BENCH_BASELINE_P90_RATIO}"
+
+      - name: Python compare benchmark (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/benchmark_python_compare.py --orhun ./build/orhun_bench --repeat 5 --warmup 1 --json-out build/python_compare.json
+
+      - name: Python compare gate (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/benchmark_python_gate.py --json build/python_compare.json --min-median-p50 "${ORHUN_PY_GATE_MEDIAN}" --min-fast-cases "${ORHUN_PY_GATE_FAST_CASES}"
+
+      - name: Benchmark smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x tests/benchmark.sh
+          ./tests/benchmark.sh clang++ build/orhun_bench 5 build/benchmark_results.jsonl "" 0 0 runtime 3
+
+      - name: Benchmark JSON guard (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          test -f build/benchmark_results.jsonl
+          line_count="$(grep -cve '^[[:space:]]*$' build/benchmark_results.jsonl || true)"
+          if [ "${line_count}" -le 0 ]; then
+            echo "Benchmark dosyasi bos: build/benchmark_results.jsonl"
+            exit 1
+          fi
+          echo "benchmark_lines=${line_count}"
+
+      - name: Benchmark gate (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x tests/benchmark_gate.sh
+          ./tests/benchmark_gate.sh build/benchmark_results.jsonl "${ORHUN_BENCH_GATE_P50}" "${ORHUN_BENCH_GATE_P90}" "${ORHUN_BENCH_GATE_MODE}" "${ORHUN_BENCH_BASELINE_JSONL}" "${ORHUN_BENCH_BASELINE_P50_RATIO}" "${ORHUN_BENCH_BASELINE_P90_RATIO}"
 
       - name: Upload benchmark artifact
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-${{ runner.os }}
-          path: benchmark_results.jsonl
+          path: |
+            build/benchmark_results.jsonl
+            build/python_compare.json
+
+      - name: Upload coverage artifact (Linux)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-linux
+          path: |
+            coverage/summary.txt
+            coverage/coverage.xml
+            coverage/index.html

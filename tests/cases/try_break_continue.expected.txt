@@ -1,2 +1,6 @@
-Yakalanan: Satır 4: Sıfıra bölme yapılamaz.
+Yakalanan: Sıfıra bölme yapılamaz.
+
+Stack Trace:
+  [satir 4] <program>
+
 Toplam: 7

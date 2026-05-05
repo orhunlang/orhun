@@ -2,15 +2,21 @@
 set -euo pipefail
 
 COMPILER="${1:-g++}"
-OUTPUT="${2:-orhun_bench}"
+OUTPUT="${2:-build/orhun_bench}"
 TEKRAR="${3:-30}"
-JSON_OUT="${4:-benchmark_results.jsonl}"
+JSON_OUT="${4:-build/benchmark_results.jsonl}"
 BASELINE="${5:-}"
 GATE_P50="${6:-0}"
 GATE_P90="${7:-0}"
 OLCUM_MODU="${8:-runtime}"
 WARMUP="${9:-10}"
 GATE_MODE="${10:-suite}"
+GATE_BASELINE="${11:-}"
+GATE_BASELINE_P50_RATIO="${12:-0}"
+GATE_BASELINE_P90_RATIO="${13:-0}"
+
+mkdir -p "$(dirname "${OUTPUT}")"
+mkdir -p "$(dirname "${JSON_OUT}")"
 
 if [[ ! -f "${OUTPUT}" ]]; then
   echo "[build] ${OUTPUT} bulunamadi, derleniyor..."
@@ -20,27 +26,21 @@ if [[ ! -f "${OUTPUT}" ]]; then
 fi
 
 cases=(
-  "tests/cases/basic_math.oh"
-  "tests/cases/assignment_equals.oh"
-  "tests/cases/while_float.oh"
-  "tests/cases/list_comprehension.oh"
-  "tests/cases/oop_super.oh"
-  "tests/cases/json_parse.oh"
-  "tests/cases/f_string.oh"
-  "tests/cases/f_string_escape.oh"
-  "tests/cases/slicing.oh"
-  "tests/cases/dict_nested.oh"
-  "tests/cases/try_break_continue.oh"
-  "tests/cases/try_catch_runtime.oh"
-  "tests/cases/module_stdlib.oh"
-  "tests/cases/stdlib_modules.oh"
-  "tests/cases/stdlib_database.oh"
-  "tests/cases/stdlib_regex_date.oh"
-  "tests/cases/stdlib_async.oh"
-  "tests/cases/vm_loop_control.oh"
+  "tests/benchmarks/python_compare/fib_recursive.oh"
+  "tests/benchmarks/python_compare/fib_iterative.oh"
+  "tests/benchmarks/python_compare/nbody.oh"
+  "tests/benchmarks/python_compare/spectral_norm.oh"
+  "tests/benchmarks/python_compare/json_loads.oh"
+  "tests/benchmarks/python_compare/string_concat.oh"
+  "tests/benchmarks/python_compare/binary_tree.oh"
+  "tests/benchmarks/python_compare/method_call.oh"
+  "tests/benchmarks/python_compare/matrix_mult.oh"
+  "tests/benchmarks/python_compare/primes.oh"
 )
 
 rm -f "${JSON_OUT}"
+ok_count=0
+failed=0
 echo "[bench] Orhun hiz karsilastirma (JSONL: ${JSON_OUT})"
 for src in "${cases[@]}"; do
   echo ""
@@ -50,15 +50,33 @@ for src in "${cases[@]}"; do
     cmd+=("--baseline" "${BASELINE}")
   fi
   if ! json="$("${cmd[@]}" 2>&1)"; then
-    echo "[skip] ${src} benchmark atlandi (VM destek disi olabilir)."
+    echo "[FAIL] ${src} benchmark basarisiz."
+    [[ -n "${json}" ]] && echo "${json}"
+    failed=1
   else
     echo "${json}" | tr -d '\r' >> "${JSON_OUT}"
     echo "${json}"
+    ok_count=$((ok_count + 1))
   fi
 done
 
-if [[ "${GATE_P50}" != "0" || "${GATE_P90}" != "0" ]]; then
+if [[ "${failed}" -ne 0 ]]; then
+  echo "Benchmark smoke basarisiz."
+  exit 3
+fi
+if [[ ! -f "${JSON_OUT}" ]]; then
+  echo "Benchmark smoke basarisiz: JSONL dosyasi uretilmedi: ${JSON_OUT}"
+  exit 3
+fi
+line_count="$(grep -cve '^[[:space:]]*$' "${JSON_OUT}" || true)"
+if [[ "${line_count}" -le 0 ]]; then
+  echo "Benchmark smoke basarisiz: JSONL dosyasi bos: ${JSON_OUT}"
+  exit 3
+fi
+echo "[bench] toplam_ok=${ok_count} satir=${line_count}"
+
+if [[ "${GATE_P50}" != "0" || "${GATE_P90}" != "0" || "${GATE_BASELINE_P50_RATIO}" != "0" || "${GATE_BASELINE_P90_RATIO}" != "0" ]]; then
   echo ""
   echo "[gate] KPI kontrolu"
-  ./tests/benchmark_gate.sh "${JSON_OUT}" "${GATE_P50}" "${GATE_P90}" "${GATE_MODE}"
+  ./tests/benchmark_gate.sh "${JSON_OUT}" "${GATE_P50}" "${GATE_P90}" "${GATE_MODE}" "${GATE_BASELINE}" "${GATE_BASELINE_P50_RATIO}" "${GATE_BASELINE_P90_RATIO}"
 fi

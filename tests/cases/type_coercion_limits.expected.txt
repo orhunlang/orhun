@@ -1,0 +1,13 @@
+--- String + Sayi ---
+Sayi: 123
+123 (metin)
+Sonuc: 15
+--- Boolean Coercion (if) ---
+1 dogrudur
+0 yanlistir
+dolu string dogrudur
+bos string yanlistir
+dolu liste dogrudur
+bos liste yanlistir
+--- Null/Yok Coercion (Varsa) ---
+Nesne dogrudur

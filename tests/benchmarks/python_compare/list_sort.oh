@@ -1,0 +1,23 @@
+işlev listeyi_sirala(liste):
+    n olsun uzunluk(liste)
+    i olsun 0
+    sürece i küçük n:
+        j olsun 0
+        sürece j küçük (n - i - 1):
+            eğer liste[j] büyük liste[j + 1] ise:
+                gecici olsun liste[j]
+                liste[j] = liste[j + 1]
+                liste[j + 1] = gecici
+            j = j + 1
+        i = i + 1
+    döndür liste
+
+liste olsun []
+i olsun 1000
+sürece i büyük 0:
+    listeye_ekle(liste, i)
+    i = i - 1
+
+sirali olsun listeyi_sirala(liste)
+yazdır sirali[0]
+yazdır sirali[4999]

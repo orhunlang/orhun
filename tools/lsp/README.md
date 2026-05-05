@@ -1,20 +1,26 @@
-# Orhun LSP (Arsiv / Prototip)
+# Orhun LSP (Arsiv)
 
-Bu klasor **Python tabanli eski MVP prototipini** tutar.
+Bu klasor yalnizca gecmis prototip artefaktlarini barindirir.
 
-## Resmi hat
+## Resmi LSP Hatti
 
-Uretim icin resmi LSP hattı C++ calistirici icindedir:
+Uretim icin tek resmi komut:
 
 ```bash
 orhun lsp --stdio
 ```
 
-VS Code eklentisi tarafinda resmi klasor:
+Workspace indeksleme (opsiyonel):
+
+```bash
+orhun lsp --stdio --workspace-root /path/to/workspace
+```
+
+VS Code tarafinda resmi klasor:
 
 - `tools/vscode-orhun`
 
-## Not
+## Arsiv Notu
 
-`tools/lsp/orhun_lsp.py` referans amaclidir; yeni ozellikler bu prototipe
-degil C++ LSP hattina eklenmelidir.
+Python prototipi aktif hat degildir ve `tools/lsp/archive/` altinda tutulur.
+Yeni ozellikler yalnizca C++ LSP hattina eklenmelidir.

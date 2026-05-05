@@ -1,0 +1,8 @@
+x olsun 5
+
+işlev deger(a olsun x):
+    döndür a
+
+yazdır deger()
+x = 9
+yazdır deger()

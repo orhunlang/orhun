@@ -1,0 +1,7 @@
+# Metin islemleri testi
+metin olsun "Merhaba Dünya"
+yazdır uzunluk(metin)
+parca olsun parcala(metin, " ")
+yazdır parca[0]
+yazdır parca[1]
+yazdır uzunluk(parca)

@@ -1,0 +1,1 @@
+Satır 1, Sütun 1: Tanınmayan komut: 'dis_islev'. Bunu mu demek istediniz: 'dış_işlev'? [token: dis_islev]

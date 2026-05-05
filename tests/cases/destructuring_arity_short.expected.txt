@@ -1,0 +1,4 @@
+Liste indeksi sinir disi.
+
+Stack Trace:
+  [satir 1] <program>

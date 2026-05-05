@@ -1,6 +1,11 @@
 *.exe
 *.obj
+*.o
 *.pdb
 *.ilk
 *.txt
+temp_fuzz.oh
+/build/
+/coverage/
+/artifacts/local/**
 !tests/cases/*.expected.txt

@@ -1,0 +1,4 @@
+Sayi: 42
+Ondalik: 3.14
+Mantik: 1
+Topla: 15

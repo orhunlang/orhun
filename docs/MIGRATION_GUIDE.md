@@ -18,12 +18,25 @@
 - Gerekirse açık mod:
   - `ORHUN_UNSAFE=1`
   - veya `ORHUN_SYSTEM_UNSAFE=1`
+- FFI güvenlik politikası:
+  - `ORHUN_FFI_POLICY=off|allowlist|full`
+  - stable kanalda varsayılan: `allowlist`
+  - `ORHUN_FFI_ALLOWLIST=libc.so.6,kernel32.dll` ile ek izinli kütüphaneler tanımlanabilir.
 
 ## 3. Paket Güveni
 - Uzak kaynaklar allowlist ile doğrulanır.
 - Ek izinli alan adları:
   - `ORHUN_PAKET_ALLOWLIST=example.com,git.example.org`
-- Paket kurulumu `orhun.lock` günceller.
+- Paket kurulumu `orhun.lock` dosyasını `v3` formatında günceller:
+  - commit pin (`commit_pin`)
+  - içerik hash (`icerik_sha256`)
+- Kaynak ref sabitleme desteği:
+  - `orhun paket kur <kaynak> [paket_adi] --ref <tag|commit>`
+  - lock satırında `source_ref` alanı saklanır.
+  - `paket dogrula`, `source_ref -> commit_pin` tutarlılığını doğrular.
+- `orhun paket dogrula` artık lock v3 için commit + içerik hash doğrulaması yapar.
+- Mevcut lock dosyasını yükseltmek için:
+  - `orhun paket lock-guncelle`
 
 ## 4. Derleme Metadata
 - `orhun derle` artık:
@@ -47,11 +60,57 @@
   - `parse_ms`
   - `vm_compile_ms`
   - `gate_result`
+- `gate_result` alanı `pass` veya `fail` olur.
+- Çıkış kodları:
+  - `0`: ölçüm tamamlandı, gate geçti (veya gate kapalı)
+  - `1`: argüman/çalıştırma hatası
+  - `2`: gate başarısız
+  - `3`: benchmark altyapı hatası (örn. baseline JSONL okunamıyor)
 
 ## 6. Benchmark Gate Modu
 - `tests/benchmark_gate.ps1` ve `tests/benchmark_gate.sh` iki mod destekler:
   - `suite` (varsayılan): tüm test seti için medyan P50/P90 üzerinden kapı.
   - `per_case`: her test dosyası için tek tek kapı.
+- Varsayılan JSONL yolu: `build/benchmark_results.jsonl`
+- Regresyon budget (opsiyonel) parametreleri:
+  - `BaselineJsonL` / `BASELINE_JSONL`: karşılaştırma için önceki JSONL
+  - `MinBaselineP50Ratio` / `MIN_BASELINE_P50_RATIO`
+  - `MinBaselineP90Ratio` / `MIN_BASELINE_P90_RATIO`
+- Budget etkin olduğunda her case için `hizlanma.p50_x` ve `hizlanma.p90_x`
+  baseline ile oranlanır; eşik altına düşüş `gate fail` üretir.
 - Önerilen CI kullanımı:
   - nightly/beta için `suite` + aşamalı eşikler
   - stabil sürüm adayı için `per_case` + daha sıkı eşikler
+
+## 7. LSP v2 Kapsamı
+- `textDocument/hover`
+- `textDocument/signatureHelp`
+- `textDocument/references`
+- `textDocument/rename`
+- `textDocument/didChange` artık range tabanlı incremental değişiklikleri uygular
+  (`textDocumentSync=2`).
+- Yeni başlatma seçeneği:
+  - `orhun lsp --stdio --workspace-root <path>`
+- Workspace altında `.oh` dosyaları indekslenir (açık belge dışı semboller de
+  `workspace/symbol` ve `definition` akışına dahil edilir).
+
+## 9. Doctor JSON
+- `orhun doctor --json` makine-okur çıktı üretir.
+- Sabit alanlar:
+  - `version`
+  - `commit`
+  - `channel`
+  - `fallback_default`
+  - `ci_profiles`
+  - `security_mode`
+
+## 8. DX: `fmt` ve `lint`
+- `orhun fmt` yeni seçenekler:
+  - `--check`: dosyayı yazmadan biçim farkı kontrolü yapar
+  - `--json`: CI/IDE için makine-okur çıktı üretir
+- `orhun lint` yeni seçenek:
+  - `--json`: özet + mesajları JSON verir (`durum`, `hata_sayisi`,
+    `uyari_sayisi`, `mesajlar`)
+- CI için önerilen akış:
+  - `orhun fmt <dosya> --check --json`
+  - `orhun lint <dosya> --strict --json`

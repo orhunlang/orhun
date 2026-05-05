@@ -1,0 +1,5 @@
+f olsun işlev(x): x * 2
+l olsun [f(x) için x içinde [1, 2, 3]]
+yazdır l[0]
+yazdır l[1]
+yazdır l[2]

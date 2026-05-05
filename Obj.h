@@ -59,16 +59,21 @@ struct ObjDict final : Obj {
 
 struct ObjFunction final : Obj {
   ObjFunction() : Obj(ObjType::FUNCTION) {}
-  ObjFunction(std::string ad_, int arity_, const BytecodeChunk* chunk_,
-              std::uint16_t girisIp_, std::uint16_t localSayisi_)
-      : Obj(ObjType::FUNCTION), ad(std::move(ad_)), arity(arity_),
-        chunk(chunk_), girisIp(girisIp_), localSayisi(localSayisi_) {}
+  ObjFunction(std::string ad_, int minArity_, int maxArity_,
+              const BytecodeChunk* chunk_, std::uint16_t girisIp_,
+              std::uint16_t localSayisi_, std::uint16_t baglamArgSayisi_ = 0)
+      : Obj(ObjType::FUNCTION), ad(std::move(ad_)), minArity(minArity_),
+        maxArity(maxArity_), chunk(chunk_), girisIp(girisIp_),
+        localSayisi(localSayisi_),
+        baglamArgSayisi(baglamArgSayisi_) {}
 
   std::string ad;
-  int arity = 0;
+  int minArity = 0;
+  int maxArity = 0;
   const BytecodeChunk* chunk = nullptr;
   std::uint16_t girisIp = 0;
   std::uint16_t localSayisi = 0;
+  std::uint16_t baglamArgSayisi = 0;
 };
 
 struct ObjNative final : Obj {

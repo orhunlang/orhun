@@ -1,0 +1,7 @@
+Liste indeksi sinir disi.
+
+Stack Trace:
+  [satir 1] __anonim_islev_0
+  [satir 4] seviye2
+  [satir 7] seviye1
+  [satir 9] <program>

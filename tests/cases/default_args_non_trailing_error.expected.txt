@@ -1,0 +1,1 @@
+Satır 1, Sütun 26: Varsayılan değerli parametrelerden sonra zorunlu parametre gelemez. [token: )]

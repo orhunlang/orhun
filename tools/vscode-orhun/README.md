@@ -10,10 +10,16 @@ Bu klasor Orhun dili icin temel VS Code entegrasyon taslagini icerir.
 
 ## LSP Baglantisi
 
-Orhun calistiricisi icinde `lsp` komutu bulunur:
+Orhun calistiricisi icinde resmi komut:
 
 ```bash
-orhun lsp
+orhun lsp --stdio
+```
+
+Workspace koku belirtmek icin:
+
+```bash
+orhun lsp --stdio --workspace-root <proje_klasoru>
 ```
 
 Bu komut uzerinden VS Code tarafinda Language Server baglantisi kurulabilir.

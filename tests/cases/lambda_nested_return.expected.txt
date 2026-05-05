@@ -1,0 +1,5 @@
+Tanimsiz degisken: 'a'.
+
+Stack Trace:
+  [satir 2] __anonim_islev_0
+  [satir 5] <program>

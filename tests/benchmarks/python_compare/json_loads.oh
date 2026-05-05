@@ -1,0 +1,7 @@
+icerik olsun json.yaz({"ad": "orhun", "deger": 42, "liste": [1, 2, 3, 4, 5], "ic": {"x": 1, "y": 2}})
+toplam olsun 0
+tekrarla 8000 kez
+    nesne olsun json.coz(icerik)
+    toplam = toplam + nesne["deger"]
+
+yazdır toplam

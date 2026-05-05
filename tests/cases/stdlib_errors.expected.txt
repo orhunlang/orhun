@@ -1,0 +1,8 @@
+--- Dosya Okuma Hatasi ---
+Hata yakalandi: 
+1
+--- Dosya Yazma (Gecersiz Yol) ---
+Hata yakalandi (Yazma)
+--- JSON Hatasi ---
+JSON hatasi yakalandi
+--- Test Bitti ---

@@ -1,0 +1,5 @@
+satir1
+satir2
+tab	boşluk
+tirnak: "
+ters: \

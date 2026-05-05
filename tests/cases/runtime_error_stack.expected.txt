@@ -1,0 +1,7 @@
+Liste indeksi sinir disi.
+
+Stack Trace:
+  [satir 5] hataYap
+  [satir 8] derinlik2
+  [satir 11] derinlik1
+  [satir 13] <program>

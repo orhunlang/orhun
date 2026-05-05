@@ -1,45 +1,78 @@
 param(
     [string]$Compiler = "g++",
-    [string]$Output = "orhun_test.exe"
+    [string]$Output = "build/orhun_test.exe",
+    [int]$TimeoutSeconds = 10
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+$outputDir = Split-Path -Parent $Output
+if ($outputDir -and !(Test-Path $outputDir)) {
+    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+}
 
 Write-Host "[1/3] Derleniyor..."
 & $Compiler -std=c++17 -Wall -Wextra -pedantic `
     main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp `
     -o $Output
+if ($LASTEXITCODE -ne 0) {
+    throw "Derleme basarisiz."
+}
 
-$cases = @(
-    "tests/cases/basic_math",
-    "tests/cases/oop_super",
-    "tests/cases/list_comprehension",
-    "tests/cases/try_break_continue",
-    "tests/cases/assignment_equals",
-    "tests/cases/json_parse",
-    "tests/cases/f_string",
-    "tests/cases/slicing",
-    "tests/cases/stdlib_modules",
-    "tests/cases/stdlib_database",
-    "tests/cases/stdlib_regex_date",
-    "tests/cases/stdlib_server",
-    "tests/cases/stdlib_async",
-    "tests/cases/dict_nested",
-    "tests/cases/while_float",
-    "tests/cases/module_stdlib",
-    "tests/cases/try_catch_runtime",
-    "tests/cases/f_string_escape",
-    "tests/cases/vm_loop_control",
-    "tests/cases/module_callable",
-    "tests/cases/security_system_command_block"
-)
+function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}) {
+    $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+    $pinfo.FileName = $exe
+    $pinfo.Arguments = $argsList
+    $pinfo.RedirectStandardOutput = $true
+    $pinfo.RedirectStandardError = $true
+    $pinfo.UseShellExecute = $false
+    $pinfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+    $pinfo.StandardErrorEncoding = [System.Text.Encoding]::UTF8
+    foreach ($entry in $EnvVars.GetEnumerator()) {
+        $pinfo.Environment[$entry.Key] = [string]$entry.Value
+    }
+    
+    $p = New-Object System.Diagnostics.Process
+    $p.StartInfo = $pinfo
+    $p.Start() | Out-Null
 
-if ($env:OS -eq "Windows_NT") {
-    $cases += "tests/cases/ffi_kernel32"
-    $cases += "tests/cases/ffi_text"
-    $cases += "tests/cases/ffi_symbol"
-    $cases += "tests/cases/ffi_tanimli_kernel32"
-    $cases += "tests/cases/ffi_dis_islev"
+    $timeoutMs = [Math]::Max(1, $TimeoutSeconds) * 1000
+    if (-not $p.WaitForExit($timeoutMs)) {
+        try {
+            $p.Kill()
+            $p.WaitForExit()
+        }
+        catch {
+        }
+        $stdout = $p.StandardOutput.ReadToEnd()
+        $stderr = $p.StandardError.ReadToEnd()
+        return ($stdout + $stderr + "Hata: test zaman asimi (${TimeoutSeconds}s)")
+    }
+
+    $stdout = $p.StandardOutput.ReadToEnd()
+    $stderr = $p.StandardError.ReadToEnd()
+
+    return $stdout + $stderr
+}
+
+$cases = Get-ChildItem "tests/cases" -Filter "*.expected.txt" |
+    ForEach-Object { $_.FullName -replace "\.expected\.txt$", "" } |
+    ForEach-Object { $_ -replace "\\", "/" } |
+    Sort-Object |
+    Where-Object { Test-Path "$_.oh" }
+
+$strictCase = (Join-Path (Resolve-Path "tests/cases").Path "turkce_kati_alias") -replace "\\", "/"
+$cases = $cases | Where-Object { $_ -ne $strictCase }
+
+if ($env:OS -ne "Windows_NT") {
+    $cases = $cases | Where-Object {
+        $_ -ne "tests/cases/ffi_kernel32" -and
+        $_ -ne "tests/cases/ffi_text" -and
+        $_ -ne "tests/cases/ffi_symbol" -and
+        $_ -ne "tests/cases/ffi_tanimli_kernel32" -and
+        $_ -ne "tests/cases/ffi_dis_islev"
+    }
 }
 
 $failed = $false
@@ -49,7 +82,7 @@ foreach ($case in $cases) {
     $src = "$case.oh"
     $expectedPath = "$case.expected.txt"
 
-    $actual = & ".\$Output" $src 2>&1 | Out-String
+    $actual = Run-Orhun ".\$Output" $src
     $actual = $actual -replace "`r`n", "`n"
     $actual = $actual.TrimEnd("`n")
 
@@ -65,49 +98,17 @@ foreach ($case in $cases) {
         Write-Host "Alinan:"
         Write-Host $actual
         $failed = $true
-    } else {
+    }
+    else {
         Write-Host "[OK] $src"
     }
 }
 
-Write-Host "[3/4] VM-kati secili testler..."
-$vmCases = @(
-    "tests/cases/basic_math",
-    "tests/cases/assignment_equals",
-    "tests/cases/oop_super",
-    "tests/cases/f_string",
-    "tests/cases/f_string_escape",
-    "tests/cases/json_parse",
-    "tests/cases/dict_nested",
-    "tests/cases/while_float",
-    "tests/cases/list_comprehension",
-    "tests/cases/try_break_continue",
-    "tests/cases/try_catch_runtime",
-    "tests/cases/stdlib_modules",
-    "tests/cases/stdlib_database",
-    "tests/cases/stdlib_regex_date",
-    "tests/cases/stdlib_server",
-    "tests/cases/stdlib_async",
-    "tests/cases/module_stdlib",
-    "tests/cases/vm_loop_control",
-    "tests/cases/slicing",
-    "tests/cases/security_system_command_block",
-    "tests/cases/vm_try_catch"
-)
+if ((Test-Path "$strictCase.oh") -and (Test-Path "$strictCase.expected.txt")) {
+    $src = "$strictCase.oh"
+    $expectedPath = "$strictCase.expected.txt"
 
-if ($env:OS -eq "Windows_NT") {
-    $vmCases += "tests/cases/ffi_kernel32"
-    $vmCases += "tests/cases/ffi_text"
-    $vmCases += "tests/cases/ffi_symbol"
-    $vmCases += "tests/cases/ffi_tanimli_kernel32"
-    $vmCases += "tests/cases/ffi_dis_islev"
-}
-
-foreach ($case in $vmCases) {
-    $src = "$case.oh"
-    $expectedPath = "$case.expected.txt"
-
-    $actual = & ".\$Output" vm-kati $src 2>&1 | Out-String
+    $actual = Run-Orhun ".\$Output" $src @{ ORHUN_TURKCE_KATI = "1" }
     $actual = $actual -replace "`r`n", "`n"
     $actual = $actual.TrimEnd("`n")
 
@@ -117,18 +118,19 @@ foreach ($case in $vmCases) {
 
     if ($actual -ne $expected) {
         Write-Host ""
-        Write-Host "[VM-HATA] $src"
+        Write-Host "[HATA] $src (ORHUN_TURKCE_KATI=1)"
         Write-Host "Beklenen:"
         Write-Host $expected
         Write-Host "Alinan:"
         Write-Host $actual
         $failed = $true
-    } else {
-        Write-Host "[VM-OK] $src"
+    }
+    else {
+        Write-Host "[OK] $src (ORHUN_TURKCE_KATI=1)"
     }
 }
 
-Write-Host "[4/4] Sonuc..."
+Write-Host "[3/3] Sonuc..."
 if ($failed) {
     throw "Bazi testler basarisiz."
 }

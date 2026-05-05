@@ -1,0 +1,4 @@
+işlev topla(a, b olsun 5):
+    döndür a + b
+
+yazdır topla(3)

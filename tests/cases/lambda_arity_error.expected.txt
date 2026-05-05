@@ -1,0 +1,4 @@
+Arguman sayisi uyusmuyor: '__anonim_islev_0' (beklenen 2-2).
+
+Stack Trace:
+  [satir 2] <program>

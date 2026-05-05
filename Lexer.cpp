@@ -1,18 +1,54 @@
 #include "Lexer.h"
 
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
 #include <unordered_set>
 #include <vector>
 
-Lexer::Lexer(const std::string &kaynakKodUtf8)
+namespace {
+bool g_turkceKatiVarsayilan = false;
+
+bool ortamDegiskeniAcik(const char *ad) {
+  const char *ham = std::getenv(ad);
+  if (ham == nullptr) {
+    return false;
+  }
+  std::string deger(ham);
+  std::transform(deger.begin(), deger.end(), deger.begin(),
+                 [](unsigned char c) {
+                   return static_cast<char>(std::tolower(c));
+                 });
+  return !(deger.empty() || deger == "0" || deger == "false" ||
+           deger == "off" || deger == "hayir" || deger == "no");
+}
+} // namespace
+
+Lexer::Lexer(const std::string &kaynakKodUtf8, bool turkceKati)
     : kaynakKod_(utf8ToU32(kaynakKodUtf8)) {
+  turkceKati_ = turkceKati || turkceKatiVarsayilan() || ortamTurkceKatiAktif();
   // Bazı editörler dosya başına UTF-8 BOM ekleyebilir.
   if (!kaynakKod_.empty() && kaynakKod_.front() == U'\uFEFF') {
     kaynakKod_.erase(kaynakKod_.begin());
   }
 }
 
-std::vector<Token> Lexer::tokenize() {
-  std::vector<Token> tokenlar;
+void Lexer::setTurkceKatiVarsayilan(bool aktif) {
+  g_turkceKatiVarsayilan = aktif;
+}
+
+bool Lexer::turkceKatiVarsayilan() { return g_turkceKatiVarsayilan; }
+
+bool Lexer::ortamTurkceKatiAktif() {
+  return ortamDegiskeniAcik("ORHUN_TURKCE_KATI");
+}
+
+std::vector<OrhunToken> Lexer::tokenize() {
+  std::vector<OrhunToken> tokenlar;
+  auto tokenEkle = [&](TokenTuru tur, const std::string &deger,
+                       std::size_t satir, std::size_t sutun) {
+    tokenlar.push_back({tur, deger, satir, sutun});
+  };
 
   // Python benzeri blok yapısı için girinti seviyelerini yığında tutuyoruz.
   std::vector<int> girintiYigini = {0};
@@ -49,17 +85,17 @@ std::vector<Token> Lexer::tokenize() {
         const int mevcutGirinti = girintiYigini.back();
         if (girintiSayisi > mevcutGirinti) {
           girintiYigini.push_back(girintiSayisi);
-          tokenlar.push_back({TokenType::GIRINTI, "<GIRINTI>", satir_});
+          tokenEkle(TokenTuru::GIRINTI, "<GIRINTI>", satir_, sutun_);
         } else if (girintiSayisi < mevcutGirinti) {
           while (girintiYigini.size() > 1 &&
                  girintiSayisi < girintiYigini.back()) {
             girintiYigini.pop_back();
-            tokenlar.push_back({TokenType::CIKINTI, "<CIKINTI>", satir_});
+            tokenEkle(TokenTuru::CIKINTI, "<CIKINTI>", satir_, sutun_);
           }
           if (girintiSayisi != girintiYigini.back()) {
-            tokenlar.push_back(
-                {TokenType::HATA, "Geçersiz girinti seviyesi", satir_});
-            tokenlar.push_back({TokenType::DOSYA_SONU, "", satir_});
+            tokenEkle(TokenTuru::HATA, "Geçersiz girinti seviyesi", satir_,
+                      sutun_);
+            tokenEkle(TokenTuru::DOSYA_SONU, "", satir_, sutun_);
             return tokenlar;
           }
         }
@@ -84,21 +120,25 @@ std::vector<Token> Lexer::tokenize() {
 
     if (c == U'\r') {
       const std::size_t mevcutSatir = satir_;
+      const std::size_t mevcutSutun = sutun_;
       ilerle();
       if (!dosyaSonu() && bak() == U'\n') {
         ilerle();
       }
-      tokenlar.push_back({TokenType::YENI_SATIR, "\\n", mevcutSatir});
+      tokenEkle(TokenTuru::YENI_SATIR, "\\n", mevcutSatir, mevcutSutun);
       ++satir_;
+      sutun_ = 1;
       satirBasi = true;
       continue;
     }
 
     if (c == U'\n') {
       const std::size_t mevcutSatir = satir_;
+      const std::size_t mevcutSutun = sutun_;
       ilerle();
-      tokenlar.push_back({TokenType::YENI_SATIR, "\\n", mevcutSatir});
+      tokenEkle(TokenTuru::YENI_SATIR, "\\n", mevcutSatir, mevcutSutun);
       ++satir_;
+      sutun_ = 1;
       satirBasi = true;
       continue;
     }
@@ -118,28 +158,30 @@ std::vector<Token> Lexer::tokenize() {
       continue;
     }
 
-    if (operatorMu(c) || c == U'=' || c == U'>' || c == U'(' || c == U')' ||
-        c == U'[' || c == U']' || c == U',' || c == U':' || c == U'{' ||
-        c == U'}' || c == U'.') {
+    if (operatorMu(c) || c == U'%' || c == U'=' || c == U'>' || c == U'(' ||
+        c == U')' || c == U'[' || c == U']' || c == U',' || c == U':' ||
+        c == U'{' || c == U'}' || c == U'.' || c == U'?') {
+      const std::size_t baslangicSutun = sutun_;
       const std::u32string tekKarakter(1, ilerle());
-      tokenlar.push_back({TokenType::ISLEM, u32ToUtf8(tekKarakter), satir_});
+      tokenEkle(TokenTuru::ISLEM, u32ToUtf8(tekKarakter), satir_,
+                baslangicSutun);
       continue;
     }
 
     // Desteklenmeyen karakterleri hata token'ına çevir.
+    const std::size_t baslangicSutun = sutun_;
     const std::u32string tekKarakter(1, ilerle());
-    tokenlar.push_back({TokenType::HATA,
-                        "Tanımsız karakter: " + u32ToUtf8(tekKarakter),
-                        satir_});
+    tokenEkle(TokenTuru::HATA, "Tanımsız karakter: " + u32ToUtf8(tekKarakter),
+              satir_, baslangicSutun);
   }
 
   // Dosya sonunda açık bloklar otomatik kapatılır.
   while (girintiYigini.size() > 1) {
     girintiYigini.pop_back();
-    tokenlar.push_back({TokenType::CIKINTI, "<CIKINTI>", satir_});
+    tokenEkle(TokenTuru::CIKINTI, "<CIKINTI>", satir_, sutun_);
   }
 
-  tokenlar.push_back({TokenType::DOSYA_SONU, "", satir_});
+  tokenEkle(TokenTuru::DOSYA_SONU, "", satir_, sutun_);
   return tokenlar;
 }
 
@@ -261,11 +303,13 @@ char32_t Lexer::ilerle() {
   if (dosyaSonu()) {
     return U'\0';
   }
+  ++sutun_;
   return kaynakKod_[konum_++];
 }
 
-Token Lexer::kimlikVeyaAnahtarKelime() {
+OrhunToken Lexer::kimlikVeyaAnahtarKelime() {
   const std::size_t baslangicSatir = satir_;
+  const std::size_t baslangicSutun = sutun_;
   std::u32string yazi;
   yazi.push_back(ilerle());
 
@@ -275,13 +319,14 @@ Token Lexer::kimlikVeyaAnahtarKelime() {
 
   const std::string deger = u32ToUtf8(yazi);
   if (anahtarKelimeMi(yazi)) {
-    return {TokenType::ANAHTAR_KELIME, deger, baslangicSatir};
+    return {TokenTuru::ANAHTAR_KELIME, deger, baslangicSatir, baslangicSutun};
   }
-  return {TokenType::KIMLIK, deger, baslangicSatir};
+  return {TokenTuru::KIMLIK, deger, baslangicSatir, baslangicSutun};
 }
 
-Token Lexer::sayi() {
+OrhunToken Lexer::sayi() {
   const std::size_t baslangicSatir = satir_;
+  const std::size_t baslangicSutun = sutun_;
   std::u32string yazi;
   bool noktaGoruldu = false;
 
@@ -302,12 +347,13 @@ Token Lexer::sayi() {
     break;
   }
 
-  return {noktaGoruldu ? TokenType::ONDALIK : TokenType::SAYI,
-          u32ToUtf8(yazi), baslangicSatir};
+  return {noktaGoruldu ? TokenTuru::ONDALIK : TokenTuru::SAYI, u32ToUtf8(yazi),
+          baslangicSatir, baslangicSutun};
 }
 
-Token Lexer::metin() {
+OrhunToken Lexer::metin() {
   const std::size_t baslangicSatir = satir_;
+  const std::size_t baslangicSutun = sutun_;
   std::u32string icerik;
 
   // Açılış tırnağını tüket.
@@ -317,7 +363,8 @@ Token Lexer::metin() {
     const char32_t c = ilerle();
 
     if (c == U'"') {
-      return {TokenType::METIN, u32ToUtf8(icerik), baslangicSatir};
+      return {TokenTuru::METIN, u32ToUtf8(icerik), baslangicSatir,
+              baslangicSutun};
     }
 
     // Basit kaçış dizileri desteği.
@@ -344,13 +391,15 @@ Token Lexer::metin() {
     }
 
     if (c == U'\n' || c == U'\r') {
-      return {TokenType::HATA, "Kapanmayan metin sabiti", baslangicSatir};
+      return {TokenTuru::HATA, "Kapanmayan metin sabiti", baslangicSatir,
+              baslangicSutun};
     }
 
     icerik.push_back(c);
   }
 
-  return {TokenType::HATA, "Kapanmayan metin sabiti", baslangicSatir};
+  return {TokenTuru::HATA, "Kapanmayan metin sabiti", baslangicSatir,
+          baslangicSutun};
 }
 
 bool Lexer::rakamMi(char32_t c) const { return c >= U'0' && c <= U'9'; }
@@ -386,20 +435,28 @@ bool Lexer::turkceHarfMi(char32_t c) const {
 }
 
 bool Lexer::operatorMu(char32_t c) const {
-  return c == U'+' || c == U'-' || c == U'*' || c == U'/';
+  return c == U'+' || c == U'-' || c == U'*' || c == U'/' || c == U'%';
 }
 
 bool Lexer::anahtarKelimeMi(const std::u32string &metin) const {
   static const std::unordered_set<std::u32string> anahtarKelimeler = {
-      U"yazdır", U"olsun",  U"eğer",     U"ise",  U"değilse",
-      U"doğru",  U"yanlış", U"tekrarla", U"kez",  U"sor",
-      U"işlev",  U"dış_işlev", U"dis_islev", U"döndür", U"dahil_et", U"sürece", U"eşit",
-      U"eşit_değil",
-      U"büyük",  U"küçük",  U"ve",       U"veya", U"değil",
-      U"tip",    U"yeni",   U"benim",    U"deneme", U"yakala",
-      U"kır",    U"devam",  U"ust",      U"için", U"içinde"};
+      U"yazdır", U"olsun",     U"eğer",       U"ise",    U"değilse",
+      U"doğru",  U"yanlış",    U"tekrarla",   U"kez",    U"sor",
+      U"işlev",  U"dış_işlev", U"döndür",     U"dahil_et",
+      U"sürece", U"eşit",      U"eşit_değil", U"büyük",  U"küçük",
+      U"ve",     U"veya",      U"değil",      U"tip",    U"yeni",
+      U"benim",  U"deneme",    U"yakala",     U"kır",    U"devam",
+      U"ust",    U"için",      U"içinde",     U"paralel", U"yap"};
+  static const std::unordered_set<std::u32string> aliasAnahtarKelimeler = {
+      U"dis_islev"};
 
-  return anahtarKelimeler.find(metin) != anahtarKelimeler.end();
+  if (anahtarKelimeler.find(metin) != anahtarKelimeler.end()) {
+    return true;
+  }
+  if (turkceKati_) {
+    return false;
+  }
+  return aliasAnahtarKelimeler.find(metin) != aliasAnahtarKelimeler.end();
 }
 
 void Lexer::yorumSatiriAtla() {

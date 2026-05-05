@@ -295,6 +295,30 @@ private:
   std::string alanAdi_;
 };
 
+// Guvenli nokta notasyonu erişimi: hedef?.alan
+class GuvenliAlanErisimNode final : public ASTNode {
+public:
+  GuvenliAlanErisimNode(std::unique_ptr<ASTNode> hedef, std::string alanAdi,
+                        std::size_t satir)
+      : ASTNode(satir), hedef_(std::move(hedef)), alanAdi_(std::move(alanAdi)) {
+  }
+
+  const ASTNode *hedef() const { return hedef_.get(); }
+
+  const std::string &alanAdi() const { return alanAdi_; }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "GuvenliAlanErisimNode(" << alanAdi_ << ") [satır " << satir()
+          << "]\n";
+    hedef_->yazdir_agac(cikti, girinti + 2);
+  }
+
+private:
+  std::unique_ptr<ASTNode> hedef_;
+  std::string alanAdi_;
+};
+
 // benim.alan erişimi için özel düğüm.
 class BenimErisimNode final : public ASTNode {
 public:
@@ -501,6 +525,36 @@ private:
   std::unique_ptr<ASTNode> ifade_;
 };
 
+class CokluAtamaNode final : public ASTNode {
+public:
+  CokluAtamaNode(std::vector<std::string> hedefler,
+                 std::unique_ptr<ASTNode> ifade, std::size_t satir)
+      : ASTNode(satir), hedefler_(std::move(hedefler)),
+        ifade_(std::move(ifade)) {}
+
+  const std::vector<std::string> &hedefler() const { return hedefler_; }
+
+  const ASTNode *ifade() const { return ifade_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "CokluAtamaNode [satır " << satir() << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Hedefler:\n";
+    for (const auto &ad : hedefler_) {
+      yazdirGirinti(cikti, girinti + 4);
+      cikti << "- " << ad << '\n';
+    }
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Deger:\n";
+    ifade_->yazdir_agac(cikti, girinti + 4);
+  }
+
+private:
+  std::vector<std::string> hedefler_;
+  std::unique_ptr<ASTNode> ifade_;
+};
+
 class YazdirNode final : public ASTNode {
 public:
   YazdirNode(std::unique_ptr<ASTNode> ifade, std::size_t satir)
@@ -610,13 +664,29 @@ private:
 class IslevTanimNode final : public ASTNode {
 public:
   IslevTanimNode(std::string ad, std::vector<std::string> parametreler,
+                 std::vector<std::unique_ptr<ASTNode>> varsayilanlar,
                  std::unique_ptr<BlockNode> govde, std::size_t satir)
       : ASTNode(satir), ad_(std::move(ad)),
-        parametreler_(std::move(parametreler)), govde_(std::move(govde)) {}
+        parametreler_(std::move(parametreler)),
+        varsayilanlar_(std::move(varsayilanlar)), govde_(std::move(govde)) {}
 
   const std::string &ad() const { return ad_; }
 
   const std::vector<std::string> &parametreler() const { return parametreler_; }
+
+  const std::vector<std::unique_ptr<ASTNode>> &varsayilanlar() const {
+    return varsayilanlar_;
+  }
+
+  std::size_t minArgumanSayisi() const {
+    std::size_t zorunlu = 0;
+    for (std::size_t i = 0; i < varsayilanlar_.size(); ++i) {
+      if (varsayilanlar_[i] == nullptr) {
+        ++zorunlu;
+      }
+    }
+    return zorunlu;
+  }
 
   const BlockNode *govde() const { return govde_.get(); }
 
@@ -629,9 +699,13 @@ public:
       cikti << " <yok>\n";
     } else {
       cikti << '\n';
-      for (const auto &p : parametreler_) {
+      for (std::size_t i = 0; i < parametreler_.size(); ++i) {
         yazdirGirinti(cikti, girinti + 4);
-        cikti << "- " << p << '\n';
+        cikti << "- " << parametreler_[i];
+        if (i < varsayilanlar_.size() && varsayilanlar_[i] != nullptr) {
+          cikti << " (varsayilan)";
+        }
+        cikti << '\n';
       }
     }
     yazdirGirinti(cikti, girinti + 2);
@@ -642,6 +716,80 @@ public:
 private:
   std::string ad_;
   std::vector<std::string> parametreler_;
+  std::vector<std::unique_ptr<ASTNode>> varsayilanlar_;
+  std::unique_ptr<BlockNode> govde_;
+};
+
+class IsimsizIslevNode final : public ASTNode {
+public:
+  IsimsizIslevNode(std::vector<std::string> parametreler,
+                   std::vector<std::unique_ptr<ASTNode>> varsayilanlar,
+                   std::unique_ptr<BlockNode> govde, std::size_t satir)
+      : ASTNode(satir), parametreler_(std::move(parametreler)),
+        varsayilanlar_(std::move(varsayilanlar)), govde_(std::move(govde)) {}
+
+  const std::vector<std::string> &parametreler() const { return parametreler_; }
+
+  const std::vector<std::unique_ptr<ASTNode>> &varsayilanlar() const {
+    return varsayilanlar_;
+  }
+
+  std::size_t minArgumanSayisi() const {
+    std::size_t zorunlu = 0;
+    for (std::size_t i = 0; i < varsayilanlar_.size(); ++i) {
+      if (varsayilanlar_[i] == nullptr) {
+        ++zorunlu;
+      }
+    }
+    return zorunlu;
+  }
+
+  const BlockNode *govde() const { return govde_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "IsimsizIslevNode [satır " << satir() << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Parametreler:";
+    if (parametreler_.empty()) {
+      cikti << " <yok>\n";
+    } else {
+      cikti << '\n';
+      for (std::size_t i = 0; i < parametreler_.size(); ++i) {
+        yazdirGirinti(cikti, girinti + 4);
+        cikti << "- " << parametreler_[i];
+        if (i < varsayilanlar_.size() && varsayilanlar_[i] != nullptr) {
+          cikti << " (varsayilan)";
+        }
+        cikti << '\n';
+      }
+    }
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Govde:\n";
+    govde_->yazdir_agac(cikti, girinti + 4);
+  }
+
+private:
+  std::vector<std::string> parametreler_;
+  std::vector<std::unique_ptr<ASTNode>> varsayilanlar_;
+  std::unique_ptr<BlockNode> govde_;
+};
+
+// paralel yap: ... ifadesi.
+class ParalelYapNode final : public ASTNode {
+public:
+  ParalelYapNode(std::unique_ptr<BlockNode> govde, std::size_t satir)
+      : ASTNode(satir), govde_(std::move(govde)) {}
+
+  const BlockNode *govde() const { return govde_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "ParalelYapNode [satır " << satir() << "]\n";
+    govde_->yazdir_agac(cikti, girinti + 2);
+  }
+
+private:
   std::unique_ptr<BlockNode> govde_;
 };
 

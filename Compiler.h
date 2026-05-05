@@ -25,6 +25,7 @@ private:
   void listeUretecDerle(const ListeUretecNode *dugum);
 
   void atamaDerle(const AtamaNode *dugum);
+  void cokluAtamaDerle(const CokluAtamaNode *dugum);
   void yazdirDerle(const YazdirNode *dugum);
   void egerDerle(const EgerNode *dugum);
   void sureceDerle(const SureceNode *dugum);
@@ -33,11 +34,18 @@ private:
   void devamDerle(const DevamNode *dugum);
   void denemeYakalaDerle(const DenemeYakalaNode *dugum);
   void ifadeKomutDerle(const IfadeKomutNode *dugum);
+  void isimsizIslevDerle(const IsimsizIslevNode *dugum);
   void cagrilanAdYukle(const std::string &ad, std::size_t satir);
   void islevTanimDerle(const IslevTanimNode *dugum);
   void disIslevTanimDerle(const DisIslevTanimNode *dugum);
   void sinifTanimDerle(const SinifTanimNode *dugum);
   void dondurDerle(const DondurNode *dugum);
+  void islevLiteralDerleOrtak(
+      const std::vector<std::string> &parametreler,
+      const std::vector<std::unique_ptr<ASTNode>> &varsayilanlar,
+      const BlockNode *govde, std::size_t satir, bool metodMu,
+      bool ustGerekiyor, const std::string &kayitAdi,
+      const std::string &sinifAdi);
   void islevLiteralDerle(const IslevTanimNode *dugum, bool metodMu,
                          bool ustGerekiyor, const std::string &kayitAdi,
                          const std::string &sinifAdi);
@@ -54,6 +62,7 @@ private:
   std::size_t atlaYaz(OpCode op, std::size_t satir);
   void atlaYamala(std::size_t ofsetIndeksi);
   void donguYaz(std::size_t loopBaslangic, std::size_t satir);
+  void peepholeOptimize();
 
   [[noreturn]] void derlemeHatasi(std::size_t satir, const std::string &mesaj);
 

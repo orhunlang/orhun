@@ -1,0 +1,11 @@
+
+kullanici olsun {"ad": "Ali", "profil": {"yas": 28}}
+yazdır kullanici?.ad
+yazdır kullanici?.profil?.yas
+bosDeger olsun listeye_ekle([], 1)
+yazdır bosDeger?.ad
+yazdır bosDeger?.profil?.yas
+deneme:
+    yazdır 42?.ad
+yakala hata:
+    yazdır hata

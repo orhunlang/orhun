@@ -1,0 +1,4 @@
+l olsun []
+yazdır l
+listeye_ekle(l, 1)
+yazdır l

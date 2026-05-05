@@ -1,0 +1,1 @@
+Satır 1, Sütun 1: Tanınmayan komut: 'yzdır'. Bunu mu demek istediniz: 'yazdır'? [token: yzdır]

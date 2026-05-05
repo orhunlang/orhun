@@ -1,0 +1,25 @@
+tip Dugum:
+    deger olsun 0
+    sol olsun 0
+    sag olsun 0
+    işlev kur(deger):
+        benim.deger = deger
+        benim.sol = 0
+        benim.sag = 0
+
+işlev agac_olustur(derinlik):
+    eğer derinlik eşit 0 ise:
+        döndür yeni Dugum(0)
+    
+    dugum olsun yeni Dugum(derinlik)
+    dugum.sol = agac_olustur(derinlik - 1)
+    dugum.sag = agac_olustur(derinlik - 1)
+    döndür dugum
+
+işlev agac_topla(dugum):
+    eğer dugum eşit 0 ise:
+        döndür 0
+    döndür dugum.deger + agac_topla(dugum.sol) + agac_topla(dugum.sag)
+
+kok olsun agac_olustur(12)
+yazdır agac_topla(kok)

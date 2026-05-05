@@ -1,0 +1,3 @@
+Sınıf: Matematik
+Öğrenci: 42
+37

@@ -7,19 +7,293 @@ on:
 
 jobs:
   build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y g++ clang clang-tidy python3 gcovr
+
+      - name: Install build tools (macOS)
+        if: runner.os == 'macOS'
+        run: brew install python gcovr llvm || true
+
+      - name: Build and run tests (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/run_tests.ps1 -Output build/orhun_test.exe
+
+      - name: Build and run tests (Linux)
+        if: runner.os == 'Linux'
+        run: bash tests/run_tests.sh g++ build/orhun_test
+
+      - name: Build and run tests (macOS)
+        if: runner.os == 'macOS'
+        run: bash tests/run_tests.sh clang++ build/orhun_test
+
+      - name: VM strict parity (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/vm_parity.ps1 -Output build/orhun_test.exe
+
+      - name: VM strict parity (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x tests/vm_parity.sh
+          bash tests/vm_parity.sh g++ build/orhun_test
+
+      - name: VM strict parity (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          chmod +x tests/vm_parity.sh
+          bash tests/vm_parity.sh clang++ build/orhun_test
+
+      - name: Fallback matrix (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/fallback_matrix.py .\build\orhun_test.exe
+
+      - name: Fallback matrix (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/fallback_matrix.py ./build/orhun_test
+
+      - name: Fallback matrix (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/fallback_matrix.py ./build/orhun_test
+
+      - name: Doctor JSON smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/doctor_json_smoke.py .\build\orhun_test.exe
+
+      - name: Doctor JSON smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/doctor_json_smoke.py ./build/orhun_test
+
+      - name: Doctor JSON smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/doctor_json_smoke.py ./build/orhun_test
+
+      - name: Fallback ORH-COMP smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/fallback_orh_comp_smoke.py .\build\orhun_test.exe
+
+      - name: Fallback ORH-COMP smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/fallback_orh_comp_smoke.py ./build/orhun_test
+
+      - name: Fallback ORH-COMP smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/fallback_orh_comp_smoke.py ./build/orhun_test
+
+      - name: Benchmark contract (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/benchmark_contract.py .\build\orhun_test.exe
+
+      - name: Benchmark contract (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/benchmark_contract.py ./build/orhun_test
+
+      - name: Benchmark contract (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/benchmark_contract.py ./build/orhun_test
+
+      - name: Benchmark pipeline smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/benchmark_pipeline_smoke.py
+
+      - name: Benchmark pipeline smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/benchmark_pipeline_smoke.py
+
+      - name: Benchmark pipeline smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/benchmark_pipeline_smoke.py
+
+      - name: DX fmt/lint smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/dx_fmt_lint_smoke.py .\build\orhun_test.exe
+
+      - name: DX fmt/lint smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/dx_fmt_lint_smoke.py ./build/orhun_test
+
+      - name: DX fmt/lint smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/dx_fmt_lint_smoke.py ./build/orhun_test
+
+      - name: Lock v3 smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/lock_v3_smoke.py .\build\orhun_test.exe
+
+      - name: Lock v3 smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/lock_v3_smoke.py ./build/orhun_test
+
+      - name: Lock v3 smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/lock_v3_smoke.py ./build/orhun_test
+
+      - name: Package --ref smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/package_ref_smoke.py .\build\orhun_test.exe
+
+      - name: Package --ref smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/package_ref_smoke.py ./build/orhun_test
+
+      - name: Package --ref smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/package_ref_smoke.py ./build/orhun_test
+
+      - name: FFI policy smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/ffi_policy_smoke.py .\build\orhun_test.exe
+
+      - name: FFI policy smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/ffi_policy_smoke.py ./build/orhun_test
+
+      - name: FFI policy smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/ffi_policy_smoke.py ./build/orhun_test
+
+      - name: Package allowlist smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/package_allowlist_smoke.py .\build\orhun_test.exe
+
+      - name: Package allowlist smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/package_allowlist_smoke.py ./build/orhun_test
+
+      - name: Package allowlist smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/package_allowlist_smoke.py ./build/orhun_test
+
+      - name: System command policy smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/system_command_policy_smoke.py .\build\orhun_test.exe
+
+      - name: System command policy smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/system_command_policy_smoke.py ./build/orhun_test
+
+      - name: System command policy smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/system_command_policy_smoke.py ./build/orhun_test
+
+      - name: Fuzz smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/fuzz_smoke.py ./build/orhun_test --count 80 --seed 2026 --timeout 2.5 --profile advanced
+
+      - name: Fuzz smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/fuzz_smoke.py ./build/orhun_test --count 80 --seed 2026 --timeout 2.5 --profile advanced
+
+      - name: Fuzz smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/fuzz_smoke.py .\build\orhun_test.exe --count 80 --seed 2026 --timeout 2.5 --profile advanced
+
+      - name: Bench snapshot (Linux)
+        if: runner.os == 'Linux'
+        run: bash tests/benchmark.sh g++ build/orhun_bench 5 build/benchmark_results.jsonl "" 0 0 runtime 1
+
+      - name: Bench snapshot (macOS)
+        if: runner.os == 'macOS'
+        run: bash tests/benchmark.sh clang++ build/orhun_bench 5 build/benchmark_results.jsonl "" 0 0 runtime 1
+
+      - name: Coverage report (Linux)
+        if: runner.os == 'Linux'
+        run: bash tests/coverage.sh g++ build/orhun_cov coverage
+
+      - name: Coverage gate (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/coverage_gate.py --summary coverage/summary.txt --min-lines 55
+
+      - name: LSP smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/lsp_smoke.py ./build/orhun_test
+
+      - name: LSP smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/lsp_smoke.py ./build/orhun_test
+
+      - name: LSP smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/lsp_smoke.py .\build\orhun_test.exe
+
+      - name: LSP workspace smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/lsp_workspace_smoke.py ./build/orhun_test
+
+      - name: LSP workspace smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/lsp_workspace_smoke.py ./build/orhun_test
+
+      - name: LSP workspace smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/lsp_workspace_smoke.py .\build\orhun_test.exe
+
+      - name: Upload coverage artifact (Linux)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-linux
+          path: |
+            coverage/summary.txt
+            coverage/coverage.xml
+            coverage/index.html
+
+  linux-sanitizers:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y g++ python3
+      - name: Install sanitizer toolchain
+        run: sudo apt-get update && sudo apt-get install -y clang python3
 
-      - name: Build and run tests
-        run: bash tests/run_tests.sh
+      - name: Build ASan+UBSan binary
+        run: |
+          mkdir -p build
+          clang++ -std=c++17 -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined \
+            -Wall -Wextra -pedantic \
+            main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp \
+            -o build/orhun_asan
 
-      - name: Fuzz smoke (Lexer/Parser/Runtime no-crash)
-        run: python3 tests/fuzz_smoke.py ./orhun_test --count 80 --seed 2026 --timeout 2.5
+      - name: Sanitizer smoke (fallback)
+        run: python3 tests/fallback_matrix.py ./build/orhun_asan
 
-      - name: Bench snapshot (non-blocking)
-        run: bash tests/benchmark.sh g++ orhun_test || true
+      - name: Sanitizer smoke (security)
+        run: python3 tests/system_command_policy_smoke.py ./build/orhun_asan
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+
+      - name: Run clang-tidy
+        run: |
+          clang-tidy main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp -- -std=c++17 -I.

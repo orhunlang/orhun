@@ -1,0 +1,64 @@
+işlev vektor_olustur(n, deger):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük n:
+        sonuc.ekle(deger)
+        i = i + 1
+    döndür sonuc
+
+işlev A(i, j):
+    toplam olsun i + j
+    payda olsun (toplam * (toplam + 1)) / 2 + i + 1
+    döndür 1.0 / payda
+
+işlev carp_A(v):
+    n olsun uzunluk(v)
+    sonuc olsun vektor_olustur(n, 0.0)
+    i olsun 0
+    sürece i küçük n:
+        toplam olsun 0.0
+        j olsun 0
+        sürece j küçük n:
+            toplam = toplam + A(i, j) * v[j]
+            j = j + 1
+        sonuc[i] = toplam
+        i = i + 1
+    döndür sonuc
+
+işlev carp_At(v):
+    n olsun uzunluk(v)
+    sonuc olsun vektor_olustur(n, 0.0)
+    i olsun 0
+    sürece i küçük n:
+        toplam olsun 0.0
+        j olsun 0
+        sürece j küçük n:
+            toplam = toplam + A(j, i) * v[j]
+            j = j + 1
+        sonuc[i] = toplam
+        i = i + 1
+    döndür sonuc
+
+işlev carp_AtA(v):
+    döndür carp_At(carp_A(v))
+
+işlev spectral_norm(n):
+    u olsun vektor_olustur(n, 1.0)
+    k olsun 0
+    sürece k küçük 10:
+        v olsun carp_AtA(u)
+        u = carp_AtA(v)
+        k = k + 1
+
+    vBv olsun 0.0
+    vv olsun 0.0
+    i olsun 0
+    sürece i küçük n:
+        vBv = vBv + u[i] * v[i]
+        vv = vv + v[i] * v[i]
+        i = i + 1
+
+    sigma olsun karekok(vBv / vv)
+    döndür sigma * 1000000
+
+yazdır spectral_norm(55)

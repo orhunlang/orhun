@@ -1,29 +1,31 @@
 #pragma once
 
 #include "AST.h"
-#include "Token.h"
+#include "OrhunToken.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-// Orhun v0.5 parser'ı:
+// Orhun v0.8 parser'ı:
 // Lexer token akışını AST'ye dönüştürür.
 class Parser {
 public:
-  explicit Parser(std::vector<Token> tokenlar);
+  explicit Parser(std::vector<OrhunToken> tokenlar);
 
   // Tüm programı parse eder.
   std::unique_ptr<ProgramNode> parse();
 
 private:
-  std::vector<Token> tokenlar_;
+  std::vector<OrhunToken> tokenlar_;
   std::size_t konum_ = 0;
 
   // Komut ayrıştırma fonksiyonları.
   std::unique_ptr<ASTNode> parseKomut();
   std::unique_ptr<ASTNode> parseAtama(std::unique_ptr<ASTNode> hedef,
                                       std::size_t satir);
+  std::unique_ptr<ASTNode> parseCokluAtama(std::vector<std::string> hedefler,
+                                           std::size_t satir);
   std::unique_ptr<ASTNode> parseYazdir();
   std::unique_ptr<ASTNode> parseEger();
   std::unique_ptr<ASTNode> parseTekrarla();
@@ -49,28 +51,31 @@ private:
   std::unique_ptr<ASTNode> parseTekli();
   std::unique_ptr<ASTNode> parsePostfix();
   std::unique_ptr<ASTNode> parseBirincil();
+  void parseIslevParametreleri(
+      std::vector<std::string> &parametreler,
+      std::vector<std::unique_ptr<ASTNode>> &varsayilanlar);
   std::string parseSozlukAnahtari();
   bool atanabilirHedefMi(const ASTNode *dugum) const;
 
   // Token gezinme yardımcıları.
   bool dosyaSonu() const;
-  const Token &bak() const;
-  const Token &bakIleri(std::size_t uzaklik) const;
-  const Token &onceki() const;
-  const Token &ilerle();
+  const OrhunToken &bak() const;
+  const OrhunToken &bakIleri(std::size_t uzaklik) const;
+  const OrhunToken &onceki() const;
+  const OrhunToken &ilerle();
 
-  bool kontrol(TokenType tur) const;
-  bool kontrol(TokenType tur, const std::string &deger) const;
-  bool eslesir(TokenType tur);
-  bool eslesir(TokenType tur, const std::string &deger);
+  bool kontrol(TokenTuru tur) const;
+  bool kontrol(TokenTuru tur, const std::string &deger) const;
+  bool eslesir(TokenTuru tur);
+  bool eslesir(TokenTuru tur, const std::string &deger);
 
-  const Token &tuket(TokenType tur, const std::string &hataMesaji);
-  const Token &tuket(TokenType tur, const std::string &deger,
-                     const std::string &hataMesaji);
+  const OrhunToken &tuket(TokenTuru tur, const std::string &hataMesaji);
+  const OrhunToken &tuket(TokenTuru tur, const std::string &deger,
+                          const std::string &hataMesaji);
 
   void yeniSatirlariAtla();
-  bool ifadeBaslangiciMi(const Token &token) const;
+  bool ifadeBaslangiciMi(const OrhunToken &token) const;
 
-  [[noreturn]] void syntaxError(const Token &token,
+  [[noreturn]] void syntaxError(const OrhunToken &token,
                                 const std::string &mesaj) const;
 };

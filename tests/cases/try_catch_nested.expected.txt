@@ -1,0 +1,6 @@
+ic: Sıfıra bölme yapılamaz.
+
+Stack Trace:
+  [satir 4] <program>
+
+hata yok

@@ -1,0 +1,6 @@
+s olsun ""
+i olsun 0
+sürece i küçük 20000:
+    s = s + "a"
+    i = i + 1
+yazdır uzunluk(s)

@@ -1,0 +1,18 @@
+işlev asal_mi(n):
+    eğer n küçük 2 ise:
+        döndür yanlış
+    i olsun 2
+    sürece (i * i küçük n) veya (i * i eşit n):
+        eğer n % i eşit 0 ise:
+            döndür yanlış
+        i = i + 1
+    döndür doğru
+
+sayac olsun 0
+i olsun 0
+sürece i küçük 2000:
+    eğer asal_mi(i) ise:
+        sayac = sayac + 1
+    i = i + 1
+
+yazdır sayac

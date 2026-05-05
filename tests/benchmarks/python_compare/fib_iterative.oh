@@ -1,0 +1,16 @@
+işlev fib_iter(n):
+    a olsun 0
+    b olsun 1
+    i olsun 0
+    sürece i küçük n:
+        gecici olsun a
+        a = b
+        b = gecici + b
+        i = i + 1
+    döndür a
+
+toplam olsun 0
+tekrarla 50000 kez
+    toplam = toplam + fib_iter(70)
+
+yazdır toplam

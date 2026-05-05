@@ -1,0 +1,55 @@
+işlev nbody_calistir(adim, dt):
+    x olsun [0.0, 1.0, -1.0]
+    y olsun [0.0, 0.5, -0.5]
+    z olsun [0.0, -0.25, 0.25]
+    vx olsun [0.0, 0.1, -0.1]
+    vy olsun [0.0, -0.05, 0.05]
+    vz olsun [0.0, 0.02, -0.02]
+    m olsun [1.0, 0.8, 1.2]
+
+    k olsun 0
+    sürece k küçük adim:
+        i olsun 0
+        sürece i küçük 3:
+            j olsun i + 1
+            sürece j küçük 3:
+                dx olsun x[j] - x[i]
+                dy olsun y[j] - y[i]
+                dz olsun z[j] - z[i]
+                uzak2 olsun dx * dx + dy * dy + dz * dz + 0.01
+                inv olsun 1.0 / karekok(uzak2)
+                inv3 olsun inv * inv * inv
+
+                fx olsun dx * inv3
+                fy olsun dy * inv3
+                fz olsun dz * inv3
+
+                vx[i] = vx[i] + fx * dt * m[j]
+                vy[i] = vy[i] + fy * dt * m[j]
+                vz[i] = vz[i] + fz * dt * m[j]
+
+                vx[j] = vx[j] - fx * dt * m[i]
+                vy[j] = vy[j] - fy * dt * m[i]
+                vz[j] = vz[j] - fz * dt * m[i]
+                j = j + 1
+            i = i + 1
+
+        i olsun 0
+        sürece i küçük 3:
+            x[i] = x[i] + vx[i] * dt
+            y[i] = y[i] + vy[i] * dt
+            z[i] = z[i] + vz[i] * dt
+            i = i + 1
+
+        k = k + 1
+
+    imza olsun 0.0
+    i olsun 0
+    sürece i küçük 3:
+        imza = imza + x[i] * 1.7 + y[i] * 2.3 + z[i] * 2.9
+        imza = imza + vx[i] * 0.7 + vy[i] * 1.1 + vz[i] * 1.3
+        i = i + 1
+
+    döndür imza * 1000000
+
+yazdır nbody_calistir(300, 0.01)
