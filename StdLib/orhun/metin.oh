@@ -1,0 +1,76 @@
+# Orhun ile yazilmis metin yardimcilari.
+
+surum olsun "0.1.0"
+
+işlev bos_mu(kaynak):
+    döndür uzunluk(kaynak) eşit 0
+
+işlev dolu_mu(kaynak):
+    döndür uzunluk(kaynak) büyük 0
+
+işlev baslar_mi(kaynak, on_ek):
+    adet olsun uzunluk(on_ek)
+    eğer adet büyük uzunluk(kaynak) ise:
+        döndür yanlış
+    döndür kaynak[:adet] eşit on_ek
+
+işlev biter_mi(kaynak, son_ek):
+    adet olsun uzunluk(son_ek)
+    eğer adet eşit 0 ise:
+        döndür doğru
+    eğer adet büyük uzunluk(kaynak) ise:
+        döndür yanlış
+    baslangic olsun uzunluk(kaynak) - adet
+    döndür kaynak[baslangic:] eşit son_ek
+
+işlev ters(kaynak):
+    sonuc olsun ""
+    i olsun uzunluk(kaynak) - 1
+    sürece i büyük -1:
+        sonuc olsun sonuc + kaynak[i]
+        i olsun i - 1
+    döndür sonuc
+
+işlev tekrar(kaynak, adet):
+    sonuc olsun ""
+    i olsun 0
+    sürece i küçük adet:
+        sonuc olsun sonuc + kaynak
+        i olsun i + 1
+    döndür sonuc
+
+işlev degistir(kaynak, aranan, yerine):
+    eğer aranan eşit "" ise:
+        döndür kaynak
+    parcalar olsun parcala(kaynak, aranan)
+    döndür metin.birlestir(parcalar, yerine)
+
+işlev satirlara_ayir(kaynak):
+    döndür parcala(kaynak, "\n")
+
+işlev kelimelere_ayir(kaynak):
+    döndür parcala(kaynak, " ")
+
+işlev bosluk_mu(karakter):
+    döndür karakter eşit " " veya karakter eşit "\n" veya karakter eşit "\t" veya karakter eşit "\r"
+
+işlev sol_kirp(kaynak):
+    i olsun 0
+    sürece i küçük uzunluk(kaynak):
+        eğer bosluk_mu(kaynak[i]) ise:
+            i olsun i + 1
+        değilse:
+            döndür kaynak[i:]
+    döndür ""
+
+işlev sag_kirp(kaynak):
+    i olsun uzunluk(kaynak) - 1
+    sürece i büyük -1:
+        eğer bosluk_mu(kaynak[i]) ise:
+            i olsun i - 1
+        değilse:
+            döndür kaynak[:i + 1]
+    döndür ""
+
+işlev kirp(kaynak):
+    döndür sag_kirp(sol_kirp(kaynak))

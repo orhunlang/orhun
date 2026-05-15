@@ -21,6 +21,9 @@ yazdır sonuc_yardimci.dene(işlev(): 7).deger
 
 koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
 yazdır koleksiyon.benzersiz([1, 2, 1, 3])
+
+metin_yardimci olsun dahil_et "orhun/metin.oh"
+yazdır metin_yardimci.kirp("  Orhun  ")
 ```
 
 Module lookup checks the requested path first, then searches the standard
