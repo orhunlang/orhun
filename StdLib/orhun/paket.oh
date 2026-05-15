@@ -1,0 +1,67 @@
+# Orhun ile yazilmis paket manifest yardimcilari.
+
+sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+
+surum olsun "0.1.0"
+
+işlev coz(kaynak):
+    deneme:
+        döndür sonuc_yardimci.ok(json.coz(kaynak))
+    yakala hata:
+        döndür sonuc_yardimci.hata(hata)
+
+işlev alan(manifest, ad, yedek):
+    deneme:
+        döndür manifest[ad]
+    yakala hata:
+        döndür yedek
+
+işlev ad(manifest):
+    döndür alan(manifest, "ad", "")
+
+işlev surum_al(manifest):
+    döndür alan(manifest, "surum", "")
+
+işlev giris(manifest):
+    döndür alan(manifest, "giris", "ana.oh")
+
+işlev bagimliliklar(manifest):
+    döndür alan(manifest, "bagimliliklar", [])
+
+işlev bagimli_mi(manifest, paket_adi):
+    liste olsun bagimliliklar(manifest)
+    i olsun 0
+    sürece i küçük uzunluk(liste):
+        eğer liste[i] eşit paket_adi ise:
+            döndür doğru
+        i olsun i + 1
+    döndür yanlış
+
+işlev ozet(manifest):
+    döndür ad(manifest) + "@" + surum_al(manifest)
+
+işlev dogrula(manifest):
+    deneme:
+        eğer uzunluk(ad(manifest)) eşit 0 ise:
+            döndür sonuc_yardimci.hata("manifest ad alani zorunlu")
+        eğer uzunluk(surum_al(manifest)) eşit 0 ise:
+            döndür sonuc_yardimci.hata("manifest surum alani zorunlu")
+        eğer uzunluk(giris(manifest)) eşit 0 ise:
+            döndür sonuc_yardimci.hata("manifest giris alani bos olamaz")
+
+        bagimlilik_json olsun json.yaz(bagimliliklar(manifest))
+        eğer bagimlilik_json[0] eşit "[" ise:
+            uzunluk(bagimliliklar(manifest))
+        değilse:
+            döndür sonuc_yardimci.hata("manifest bagimliliklar alani liste olmali")
+
+        döndür sonuc_yardimci.ok(manifest)
+    yakala hata:
+        döndür sonuc_yardimci.hata(hata)
+
+işlev coz_ve_dogrula(kaynak):
+    cozum olsun coz(kaynak)
+    eğer cozum.ok ise:
+        döndür dogrula(cozum.deger)
+    değilse:
+        döndür cozum

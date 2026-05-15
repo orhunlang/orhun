@@ -324,6 +324,7 @@ temel olsun dahil_et "orhun/temel.oh"
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
+paket_yardimci olsun dahil_et "orhun/paket.oh"
 ```
 
 The public package and module system is still evolving. Pre-1.0 code should keep
@@ -367,6 +368,7 @@ Current built-in module surfaces include:
 - `orhun/sonuc.oh`
 - `orhun/koleksiyon.oh`
 - `orhun/metin.oh`
+- `orhun/paket.oh`
 
 Safety-sensitive modules must keep policy checks enabled by default.
 

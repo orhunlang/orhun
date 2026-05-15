@@ -24,6 +24,9 @@ yazdır koleksiyon.benzersiz([1, 2, 1, 3])
 
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 yazdır metin_yardimci.kirp("  Orhun  ")
+
+paket_yardimci olsun dahil_et "orhun/paket.oh"
+yazdır paket_yardimci.coz_ve_dogrula("{\"ad\":\"ornek\",\"surum\":\"0.1.0\"}").ok
 ```
 
 Module lookup checks the requested path first, then searches the standard

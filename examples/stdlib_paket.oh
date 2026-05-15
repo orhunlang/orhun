@@ -1,0 +1,10 @@
+paket_yardimci olsun dahil_et "orhun/paket.oh"
+
+manifest_metin olsun "{\"ad\":\"ornek\",\"surum\":\"0.1.0\",\"bagimliliklar\":[\"temel\"]}"
+sonuc olsun paket_yardimci.coz_ve_dogrula(manifest_metin)
+
+eğer sonuc.ok ise:
+    yazdır paket_yardimci.ozet(sonuc.deger)
+    yazdır paket_yardimci.bagimli_mi(sonuc.deger, "temel")
+değilse:
+    yazdır sonuc.hata
