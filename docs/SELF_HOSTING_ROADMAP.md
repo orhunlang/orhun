@@ -51,6 +51,8 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
+Durum: basladi.
+
 Hedefler:
 
 - Orhun kaynakli lexer prototipi yazilir.
@@ -109,5 +111,5 @@ Basari olcutu:
 2. Repo hijyenini koru: build ve rapor dosyalari kaynak agacinda kalmasin.
 3. Saf Orhun stdlib cekirdegini genislet: metin, koleksiyon ve paket manifest
    yardimcilarini Orhun kaynaklarina tasi.
-4. Lexer prototipini Orhun ile yazmaya basla.
+4. Lexer prototipini Orhun ile C++ lexer parity hedefine dogru genislet.
 5. Parser prototipi icin AST/ara temsil formatini sabitle.

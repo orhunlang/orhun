@@ -1,0 +1,9 @@
+lexer olsun dahil_et "orhun/lexer.oh"
+
+kaynak olsun "işlev ana():\n    yazdır \"Merhaba\"\n"
+tokenlar olsun lexer.tokenlestir(kaynak)
+
+i olsun 0
+sürece i küçük uzunluk(tokenlar):
+    yazdır tokenlar[i].tur + " " + tokenlar[i].deger
+    i olsun i + 1

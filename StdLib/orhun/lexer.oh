@@ -1,0 +1,328 @@
+# Orhun ile yazilmis lexer prototipi.
+#
+# Bu modul self-hosting yolunda C++ lexer davranisini Orhun kaynaklarinda
+# ifade etmeye baslar. Metin islemleri simdilik VM'in bayt tabanli string
+# modelini kullanir; token degerleri yine kaynak metindeki UTF-8'i korur.
+
+surum olsun "0.1.0"
+
+anahtarlar olsun []
+anahtarlar.ekle("yazdır")
+anahtarlar.ekle("olsun")
+anahtarlar.ekle("eğer")
+anahtarlar.ekle("ise")
+anahtarlar.ekle("değilse")
+anahtarlar.ekle("doğru")
+anahtarlar.ekle("yanlış")
+anahtarlar.ekle("tekrarla")
+anahtarlar.ekle("kez")
+anahtarlar.ekle("sor")
+anahtarlar.ekle("işlev")
+anahtarlar.ekle("dış_işlev")
+anahtarlar.ekle("dis_islev")
+anahtarlar.ekle("döndür")
+anahtarlar.ekle("dahil_et")
+anahtarlar.ekle("sürece")
+anahtarlar.ekle("eşit")
+anahtarlar.ekle("eşit_değil")
+anahtarlar.ekle("büyük")
+anahtarlar.ekle("küçük")
+anahtarlar.ekle("ve")
+anahtarlar.ekle("veya")
+anahtarlar.ekle("değil")
+anahtarlar.ekle("tip")
+anahtarlar.ekle("yeni")
+anahtarlar.ekle("benim")
+anahtarlar.ekle("deneme")
+anahtarlar.ekle("yakala")
+anahtarlar.ekle("kır")
+anahtarlar.ekle("devam")
+anahtarlar.ekle("ust")
+anahtarlar.ekle("için")
+anahtarlar.ekle("içinde")
+anahtarlar.ekle("paralel")
+anahtarlar.ekle("yap")
+
+işlev token(tur, deger, satir, sutun):
+    döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
+
+işlev son_mi(kaynak, konum):
+    döndür konum eşit uzunluk(kaynak) veya konum büyük uzunluk(kaynak)
+
+işlev karakter(kaynak, konum):
+    eğer son_mi(kaynak, konum) ise:
+        döndür ""
+    döndür kaynak[konum:konum + 1]
+
+işlev rakam_mi(k):
+    eğer k eşit "" ise:
+        döndür yanlış
+    döndür metin.icerir("0123456789", k)
+
+işlev bosluk_mi(k):
+    döndür k eşit " " veya k eşit "\t"
+
+işlev satir_sonu_mi(k):
+    döndür k eşit "\n"
+
+işlev islem_mi(k):
+    eğer k eşit "" ise:
+        döndür yanlış
+    döndür metin.icerir("+-*/%=()[]{}.,:?", k)
+
+işlev bilinen_gecersiz_mi(k):
+    eğer k eşit "" ise:
+        döndür yanlış
+    döndür metin.icerir("@$!;", k)
+
+işlev kimlik_baslangici_mi(k):
+    eğer k eşit "" ise:
+        döndür yanlış
+    eğer rakam_mi(k) veya bosluk_mi(k) veya satir_sonu_mi(k) ise:
+        döndür yanlış
+    eğer islem_mi(k) veya k eşit "\"" veya k eşit "#" ise:
+        döndür yanlış
+    eğer bilinen_gecersiz_mi(k) ise:
+        döndür yanlış
+    döndür doğru
+
+işlev kimlik_karakteri_mi(k):
+    eğer rakam_mi(k) ise:
+        döndür doğru
+    döndür kimlik_baslangici_mi(k)
+
+işlev anahtar_mi(deger):
+    i olsun 0
+    sürece i küçük uzunluk(anahtarlar):
+        eğer anahtarlar[i] eşit deger ise:
+            döndür doğru
+        i olsun i + 1
+    döndür yanlış
+
+işlev yorum_atla(kaynak, konum):
+    i olsun konum
+    sürece değil son_mi(kaynak, i):
+        k olsun karakter(kaynak, i)
+        eğer satir_sonu_mi(k) ise:
+            döndür i
+        i olsun i + 1
+    döndür i
+
+işlev son_eleman(liste):
+    döndür liste[uzunluk(liste) - 1]
+
+işlev sonu_cikar(liste):
+    sonuc olsun []
+    i olsun 0
+    sinir olsun uzunluk(liste) - 1
+    sürece i küçük sinir:
+        sonuc.ekle(liste[i])
+        i olsun i + 1
+    döndür sonuc
+
+işlev kimlik_oku(kaynak, konum, satir, sutun):
+    baslangic_sutun olsun sutun
+    deger olsun ""
+    i olsun konum
+
+    sürece değil son_mi(kaynak, i):
+        k olsun karakter(kaynak, i)
+        eğer kimlik_karakteri_mi(k) ise:
+            deger olsun deger + k
+            i olsun i + 1
+            sutun olsun sutun + 1
+        değilse:
+            kır
+
+    tur olsun "KIMLIK"
+    eğer anahtar_mi(deger) ise:
+        tur olsun "ANAHTAR_KELIME"
+
+    döndür {"token": token(tur, deger, satir, baslangic_sutun), "konum": i, "sutun": sutun}
+
+işlev sayi_oku(kaynak, konum, satir, sutun):
+    baslangic_sutun olsun sutun
+    deger olsun ""
+    i olsun konum
+    nokta_goruldu olsun yanlış
+
+    sürece değil son_mi(kaynak, i):
+        k olsun karakter(kaynak, i)
+        sonraki olsun karakter(kaynak, i + 1)
+
+        eğer rakam_mi(k) ise:
+            deger olsun deger + k
+            i olsun i + 1
+            sutun olsun sutun + 1
+        değilse:
+            eğer k eşit "." ve değil nokta_goruldu ve rakam_mi(sonraki) ise:
+                nokta_goruldu olsun doğru
+                deger olsun deger + k
+                i olsun i + 1
+                sutun olsun sutun + 1
+            değilse:
+                kır
+
+    tur olsun "SAYI"
+    eğer nokta_goruldu ise:
+        tur olsun "ONDALIK"
+
+    döndür {"token": token(tur, deger, satir, baslangic_sutun), "konum": i, "sutun": sutun}
+
+işlev metin_oku(kaynak, konum, satir, sutun):
+    baslangic_sutun olsun sutun
+    i olsun konum + 1
+    sutun olsun sutun + 1
+    deger olsun ""
+
+    sürece değil son_mi(kaynak, i):
+        k olsun karakter(kaynak, i)
+        i olsun i + 1
+        sutun olsun sutun + 1
+
+        eğer k eşit "\"" ise:
+            döndür {"token": token("METIN", deger, satir, baslangic_sutun), "konum": i, "sutun": sutun}
+
+        eğer k eşit "\\" ise:
+            eğer son_mi(kaynak, i) ise:
+                döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": sutun}
+            kacis olsun karakter(kaynak, i)
+            i olsun i + 1
+            sutun olsun sutun + 1
+            eğer kacis eşit "n" ise:
+                deger olsun deger + "\n"
+            değilse:
+                eğer kacis eşit "t" ise:
+                    deger olsun deger + "\t"
+                değilse:
+                    deger olsun deger + kacis
+        değilse:
+            eğer satir_sonu_mi(k) ise:
+                döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": sutun}
+            deger olsun deger + k
+
+    döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": sutun}
+
+işlev tokenlestir(kaynak):
+    tokenlar olsun []
+    girintiler olsun [0]
+    konum olsun 0
+    satir olsun 1
+    sutun olsun 1
+    satir_basi olsun doğru
+
+    sürece değil son_mi(kaynak, konum):
+        eğer satir_basi ise:
+            girinti olsun 0
+
+            sürece değil son_mi(kaynak, konum):
+                k olsun karakter(kaynak, konum)
+                eğer k eşit " " ise:
+                    girinti olsun girinti + 1
+                    konum olsun konum + 1
+                    sutun olsun sutun + 1
+                değilse:
+                    eğer k eşit "\t" ise:
+                        girinti olsun girinti + 4
+                        konum olsun konum + 1
+                        sutun olsun sutun + 1
+                    değilse:
+                        kır
+
+            eğer son_mi(kaynak, konum) ise:
+                kır
+
+            k olsun karakter(kaynak, konum)
+            eğer değil satir_sonu_mi(k) ve k eşit_değil "#" ise:
+                mevcut olsun son_eleman(girintiler)
+                eğer girinti büyük mevcut ise:
+                    girintiler.ekle(girinti)
+                    tokenlar.ekle(token("GIRINTI", "<GIRINTI>", satir, sutun))
+                değilse:
+                    eğer girinti küçük mevcut ise:
+                        sürece uzunluk(girintiler) büyük 1 ve girinti küçük son_eleman(girintiler):
+                            girintiler olsun sonu_cikar(girintiler)
+                            tokenlar.ekle(token("CIKINTI", "<CIKINTI>", satir, sutun))
+                        eğer girinti eşit_değil son_eleman(girintiler) ise:
+                            tokenlar.ekle(token("HATA", "Gecersiz girinti seviyesi", satir, sutun))
+                            tokenlar.ekle(token("DOSYA_SONU", "", satir, sutun))
+                            döndür tokenlar
+
+            satir_basi olsun yanlış
+
+        k olsun karakter(kaynak, konum)
+
+        eğer bosluk_mi(k) ise:
+            konum olsun konum + 1
+            sutun olsun sutun + 1
+        değilse:
+            eğer k eşit "#" ise:
+                konum olsun yorum_atla(kaynak, konum)
+            değilse:
+                eğer k eşit "\n" ise:
+                    tokenlar.ekle(token("YENI_SATIR", "\\n", satir, sutun))
+                    konum olsun konum + 1
+                    satir olsun satir + 1
+                    sutun olsun 1
+                    satir_basi olsun doğru
+                değilse:
+                    eğer k eşit "\"" ise:
+                        sonuc olsun metin_oku(kaynak, konum, satir, sutun)
+                        tokenlar.ekle(sonuc.token)
+                        konum olsun sonuc.konum
+                        sutun olsun sonuc.sutun
+                    değilse:
+                        eğer rakam_mi(k) ise:
+                            sonuc olsun sayi_oku(kaynak, konum, satir, sutun)
+                            tokenlar.ekle(sonuc.token)
+                            konum olsun sonuc.konum
+                            sutun olsun sonuc.sutun
+                        değilse:
+                            eğer kimlik_baslangici_mi(k) ise:
+                                sonuc olsun kimlik_oku(kaynak, konum, satir, sutun)
+                                tokenlar.ekle(sonuc.token)
+                                konum olsun sonuc.konum
+                                sutun olsun sonuc.sutun
+                            değilse:
+                                eğer islem_mi(k) ise:
+                                    tokenlar.ekle(token("ISLEM", k, satir, sutun))
+                                    konum olsun konum + 1
+                                    sutun olsun sutun + 1
+                                değilse:
+                                    tokenlar.ekle(token("HATA", "Tanimsiz karakter: " + k, satir, sutun))
+                                    konum olsun konum + 1
+                                    sutun olsun sutun + 1
+
+    sürece uzunluk(girintiler) büyük 1:
+        girintiler olsun sonu_cikar(girintiler)
+        tokenlar.ekle(token("CIKINTI", "<CIKINTI>", satir, sutun))
+
+    tokenlar.ekle(token("DOSYA_SONU", "", satir, sutun))
+    döndür tokenlar
+
+işlev turleri(tokenlar):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük uzunluk(tokenlar):
+        sonuc.ekle(tokenlar[i].tur)
+        i olsun i + 1
+    döndür sonuc
+
+işlev degerleri(tokenlar):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük uzunluk(tokenlar):
+        sonuc.ekle(tokenlar[i].deger)
+        i olsun i + 1
+    döndür sonuc
+
+işlev ilk_hata(tokenlar):
+    i olsun 0
+    sürece i küçük uzunluk(tokenlar):
+        eğer tokenlar[i].tur eşit "HATA" ise:
+            döndür tokenlar[i]
+        i olsun i + 1
+    döndür token("BOS", "", 0, 0)
+
+işlev hata_var_mi(tokenlar):
+    döndür ilk_hata(tokenlar).tur eşit "HATA"

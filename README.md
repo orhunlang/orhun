@@ -151,7 +151,8 @@ self-hosting plan.
 - Lexer/parser/AST: `Lexer.cpp`, `Parser.cpp`, `AST.h`
 - Bytecode compiler: `Compiler.cpp`
 - Standard library helpers: `Yerlesik.h`, `StdLib/`, `StdLib/orhun/`
-  (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `metin.oh`, `paket.oh`)
+  (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `metin.oh`, `paket.oh`,
+  `lexer.oh`)
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
 - VS Code tooling: `tools/vscode-orhun`

@@ -325,6 +325,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 paket_yardimci olsun dahil_et "orhun/paket.oh"
+lexer olsun dahil_et "orhun/lexer.oh"
 ```
 
 The public package and module system is still evolving. Pre-1.0 code should keep
@@ -369,8 +370,25 @@ Current built-in module surfaces include:
 - `orhun/koleksiyon.oh`
 - `orhun/metin.oh`
 - `orhun/paket.oh`
+- `orhun/lexer.oh`
 
 Safety-sensitive modules must keep policy checks enabled by default.
+
+## Orhun-Source Lexer Prototype
+
+`orhun/lexer.oh` exposes the first self-hosting lexer prototype. Its public
+entry point is:
+
+```orhun
+lexer olsun dahil_et "orhun/lexer.oh"
+tokenlar olsun lexer.tokenlestir("yazdır \"Merhaba\"\n")
+```
+
+Each token is a dictionary with `tur`, `deger`, `satir`, and `sutun` fields.
+The current prototype recognizes keywords, identifiers, numbers, decimals,
+strings, one-character operators, indentation, LF newlines, end-of-file, and
+error tokens. It is a parity target for the C++ lexer, not yet the production
+lexer.
 
 ## CLI Contract
 
