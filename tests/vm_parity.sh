@@ -3,6 +3,7 @@ set -euo pipefail
 
 COMPILER="${1:-g++}"
 OUTPUT="${2:-build/orhun_test}"
+TEST_TIMEOUT_SECONDS="${ORHUN_TEST_TIMEOUT_SECONDS:-10}"
 
 mkdir -p "$(dirname "${OUTPUT}")"
 
@@ -29,14 +30,58 @@ for case in "${cases[@]}"; do
   filtered_cases+=("${case}")
 done
 
+strict_turkce_case="tests/cases/turkce_kati_alias"
+next_cases=()
+for case in "${filtered_cases[@]}"; do
+  if [[ "${case}" != "${strict_turkce_case}" ]]; then
+    next_cases+=("${case}")
+  fi
+done
+filtered_cases=("${next_cases[@]}")
+
 ok=0
 fail=0
+
+run_orhun_vm() {
+  local src="$1"
+  local actual=""
+  local status=0
+  if command -v timeout >/dev/null 2>&1; then
+    set +e
+    actual="$(timeout "${TEST_TIMEOUT_SECONDS}s" "./${OUTPUT}" vm-kati "${src}" 2>&1)"
+    status=$?
+    set -e
+    if [[ "${status}" -eq 124 || "${status}" -eq 137 ]]; then
+      printf 'Hata: test zaman asimi (%ss)' "${TEST_TIMEOUT_SECONDS}"
+      return 0
+    fi
+  else
+    set +e
+    actual="$("./${OUTPUT}" vm-kati "${src}" 2>&1)"
+    status=$?
+    set -e
+  fi
+
+  printf '%s' "${actual}"
+  if [[ "${status}" -ne 0 && "${status}" -ne 1 ]]; then
+    if [[ -n "${actual}" ]]; then
+      printf '\n'
+    fi
+    printf 'Hata: beklenmeyen cikis kodu (%s)' "${status}"
+  fi
+}
+
 for case in "${filtered_cases[@]}"; do
   src="${case}.oh"
   expected_path="${case}.expected.txt"
 
-  actual="$('./'"${OUTPUT}" vm-kati "${src}" 2>&1 || true)"
+  actual="$(run_orhun_vm "${src}")"
   expected="$(cat "${expected_path}")"
+
+  actual="${actual//$'\r\n'/$'\n'}"
+  actual="${actual//$'\r'/}"
+  expected="${expected//$'\r\n'/$'\n'}"
+  expected="${expected//$'\r'/}"
 
   actual="${actual%$'\n'}"
   expected="${expected%$'\n'}"
@@ -53,6 +98,34 @@ for case in "${filtered_cases[@]}"; do
     ok=$((ok + 1))
   fi
 done
+
+if [[ -f "${strict_turkce_case}.oh" && -f "${strict_turkce_case}.expected.txt" ]]; then
+  src="${strict_turkce_case}.oh"
+  expected_path="${strict_turkce_case}.expected.txt"
+
+  actual="$(ORHUN_TURKCE_KATI=1 run_orhun_vm "${src}")"
+  expected="$(cat "${expected_path}")"
+
+  actual="${actual//$'\r\n'/$'\n'}"
+  actual="${actual//$'\r'/}"
+  expected="${expected//$'\r\n'/$'\n'}"
+  expected="${expected//$'\r'/}"
+
+  actual="${actual%$'\n'}"
+  expected="${expected%$'\n'}"
+
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "[VM-FAIL] ${src} (ORHUN_TURKCE_KATI=1)"
+    echo "Expected:"
+    echo "${expected}"
+    echo "Actual:"
+    echo "${actual}"
+    fail=$((fail + 1))
+  else
+    echo "[VM-OK] ${src} (ORHUN_TURKCE_KATI=1)"
+    ok=$((ok + 1))
+  fi
+fi
 
 echo "vm_parity_ok=${ok}"
 echo "vm_parity_fail=${fail}"

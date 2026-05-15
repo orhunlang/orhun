@@ -1,6 +1,7 @@
 param(
     [string]$Compiler = "g++",
-    [string]$Output = "build/orhun_test.exe"
+    [string]$Output = "build/orhun_test.exe",
+    [int]$TimeoutSeconds = 10
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,11 +33,30 @@ function Run-Orhun($exe, $argsList) {
     $p.StartInfo = $pinfo
     $p.Start() | Out-Null
 
+    $timeoutMs = [Math]::Max(1, $TimeoutSeconds) * 1000
+    if (-not $p.WaitForExit($timeoutMs)) {
+        try {
+            $p.Kill()
+            $p.WaitForExit()
+        }
+        catch {
+        }
+        $stdout = $p.StandardOutput.ReadToEnd()
+        $stderr = $p.StandardError.ReadToEnd()
+        return ($stdout + $stderr + "Hata: test zaman asimi (${TimeoutSeconds}s)")
+    }
+
     $stdout = $p.StandardOutput.ReadToEnd()
     $stderr = $p.StandardError.ReadToEnd()
-    $p.WaitForExit()
+    $combined = $stdout + $stderr
+    if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 1) {
+        if ($combined.Length -gt 0 -and -not $combined.EndsWith("`n")) {
+            $combined += "`n"
+        }
+        $combined += "Hata: beklenmeyen cikis kodu ($($p.ExitCode))"
+    }
 
-    return $stdout + $stderr
+    return $combined
 }
 
 $cases = Get-ChildItem "tests/cases" -Filter "*.expected.txt" |
@@ -44,6 +64,9 @@ $cases = Get-ChildItem "tests/cases" -Filter "*.expected.txt" |
     ForEach-Object { $_ -replace "\\", "/" } |
     Sort-Object |
     Where-Object { Test-Path "$_.oh" }
+
+$strictCase = (Join-Path (Resolve-Path "tests/cases").Path "turkce_kati_alias") -replace "\\", "/"
+$cases = $cases | Where-Object { $_ -ne $strictCase }
 
 if ($env:OS -ne "Windows_NT") {
     $cases = $cases | Where-Object {
@@ -79,6 +102,38 @@ foreach ($case in $cases) {
     }
     else {
         Write-Host "[VM-OK] $src"
+        $ok++
+    }
+}
+
+if ((Test-Path "$strictCase.oh") -and (Test-Path "$strictCase.expected.txt")) {
+    $src = "$strictCase.oh"
+    $expectedPath = "$strictCase.expected.txt"
+    $oncekiKati = $env:ORHUN_TURKCE_KATI
+    $env:ORHUN_TURKCE_KATI = "1"
+    try {
+        $actual = Run-Orhun ".\$Output" "vm-kati $src"
+    }
+    finally {
+        $env:ORHUN_TURKCE_KATI = $oncekiKati
+    }
+    $actual = $actual -replace "`r`n", "`n"
+    $actual = $actual.TrimEnd("`n")
+
+    $expected = Get-Content $expectedPath -Raw -Encoding utf8
+    $expected = $expected -replace "`r`n", "`n"
+    $expected = $expected.TrimEnd("`n")
+
+    if ($actual -ne $expected) {
+        Write-Host "[VM-FAIL] $src (ORHUN_TURKCE_KATI=1)"
+        Write-Host "Beklenen:"
+        Write-Host $expected
+        Write-Host "Alinan:"
+        Write-Host $actual
+        $fail++
+    }
+    else {
+        Write-Host "[VM-OK] $src (ORHUN_TURKCE_KATI=1)"
         $ok++
     }
 }

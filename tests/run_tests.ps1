@@ -55,6 +55,9 @@ function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}) {
 
     $combined = $stdout + $stderr
     if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 1) {
+        if ($combined.Length -gt 0 -and -not $combined.EndsWith("`n")) {
+            $combined += "`n"
+        }
         $combined += "Hata: beklenmeyen cikis kodu ($($p.ExitCode))"
     }
 

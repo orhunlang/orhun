@@ -43,11 +43,20 @@ run_orhun() {
       printf 'Hata: test zaman asimi (%ss)' "${TEST_TIMEOUT_SECONDS}"
       return 0
     fi
-    printf '%s' "${actual}"
-    return 0
+  else
+    set +e
+    actual="$("./${OUTPUT}" "${src}" 2>&1)"
+    status=$?
+    set -e
   fi
 
-  "./${OUTPUT}" "${src}" 2>&1 || true
+  printf '%s' "${actual}"
+  if [[ "${status}" -ne 0 && "${status}" -ne 1 ]]; then
+    if [[ -n "${actual}" ]]; then
+      printf '\n'
+    fi
+    printf 'Hata: beklenmeyen cikis kodu (%s)' "${status}"
+  fi
 }
 
 failed=0
@@ -61,6 +70,11 @@ for case in "${cases[@]}"; do
 
   actual="$(run_orhun "${src}")"
   expected="$(cat "${expected_path}")"
+
+  actual="${actual//$'\r\n'/$'\n'}"
+  actual="${actual//$'\r'/}"
+  expected="${expected//$'\r\n'/$'\n'}"
+  expected="${expected//$'\r'/}"
 
   # normalize trailing newline differences
   actual="${actual%$'\n'}"
@@ -84,6 +98,10 @@ if [[ -f "${strict_turkce_case}.oh" && -f "${strict_turkce_case}.expected.txt" ]
   expected_path="${strict_turkce_case}.expected.txt"
   actual="$(ORHUN_TURKCE_KATI=1 run_orhun "${src}")"
   expected="$(cat "${expected_path}")"
+  actual="${actual//$'\r\n'/$'\n'}"
+  actual="${actual//$'\r'/}"
+  expected="${expected//$'\r\n'/$'\n'}"
+  expected="${expected//$'\r'/}"
   actual="${actual%$'\n'}"
   expected="${expected%$'\n'}"
   if [[ "${actual}" != "${expected}" ]]; then
