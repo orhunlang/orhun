@@ -18,6 +18,9 @@ yazdır temel.ilk([1, 2, 3])
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 yazdır sonuc_yardimci.deger_yada(sonuc_yardimci.ok(42), 0)
 yazdır sonuc_yardimci.dene(işlev(): 7).deger
+
+koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
+yazdır koleksiyon.benzersiz([1, 2, 1, 3])
 ```
 
 Module lookup checks the requested path first, then searches the standard

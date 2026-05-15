@@ -1,0 +1,9 @@
+koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
+
+cift_mi olsun işlev(x): x % 2 eşit 0
+topla olsun işlev(toplam, x): toplam + x
+
+yazdır koleksiyon.icerir([1, 2, 3], 2)
+yazdır koleksiyon.bul([1, 3, 4, 6], cift_mi, 0)
+yazdır koleksiyon.katla([1, 2, 3, 4], 0, topla)
+yazdır koleksiyon.benzersiz([1, 2, 1, 3, 2])
