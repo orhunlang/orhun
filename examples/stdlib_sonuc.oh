@@ -6,3 +6,4 @@ kotu olsun sonuc_yardimci.hata("ag_hatasi")
 yazdır sonuc_yardimci.deger_yada(iyi, 0)
 yazdır sonuc_yardimci.hata_yada(kotu, "hata_yok")
 yazdır sonuc_yardimci.haritala(iyi, işlev(x): x * 2).deger
+yazdır sonuc_yardimci.dene(işlev(): 7).deger

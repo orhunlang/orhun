@@ -40,3 +40,9 @@ işlev zincirle(kayit, donusturucu):
         döndür donusturucu(kayit.deger)
     değilse:
         döndür kayit
+
+işlev dene(islem):
+    deneme:
+        döndür ok(islem())
+    yakala hata_mesaji:
+        döndür hata(hata_mesaji)

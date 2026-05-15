@@ -15,8 +15,11 @@ yazdır sonuc_yardimci.hata_yada(kotu, "hata_yok")
 
 iki_kat olsun işlev(x): x * 2
 buyut olsun işlev(x): sonuc_yardimci.ok(x + 10)
+hata_uret olsun işlev(): [1][5]
 
 yazdır sonuc_yardimci.haritala(iyi, iki_kat).deger
 yazdır sonuc_yardimci.haritala(kotu, iki_kat).hata
 yazdır sonuc_yardimci.zincirle(iyi, buyut).deger
 yazdır sonuc_yardimci.zincirle(kotu, buyut).hata
+yazdır sonuc_yardimci.dene(işlev(): 7).deger
+yazdır metin.icerir(sonuc_yardimci.dene(hata_uret).hata, "Liste indeksi")

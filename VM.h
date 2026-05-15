@@ -96,6 +96,7 @@ private:
 
   MemoryManager memory_;
   std::size_t gcEsigi_ = 1024;
+  std::size_t gcErtelemeDerinligi_ = 0;
 
   void yerlesikNativesYukle();
   Value nativeOlustur(const std::string &ad, int arity, ObjNative::NativeFn fn);

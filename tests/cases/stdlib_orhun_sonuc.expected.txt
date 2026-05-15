@@ -11,3 +11,5 @@ ag_hatasi
 ag_hatasi
 31
 ag_hatasi
+7
+1

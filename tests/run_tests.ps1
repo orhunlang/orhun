@@ -53,7 +53,12 @@ function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}) {
     $stdout = $p.StandardOutput.ReadToEnd()
     $stderr = $p.StandardError.ReadToEnd()
 
-    return $stdout + $stderr
+    $combined = $stdout + $stderr
+    if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 1) {
+        $combined += "Hata: beklenmeyen cikis kodu ($($p.ExitCode))"
+    }
+
+    return $combined
 }
 
 $cases = Get-ChildItem "tests/cases" -Filter "*.expected.txt" |

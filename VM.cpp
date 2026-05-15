@@ -404,6 +404,7 @@ void VM::sifirla() {
   ffiSonrakiIslevKimlik_ = 1;
   modulChunklari_.clear();
   gcEsigi_ = 1024;
+  gcErtelemeDerinligi_ = 0;
   yerlesikNativesYukle();
 }
 
@@ -2058,13 +2059,14 @@ void VM::yerlesikNativesYukle() {
                auto kayitRuntimeSabitCache = std::move(vm.runtimeSabitCache_);
                const std::size_t kayitGcEsigi = vm.gcEsigi_;
 
-               // İç içe çalıştırmada eski stack/frame değerlerini GC'den
-               // korumak için module evaluation boyunca GC tetiklenmesini
-               // fiilen kapatıyoruz.
+               // Ic ice calistirmada dis frame/stack degerleri gecici olarak
+               // kenara alinir; modul bitene kadar GC bu kokleri goremez.
+               ++vm.gcErtelemeDerinligi_;
                vm.gcEsigi_ = std::numeric_limits<std::size_t>::max() / 2;
                try {
                  vm.calistir(chunk);
                } catch (...) {
+                 --vm.gcErtelemeDerinligi_;
                  vm.chunk_ = kayitChunk;
                  vm.frameYigini_ = std::move(kayitFrameYigini);
                  vm.bekleyenKurucular_ = std::move(kayitBekleyenKurucular);
@@ -2075,6 +2077,7 @@ void VM::yerlesikNativesYukle() {
                  vm.gcEsigi_ = kayitGcEsigi;
                  throw;
                }
+               --vm.gcErtelemeDerinligi_;
                vm.chunk_ = kayitChunk;
                vm.frameYigini_ = std::move(kayitFrameYigini);
                vm.bekleyenKurucular_ = std::move(kayitBekleyenKurucular);
@@ -2100,6 +2103,9 @@ void VM::yerlesikNativesYukle() {
 }
 
 void VM::gcGerekirseCalistir() {
+  if (gcErtelemeDerinligi_ > 0) {
+    return;
+  }
   if (memory_.objectCount() >= gcEsigi_) {
     gcCalistir();
     gcEsigi_ = std::max<std::size_t>(1024, memory_.objectCount() * 2);
@@ -2215,8 +2221,10 @@ void VM::calistir(const BytecodeChunk &chunk) {
   auto *kok = memory_.allocate<ObjFunction>("<program>", 0, 0, &chunk, 0, 0, 0);
   pushFrame(kok, 0, 0);
 
-  // COMPUTED GOTO OPTIMIZATION
-#if defined(__GNUC__) || defined(__clang__)
+  // Computed goto is opt-in: C++ exceptions and non-trivial locals can make
+  // label-as-values dispatch unsafe on MinGW/GCC in try/catch-heavy bytecode.
+#if defined(ORHUN_VM_ENABLE_COMPUTED_GOTO) &&                                 \
+    (defined(__GNUC__) || defined(__clang__))
 #define VM_USE_CGOTO
 #endif
 
@@ -2554,9 +2562,14 @@ void VM::calistir(const BytecodeChunk &chunk) {
         if (!std::holds_alternative<std::string>(adDegeri.veri)) {
           calismaHatasi("ISLEV_OLUSTUR ad sabiti metin degil.");
         }
+        const BytecodeChunk *aktifChunk = frameYigini_.back().function->chunk;
+        if (aktifChunk == nullptr) {
+          calismaHatasi("ISLEV_OLUSTUR aktif chunk bulunamadi.");
+        }
         auto *fn = memory_.allocate<ObjFunction>(
             std::get<std::string>(adDegeri.veri), static_cast<int>(minArity),
-            static_cast<int>(maxArity), chunk_, giris, localSayisi, baglamArg);
+            static_cast<int>(maxArity), aktifChunk, giris, localSayisi,
+            baglamArg);
         yiginPush(Value::nesne(fn));
         BREAK;
       }
@@ -2894,7 +2907,9 @@ void VM::calistir(const BytecodeChunk &chunk) {
         }
         popFrameVeDon(donus);
         if (frameYigini_.empty()) {
-          gcCalistir();
+          if (gcErtelemeDerinligi_ == 0) {
+            gcCalistir();
+          }
           return;
         }
         BREAK;
