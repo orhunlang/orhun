@@ -1,0 +1,11 @@
+# ast: IslevTanim,SinifTanim,Atama
+işlev topla(a olsun 1, b olsun 2):
+    döndür a + b
+
+tip Kutu:
+    işlev kur(deger):
+        benim.deger olsun deger
+    işlev oku():
+        döndür benim.deger
+
+nesne olsun yeni Kutu(3)

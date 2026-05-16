@@ -62,6 +62,7 @@ Hedefler:
 - C++ lexer token akisi `orhun lex --json` ile makine-okur hale gelir.
 - C++ parser AST akisi `orhun parse --json` ile makine-okur hale gelir.
 - Lexer parity fixture'lari `tests/lexer_parity/` altinda genisler.
+- Parser AST fixture'lari `tests/ast_json/` altinda genisler.
 
 Basari olcutu:
 

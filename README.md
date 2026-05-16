@@ -158,7 +158,7 @@ self-hosting plan.
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
 - Lexer parity fixtures: `tests/lexer_parity/`
-- Parser AST JSON smoke: `tests/ast_json_smoke.py`
+- Parser AST JSON fixtures: `tests/ast_json/`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`

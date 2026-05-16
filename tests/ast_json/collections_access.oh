@@ -1,0 +1,6 @@
+# ast: Atama,Atama,Atama,Atama,Yazdir
+liste olsun [1, 2, 3]
+sozluk olsun {"ad": "orhun", "surum": 1}
+ilk olsun liste[0]
+ad olsun sozluk?.ad
+yazdır [x * 2 için x içinde liste eğer x büyük 1]

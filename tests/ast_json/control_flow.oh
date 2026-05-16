@@ -1,0 +1,12 @@
+# ast: Eger,Atama,Surece,Tekrarla
+eğer doğru ise:
+    yazdır "evet"
+değilse:
+    yazdır "hayır"
+
+sayac olsun 0
+sürece sayac küçük 3:
+    sayac olsun sayac + 1
+
+tekrarla 2 kez:
+    yazdır "sur"

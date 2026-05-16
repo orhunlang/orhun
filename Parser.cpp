@@ -291,6 +291,9 @@ std::unique_ptr<ASTNode> Parser::parseTekrarla() {
   std::unique_ptr<ASTNode> kacKez = parseIfade();
   tuket(TokenTuru::ANAHTAR_KELIME, "kez",
         "Tekrar sayısından sonra 'kez' bekleniyor.");
+  if (kontrol(TokenTuru::ISLEM, ":")) {
+    ilerle();
+  }
 
   return std::make_unique<TekrarlaNode>(
       std::move(kacKez), parseBlokVeyaTekKomut("tekrarla", false), token.satir);

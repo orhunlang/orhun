@@ -170,6 +170,8 @@ tekrarla 3 kez:
     yazdır "Orhun"
 ```
 
+The colon after `kez` is optional for compatibility with existing fixtures.
+
 ### While
 
 ```orhun
@@ -421,6 +423,8 @@ Stable channel defaults:
 - `parse --json` exposes the C++ parser AST for self-hosting parity checks.
   Its JSON payload contains `dosya`, `durum`, `hata_sayisi`, and `ast`.
   The `ast` root is a `Program` node with nested command and expression nodes.
+  Parser AST JSON fixtures live in `tests/ast_json/` and are checked through
+  `tests/ast_json_smoke.py`.
 
 ## Compatibility Rules
 
