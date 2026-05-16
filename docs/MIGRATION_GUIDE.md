@@ -125,3 +125,8 @@
 - Başarılı çıktıda `durum: "ok"`, `hata_sayisi: 0` ve `ast` alanı bulunur.
 - Parser hatalarında komut `1` ile çıkar, `durum: "fail"` döndürür ve `ast`
   alanını `null` yapar.
+
+## 12. Self-hosting: `orhun/parser.oh`
+- `orhun/parser.oh`, Orhun ile yazılan ilk parser prototipidir.
+- Şimdilik üst seviye komut türlerini özetler ve `parse --json` AST çıktısıyla
+  fixture bazında karşılaştırılır.

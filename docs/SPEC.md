@@ -373,6 +373,7 @@ Current built-in module surfaces include:
 - `orhun/metin.oh`
 - `orhun/paket.oh`
 - `orhun/lexer.oh`
+- `orhun/parser.oh`
 
 Safety-sensitive modules must keep policy checks enabled by default.
 
@@ -394,6 +395,20 @@ lexer.
 
 Lexer parity fixtures live in `tests/lexer_parity/` and are compared against the
 C++ lexer through `tests/lexer_parity_smoke.py`.
+
+## Orhun-Source Parser Prototype
+
+`orhun/parser.oh` exposes the first self-hosting parser prototype. Its public
+entry point is:
+
+```orhun
+parser olsun dahil_et "orhun/parser.oh"
+sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
+```
+
+The current prototype summarizes top-level command node kinds and compares them
+against the C++ parser AST through `tests/parser_prototype_smoke.py`. It is not
+yet the production parser.
 
 ## CLI Contract
 

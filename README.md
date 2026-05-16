@@ -154,11 +154,12 @@ self-hosting plan.
 - Bytecode compiler: `Compiler.cpp`
 - Standard library helpers: `Yerlesik.h`, `StdLib/`, `StdLib/orhun/`
   (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `metin.oh`, `paket.oh`,
-  `lexer.oh`)
+  `lexer.oh`, `parser.oh`)
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
 - Lexer parity fixtures: `tests/lexer_parity/`
 - Parser AST JSON fixtures: `tests/ast_json/`
+- Parser prototype parity smoke: `tests/parser_prototype_smoke.py`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`

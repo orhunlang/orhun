@@ -1,0 +1,16 @@
+parser olsun dahil_et "orhun/parser.oh"
+
+kaynak olsun "işlev topla(a olsun 1, b olsun 2):\n    döndür a + b\n\nsonuc olsun topla(3)\nyazdır sonuc\n"
+sonuc olsun parser.ozetle(kaynak)
+
+yazdır parser.surum
+yazdır sonuc.ok
+yazdır uzunluk(sonuc.komutlar)
+yazdır metin.birlestir(parser.turleri(sonuc), "|")
+
+coklu olsun parser.ozetle("a, b olsun [1, 2]\nyazdır a\n")
+yazdır metin.birlestir(parser.turleri(coklu), "|")
+
+hata olsun parser.ozetle("@\n")
+yazdır hata.ok
+yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")

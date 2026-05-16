@@ -158,6 +158,19 @@ jobs:
         if: runner.os == 'macOS'
         run: python3 tests/ast_json_smoke.py ./build/orhun_test
 
+      - name: Parser prototype smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/parser_prototype_smoke.py .\build\orhun_test.exe
+
+      - name: Parser prototype smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/parser_prototype_smoke.py ./build/orhun_test
+
+      - name: Parser prototype smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/parser_prototype_smoke.py ./build/orhun_test
+
       - name: Lock v3 smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

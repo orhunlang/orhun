@@ -63,6 +63,8 @@ Hedefler:
 - C++ parser AST akisi `orhun parse --json` ile makine-okur hale gelir.
 - Lexer parity fixture'lari `tests/lexer_parity/` altinda genisler.
 - Parser AST fixture'lari `tests/ast_json/` altinda genisler.
+- Orhun parser prototipi once ust seviye komut turlerinde C++ AST ile
+  eslenir, sonra ifade ve blok detaylarina genisler.
 
 Basari olcutu:
 

@@ -1,0 +1,160 @@
+# Orhun ile yazilmis parser prototipi.
+#
+# Bu modul simdilik C++ parser AST'sinin ust seviye komut turlerini ozetler.
+# Hedef, self-hosting yolunda Orhun kaynakli parseri kademeli olarak buyutmek.
+
+lexer olsun dahil_et "orhun/lexer.oh"
+
+surum olsun "0.1.0"
+
+işlev dugum(tur, satir):
+    döndür {"tur": tur, "satir": satir}
+
+işlev sonuc_ok(komutlar):
+    döndür {"ok": doğru, "hata": "", "komutlar": komutlar}
+
+işlev sonuc_hata(mesaj, token):
+    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "komutlar": []}
+
+işlev token_yok():
+    döndür {"tur": "DOSYA_SONU", "deger": "", "satir": 0, "sutun": 0}
+
+işlev guvenli_token(tokenlar, konum):
+    eğer konum küçük 0 veya konum büyük uzunluk(tokenlar) - 1 ise:
+        döndür token_yok()
+    döndür tokenlar[konum]
+
+işlev satir_sonu_mu(token):
+    döndür token.tur eşit "YENI_SATIR" veya token.tur eşit "DOSYA_SONU"
+
+işlev satir_sonuna_git(tokenlar, konum):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        eğer satir_sonu_mu(tokenlar[i]) ise:
+            döndür i + 1
+        i olsun i + 1
+    döndür i
+
+işlev satirda_atama_mi(tokenlar, konum):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür yanlış
+        eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "olsun" ise:
+            döndür doğru
+        eğer token.tur eşit "ISLEM" ve token.deger eşit "=" ise:
+            döndür doğru
+        i olsun i + 1
+    döndür yanlış
+
+işlev satirda_coklu_atama_mi(tokenlar, konum):
+    i olsun konum
+    virgul olsun yanlış
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür yanlış
+        eğer token.tur eşit "ISLEM" ve token.deger eşit "," ise:
+            virgul olsun doğru
+        eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "olsun" ise:
+            döndür virgul
+        eğer token.tur eşit "ISLEM" ve token.deger eşit "=" ise:
+            döndür virgul
+        i olsun i + 1
+    döndür yanlış
+
+işlev anahtar_komut_turu(deger):
+    eğer deger eşit "yazdır" ise:
+        döndür "Yazdir"
+    eğer deger eşit "eğer" ise:
+        döndür "Eger"
+    eğer deger eşit "tekrarla" ise:
+        döndür "Tekrarla"
+    eğer deger eşit "sürece" ise:
+        döndür "Surece"
+    eğer deger eşit "işlev" ise:
+        döndür "IslevTanim"
+    eğer deger eşit "dış_işlev" veya deger eşit "dis_islev" ise:
+        döndür "DisIslevTanim"
+    eğer deger eşit "tip" ise:
+        döndür "SinifTanim"
+    eğer deger eşit "deneme" ise:
+        döndür "DenemeYakala"
+    eğer deger eşit "kır" ise:
+        döndür "Kir"
+    eğer deger eşit "devam" ise:
+        döndür "Devam"
+    eğer deger eşit "döndür" ise:
+        döndür "Dondur"
+    eğer deger eşit "dahil_et" ise:
+        döndür "DahilEt"
+    döndür ""
+
+işlev komut_turu(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+
+    eğer token.tur eşit "ANAHTAR_KELIME" ise:
+        döndür anahtar_komut_turu(token.deger)
+
+    eğer token.tur eşit "KIMLIK" ise:
+        eğer satirda_coklu_atama_mi(tokenlar, konum) ise:
+            döndür "CokluAtama"
+        eğer satirda_atama_mi(tokenlar, konum) ise:
+            döndür "Atama"
+        döndür "IfadeKomut"
+
+    eğer token.tur eşit "SAYI" veya token.tur eşit "ONDALIK" veya token.tur eşit "METIN" ise:
+        döndür "IfadeKomut"
+
+    döndür ""
+
+işlev turleri(sonuc):
+    liste olsun []
+    i olsun 0
+    sürece i küçük uzunluk(sonuc.komutlar):
+        liste.ekle(sonuc.komutlar[i].tur)
+        i olsun i + 1
+    döndür liste
+
+işlev ozetle_tokenlar(tokenlar):
+    eğer lexer.hata_var_mi(tokenlar) ise:
+        ilk_hata olsun lexer.ilk_hata(tokenlar)
+        döndür sonuc_hata(ilk_hata.deger, ilk_hata)
+
+    komutlar olsun []
+    derinlik olsun 0
+    i olsun 0
+
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+
+        eğer token.tur eşit "GIRINTI" ise:
+            derinlik olsun derinlik + 1
+            i olsun i + 1
+        değilse:
+            eğer token.tur eşit "CIKINTI" ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik küçük 0 ise:
+                    derinlik olsun 0
+                i olsun i + 1
+            değilse:
+                eğer token.tur eşit "DOSYA_SONU" ise:
+                    döndür sonuc_ok(komutlar)
+                değilse:
+                    eğer token.tur eşit "YENI_SATIR" veya derinlik büyük 0 ise:
+                        i olsun i + 1
+                    değilse:
+                        eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "değilse" veya token.deger eşit "yakala") ise:
+                            i olsun satir_sonuna_git(tokenlar, i)
+                        değilse:
+                            tur olsun komut_turu(tokenlar, i)
+                            eğer uzunluk(tur) eşit 0 ise:
+                                döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token)
+                            komutlar.ekle(dugum(tur, token.satir))
+                            i olsun satir_sonuna_git(tokenlar, i)
+
+    döndür sonuc_ok(komutlar)
+
+işlev ozetle(kaynak):
+    döndür ozetle_tokenlar(lexer.tokenlestir(kaynak))
