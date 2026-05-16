@@ -169,6 +169,22 @@ jobs:
         run: |
           python3 tests/dx_fmt_lint_smoke.py ./build/orhun_test
 
+      - name: Lexer parity smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/lexer_parity_smoke.py .\build\orhun_test.exe
+
+      - name: Lexer parity smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/lexer_parity_smoke.py ./build/orhun_test
+
+      - name: Lexer parity smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/lexer_parity_smoke.py ./build/orhun_test
+
       - name: Lock v3 smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

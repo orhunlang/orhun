@@ -485,6 +485,84 @@ std::string bicimlendir(const std::vector<OrhunToken> &tokenlar) {
 
 std::string jsonKacis(const std::string &metin);
 
+std::string tokenTuruAdi(TokenTuru tur) {
+  switch (tur) {
+  case TokenTuru::ANAHTAR_KELIME:
+    return "ANAHTAR_KELIME";
+  case TokenTuru::KIMLIK:
+    return "KIMLIK";
+  case TokenTuru::SAYI:
+    return "SAYI";
+  case TokenTuru::ONDALIK:
+    return "ONDALIK";
+  case TokenTuru::METIN:
+    return "METIN";
+  case TokenTuru::ISLEM:
+    return "ISLEM";
+  case TokenTuru::YENI_SATIR:
+    return "YENI_SATIR";
+  case TokenTuru::GIRINTI:
+    return "GIRINTI";
+  case TokenTuru::CIKINTI:
+    return "CIKINTI";
+  case TokenTuru::DOSYA_SONU:
+    return "DOSYA_SONU";
+  case TokenTuru::HATA:
+    return "HATA";
+  }
+  return "BILINMEYEN";
+}
+
+std::string tokenlarJson(const std::vector<OrhunToken> &tokenlar) {
+  std::ostringstream ss;
+  ss << "[";
+  for (std::size_t i = 0; i < tokenlar.size(); ++i) {
+    if (i > 0) {
+      ss << ",";
+    }
+    ss << "{\"tur\":\"" << tokenTuruAdi(tokenlar[i].tur) << "\","
+       << "\"deger\":\"" << jsonKacis(tokenlar[i].deger) << "\","
+       << "\"satir\":" << tokenlar[i].satir << ","
+       << "\"sutun\":" << tokenlar[i].sutun << "}";
+  }
+  ss << "]";
+  return ss.str();
+}
+
+int komutLex(const std::string &dosyaYolu, bool jsonCikti) {
+  if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
+    throw std::runtime_error("Hata: lex komutu icin .oh dosyasi bekleniyor.");
+  }
+
+  const std::string kaynakKod = dosyaOku(dosyaYolu);
+  Lexer lexer(kaynakKod);
+  const std::vector<OrhunToken> tokenlar = lexer.tokenize();
+  std::size_t hataSayisi = 0;
+  for (const auto &token : tokenlar) {
+    if (token.tur == TokenTuru::HATA) {
+      ++hataSayisi;
+    }
+  }
+
+  if (jsonCikti) {
+    std::cout << "{"
+              << "\"dosya\":\"" << jsonKacis(dosyaYolu) << "\","
+              << "\"hata_sayisi\":" << hataSayisi << ","
+              << "\"tokenlar\":" << tokenlarJson(tokenlar) << "}\n";
+    return hataSayisi == 0 ? 0 : 1;
+  }
+
+  for (const auto &token : tokenlar) {
+    std::cout << token.satir << ":" << token.sutun << " "
+              << tokenTuruAdi(token.tur);
+    if (!token.deger.empty()) {
+      std::cout << " " << tokeniYaziyaCevir(token);
+    }
+    std::cout << "\n";
+  }
+  return hataSayisi == 0 ? 0 : 1;
+}
+
 int komutFmt(const std::string &dosyaYolu, bool checkModu, bool jsonCikti) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error("Hata: fmt komutu icin .oh dosyasi bekleniyor.");
@@ -3804,10 +3882,11 @@ int main(int argc, char *argv[]) {
     Lexer::setTurkceKatiVarsayilan(turkceKatiEtkin);
 
     auto dahiliKomutMu = [](const std::string &deger) {
-      return deger == "fmt" || deger == "paket" || deger == "vm" ||
-             deger == "vm-kati" || deger == "obc" || deger == "derle" ||
-             deger == "hiz" || deger == "lint" || deger == "lsp" ||
-             deger == "doctor" || deger == "surum";
+      return deger == "fmt" || deger == "lex" || deger == "tokenler" ||
+             deger == "paket" || deger == "vm" || deger == "vm-kati" ||
+             deger == "obc" || deger == "derle" || deger == "hiz" ||
+             deger == "lint" || deger == "lsp" || deger == "doctor" ||
+             deger == "surum";
     };
 
     if (argc < 2) {
@@ -3818,6 +3897,23 @@ int main(int argc, char *argv[]) {
     }
 
     const std::string komut = argv[1];
+    if (komut == "lex" || komut == "tokenler") {
+      if (argc < 3) {
+        throw std::runtime_error("Hata: lex komutu icin dosya adi bekleniyor.");
+      }
+      bool jsonCikti = false;
+      for (int i = 3; i < argc; ++i) {
+        const std::string secenek = argv[i];
+        if (secenek == "--json") {
+          jsonCikti = true;
+          continue;
+        }
+        throw std::runtime_error(
+            "Hata: lex secenekleri yalnizca '--json' olabilir.");
+      }
+      return komutLex(argv[2], jsonCikti);
+    }
+
     if (komut == "fmt") {
       if (argc < 3) {
         throw std::runtime_error("Hata: fmt komutu icin dosya adi bekleniyor.");

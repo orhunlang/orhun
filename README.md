@@ -110,6 +110,7 @@ Useful commands:
 ```bash
 orhun fmt dosya.oh
 orhun lint dosya.oh
+orhun lex dosya.oh --json
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 orhun paket dogrula

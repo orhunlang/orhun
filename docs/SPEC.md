@@ -401,6 +401,7 @@ orhun doctor
 orhun doctor --json
 orhun fmt dosya.oh
 orhun lint dosya.oh
+orhun lex dosya.oh --json
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 ```
@@ -411,6 +412,8 @@ Stable channel defaults:
 - Shell command execution is restricted.
 - FFI defaults to allowlist policy.
 - Package sources are allowlist-checked.
+- `lex --json` exposes the C++ lexer token stream for self-hosting parity
+  checks. Its JSON payload contains `dosya`, `hata_sayisi`, and `tokenlar`.
 
 ## Compatibility Rules
 

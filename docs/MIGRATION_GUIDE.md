@@ -94,7 +94,7 @@
 - Workspace altında `.oh` dosyaları indekslenir (açık belge dışı semboller de
   `workspace/symbol` ve `definition` akışına dahil edilir).
 
-## 9. Doctor JSON
+## 8. Doctor JSON
 - `orhun doctor --json` makine-okur çıktı üretir.
 - Sabit alanlar:
   - `version`
@@ -104,7 +104,7 @@
   - `ci_profiles`
   - `security_mode`
 
-## 8. DX: `fmt` ve `lint`
+## 9. DX: `fmt` ve `lint`
 - `orhun fmt` yeni seçenekler:
   - `--check`: dosyayı yazmadan biçim farkı kontrolü yapar
   - `--json`: CI/IDE için makine-okur çıktı üretir
@@ -114,3 +114,8 @@
 - CI için önerilen akış:
   - `orhun fmt <dosya> --check --json`
   - `orhun lint <dosya> --strict --json`
+
+## 10. Self-hosting: `lex --json`
+- `orhun lex <dosya.oh> --json`, C++ lexer token akışını JSON olarak verir.
+- Bu çıktı, Orhun ile yazılan `orhun/lexer.oh` prototipiyle parity testlerinde
+  kullanılır.

@@ -59,6 +59,7 @@ Hedefler:
 - Orhun kaynakli parser prototipi AST veya ara temsil uretir.
 - C++ lexer/parser ile Orhun lexer/parser ciktisi ayni testlerde
   karsilastirilir.
+- C++ lexer token akisi `orhun lex --json` ile makine-okur hale gelir.
 
 Basari olcutu:
 
