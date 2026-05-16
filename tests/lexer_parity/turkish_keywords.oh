@@ -1,0 +1,6 @@
+# parity: tokens-only
+işlev ana():
+    eğer doğru ise:
+        yazdır "Merhaba"
+    değilse:
+        yazdır "Güle güle"

@@ -1,0 +1,4 @@
+# yorum satiri token uretmemeli
+metin olsun "satir\nsekme\tters\\tirnak\""
+bos olsun ""
+son olsun metin + bos

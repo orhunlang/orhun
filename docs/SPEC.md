@@ -390,6 +390,9 @@ strings, one-character operators, indentation, LF newlines, end-of-file, and
 error tokens. It is a parity target for the C++ lexer, not yet the production
 lexer.
 
+Lexer parity fixtures live in `tests/lexer_parity/` and are compared against the
+C++ lexer through `tests/lexer_parity_smoke.py`.
+
 ## CLI Contract
 
 Important commands:

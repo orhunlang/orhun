@@ -99,14 +99,16 @@ işlev anahtar_mi(deger):
         i olsun i + 1
     döndür yanlış
 
-işlev yorum_atla(kaynak, konum):
+işlev yorum_atla(kaynak, konum, sutun):
     i olsun konum
+    s olsun sutun
     sürece değil son_mi(kaynak, i):
         k olsun karakter(kaynak, i)
         eğer satir_sonu_mi(k) ise:
-            döndür i
+            döndür {"konum": i, "sutun": s}
         i olsun i + 1
-    döndür i
+        s olsun s + 1
+    döndür {"konum": i, "sutun": s}
 
 işlev son_eleman(liste):
     döndür liste[uzunluk(liste) - 1]
@@ -257,7 +259,9 @@ işlev tokenlestir(kaynak):
             sutun olsun sutun + 1
         değilse:
             eğer k eşit "#" ise:
-                konum olsun yorum_atla(kaynak, konum)
+                yorum_sonuc olsun yorum_atla(kaynak, konum, sutun)
+                konum olsun yorum_sonuc.konum
+                sutun olsun yorum_sonuc.sutun
             değilse:
                 eğer k eşit "\n" ise:
                     tokenlar.ekle(token("YENI_SATIR", "\\n", satir, sutun))

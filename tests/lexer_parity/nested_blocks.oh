@@ -1,0 +1,5 @@
+kontrol:
+    eger olsun 1
+    ic:
+        deger olsun eger + 2
+    bitis olsun deger

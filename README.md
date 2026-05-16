@@ -156,6 +156,7 @@ self-hosting plan.
   `lexer.oh`)
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
+- Lexer parity fixtures: `tests/lexer_parity/`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`

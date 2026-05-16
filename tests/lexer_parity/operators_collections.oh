@@ -1,0 +1,4 @@
+liste olsun [1, 2, 3]
+sozluk olsun {"ad": "orhun", "surum": 1}
+sonuc olsun liste[0] + sozluk.ad
+guvenli olsun sozluk?.eksik

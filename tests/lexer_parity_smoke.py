@@ -6,6 +6,9 @@ import tempfile
 from pathlib import Path
 
 
+DEFAULT_FIXTURE_DIR = Path("tests/lexer_parity")
+
+
 def run_cmd(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         args,
@@ -39,12 +42,18 @@ def normalized(tokens: list[dict], include_position: bool) -> list[dict]:
     return [{key: token.get(key) for key in keys} for token in tokens]
 
 
-def compare_case(binary: Path, repo: Path, source: str, include_position: bool) -> None:
+def fixture_include_position(path: Path) -> bool:
+    try:
+        first_line = path.read_text(encoding="utf-8").splitlines()[0]
+    except IndexError:
+        return True
+    return "parity: tokens-only" not in first_line
+
+
+def compare_file(binary: Path, repo: Path, source_file: Path, include_position: bool) -> None:
     with tempfile.TemporaryDirectory(prefix="orhun_lexer_parity_") as tmp:
         root = Path(tmp)
-        source_file = root / "case.oh"
         driver_file = root / "driver.oh"
-        source_file.write_text(source, encoding="utf-8", newline="\n")
 
         cxx_proc = run_cmd([str(binary), "lex", str(source_file), "--json"], repo)
         require(
@@ -78,15 +87,27 @@ def compare_case(binary: Path, repo: Path, source: str, include_position: bool) 
         right = normalized(orhun_tokens, include_position)
         require(
             left == right,
-            "Lexer parity mismatch\n"
+            f"Lexer parity mismatch: {source_file}\n"
             f"C++:   {json.dumps(left, ensure_ascii=False)}\n"
             f"Orhun: {json.dumps(right, ensure_ascii=False)}",
         )
 
 
+def compare_source(binary: Path, repo: Path, source: str, include_position: bool) -> None:
+    with tempfile.TemporaryDirectory(prefix="orhun_lexer_parity_src_") as tmp:
+        source_file = Path(tmp) / "case.oh"
+        source_file.write_text(source, encoding="utf-8", newline="\n")
+        compare_file(binary, repo, source_file, include_position)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="C++ lexer / Orhun lexer parity smoke")
     parser.add_argument("binary", help="Orhun executable path")
+    parser.add_argument(
+        "--fixtures",
+        default=str(DEFAULT_FIXTURE_DIR),
+        help="Directory containing lexer parity .oh fixtures",
+    )
     args = parser.parse_args()
 
     binary = Path(args.binary).resolve()
@@ -94,26 +115,33 @@ def main() -> int:
         raise SystemExit(f"Binary not found: {binary}")
 
     repo = Path.cwd()
+    fixture_dir = (repo / args.fixtures).resolve()
 
-    compare_case(
-        binary,
-        repo,
-        "blok:\n"
-        "    x olsun 1\n"
-        "    y olsun 10.5\n"
-        "    yaz \"metin\"\n",
-        include_position=True,
-    )
+    cases = sorted(fixture_dir.glob("*.oh")) if fixture_dir.exists() else []
+    if not cases:
+        compare_source(
+            binary,
+            repo,
+            "blok:\n"
+            "    x olsun 1\n"
+            "    y olsun 10.5\n"
+            "    yaz \"metin\"\n",
+            include_position=True,
+        )
+        compare_source(
+            binary,
+            repo,
+            "işlev ana():\n"
+            "    yazdır \"Merhaba\"\n",
+            include_position=False,
+        )
+        print("Lexer parity smoke passed (2 inline cases).")
+        return 0
 
-    compare_case(
-        binary,
-        repo,
-        "işlev ana():\n"
-        "    yazdır \"Merhaba\"\n",
-        include_position=False,
-    )
+    for case in cases:
+        compare_file(binary, repo, case, fixture_include_position(case))
 
-    print("Lexer parity smoke passed.")
+    print(f"Lexer parity smoke passed ({len(cases)} fixture cases).")
     return 0
 
 
