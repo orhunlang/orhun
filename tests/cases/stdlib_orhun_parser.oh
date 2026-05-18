@@ -13,6 +13,7 @@ yazdır metin.birlestir(parser.turleri(coklu), "|")
 
 kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
+yazdır json.yaz(kontrol.komutlar[0].bloklar)
 
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok

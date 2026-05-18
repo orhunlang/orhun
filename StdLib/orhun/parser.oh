@@ -1,15 +1,26 @@
 # Orhun ile yazilmis parser prototipi.
 #
 # Bu modul simdilik C++ parser AST'sinin ust seviye komut turlerini,
-# satirlarini ve dogrudan alt blok komut sayilarini ozetler.
+# satirlarini ve dogrudan alt blok komutlarini ozetler.
 # Hedef, self-hosting yolunda Orhun kaynakli parseri kademeli olarak buyutmek.
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
 surum olsun "0.1.0"
 
-işlev dugum(tur, satir, blok_sayilari):
-    döndür {"tur": tur, "satir": satir, "blok_sayilari": blok_sayilari}
+işlev kisa_dugum(tur, satir):
+    döndür {"tur": tur, "satir": satir}
+
+işlev blok_sayilari_uret(bloklar):
+    sayilar olsun []
+    i olsun 0
+    sürece i küçük uzunluk(bloklar):
+        sayilar.ekle(uzunluk(bloklar[i].komutlar))
+        i olsun i + 1
+    döndür sayilar
+
+işlev dugum(tur, satir, bloklar):
+    döndür {"tur": tur, "satir": satir, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
 
 işlev sonuc_ok(komutlar):
     döndür {"ok": doğru, "hata": "", "komutlar": komutlar}
@@ -166,11 +177,12 @@ işlev baslik_hatasi(tokenlar, konum):
 işlev blok_ozeti(tokenlar, konum):
     i olsun yeni_satirlari_atla(tokenlar, konum)
     eğer guvenli_token(tokenlar, i).tur eşit_değil "GIRINTI" ise:
-        döndür {"sayi": 0, "son": i}
+        döndür {"sayi": 0, "komutlar": [], "son": i}
 
     i olsun i + 1
     derinlik olsun 1
     sayi olsun 0
+    komutlar olsun []
 
     sürece i küçük uzunluk(tokenlar):
         token olsun tokenlar[i]
@@ -183,42 +195,44 @@ işlev blok_ozeti(tokenlar, konum):
                 derinlik olsun derinlik - 1
                 i olsun i + 1
                 eğer derinlik eşit 0 ise:
-                    döndür {"sayi": sayi, "son": i}
+                    döndür {"sayi": sayi, "komutlar": komutlar, "son": i}
             değilse:
                 eğer token.tur eşit "DOSYA_SONU" ise:
-                    döndür {"sayi": sayi, "son": i}
+                    döndür {"sayi": sayi, "komutlar": komutlar, "son": i}
                 değilse:
                     eğer token.tur eşit "YENI_SATIR" ise:
                         i olsun i + 1
                     değilse:
                         eğer derinlik eşit 1 ise:
+                            tur olsun komut_turu(tokenlar, i)
+                            komutlar.ekle(kisa_dugum(tur, token.satir))
                             sayi olsun sayi + 1
                             i olsun satir_sonuna_git(tokenlar, i)
                         değilse:
                             i olsun i + 1
 
-    döndür {"sayi": sayi, "son": i}
+    döndür {"sayi": sayi, "komutlar": komutlar, "son": i}
 
-işlev blok_sayilari(tokenlar, konum):
+işlev bloklari(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
-    sayilar olsun []
+    bloklar olsun []
     ilk_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, konum))
 
     eğer ilk_blok.sayi büyük 0 ise:
-        sayilar.ekle(ilk_blok.sayi)
+        bloklar.ekle({"komutlar": ilk_blok.komutlar})
 
     i olsun yeni_satirlari_atla(tokenlar, ilk_blok.son)
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "değilse" ise:
             yanlis_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, i))
-            sayilar.ekle(yanlis_blok.sayi)
+            bloklar.ekle({"komutlar": yanlis_blok.komutlar})
 
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "yakala" ise:
             yakala_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, i))
-            sayilar.ekle(yakala_blok.sayi)
+            bloklar.ekle({"komutlar": yakala_blok.komutlar})
 
-    döndür sayilar
+    döndür bloklar
 
 işlev turleri(sonuc):
     liste olsun []
@@ -265,7 +279,7 @@ işlev ozetle_tokenlar(tokenlar):
                             tur olsun komut_turu(tokenlar, i)
                             eğer uzunluk(tur) eşit 0 ise:
                                 döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token)
-                            komutlar.ekle(dugum(tur, token.satir, blok_sayilari(tokenlar, i)))
+                            komutlar.ekle(dugum(tur, token.satir, bloklari(tokenlar, i)))
                             i olsun satir_sonuna_git(tokenlar, i)
 
     döndür sonuc_ok(komutlar)

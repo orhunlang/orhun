@@ -4,6 +4,7 @@
 IslevTanim|Atama|Yazdir
 CokluAtama|Yazdir
 [1,1]
+[{"komutlar":[{"satir":2,"tur":"Yazdir"}]},{"komutlar":[{"satir":4,"tur":"Yazdir"}]}]
 0
 1
 0

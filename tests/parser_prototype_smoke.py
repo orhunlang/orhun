@@ -65,25 +65,36 @@ def cxx_top_level_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(isinstance(ast, dict), f"C++ parse payload missing ast for {source_file}")
     commands = ast.get("komutlar")
     require(isinstance(commands, list), f"C++ AST missing komutlar for {source_file}")
-    return [
-        {
-            "tur": command.get("tur"),
-            "satir": command.get("satir"),
-            "blok_sayilari": cxx_block_counts(command),
-        }
-        for command in commands
-    ]
+    return [cxx_node_summary(command) for command in commands]
 
 
-def cxx_block_counts(command: dict) -> list[int]:
-    counts = []
+def cxx_node_summary(command: dict) -> dict:
+    blocks = cxx_block_summaries(command)
+    return {
+        "tur": command.get("tur"),
+        "satir": command.get("satir"),
+        "blok_sayilari": block_counts(blocks),
+        "bloklar": blocks,
+    }
+
+
+def cxx_shallow_node(command: dict) -> dict:
+    return {"tur": command.get("tur"), "satir": command.get("satir")}
+
+
+def cxx_block_summaries(command: dict) -> list[dict]:
+    blocks = []
     for key in ("dogru_blok", "yanlis_blok", "govde", "deneme", "yakala"):
         block = command.get(key)
         if isinstance(block, dict):
             commands = block.get("komutlar")
             if isinstance(commands, list):
-                counts.append(len(commands))
-    return counts
+                blocks.append({"komutlar": [cxx_shallow_node(child) for child in commands]})
+    return blocks
+
+
+def block_counts(blocks: list[dict]) -> list[int]:
+    return [len(block["komutlar"]) for block in blocks]
 
 
 def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
@@ -112,14 +123,37 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(payload.get("ok") is True, f"prototype returned error for {source_file}: {payload}")
     commands = payload.get("komutlar")
     require(isinstance(commands, list), f"prototype payload missing komutlar for {source_file}")
-    return [
-        {
-            "tur": command.get("tur"),
-            "satir": command.get("satir"),
-            "blok_sayilari": command.get("blok_sayilari", []),
-        }
-        for command in commands
-    ]
+    return [orhun_node_summary(command, source_file) for command in commands]
+
+
+def orhun_node_summary(command: dict, source_file: Path) -> dict:
+    blocks = orhun_block_summaries(command.get("bloklar", []), source_file)
+    counts = command.get("blok_sayilari", [])
+    require(counts == block_counts(blocks), f"prototype block counts mismatch for {source_file}")
+    return {
+        "tur": command.get("tur"),
+        "satir": command.get("satir"),
+        "blok_sayilari": counts,
+        "bloklar": blocks,
+    }
+
+
+def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
+    require(isinstance(blocks, list), f"prototype payload has invalid bloklar for {source_file}")
+    normalized = []
+    for block in blocks:
+        require(isinstance(block, dict), f"prototype block is not an object for {source_file}")
+        commands = block.get("komutlar")
+        require(isinstance(commands, list), f"prototype block missing komutlar for {source_file}")
+        normalized.append(
+            {
+                "komutlar": [
+                    {"tur": command.get("tur"), "satir": command.get("satir")}
+                    for command in commands
+                ]
+            }
+        )
+    return normalized
 
 
 def main() -> int:
