@@ -22,6 +22,11 @@ koleksiyon_kontrol olsun parser.ozetle("liste olsun [1, 2, 3]\nyazdır [x * 2 i�
 yazdır json.yaz(koleksiyon_kontrol.komutlar[0].ifade_ozeti.altlar)
 yazdır json.yaz(koleksiyon_kontrol.komutlar[1].ifade_ozeti.altlar)
 
+erisim_kontrol olsun parser.ozetle("ilk olsun liste[0]\nad olsun sozluk?.ad\nnesne olsun yeni Kutu(3)\n")
+yazdır json.yaz(erisim_kontrol.komutlar[0].ifade_ozeti.altlar)
+yazdır json.yaz(erisim_kontrol.komutlar[1].ifade_ozeti.altlar)
+yazdır json.yaz(erisim_kontrol.komutlar[2].ifade_ozeti.altlar)
+
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")

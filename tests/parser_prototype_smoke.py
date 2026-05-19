@@ -152,6 +152,20 @@ def cxx_expression_children(expression: dict) -> list[dict]:
             for child in (expression.get("ifade"), expression.get("kaynak"), expression.get("kosul"))
             if isinstance(child, dict)
         ]
+    if expression.get("tur") == "IndeksErisim":
+        return [
+            cxx_expression_shallow_summary(child)
+            for child in (expression.get("hedef"), expression.get("indeks"))
+            if isinstance(child, dict)
+        ]
+    if expression.get("tur") == "GuvenliAlanErisim":
+        target = expression.get("hedef")
+        if isinstance(target, dict):
+            return [cxx_expression_shallow_summary(target)]
+    if expression.get("tur") == "YeniNesne":
+        args = expression.get("argumanlar")
+        if isinstance(args, list):
+            return [cxx_expression_shallow_summary(arg) for arg in args if isinstance(arg, dict)]
     return []
 
 

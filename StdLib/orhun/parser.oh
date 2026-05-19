@@ -207,6 +207,14 @@ işlev aralikta_deger_konumu(tokenlar, baslangic, son, deger):
         i olsun i + 1
     döndür -1
 
+işlev ilk_deger_konumu(tokenlar, baslangic, son, deger):
+    i olsun baslangic
+    sürece i küçük son:
+        eğer tokenlar[i].deger eşit deger ise:
+            döndür i
+        i olsun i + 1
+    döndür -1
+
 işlev ikili_operator_mu(token):
     eğer token.tur eşit "ISLEM" ve (token.deger eşit "+" veya token.deger eşit "-" veya token.deger eşit "*" veya token.deger eşit "/" veya token.deger eşit "%") ise:
         döndür doğru
@@ -439,6 +447,27 @@ işlev liste_uretec_altlari(tokenlar, baslangic, son):
         altlar.ekle(sig_ifade_ozeti(tokenlar, eger_konum + 1, ic_son))
     döndür altlar
 
+işlev indeks_altlari(tokenlar, baslangic, son):
+    altlar olsun []
+    koseli_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "[")
+    eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
+        altlar.ekle(sig_ifade_ozeti(tokenlar, baslangic, koseli_konum))
+        altlar.ekle(sig_ifade_ozeti(tokenlar, koseli_konum + 1, son - 1))
+    döndür altlar
+
+işlev guvenli_alan_altlari(tokenlar, baslangic, son):
+    altlar olsun []
+    soru_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "?")
+    eğer soru_konum büyük 0 veya soru_konum eşit 0 ise:
+        altlar.ekle(sig_ifade_ozeti(tokenlar, baslangic, soru_konum))
+    döndür altlar
+
+işlev yeni_nesne_altlari(tokenlar, baslangic, son):
+    parantez_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "(")
+    eğer parantez_konum küçük 0 ise:
+        döndür []
+    döndür aralik_altlari(tokenlar, parantez_konum + 1, son - 1, ",")
+
 işlev ifade_altlari(tokenlar, baslangic, son, tur):
     altlar olsun []
     eğer tur eşit "IkiliIslem" ise:
@@ -452,6 +481,12 @@ işlev ifade_altlari(tokenlar, baslangic, son, tur):
         altlar olsun sozluk_altlari(tokenlar, baslangic, son)
     eğer tur eşit "ListeUretec" ise:
         altlar olsun liste_uretec_altlari(tokenlar, baslangic, son)
+    eğer tur eşit "IndeksErisim" ise:
+        altlar olsun indeks_altlari(tokenlar, baslangic, son)
+    eğer tur eşit "GuvenliAlanErisim" ise:
+        altlar olsun guvenli_alan_altlari(tokenlar, baslangic, son)
+    eğer tur eşit "YeniNesne" ise:
+        altlar olsun yeni_nesne_altlari(tokenlar, baslangic, son)
     döndür altlar
 
 işlev ifade_ozeti(tokenlar, baslangic, son):
