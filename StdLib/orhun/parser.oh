@@ -335,6 +335,8 @@ işlev ifade_turu(tokenlar, baslangic, son):
 
     eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "işlev" ise:
         döndür "IsimsizIslev"
+    eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "paralel" ise:
+        döndür "ParalelYap"
 
     eğer aralikta_ikili_operator_var_mi(tokenlar, baslangic, son) ise:
         döndür "IkiliIslem"
