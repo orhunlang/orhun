@@ -301,6 +301,13 @@ işlev yeni_sinif_adi(tokenlar, baslangic, son):
         i olsun i + 1
     döndür ""
 
+işlev dilim_erisimi_mi(tokenlar, baslangic, son):
+    koseli_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "[")
+    eğer koseli_konum küçük 0 ise:
+        döndür yanlış
+    iki_nokta olsun aralikta_deger_konumu(tokenlar, koseli_konum + 1, son - 1, ":")
+    döndür iki_nokta büyük 0 veya iki_nokta eşit 0
+
 işlev ifade_turu(tokenlar, baslangic, son):
     eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
         döndür ""
@@ -342,6 +349,8 @@ işlev ifade_turu(tokenlar, baslangic, son):
         eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "?") ise:
             döndür "GuvenliAlanErisim"
         eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "[") ise:
+            eğer dilim_erisimi_mi(tokenlar, baslangic, son) ise:
+                döndür "DilimErisim"
             döndür "IndeksErisim"
         eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "(") ise:
             döndür "IslevCagri"
@@ -366,6 +375,8 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
     eğer tur eşit "GuvenliAlanErisim" veya tur eşit "BenimErisim" ise:
         döndür noktadan_sonraki_kimlik(tokenlar, baslangic, son)
     eğer tur eşit "IndeksErisim" ise:
+        döndür ilk.deger
+    eğer tur eşit "DilimErisim" ise:
         döndür ilk.deger
     eğer tur eşit "YeniNesne" ise:
         döndür yeni_sinif_adi(tokenlar, baslangic, son)
@@ -465,6 +476,21 @@ işlev indeks_altlari(tokenlar, baslangic, son):
         altlar.ekle(sig_ifade_ozeti(tokenlar, koseli_konum + 1, son - 1))
     döndür altlar
 
+işlev dilim_altlari(tokenlar, baslangic, son):
+    altlar olsun []
+    koseli_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "[")
+    eğer koseli_konum küçük 0 ise:
+        döndür altlar
+    iki_nokta olsun aralikta_deger_konumu(tokenlar, koseli_konum + 1, son - 1, ":")
+    eğer iki_nokta küçük 0 ise:
+        döndür altlar
+    altlar.ekle(sig_ifade_ozeti(tokenlar, baslangic, koseli_konum))
+    eğer koseli_konum + 1 küçük iki_nokta ise:
+        altlar.ekle(sig_ifade_ozeti(tokenlar, koseli_konum + 1, iki_nokta))
+    eğer iki_nokta + 1 küçük son - 1 ise:
+        altlar.ekle(sig_ifade_ozeti(tokenlar, iki_nokta + 1, son - 1))
+    döndür altlar
+
 işlev guvenli_alan_altlari(tokenlar, baslangic, son):
     altlar olsun []
     soru_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "?")
@@ -505,6 +531,8 @@ işlev ifade_altlari(tokenlar, baslangic, son, tur):
         altlar olsun liste_uretec_altlari(tokenlar, baslangic, son)
     eğer tur eşit "IndeksErisim" ise:
         altlar olsun indeks_altlari(tokenlar, baslangic, son)
+    eğer tur eşit "DilimErisim" ise:
+        altlar olsun dilim_altlari(tokenlar, baslangic, son)
     eğer tur eşit "GuvenliAlanErisim" ise:
         altlar olsun guvenli_alan_altlari(tokenlar, baslangic, son)
     eğer tur eşit "YeniNesne" ise:
