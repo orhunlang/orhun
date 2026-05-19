@@ -250,6 +250,22 @@ işlev aralikta_ikili_operator_var_mi(tokenlar, baslangic, son):
         i olsun i + 1
     döndür yanlış
 
+işlev noktadan_sonraki_kimlik(tokenlar, baslangic, son):
+    i olsun baslangic
+    sürece i küçük son - 1:
+        eğer tokenlar[i].deger eşit "." ve tokenlar[i + 1].tur eşit "KIMLIK" ise:
+            döndür tokenlar[i + 1].deger
+        i olsun i + 1
+    döndür ""
+
+işlev yeni_sinif_adi(tokenlar, baslangic, son):
+    i olsun baslangic + 1
+    sürece i küçük son:
+        eğer tokenlar[i].tur eşit "KIMLIK" ise:
+            döndür tokenlar[i].deger
+        i olsun i + 1
+    döndür ""
+
 işlev ifade_turu(tokenlar, baslangic, son):
     eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
         döndür ""
@@ -288,12 +304,33 @@ işlev ifade_turu(tokenlar, baslangic, son):
 
     döndür ""
 
+işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
+    eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
+        döndür ""
+
+    ilk olsun guvenli_token(tokenlar, baslangic)
+
+    eğer tur eşit "IkiliIslem" ise:
+        döndür kok_operatoru(tokenlar, baslangic, son)
+    eğer tur eşit "Sayi" veya tur eşit "Ondalik" veya tur eşit "Metin" veya tur eşit "Kimlik" ise:
+        döndür ilk.deger
+    eğer tur eşit "Mantik" ise:
+        döndür ilk.deger
+    eğer tur eşit "GuvenliAlanErisim" veya tur eşit "BenimErisim" ise:
+        döndür noktadan_sonraki_kimlik(tokenlar, baslangic, son)
+    eğer tur eşit "IndeksErisim" ise:
+        döndür ilk.deger
+    eğer tur eşit "YeniNesne" ise:
+        döndür yeni_sinif_adi(tokenlar, baslangic, son)
+
+    döndür ""
+
 işlev ifade_ozeti(tokenlar, baslangic, son):
     tur olsun ifade_turu(tokenlar, baslangic, son)
     op olsun ""
     eğer tur eşit "IkiliIslem" ise:
         op olsun kok_operatoru(tokenlar, baslangic, son)
-    döndür {"tur": tur, "op": op}
+    döndür {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur)}
 
 işlev komut_ifade_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)

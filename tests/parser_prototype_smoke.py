@@ -97,8 +97,38 @@ def cxx_command_expression_summary(command: dict) -> dict:
         if isinstance(expression, dict):
             kind = expression.get("tur")
             if isinstance(kind, str):
-                return {"tur": kind, "op": expression.get("op", "")}
-    return {"tur": "", "op": ""}
+                return {
+                    "tur": kind,
+                    "op": expression.get("op", ""),
+                    "ayrinti": cxx_expression_detail(expression),
+                }
+    return {"tur": "", "op": "", "ayrinti": ""}
+
+
+def cxx_expression_detail(expression: dict) -> str:
+    kind = expression.get("tur")
+    if kind == "IkiliIslem":
+        return str(expression.get("op", ""))
+    if kind in ("Sayi", "Ondalik", "Metin"):
+        return str(expression.get("deger", ""))
+    if kind == "Mantik":
+        value = expression.get("deger")
+        if value is True:
+            return "doğru"
+        if value is False:
+            return "yanlış"
+        return ""
+    if kind == "Kimlik":
+        return str(expression.get("ad", ""))
+    if kind in ("GuvenliAlanErisim", "BenimErisim"):
+        return str(expression.get("alan", ""))
+    if kind == "IndeksErisim":
+        target = expression.get("hedef")
+        if isinstance(target, dict):
+            return str(target.get("ad", ""))
+    if kind == "YeniNesne":
+        return str(expression.get("sinif", ""))
+    return ""
 
 
 def cxx_block_summaries(command: dict) -> list[dict]:
@@ -165,7 +195,7 @@ def orhun_expression_summary(command: dict, source_file: Path) -> dict:
     require(isinstance(expression, dict), f"prototype expression summary missing for {source_file}")
     kind = expression.get("tur", "")
     require(command.get("ifade_turu", "") == kind, f"prototype expression kind mismatch for {source_file}")
-    return {"tur": kind, "op": expression.get("op", "")}
+    return {"tur": kind, "op": expression.get("op", ""), "ayrinti": expression.get("ayrinti", "")}
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
