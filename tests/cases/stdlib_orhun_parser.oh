@@ -32,6 +32,10 @@ yazdır json.yaz(dilim_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(dilim_kontrol.komutlar[1].ifade_ozeti)
 yazdır json.yaz(dilim_kontrol.komutlar[2].ifade_ozeti)
 
+alan_kontrol olsun parser.ozetle("alan olsun nesne.deger\nokuma olsun nesne.oku()\n")
+yazdır json.yaz(alan_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(alan_kontrol.komutlar[1].ifade_ozeti)
+
 cagri_kontrol olsun parser.ozetle("sonuc olsun topla(4, a + 1)\nikiyle olsun işlev(x): x * 2\n")
 yazdır json.yaz(cagri_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(cagri_kontrol.komutlar[1].ifade_ozeti)

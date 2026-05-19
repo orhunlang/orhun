@@ -172,6 +172,10 @@ def cxx_expression_children(expression: dict) -> list[dict]:
             )
             if isinstance(child, dict)
         ]
+    if expression.get("tur") == "AlanErisim":
+        target = expression.get("hedef")
+        if isinstance(target, dict):
+            return [cxx_expression_shallow_summary(target)]
     if expression.get("tur") == "GuvenliAlanErisim":
         target = expression.get("hedef")
         if isinstance(target, dict):
@@ -212,6 +216,8 @@ def cxx_expression_detail(expression: dict) -> str:
         target = expression.get("hedef")
         if isinstance(target, dict):
             return str(target.get("ad", ""))
+    if kind == "AlanErisim":
+        return str(expression.get("alan", ""))
     if kind == "YeniNesne":
         return str(expression.get("sinif", ""))
     if kind == "IslevCagri":
