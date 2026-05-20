@@ -128,6 +128,10 @@ def cxx_expression_shallow_summary(expression: dict) -> dict:
 
 
 def cxx_expression_children(expression: dict) -> list[dict]:
+    if expression.get("tur") == "Sor":
+        child = expression.get("ifade")
+        if isinstance(child, dict):
+            return [cxx_expression_shallow_summary(child)]
     if expression.get("tur") == "TekliIslem":
         child = expression.get("ifade")
         if isinstance(child, dict):
@@ -224,6 +228,8 @@ def cxx_expression_detail(expression: dict) -> str:
         return str(expression.get("sinif", ""))
     if kind == "IslevCagri":
         return str(expression.get("ad", ""))
+    if kind == "DahilEt":
+        return str(expression.get("dosya", ""))
     return ""
 
 

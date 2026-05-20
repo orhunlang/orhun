@@ -25,6 +25,8 @@ CokluAtama|Yazdir
 {"altlar":[{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"-","op":"-","tur":"TekliIslem"}
 {"altlar":[{"altlar":[],"ayrinti":"yanlış","op":"","tur":"Mantik"}],"ayrinti":"değil","op":"değil","tur":"TekliIslem"}
 {"altlar":[],"ayrinti":"","op":"","tur":"ParalelYap"}
+{"altlar":[{"altlar":[],"ayrinti":"Ad?","op":"","tur":"Metin"}],"ayrinti":"","op":"","tur":"Sor"}
+{"altlar":[],"ayrinti":"orhun/temel.oh","op":"","tur":"DahilEt"}
 0
 1
 0

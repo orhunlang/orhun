@@ -1,6 +1,8 @@
-# ast: Atama,Atama,Atama,Atama,Yazdir
+# ast: Atama,Atama,Atama,Atama,Atama,Atama,Yazdir
 a olsun 7
 b olsun 5
 negatif olsun -a
 ters olsun değil yanlış
+yanit olsun sor "Ad?"
+temel olsun dahil_et "orhun/temel.oh"
 yazdır a + b * 2
