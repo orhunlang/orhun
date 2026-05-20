@@ -150,6 +150,9 @@ işlev degilse_eger_mi(tokenlar, konum):
     ikinci olsun guvenli_token(tokenlar, konum + 1)
     döndür ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "değilse" ve ikinci.tur eşit "ANAHTAR_KELIME" ve ikinci.deger eşit "eğer"
 
+işlev yapi_devami_mi(token):
+    döndür token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "değilse" veya token.deger eşit "yakala")
+
 işlev komut_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
 
@@ -785,10 +788,13 @@ işlev blok_ozeti(tokenlar, konum):
                         i olsun i + 1
                     değilse:
                         eğer derinlik eşit 1 ise:
-                            tur olsun komut_turu(tokenlar, i)
-                            komutlar.ekle(kisa_dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, i)))
-                            sayi olsun sayi + 1
-                            i olsun satir_sonuna_git(tokenlar, i)
+                            eğer yapi_devami_mi(token) ise:
+                                i olsun satir_sonuna_git(tokenlar, i)
+                            değilse:
+                                tur olsun komut_turu(tokenlar, i)
+                                komutlar.ekle(kisa_dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, i)))
+                                sayi olsun sayi + 1
+                                i olsun satir_sonuna_git(tokenlar, i)
                         değilse:
                             i olsun i + 1
 
