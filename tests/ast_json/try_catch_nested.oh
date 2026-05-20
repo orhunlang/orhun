@@ -1,0 +1,13 @@
+# ast: DenemeYakala,DenemeYakala
+deneme:
+    deneme:
+        x olsun 1 / 0
+    yakala ic_hata:
+        yazdır "ic: " + ic_hata
+yakala dis_hata:
+    yazdır "dis: " + dis_hata
+
+deneme:
+    yazdır "hata yok"
+yakala e:
+    yazdır "olmamali"

@@ -1,0 +1,4 @@
+# ast: Atama,Yazdir,Yazdir
+m olsun dahil_et "tests/cases/module_callable_lib.oh"
+yazdır m.topla(2, 3)
+yazdır m.deger

@@ -1,0 +1,11 @@
+# ast: Atama,Atama,Yazdir,Atama,Atama,Surece,Yazdir
+sayilar olsun [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+kareler olsun [x * x için x içinde sayilar]
+yazdır kareler
+
+toplam olsun 0
+i olsun 0
+sürece i küçük uzunluk(sayilar):
+    toplam = toplam + sayilar[i]
+    i = i + 1
+yazdır "Toplam: {toplam}"

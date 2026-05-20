@@ -1,0 +1,7 @@
+# ast: IslevTanim,Yazdir,Yazdir
+işlev karisik(x, y olsun 10):
+    a, b olsun [x, y]
+    döndür a + b
+
+yazdır karisik(3)
+yazdır karisik(3, 4)
