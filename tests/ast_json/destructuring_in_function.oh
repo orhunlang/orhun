@@ -1,0 +1,6 @@
+# ast: IslevTanim,Yazdir
+işlev fark():
+    x, y olsun [9, 4]
+    döndür x - y
+
+yazdır fark()

@@ -1,0 +1,7 @@
+# ast: IslevTanim,Yazdir,Yazdir,Yazdir
+işlev hesapla(a, b olsun a + 2, c olsun b + 3):
+    döndür a + b + c
+
+yazdır hesapla(1)
+yazdır hesapla(1, 10)
+yazdır hesapla(1, 10, 20)

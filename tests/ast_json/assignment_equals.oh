@@ -1,0 +1,3 @@
+# ast: Atama,Yazdir
+sayi = 10
+yazdır "Eşittir ile atama çalıştı: " + sayi
