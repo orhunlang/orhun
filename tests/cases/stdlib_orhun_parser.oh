@@ -15,6 +15,10 @@ kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)
 
+zincir_kontrol olsun parser.ozetle("eğer x büyük 20 ise:\n    yazdır \"buyuk\"\ndeğilse eğer x büyük 5 ise:\n    yazdır \"orta\"\ndeğilse:\n    yazdır \"kucuk\"\n")
+yazdır json.yaz(zincir_kontrol.komutlar[0].blok_sayilari)
+yazdır json.yaz(zincir_kontrol.komutlar[0].bloklar)
+
 ifade_kontrol olsun parser.ozetle("yazdır a + b * 2\n")
 yazdır json.yaz(ifade_kontrol.komutlar[0].ifade_ozeti)
 

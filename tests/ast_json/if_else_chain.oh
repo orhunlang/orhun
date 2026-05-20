@@ -1,0 +1,17 @@
+# ast: Atama,Eger,Atama,Eger
+x olsun 10
+
+eğer x büyük 20 ise:
+    yazdır "buyuk"
+değilse eğer x büyük 5 ise:
+    yazdır "orta"
+değilse:
+    yazdır "kucuk"
+
+y olsun -3
+eğer y büyük 0 ise:
+    yazdır "pozitif"
+değilse eğer y eşit 0 ise:
+    yazdır "sifir"
+değilse:
+    yazdır "negatif"

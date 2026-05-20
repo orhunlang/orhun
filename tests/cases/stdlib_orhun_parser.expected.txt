@@ -5,6 +5,8 @@ IslevTanim|Atama|Yazdir
 CokluAtama|Yazdir
 [1,1]
 [{"komutlar":[{"ifade_ozeti":{"altlar":[],"ayrinti":"evet","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}]},{"komutlar":[{"ifade_ozeti":{"altlar":[],"ayrinti":"hayır","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}]}]
+[1,1]
+[{"komutlar":[{"ifade_ozeti":{"altlar":[],"ayrinti":"buyuk","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}]},{"komutlar":[{"ifade_ozeti":{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","tur":"IkiliIslem"},"ifade_turu":"IkiliIslem","satir":3,"tur":"Eger"}]}]
 {"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"*","op":"*","tur":"IkiliIslem"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}
 [{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]
 [{"altlar":[],"ayrinti":"*","op":"*","tur":"IkiliIslem"},{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"büyük","op":"büyük","tur":"IkiliIslem"}]

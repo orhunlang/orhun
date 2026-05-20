@@ -145,6 +145,11 @@ işlev anahtar_ifade_baslangici_mi(deger):
 işlev islem_ifade_baslangici_mi(deger):
     döndür deger eşit "-" veya deger eşit "[" veya deger eşit "{" veya deger eşit "("
 
+işlev degilse_eger_mi(tokenlar, konum):
+    ilk olsun guvenli_token(tokenlar, konum)
+    ikinci olsun guvenli_token(tokenlar, konum + 1)
+    döndür ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "değilse" ve ikinci.tur eşit "ANAHTAR_KELIME" ve ikinci.deger eşit "eğer"
+
 işlev komut_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
 
@@ -800,8 +805,13 @@ işlev bloklari(tokenlar, konum):
     i olsun yeni_satirlari_atla(tokenlar, ilk_blok.son)
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "değilse" ise:
-            yanlis_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, i))
-            bloklar.ekle({"komutlar": yanlis_blok.komutlar})
+            eğer degilse_eger_mi(tokenlar, i) ise:
+                eger_konum olsun i + 1
+                eger_token olsun guvenli_token(tokenlar, eger_konum)
+                bloklar.ekle({"komutlar": [kisa_dugum("Eger", eger_token.satir, komut_ifade_ozeti(tokenlar, eger_konum))]})
+            değilse:
+                yanlis_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, i))
+                bloklar.ekle({"komutlar": yanlis_blok.komutlar})
 
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "yakala" ise:
