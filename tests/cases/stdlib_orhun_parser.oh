@@ -57,6 +57,16 @@ ozel_ifade_kontrol olsun parser.ozetle("yanit olsun sor \"Ad?\"\ntemel olsun dah
 yazdır json.yaz(ozel_ifade_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(ozel_ifade_kontrol.komutlar[1].ifade_ozeti)
 
+ifade_komut_kontrol olsun parser.ozetle("sor \"Ad?\"\ndoğru\ndeğil yanlış\nyeni Kutu(1)\nbenim.deger\nust.kur\nparalel yap: yazdır \"sur\"\n")
+yazdır metin.birlestir(parser.turleri(ifade_komut_kontrol), "|")
+yazdır json.yaz(ifade_komut_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[1].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[2].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[3].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[4].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[5].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[6].ifade_ozeti)
+
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")

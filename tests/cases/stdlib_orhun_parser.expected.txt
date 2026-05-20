@@ -27,6 +27,14 @@ CokluAtama|Yazdir
 {"altlar":[],"ayrinti":"","op":"","tur":"ParalelYap"}
 {"altlar":[{"altlar":[],"ayrinti":"Ad?","op":"","tur":"Metin"}],"ayrinti":"","op":"","tur":"Sor"}
 {"altlar":[],"ayrinti":"orhun/temel.oh","op":"","tur":"DahilEt"}
+IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
+{"altlar":[{"altlar":[],"ayrinti":"Ad?","op":"","tur":"Metin"}],"ayrinti":"","op":"","tur":"Sor"}
+{"altlar":[],"ayrinti":"doğru","op":"","tur":"Mantik"}
+{"altlar":[{"altlar":[],"ayrinti":"yanlış","op":"","tur":"Mantik"}],"ayrinti":"değil","op":"değil","tur":"TekliIslem"}
+{"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"Kutu","op":"","tur":"YeniNesne"}
+{"altlar":[],"ayrinti":"deger","op":"","tur":"BenimErisim"}
+{"altlar":[],"ayrinti":"kur","op":"","tur":"UstErisim"}
+{"altlar":[],"ayrinti":"","op":"","tur":"ParalelYap"}
 0
 1
 0

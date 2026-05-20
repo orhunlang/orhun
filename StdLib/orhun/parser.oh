@@ -139,11 +139,19 @@ işlev anahtar_komut_turu(deger):
         döndür "DahilEt"
     döndür ""
 
+işlev anahtar_ifade_baslangici_mi(deger):
+    döndür deger eşit "sor" veya deger eşit "doğru" veya deger eşit "yanlış" veya deger eşit "değil" veya deger eşit "yeni" veya deger eşit "benim" veya deger eşit "ust" veya deger eşit "paralel"
+
 işlev komut_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
 
     eğer token.tur eşit "ANAHTAR_KELIME" ise:
-        döndür anahtar_komut_turu(token.deger)
+        tur olsun anahtar_komut_turu(token.deger)
+        eğer uzunluk(tur) büyük 0 ise:
+            döndür tur
+        eğer anahtar_ifade_baslangici_mi(token.deger) ise:
+            döndür "IfadeKomut"
+        döndür ""
 
     eğer token.tur eşit "KIMLIK" ise:
         eğer satirda_coklu_atama_mi(tokenlar, konum) ise:
@@ -625,6 +633,8 @@ işlev komut_ifade_turu(tokenlar, konum):
         eğer son küçük 0 ise:
             son olsun satir_sonu
         döndür ifade_turu(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve anahtar_ifade_baslangici_mi(token.deger) ise:
+        döndür ifade_turu(tokenlar, konum, satir_sonu)
 
     eğer token.tur eşit "KIMLIK" ise:
         baslangic olsun atama_ifade_baslangici(tokenlar, konum)
@@ -661,6 +671,8 @@ işlev komut_ifade_ozeti(tokenlar, konum):
         eğer son küçük 0 ise:
             son olsun satir_sonu
         döndür ifade_ozeti(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve anahtar_ifade_baslangici_mi(token.deger) ise:
+        döndür ifade_ozeti(tokenlar, konum, satir_sonu)
 
     eğer token.tur eşit "KIMLIK" ise:
         baslangic olsun atama_ifade_baslangici(tokenlar, konum)
