@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -58,6 +59,62 @@ def cxx_parse_payload(binary: Path, repo: Path, source_file: Path, should_fail: 
         f"C++ parse failed for {source_file}:\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}",
     )
     return parse_last_json(proc.stdout)
+
+
+def error_line_from_cxx(payload: dict, source_file: Path) -> int:
+    message = error_message(payload, source_file)
+    match = re.search(r"Satır\s+(\d+)", message)
+    require(
+        match is not None,
+        f"C++ error missing line number for {source_file}: {message}",
+    )
+    return int(match.group(1))
+
+
+def error_message(payload: dict, source_file: Path) -> str:
+    error = payload.get("hata")
+    require(isinstance(error, dict), f"parse payload missing hata for {source_file}")
+    message = error.get("mesaj")
+    require(
+        isinstance(message, str) and message,
+        f"parse payload missing hata.mesaj for {source_file}",
+    )
+    return message
+
+
+def expected_hint(message: str) -> str:
+    match = re.search(r"'([^']+)'\s+bekleniyor", message)
+    if match is not None:
+        return match.group(1)
+    return ""
+
+
+def validate_error_parity(
+    cxx_payload: dict, proto_payload: dict, source_file: Path
+) -> None:
+    proto_error = proto_payload.get("hata")
+    require(
+        isinstance(proto_error, dict),
+        f"prototype payload missing hata for {source_file}",
+    )
+    require(
+        proto_error.get("satir") == error_line_from_cxx(cxx_payload, source_file),
+        f"Parser error line mismatch for {source_file}\n"
+        f"C++: {cxx_payload}\nOrhun: {proto_payload}",
+    )
+
+    cxx_hint = expected_hint(error_message(cxx_payload, source_file))
+    proto_message = proto_error.get("mesaj")
+    require(
+        isinstance(proto_message, str) and proto_message,
+        f"prototype payload missing hata.mesaj for {source_file}",
+    )
+    proto_hint = expected_hint(proto_message)
+    require(
+        cxx_hint == proto_hint,
+        f"Parser error hint mismatch for {source_file}\n"
+        f"C++: {cxx_hint}\nOrhun: {proto_hint}",
+    )
 
 
 def cxx_top_level_nodes(payload: dict, source_file: Path) -> list[dict]:
@@ -366,6 +423,7 @@ def main() -> int:
         if should_fail:
             require(cxx_payload.get("durum") == "fail", f"C++ payload should fail for {case}")
             require(proto_payload.get("ok") is False, f"prototype should fail for {case}")
+            validate_error_parity(cxx_payload, proto_payload, case)
             error_count += 1
             continue
 
