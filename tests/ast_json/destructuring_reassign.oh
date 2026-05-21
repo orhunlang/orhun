@@ -1,0 +1,5 @@
+# ast: CokluAtama,CokluAtama,Yazdir,Yazdir
+a, b olsun [1, 2]
+a, b olsun [b, a]
+yazdır a
+yazdır b

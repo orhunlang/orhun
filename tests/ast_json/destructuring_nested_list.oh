@@ -1,0 +1,4 @@
+# ast: CokluAtama,Yazdir,Yazdir
+a, b olsun [[1, 2], [3, 4]]
+yazdır a[1]
+yazdır b[0]

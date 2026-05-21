@@ -1,0 +1,4 @@
+# ast: Atama,Yazdir,Yazdir
+g olsun işlev(a, b olsun 3): a * b + 1
+yazdır g(2)
+yazdır g(2, 5)
