@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.3"
+surum olsun "0.3.4"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -425,6 +425,10 @@ işlev ifade_turu(tokenlar, baslangic, son):
     eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "-" ise:
         döndür "TekliIslem"
 
+    genel_soru_konum olsun aralikta_deger_konumu(tokenlar, baslangic, son, "?")
+    eğer genel_soru_konum büyük 0 veya genel_soru_konum eşit 0 ise:
+        döndür "GuvenliAlanErisim"
+
     eğer ilk.tur eşit "SAYI" veya ilk.tur eşit "ONDALIK" ise:
         döndür "Sayi"
     eğer ilk.tur eşit "METIN" ise:
@@ -442,9 +446,6 @@ işlev ifade_turu(tokenlar, baslangic, son):
             döndür "IslevCagri"
         döndür "UstErisim"
     eğer ilk.tur eşit "KIMLIK" ise:
-        soru_konum olsun aralikta_deger_konumu(tokenlar, baslangic, son, "?")
-        eğer soru_konum büyük 0 veya soru_konum eşit 0 ise:
-            döndür "GuvenliAlanErisim"
         koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
         eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
             eğer dilim_erisimi_mi(tokenlar, baslangic, son) ise:
@@ -606,7 +607,7 @@ işlev dilim_altlari(tokenlar, baslangic, son):
 
 işlev guvenli_alan_altlari(tokenlar, baslangic, son):
     altlar olsun []
-    soru_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "?")
+    soru_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "?")
     eğer soru_konum büyük 0 veya soru_konum eşit 0 ise:
         altlar.ekle(alt_ifade_ozeti(tokenlar, baslangic, soru_konum))
     döndür altlar
