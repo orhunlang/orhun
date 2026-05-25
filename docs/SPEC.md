@@ -474,6 +474,24 @@ The intended capture model is documented in `docs/CLOSURE_CAPTURE_PLAN.md` and
 must be implemented consistently in both the interpreter and VM before the
 fixture is promoted to the normal runtime suite.
 
+Target closure semantics:
+
+- Nested named functions and anonymous functions use lexical scope.
+- A name declared as a parameter or local in the current function shadows outer
+  bindings with the same name.
+- A referenced name that is not local to the nested function is captured from
+  the nearest enclosing function scope when such a binding exists.
+- Global bindings are not copied into closure environments; they remain global
+  lookups.
+- Captured locals live as long as any closure that references them.
+- Multiple closures created during the same outer function call share the same
+  mutable capture cell for each captured binding.
+- Separate calls to the same outer function create separate capture cells.
+- A new local binding created inside a loop iteration should have an independent
+  capture cell for closures produced in that iteration.
+- The interpreter and VM must agree before closure capture is considered part of
+  the stable language contract.
+
 ## Self-Hosting Implications
 
 This specification is the baseline for future Orhun-written components:

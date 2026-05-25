@@ -63,7 +63,8 @@ When closure capture lands, update that fixture and document the migration in
 
 ## Implementation Slices
 
-1. Define capture semantics in `docs/SPEC.md`.
+1. Define capture semantics in `docs/SPEC.md`. Done as the target contract;
+   implementation is still pending.
 2. Promote the known-gap fixture once VM and interpreter behavior match.
 3. Implement interpreter capture cells first to clarify semantics.
 4. Implement VM closure/upvalue storage with GC marking.
