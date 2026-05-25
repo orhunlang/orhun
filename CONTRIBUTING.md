@@ -33,6 +33,18 @@ bash tests/run_tests.sh g++ build/orhun_test
 bash tests/vm_parity.sh g++ build/orhun_test
 ```
 
+For self-hosting, CI, fixture, or release metadata changes, also run the
+relevant smoke tests:
+
+```bash
+python tests/lexer_parity_smoke.py ./build/orhun_test --fixtures tests/cases --tokens-only
+python tests/parser_prototype_smoke.py ./build/orhun_test
+python tests/ast_json_smoke.py ./build/orhun_test
+python tests/case_manifest_smoke.py
+python tests/version_consistency_smoke.py ./build/orhun_test
+python tests/known_gap_smoke.py ./build/orhun_test
+```
+
 For documentation-only changes, explain that tests were not run and why.
 
 ## Style

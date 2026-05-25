@@ -6,6 +6,7 @@
 
 - [ ] `.\tests\run_tests.ps1 -TimeoutSeconds 15`
 - [ ] `.\tests\vm_parity.ps1 -Output build/orhun_test.exe -TimeoutSeconds 15`
+- [ ] Relevant smoke tests run for lexer/parser/fixture/version/known-gap changes.
 - [ ] Not run, reason:
 
 ## Checklist
