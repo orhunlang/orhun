@@ -4,6 +4,9 @@
 *.pdb
 *.ilk
 *.txt
+*.py[cod]
+__pycache__/
+.pytest_cache/
 temp_fuzz.oh
 /build/
 /coverage/
