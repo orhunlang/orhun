@@ -127,9 +127,17 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
               .deger);
     }
 
-    if (virgulGoruldu && (eslesir(TokenTuru::ANAHTAR_KELIME, "olsun") ||
-                          eslesir(TokenTuru::ISLEM, "="))) {
-      return parseCokluAtama(std::move(hedefler), satir);
+    bool bildirimMi = false;
+    bool cokluAtamaMi = false;
+    if (virgulGoruldu && eslesir(TokenTuru::ANAHTAR_KELIME, "olsun")) {
+      bildirimMi = true;
+      cokluAtamaMi = true;
+    } else if (virgulGoruldu && eslesir(TokenTuru::ISLEM, "=")) {
+      cokluAtamaMi = true;
+    }
+
+    if (cokluAtamaMi) {
+      return parseCokluAtama(std::move(hedefler), satir, bildirimMi);
     }
 
     konum_ = kayit;
@@ -141,14 +149,22 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
       kontrol(TokenTuru::ANAHTAR_KELIME, "benim")) {
     const std::size_t kayit = konum_;
     std::unique_ptr<ASTNode> hedef = parsePostfix();
-    if (eslesir(TokenTuru::ANAHTAR_KELIME, "olsun") ||
-        eslesir(TokenTuru::ISLEM, "=")) {
+    bool bildirimMi = false;
+    bool atamaMi = false;
+    if (eslesir(TokenTuru::ANAHTAR_KELIME, "olsun")) {
+      bildirimMi = true;
+      atamaMi = true;
+    } else if (eslesir(TokenTuru::ISLEM, "=")) {
+      atamaMi = true;
+    }
+
+    if (atamaMi) {
       if (!atanabilirHedefMi(hedef.get())) {
         syntaxError(bak(), "Atama hedefi yalnızca değişken, alan veya indeks "
                            "erişimi olabilir.");
       }
       const std::size_t satir = hedef->satir();
-      return parseAtama(std::move(hedef), satir);
+      return parseAtama(std::move(hedef), satir, bildirimMi);
     }
     konum_ = kayit;
   }
@@ -223,22 +239,25 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
 }
 
 std::unique_ptr<ASTNode> Parser::parseAtama(std::unique_ptr<ASTNode> hedef,
-                                            std::size_t satir) {
+                                            std::size_t satir,
+                                            bool bildirimMi) {
   if (kontrol(TokenTuru::YENI_SATIR) || kontrol(TokenTuru::DOSYA_SONU)) {
     syntaxError(bak(),
                 "'olsun' veya '=' atamasından sonra bir değer bekleniyor.");
   }
 
-  return std::make_unique<AtamaNode>(std::move(hedef), parseIfade(), satir);
+  return std::make_unique<AtamaNode>(std::move(hedef), parseIfade(), satir,
+                                     bildirimMi);
 }
 
 std::unique_ptr<ASTNode>
-Parser::parseCokluAtama(std::vector<std::string> hedefler, std::size_t satir) {
+Parser::parseCokluAtama(std::vector<std::string> hedefler, std::size_t satir,
+                        bool bildirimMi) {
   if (kontrol(TokenTuru::YENI_SATIR) || kontrol(TokenTuru::DOSYA_SONU)) {
     syntaxError(bak(), "Çoklu atamadan sonra bir değer bekleniyor.");
   }
   return std::make_unique<CokluAtamaNode>(std::move(hedefler), parseIfade(),
-                                          satir);
+                                          satir, bildirimMi);
 }
 
 std::unique_ptr<ASTNode> Parser::parseYazdir() {

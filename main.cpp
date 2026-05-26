@@ -716,13 +716,17 @@ std::string astDugumJson(const ASTNode *dugum) {
   if (const auto *atama = dynamic_cast<const AtamaNode *>(dugum)) {
     astJsonBaslat(ss, dugum, "Atama");
     ss << ",\"hedef\":" << astDugumJson(atama->hedef())
-       << ",\"ifade\":" << astDugumJson(atama->ifade()) << "}";
+       << ",\"ifade\":" << astDugumJson(atama->ifade())
+       << ",\"bildirim\":" << (atama->bildirimMi() ? "true" : "false")
+       << "}";
     return ss.str();
   }
   if (const auto *atama = dynamic_cast<const CokluAtamaNode *>(dugum)) {
     astJsonBaslat(ss, dugum, "CokluAtama");
     ss << ",\"hedefler\":" << metinDizisiJson(atama->hedefler())
-       << ",\"ifade\":" << astDugumJson(atama->ifade()) << "}";
+       << ",\"ifade\":" << astDugumJson(atama->ifade())
+       << ",\"bildirim\":" << (atama->bildirimMi() ? "true" : "false")
+       << "}";
     return ss.str();
   }
   if (const auto *yazdir = dynamic_cast<const YazdirNode *>(dugum)) {

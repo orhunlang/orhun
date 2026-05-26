@@ -123,6 +123,8 @@
 ## 11. Self-hosting: `parse --json`
 - `orhun parse <dosya.oh> --json`, C++ parser AST'sini JSON olarak verir.
 - Başarılı çıktıda `durum: "ok"`, `hata_sayisi: 0` ve `ast` alanı bulunur.
+- `Atama` ve `CokluAtama` düğümlerinde `bildirim` alanı bulunur; `olsun`
+  biçimi `true`, `=` uyumluluk ataması `false` döndürür.
 - Parser hatalarında komut `1` ile çıkar, `durum: "fail"` döndürür ve `ast`
   alanını `null` yapar.
 

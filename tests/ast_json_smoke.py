@@ -72,6 +72,36 @@ def validate_success_payload(
             f"expected={expected_kinds}\nactual={actual}",
         )
 
+    validate_assignment_metadata(ast, path)
+
+
+def walk_nodes(node: object):
+    if not isinstance(node, dict):
+        return
+    yield node
+    for value in node.values():
+        if isinstance(value, dict):
+            yield from walk_nodes(value)
+        elif isinstance(value, list):
+            for item in value:
+                yield from walk_nodes(item)
+
+
+def validate_assignment_metadata(ast: dict, path: Path) -> None:
+    for node in walk_nodes(ast):
+        kind = node.get("tur")
+        if kind not in {"Atama", "CokluAtama"}:
+            continue
+        require(
+            isinstance(node.get("bildirim"), bool),
+            f"{path}: {kind} node at line {node.get('satir')} missing bool bildirim",
+        )
+        if path.name == "assignment_equals.oh" and kind == "Atama":
+            require(
+                node["bildirim"] is False,
+                f"{path}: '=' assignment should report bildirim=false",
+            )
+
 
 def validate_error_payload(payload: dict, path: Path) -> None:
     require(

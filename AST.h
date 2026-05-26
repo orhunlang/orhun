@@ -501,13 +501,15 @@ private:
 class AtamaNode final : public ASTNode {
 public:
   AtamaNode(std::unique_ptr<ASTNode> hedef, std::unique_ptr<ASTNode> ifade,
-            std::size_t satir)
+            std::size_t satir, bool bildirimMi)
       : ASTNode(satir), hedef_(std::move(hedef)),
-        ifade_(std::move(ifade)) {}
+        ifade_(std::move(ifade)), bildirimMi_(bildirimMi) {}
 
   const ASTNode *hedef() const { return hedef_.get(); }
 
   const ASTNode *ifade() const { return ifade_.get(); }
+
+  bool bildirimMi() const { return bildirimMi_; }
 
   void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
     yazdirGirinti(cikti, girinti);
@@ -523,18 +525,22 @@ public:
 private:
   std::unique_ptr<ASTNode> hedef_;
   std::unique_ptr<ASTNode> ifade_;
+  bool bildirimMi_;
 };
 
 class CokluAtamaNode final : public ASTNode {
 public:
   CokluAtamaNode(std::vector<std::string> hedefler,
-                 std::unique_ptr<ASTNode> ifade, std::size_t satir)
+                 std::unique_ptr<ASTNode> ifade, std::size_t satir,
+                 bool bildirimMi)
       : ASTNode(satir), hedefler_(std::move(hedefler)),
-        ifade_(std::move(ifade)) {}
+        ifade_(std::move(ifade)), bildirimMi_(bildirimMi) {}
 
   const std::vector<std::string> &hedefler() const { return hedefler_; }
 
   const ASTNode *ifade() const { return ifade_.get(); }
+
+  bool bildirimMi() const { return bildirimMi_; }
 
   void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
     yazdirGirinti(cikti, girinti);
@@ -553,6 +559,7 @@ public:
 private:
   std::vector<std::string> hedefler_;
   std::unique_ptr<ASTNode> ifade_;
+  bool bildirimMi_;
 };
 
 class YazdirNode final : public ASTNode {

@@ -59,7 +59,13 @@ def source_line(lines: list[str], line_no: int) -> str:
 
 
 def is_declaration_assignment(command: dict, lines: list[str]) -> bool:
-    return " olsun " in source_line(lines, int(command.get("satir", 0)))
+    marker = command.get("bildirim")
+    require(
+        isinstance(marker, bool),
+        f"{command.get('tur')} at line {command.get('satir')} missing bool "
+        f"bildirim metadata: {source_line(lines, int(command.get('satir', 0)))}",
+    )
+    return marker
 
 
 def binding_from_target(target: object) -> str | None:

@@ -450,6 +450,8 @@ Stable channel defaults:
 - `parse --json` exposes the C++ parser AST for self-hosting parity checks.
   Its JSON payload contains `dosya`, `durum`, `hata_sayisi`, and `ast`.
   The `ast` root is a `Program` node with nested command and expression nodes.
+  `Atama` and `CokluAtama` nodes include `bildirim`: `true` for the `olsun`
+  form and `false` for `=` compatibility assignment.
   Parser AST JSON fixtures live in `tests/ast_json/` and are checked through
   `tests/ast_json_smoke.py`.
 

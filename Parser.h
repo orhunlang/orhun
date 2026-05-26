@@ -23,9 +23,9 @@ private:
   // Komut ayrıştırma fonksiyonları.
   std::unique_ptr<ASTNode> parseKomut();
   std::unique_ptr<ASTNode> parseAtama(std::unique_ptr<ASTNode> hedef,
-                                      std::size_t satir);
+                                      std::size_t satir, bool bildirimMi);
   std::unique_ptr<ASTNode> parseCokluAtama(std::vector<std::string> hedefler,
-                                           std::size_t satir);
+                                           std::size_t satir, bool bildirimMi);
   std::unique_ptr<ASTNode> parseYazdir();
   std::unique_ptr<ASTNode> parseEger();
   std::unique_ptr<ASTNode> parseTekrarla();
