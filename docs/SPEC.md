@@ -410,8 +410,9 @@ sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 
 The current prototype summarizes command node kinds, line numbers, primary
 expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
-children, child block command counts, and recursive child block command
-summaries, then compares them against the C++ parser AST through
+children, assignment `bildirim` metadata for `Atama`/`CokluAtama`, child block
+command counts, and recursive child block command summaries, then compares them
+against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. Current coverage includes 134 successful AST
 fixtures and 10 parser error fixtures. Anonymous function summaries include
 their parameter names in `ayrinti` and the returned inline body expression in

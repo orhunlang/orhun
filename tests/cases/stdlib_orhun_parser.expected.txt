@@ -1,8 +1,11 @@
-0.3.10
+0.3.11
 1
 3
 IslevTanim|Atama|Yazdir
+1
 CokluAtama|Yazdir
+1
+0
 [1,1]
 [{"komutlar":[{"blok_sayilari":[],"bloklar":[],"ifade_ozeti":{"altlar":[],"ayrinti":"evet","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}]},{"komutlar":[{"blok_sayilari":[],"bloklar":[],"ifade_ozeti":{"altlar":[],"ayrinti":"hayır","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}]}]
 [1,1]

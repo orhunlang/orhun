@@ -159,7 +159,7 @@ def cxx_top_level_nodes(payload: dict, source_file: Path) -> list[dict]:
 def cxx_node_summary(command: dict) -> dict:
     blocks = cxx_block_summaries(command)
     expression = cxx_command_expression_summary(command)
-    return {
+    summary = {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
         "ifade_turu": expression["tur"],
@@ -167,16 +167,31 @@ def cxx_node_summary(command: dict) -> dict:
         "blok_sayilari": block_counts(blocks),
         "bloklar": blocks,
     }
+    add_assignment_metadata(summary, command, "C++")
+    return summary
 
 
 def cxx_shallow_node(command: dict) -> dict:
     expression = cxx_command_expression_summary(command)
-    return {
+    summary = {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
         "ifade_turu": expression["tur"],
         "ifade_ozeti": expression,
     }
+    add_assignment_metadata(summary, command, "C++")
+    return summary
+
+
+def add_assignment_metadata(summary: dict, command: dict, source_name: str) -> None:
+    if summary.get("tur") not in {"Atama", "CokluAtama"}:
+        return
+    marker = command.get("bildirim")
+    require(
+        isinstance(marker, bool),
+        f"{source_name} assignment node missing bool bildirim: {command}",
+    )
+    summary["bildirim"] = marker
 
 
 def cxx_command_expression_summary(command: dict) -> dict:
@@ -374,7 +389,7 @@ def orhun_node_summary(command: dict, source_file: Path) -> dict:
     counts = command.get("blok_sayilari", [])
     require(counts == block_counts(blocks), f"prototype block counts mismatch for {source_file}")
     expression = orhun_expression_summary(command, source_file)
-    return {
+    summary = {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
         "ifade_turu": expression["tur"],
@@ -382,6 +397,8 @@ def orhun_node_summary(command: dict, source_file: Path) -> dict:
         "blok_sayilari": counts,
         "bloklar": blocks,
     }
+    add_assignment_metadata(summary, command, f"prototype {source_file}")
+    return summary
 
 
 def orhun_expression_summary(command: dict, source_file: Path) -> dict:
@@ -431,12 +448,14 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
 
 def orhun_shallow_node(command: dict, source_file: Path) -> dict:
     expression = orhun_expression_summary(command, source_file)
-    return {
+    summary = {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
         "ifade_turu": expression["tur"],
         "ifade_ozeti": expression,
     }
+    add_assignment_metadata(summary, command, f"prototype {source_file}")
+    return summary
 
 
 def main() -> int:
