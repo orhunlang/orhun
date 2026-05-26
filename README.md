@@ -162,6 +162,7 @@ self-hosting plan.
 - Roadmap smoke aggregate: `tests/roadmap_smoke.py`
 - Parser prototype parity smoke: `tests/parser_prototype_smoke.py`
 - Closure capture analysis smoke: `tests/closure_capture_analysis_smoke.py`
+- Lambda capture analysis smoke: `tests/lambda_capture_analysis_smoke.py`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`

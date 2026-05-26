@@ -9,6 +9,7 @@ The current known-gap guard is:
 
 - `tests/known_gap_smoke.py`
 - `tests/closure_capture_analysis_smoke.py`
+- `tests/lambda_capture_analysis_smoke.py`
 
 Current VM/interpreter behavior fails at the first captured outer local:
 
@@ -75,3 +76,6 @@ When closure capture lands, update that fixture and document the migration in
 `tests/closure_capture_analysis_smoke.py` already locks the static capture
 candidates for the known-gap fixture, including counter mutation, nested
 parameter capture, shared account balance capture, and loop-local copies.
+`tests/lambda_capture_analysis_smoke.py` separately locks anonymous-function
+capture candidates for shadowing, returned lambdas, and top-level lambda
+composition.
