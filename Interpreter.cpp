@@ -3592,6 +3592,7 @@ void Interpreter::calistirSurece(const SureceNode *dugum) {
 
 void Interpreter::calistirIslevTanim(const IslevTanimNode *dugum) {
   islevTablosu_[dugum->ad()] = dugum;
+  aktifKapsam()[dugum->ad()] = OrhunDegeri("__islev_ref__:" + dugum->ad());
 }
 
 void Interpreter::calistirDisIslevTanim(const DisIslevTanimNode *dugum) {
@@ -4534,15 +4535,17 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode *dugum) {
   }
 
   bool isimliDegiskenVar = false;
+  std::string degiskenIslevAdi;
   try {
     const OrhunDegeri &aday = degiskenBul(cagriAdi, dugum->satir());
     isimliDegiskenVar = true;
-    std::string gercekAd;
-    if (islevReferansiCoz(aday, gercekAd)) {
-      return islevCagirAdaGore(gercekAd, argumanDegerleri, dugum->satir());
-    }
+    static_cast<void>(islevReferansiCoz(aday, degiskenIslevAdi));
   } catch (const std::exception &) {
     // Degisken yoksa normal çözümleme akışıyla devam et.
+  }
+  if (!degiskenIslevAdi.empty()) {
+    return islevCagirAdaGore(degiskenIslevAdi, argumanDegerleri,
+                             dugum->satir());
   }
 
   const std::size_t nokta = cagriAdi.rfind('.');

@@ -18,8 +18,8 @@ Tanimsiz degisken: 'adet'.
 ```
 
 `tests/known_gap_smoke.py` checks this remains a controlled runtime error in
-both the default runner and `vm-kati`, so closure work does not regress into a
-VM crash while the semantics are still pending.
+the default runner, `yorumla`, and `vm-kati`, so closure work does not regress
+into a VM crash while the semantics are still pending.
 
 ## Target Behavior
 

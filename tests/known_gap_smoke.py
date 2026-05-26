@@ -35,9 +35,14 @@ def assert_closure_known_gap(
         f"closure known-gap case now passes in {label}; promote it to a normal "
         "fixture and update docs/CLOSURE_CAPTURE_PLAN.md",
     )
+    expected_signatures = (
+        "Tanimsiz degisken: 'adet'",
+        "Tanımsız değişken: 'adet'",
+        "'adet' değişkeni bulunamadı",
+        "'adet' degiskeni bulunamadi",
+    )
     require(
-        "Tanimsiz degisken: 'adet'" in combined
-        or "Tanımsız değişken: 'adet'" in combined,
+        any(signature in combined for signature in expected_signatures),
         f"closure known-gap failure changed in {label}; update the guard and plan",
     )
 
@@ -55,9 +60,13 @@ def main() -> int:
     require(closure_case.exists(), f"Known-gap case not found: {closure_case}")
 
     assert_closure_known_gap(run(binary, closure_case), "default runner")
+    assert_closure_known_gap(run(binary, closure_case, "yorumla"), "yorumla")
     assert_closure_known_gap(run(binary, closure_case, "vm-kati"), "vm-kati")
 
-    print("Known-gap smoke passed (closure capture still tracked in default and vm-kati).")
+    print(
+        "Known-gap smoke passed "
+        "(closure capture still tracked in default, yorumla, and vm-kati)."
+    )
     return 0
 
 
