@@ -914,13 +914,7 @@ void Compiler::atamaDerle(const AtamaNode *dugum) {
   const auto *kimlik = dynamic_cast<const KimlikNode *>(dugum->hedef());
   if (kimlik != nullptr) {
     ifadeDerle(dugum->ifade());
-    if (islevIcindeyim()) {
-      const std::uint16_t local = localAlVeyaOlustur(kimlik->ad());
-      chunk_.yazOpCode(OpCode::OP_SET_LOCAL, dugum->satir());
-      chunk_.yazU16(local, dugum->satir());
-    } else {
-      globalOperandYaz(OpCode::OP_SET_GLOBAL, kimlik->ad(), dugum->satir());
-    }
+    atamaHedefiYaz(kimlik->ad(), dugum->satir(), dugum->bildirimMi());
     opcodeYaz(OpCode::OP_POP, dugum->satir());
     return;
   }
@@ -975,14 +969,8 @@ void Compiler::cokluAtamaDerle(const CokluAtamaNode *dugum) {
     sabitYaz(SabitDeger(static_cast<double>(i)), dugum->satir());
     opcodeYaz(OpCode::OP_INDEKS_AL, dugum->satir());
 
-    if (islevIcindeyim()) {
-      const std::uint16_t local = localAlVeyaOlustur(dugum->hedefler()[i]);
-      chunk_.yazOpCode(OpCode::OP_SET_LOCAL, dugum->satir());
-      chunk_.yazU16(local, dugum->satir());
-    } else {
-      globalOperandYaz(OpCode::OP_SET_GLOBAL, dugum->hedefler()[i],
-                       dugum->satir());
-    }
+    atamaHedefiYaz(dugum->hedefler()[i], dugum->satir(),
+                   dugum->bildirimMi());
     opcodeYaz(OpCode::OP_POP, dugum->satir());
   }
   opcodeYaz(OpCode::OP_POP, dugum->satir());
@@ -1419,6 +1407,29 @@ void Compiler::degiskenYaz(const std::string &ad, std::size_t satir) {
     chunk_.yazU16(local, satir);
     return;
   }
+  globalOperandYaz(OpCode::OP_SET_GLOBAL, ad, satir);
+}
+
+void Compiler::atamaHedefiYaz(const std::string &ad, std::size_t satir,
+                              bool bildirimMi) {
+  if (!islevIcindeyim()) {
+    globalOperandYaz(OpCode::OP_SET_GLOBAL, ad, satir);
+    return;
+  }
+
+  if (bildirimMi) {
+    const std::uint16_t local = localAlVeyaOlustur(ad);
+    chunk_.yazOpCode(OpCode::OP_SET_LOCAL, satir);
+    chunk_.yazU16(local, satir);
+    return;
+  }
+
+  if (const std::uint16_t *local = localBul(ad)) {
+    chunk_.yazOpCode(OpCode::OP_SET_LOCAL, satir);
+    chunk_.yazU16(*local, satir);
+    return;
+  }
+
   globalOperandYaz(OpCode::OP_SET_GLOBAL, ad, satir);
 }
 

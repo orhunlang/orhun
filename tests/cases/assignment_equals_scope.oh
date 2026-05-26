@@ -1,0 +1,15 @@
+# '=' atamasi islev icinde mevcut baglami gunceller
+x olsun 1
+
+işlev global_degistir():
+    x = 5
+
+global_degistir()
+yazdır x
+
+işlev yerel_degistir():
+    y olsun 10
+    y = y + 10
+    döndür y
+
+yazdır yerel_degistir()

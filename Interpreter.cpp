@@ -3495,7 +3495,7 @@ void Interpreter::calistirAtama(const AtamaNode *dugum) {
   const OrhunDegeri deger = ifadeHesapla(dugum->ifade());
 
   if (const auto *kimlik = dynamic_cast<const KimlikNode *>(dugum->hedef())) {
-    aktifKapsam()[kimlik->ad()] = deger;
+    atamaHedefiYaz(kimlik->ad(), deger, dugum->bildirimMi(), dugum->satir());
     return;
   }
 
@@ -3522,7 +3522,8 @@ void Interpreter::calistirCokluAtama(const CokluAtamaNode *dugum) {
   }
 
   for (std::size_t i = 0; i < dugum->hedefler().size(); ++i) {
-    aktifKapsam()[dugum->hedefler()[i]] = (*listePtr)[i];
+    atamaHedefiYaz(dugum->hedefler()[i], (*listePtr)[i],
+                   dugum->bildirimMi(), dugum->satir());
   }
 }
 
@@ -5130,6 +5131,25 @@ Interpreter::DegiskenTablosu &Interpreter::aktifKapsam() {
     return yerelKapsamYigini_.back();
   }
   return globalHafiza_;
+}
+
+void Interpreter::atamaHedefiYaz(const std::string &ad,
+                                 const OrhunDegeri &deger, bool bildirimMi,
+                                 std::size_t satir) {
+  (void)satir;
+  if (bildirimMi || yerelKapsamYigini_.empty()) {
+    aktifKapsam()[ad] = deger;
+    return;
+  }
+
+  auto &yerelKapsam = yerelKapsamYigini_.back();
+  const auto yerel = yerelKapsam.find(ad);
+  if (yerel != yerelKapsam.end()) {
+    yerel->second = deger;
+    return;
+  }
+
+  globalHafiza_[ad] = deger;
 }
 
 OrhunDegeri &Interpreter::degiskenBulYazilabilir(const std::string &ad,

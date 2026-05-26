@@ -57,6 +57,8 @@ private:
   void sabitYaz(const SabitDeger &deger, std::size_t satir);
   void degiskenYukle(const std::string &ad, std::size_t satir);
   void degiskenYaz(const std::string &ad, std::size_t satir);
+  void atamaHedefiYaz(const std::string &ad, std::size_t satir,
+                      bool bildirimMi);
   std::string geciciAdUret(const std::string &onEk);
   void globalOperandYaz(OpCode op, const std::string &ad, std::size_t satir);
   std::size_t atlaYaz(OpCode op, std::size_t satir);

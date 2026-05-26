@@ -129,7 +129,10 @@ puan olsun 100
 puan olsun puan + 1
 ```
 
-`=` is supported as assignment compatibility syntax in current builds.
+`=` is supported as assignment compatibility syntax in current builds. Inside
+functions, `=` updates an existing local binding when one exists; otherwise it
+writes the global binding. Use `olsun` to create or update the current
+function's local binding.
 
 Multiple assignment and destructuring are supported by the current test suite.
 
@@ -413,7 +416,7 @@ expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
 children, assignment `bildirim` metadata for `Atama`/`CokluAtama`, child block
 command counts, and recursive child block command summaries, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 136 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 137 successful AST
 fixtures and 10 parser error fixtures. Anonymous function summaries include
 their parameter names in `ayrinti` and the returned inline body expression in
 `altlar`. Error parity covers missing `ise`,

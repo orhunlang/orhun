@@ -231,6 +231,8 @@ private:
   bool islevReferansiCoz(const OrhunDegeri &deger, std::string &gercekAd) const;
 
   DegiskenTablosu &aktifKapsam();
+  void atamaHedefiYaz(const std::string &ad, const OrhunDegeri &deger,
+                      bool bildirimMi, std::size_t satir);
   OrhunDegeri &degiskenBulYazilabilir(const std::string &ad, std::size_t satir);
   const OrhunDegeri &degiskenBul(const std::string &ad,
                                  std::size_t satir) const;
