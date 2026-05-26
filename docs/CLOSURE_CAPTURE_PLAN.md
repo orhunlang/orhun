@@ -83,3 +83,5 @@ parameter capture, shared account balance capture, and loop-local copies.
 `tests/lambda_capture_analysis_smoke.py` separately locks anonymous-function
 capture candidates for shadowing, returned lambdas, and top-level lambda
 composition.
+Both smoke tests also track which captured names are written inside the nested
+function, so mutable capture cells can be implemented against a fixed target.

@@ -164,12 +164,30 @@ def gather_refs(commands: list[dict]) -> set[str]:
     return refs
 
 
+def gather_writes(commands: list[dict]) -> set[str]:
+    writes: set[str] = set()
+    for command in commands:
+        kind = command.get("tur")
+        if kind == "IslevTanim":
+            continue
+        if kind == "Atama" and not is_declaration_assignment(command):
+            name = binding_from_target(command.get("hedef"))
+            if name:
+                writes.add(name)
+
+        for block in command_blocks(command):
+            writes.update(gather_writes(block))
+    return writes
+
+
 @dataclass
 class FunctionInfo:
     path: str
     locals: set[str] = field(default_factory=set)
     refs: set[str] = field(default_factory=set)
+    writes: set[str] = field(default_factory=set)
     captures: set[str] = field(default_factory=set)
+    mutated_captures: set[str] = field(default_factory=set)
 
 
 def analyze_callable(
@@ -182,6 +200,7 @@ def analyze_callable(
     locals_ = set(params)
     locals_.update(gather_local_bindings(commands))
     refs = gather_refs(commands) - BUILTINS
+    writes = gather_writes(commands)
     free = refs - locals_
 
     captures: set[str] = set()
@@ -191,7 +210,14 @@ def analyze_callable(
                 captures.add(name)
                 break
 
-    results[path] = FunctionInfo(path=path, locals=locals_, refs=refs, captures=captures)
+    results[path] = FunctionInfo(
+        path=path,
+        locals=locals_,
+        refs=refs,
+        writes=writes,
+        captures=captures,
+        mutated_captures=captures & writes,
+    )
 
     child_outer_scopes = outer_scopes + [locals_]
     analyze_nested_callables(path, commands, child_outer_scopes, results)
