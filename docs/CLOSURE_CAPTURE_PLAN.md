@@ -86,4 +86,5 @@ composition.
 Both smoke tests also track which captured names are written inside the nested
 function, so mutable capture cells can be implemented against a fixed target.
 They also lock the lexical capture depth for each name, currently depth `1`
-for all tracked captures in the known fixtures.
+for direct parent captures and depth `2` for the nested lambda fixture
+`tests/ast_json/lambda_capture_depth.oh`.

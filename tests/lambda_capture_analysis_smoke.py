@@ -22,6 +22,13 @@ def main() -> int:
         repo / "tests" / "ast_json" / "lambda_nested_return.oh": {
             "<program>.dis.<lambda@2>": ({"a"}, set(), {"a": 1}),
         },
+        repo / "tests" / "ast_json" / "lambda_capture_depth.oh": {
+            "<program>.dis.orta.<lambda@4>": (
+                {"a", "b"},
+                set(),
+                {"a": 2, "b": 1},
+            ),
+        },
         repo / "tests" / "ast_json" / "lambda_composed.oh": {
             "<program>.<lambda@2>": (set(), set(), {}),
             "<program>.<lambda@3>": (set(), set(), {}),

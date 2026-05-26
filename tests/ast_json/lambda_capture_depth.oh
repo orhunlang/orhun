@@ -1,0 +1,9 @@
+# ast: IslevTanim,Atama,Atama,Yazdir
+işlev dis(a):
+    işlev orta(b):
+        döndür işlev(c): a + b + c
+    döndür orta
+
+orta5 olsun dis(5)
+topla olsun orta5(2)
+yazdır topla(3)
