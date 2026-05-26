@@ -9,14 +9,36 @@ def require(condition: bool, message: str) -> None:
         raise RuntimeError(message)
 
 
-def run(binary: Path, source: Path) -> subprocess.CompletedProcess[str]:
+def run(
+    binary: Path, source: Path, mode: str | None = None
+) -> subprocess.CompletedProcess[str]:
+    args = [str(binary)]
+    if mode is not None:
+        args.append(mode)
+    args.append(str(source))
     return subprocess.run(
-        [str(binary), str(source)],
+        args,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
         encoding="utf-8",
         errors="replace",
+    )
+
+
+def assert_closure_known_gap(
+    proc: subprocess.CompletedProcess[str], label: str
+) -> None:
+    combined = proc.stdout + proc.stderr
+    require(
+        proc.returncode != 0,
+        f"closure known-gap case now passes in {label}; promote it to a normal "
+        "fixture and update docs/CLOSURE_CAPTURE_PLAN.md",
+    )
+    require(
+        "Tanimsiz degisken: 'adet'" in combined
+        or "Tanımsız değişken: 'adet'" in combined,
+        f"closure known-gap failure changed in {label}; update the guard and plan",
     )
 
 
@@ -32,19 +54,10 @@ def main() -> int:
     closure_case = repo / "tests" / "cases" / "closure_missing_feature.oh"
     require(closure_case.exists(), f"Known-gap case not found: {closure_case}")
 
-    proc = run(binary, closure_case)
-    combined = proc.stdout + proc.stderr
-    require(
-        proc.returncode != 0,
-        "closure known-gap case now passes; promote it to a normal fixture and "
-        "update docs/CLOSURE_CAPTURE_PLAN.md",
-    )
-    require(
-        "Tanimsiz degisken: 'adet'" in combined or "Tanımsız değişken: 'adet'" in combined,
-        "closure known-gap failure changed; update the known-gap guard and plan",
-    )
+    assert_closure_known_gap(run(binary, closure_case), "default runner")
+    assert_closure_known_gap(run(binary, closure_case, "vm-kati"), "vm-kati")
 
-    print("Known-gap smoke passed (closure capture still tracked).")
+    print("Known-gap smoke passed (closure capture still tracked in default and vm-kati).")
     return 0
 
 
