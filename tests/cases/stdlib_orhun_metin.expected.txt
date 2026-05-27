@@ -1,4 +1,4 @@
-0.1.0
+0.2.0
 1
 1
 1
@@ -8,6 +8,8 @@
 cba
 hahaha
 orhun gucu gucu
+1
+0
 b
 orhun
 1

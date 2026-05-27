@@ -10,6 +10,8 @@ yazdır metin_yardimci.biter_mi("orhun dili", "orhun")
 yazdır metin_yardimci.ters("abc")
 yazdır metin_yardimci.tekrar("ha", 3)
 yazdır metin_yardimci.degistir("orhun dili dili", "dili", "gucu")
+yazdır metin_yardimci.icerir("orhun dili", "hun")
+yazdır metin_yardimci.icerir("orhun dili", "java")
 yazdır metin_yardimci.satirlara_ayir("a\nb")[1]
 yazdır metin_yardimci.kelimelere_ayir("orhun dili")[0]
 satir_donusu olsun json.coz("\"\\r\"")

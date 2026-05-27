@@ -1,6 +1,6 @@
 # Orhun ile yazilmis metin yardimcilari.
 
-surum olsun "0.1.0"
+surum olsun "0.2.0"
 satir_donusu olsun json.coz("\"\\r\"")
 
 işlev bos_mu(kaynak):
@@ -45,6 +45,12 @@ işlev degistir(kaynak, aranan, yerine):
         döndür kaynak
     parcalar olsun parcala(kaynak, aranan)
     döndür metin.birlestir(parcalar, yerine)
+
+işlev icerir(kaynak, aranan):
+    eğer aranan eşit "" ise:
+        döndür doğru
+    parcalar olsun parcala(kaynak, aranan)
+    döndür uzunluk(parcalar) büyük 1
 
 işlev satirlara_ayir(kaynak):
     döndür parcala(kaynak, "\n")
