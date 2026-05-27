@@ -168,6 +168,7 @@ def cxx_node_summary(command: dict) -> dict:
         "bloklar": blocks,
     }
     add_assignment_metadata(summary, command, "C++")
+    add_definition_metadata(summary, command, "C++")
     return summary
 
 
@@ -180,6 +181,7 @@ def cxx_shallow_node(command: dict) -> dict:
         "ifade_ozeti": expression,
     }
     add_assignment_metadata(summary, command, "C++")
+    add_definition_metadata(summary, command, "C++")
     return summary
 
 
@@ -210,6 +212,36 @@ def add_assignment_metadata(summary: dict, command: dict, source_name: str) -> N
             f"{source_name} multi-assignment node missing target names: {command}",
         )
         summary["hedefler"] = targets
+
+
+def add_definition_metadata(summary: dict, command: dict, source_name: str) -> None:
+    if summary.get("tur") == "IslevTanim":
+        name = command.get("ad")
+        params = command.get("parametreler")
+        require(
+            isinstance(name, str),
+            f"{source_name} function definition missing name: {command}",
+        )
+        require(
+            isinstance(params, list)
+            and all(isinstance(param, str) for param in params),
+            f"{source_name} function definition missing params: {command}",
+        )
+        summary["ad"] = name
+        summary["parametreler"] = params
+    if summary.get("tur") == "SinifTanim":
+        name = command.get("ad")
+        parent = command.get("ebeveyn")
+        require(
+            isinstance(name, str),
+            f"{source_name} class definition missing name: {command}",
+        )
+        require(
+            isinstance(parent, str),
+            f"{source_name} class definition missing parent: {command}",
+        )
+        summary["ad"] = name
+        summary["ebeveyn"] = parent
 
 
 def cxx_command_expression_summary(command: dict) -> dict:
@@ -416,6 +448,7 @@ def orhun_node_summary(command: dict, source_file: Path) -> dict:
         "bloklar": blocks,
     }
     add_assignment_metadata(summary, command, f"prototype {source_file}")
+    add_definition_metadata(summary, command, f"prototype {source_file}")
     return summary
 
 
@@ -473,6 +506,7 @@ def orhun_shallow_node(command: dict, source_file: Path) -> dict:
         "ifade_ozeti": expression,
     }
     add_assignment_metadata(summary, command, f"prototype {source_file}")
+    add_definition_metadata(summary, command, f"prototype {source_file}")
     return summary
 
 

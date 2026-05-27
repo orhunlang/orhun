@@ -7,6 +7,8 @@ yazdır parser.surum
 yazdır sonuc.ok
 yazdır uzunluk(sonuc.komutlar)
 yazdır metin.birlestir(parser.turleri(sonuc), "|")
+yazdır sonuc.komutlar[0].ad
+yazdır json.yaz(sonuc.komutlar[0].parametreler)
 yazdır sonuc.komutlar[1].bildirim
 yazdır sonuc.komutlar[1].hedef_ozeti.ayrinti
 
@@ -18,6 +20,10 @@ yazdır json.yaz(coklu.komutlar[0].hedefler)
 esit_kontrol olsun parser.ozetle("sayi = 10\nyazdır sayi\n")
 yazdır esit_kontrol.komutlar[0].bildirim
 yazdır esit_kontrol.komutlar[0].hedef_ozeti.ayrinti
+
+sinif_kontrol olsun parser.ozetle("tip Kedi(Hayvan):\n    yazdır \"miyav\"\n")
+yazdır sinif_kontrol.komutlar[0].ad
+yazdır sinif_kontrol.komutlar[0].ebeveyn
 
 kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
