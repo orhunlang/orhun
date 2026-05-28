@@ -55,6 +55,9 @@ yazdır json.yaz(koleksiyon_kontrol.komutlar[0].ifade_ozeti.altlar)
 yazdır json.yaz(koleksiyon_kontrol.komutlar[1].ifade_ozeti.altlar)
 yazdır koleksiyon_kontrol.komutlar[1].ifade_ozeti.degisken
 
+sozluk_kontrol olsun parser.ozetle("ayar olsun {\"ad\": \"orhun\", \"surum\": 1}\n")
+yazdır json.yaz(sozluk_kontrol.komutlar[0].ifade_ozeti.anahtarlar)
+
 erisim_kontrol olsun parser.ozetle("ilk olsun liste[0]\nad olsun sozluk?.ad\nnesne olsun yeni Kutu(3)\n")
 yazdır json.yaz(erisim_kontrol.komutlar[0].ifade_ozeti.altlar)
 yazdır json.yaz(erisim_kontrol.komutlar[1].ifade_ozeti.altlar)

@@ -575,6 +575,25 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
             f"{source_name} list comprehension expression missing variable: {expression}",
         )
         summary["degisken"] = variable
+    if summary.get("tur") == "Sozluk":
+        items = expression.get("ogeler")
+        if items is None:
+            keys = expression.get("anahtarlar")
+            require(
+                isinstance(keys, list) and all(isinstance(key, str) for key in keys),
+                f"{source_name} dictionary expression missing keys: {expression}",
+            )
+            summary["anahtarlar"] = keys
+            return
+        require(
+            isinstance(items, list),
+            f"{source_name} dictionary expression items invalid: {expression}",
+        )
+        summary["anahtarlar"] = [
+            str(item.get("anahtar", ""))
+            for item in items
+            if isinstance(item, dict)
+        ]
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
