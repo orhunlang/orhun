@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.16"
+surum olsun "0.3.17"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1068,7 +1068,11 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
     op olsun ""
     eğer tur eşit "IkiliIslem" veya tur eşit "TekliIslem" ise:
         op olsun ifade_ayrintisi(tokenlar, baslangic, son, tur)
-    döndür {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": ifade_altlari(tokenlar, baslangic, son, tur)}
+    sonuc olsun {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": ifade_altlari(tokenlar, baslangic, son, tur)}
+    eğer tur eşit "IsimsizIslev" ise:
+        sonuc["parametreler"] = baslik_parametreleri(tokenlar, baslangic)
+        sonuc["varsayilanlar"] = baslik_varsayilanlari(tokenlar, baslangic)
+    döndür sonuc
 
 işlev komut_ifade_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)

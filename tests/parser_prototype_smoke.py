@@ -327,12 +327,14 @@ def cxx_expression_summary(expression: dict) -> dict:
     kind = expression.get("tur")
     if not isinstance(kind, str):
         return empty_expression_summary()
-    return {
+    summary = {
         "tur": kind,
         "op": expression.get("op", ""),
         "ayrinti": cxx_expression_detail(expression),
         "altlar": cxx_expression_children(expression),
     }
+    add_expression_metadata(summary, expression, "C++")
+    return summary
 
 
 def cxx_expression_children(expression: dict) -> list[dict]:
@@ -526,24 +528,47 @@ def orhun_expression_summary(command: dict, source_file: Path) -> dict:
     require(command.get("ifade_turu", "") == kind, f"prototype expression kind mismatch for {source_file}")
     children = expression.get("altlar", [])
     require(isinstance(children, list), f"prototype expression children invalid for {source_file}")
-    return {
+    summary = {
         "tur": kind,
         "op": expression.get("op", ""),
         "ayrinti": expression.get("ayrinti", ""),
         "altlar": [orhun_expression_payload(child, source_file) for child in children],
     }
+    add_expression_metadata(summary, expression, f"prototype {source_file}")
+    return summary
 
 
 def orhun_expression_payload(expression: object, source_file: Path) -> dict:
     require(isinstance(expression, dict), f"prototype child expression invalid for {source_file}")
     children = expression.get("altlar", [])
     require(isinstance(children, list), f"prototype child expression children invalid for {source_file}")
-    return {
+    summary = {
         "tur": expression.get("tur", ""),
         "op": expression.get("op", ""),
         "ayrinti": expression.get("ayrinti", ""),
         "altlar": [orhun_expression_payload(child, source_file) for child in children],
     }
+    add_expression_metadata(summary, expression, f"prototype {source_file}")
+    return summary
+
+
+def add_expression_metadata(summary: dict, expression: dict, source_name: str) -> None:
+    if summary.get("tur") != "IsimsizIslev":
+        return
+    params = expression.get("parametreler")
+    defaults = expression.get("varsayilanlar")
+    require(
+        isinstance(params, list) and all(isinstance(param, str) for param in params),
+        f"{source_name} anonymous function expression missing params: {expression}",
+    )
+    require(
+        isinstance(defaults, list),
+        f"{source_name} anonymous function expression missing defaults: {expression}",
+    )
+    summary["parametreler"] = params
+    summary["varsayilanlar"] = [
+        definition_default_summary(default, source_name) for default in defaults
+    ]
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
