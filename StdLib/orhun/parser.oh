@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.23"
+surum olsun "0.3.24"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1365,6 +1365,25 @@ işlev isimsiz_islev_hatasi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev yeni_nesne_hatasi(tokenlar, konum):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        token olsun guvenli_token(tokenlar, i)
+        eğer satir_sonu_mu(token) ise:
+            döndür ""
+        eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yeni" ise:
+            sinif_token olsun guvenli_token(tokenlar, i + 1)
+            eğer sinif_token.tur eşit_değil "KIMLIK" ise:
+                döndür "'yeni' ifadesinden sonra sınıf adı bekleniyor."
+            parantez_token olsun guvenli_token(tokenlar, i + 2)
+            eğer parantez_token.tur eşit "ISLEM" ve parantez_token.deger eşit "(" ise:
+                kapanis olsun ilk_deger_konumu(tokenlar, i + 3, satir_sonu_indeksi(tokenlar, i), ")")
+                eğer kapanis küçük 0 ise:
+                    döndür "Kurucu argüman listesinin sonunda ')' bekleniyor."
+            döndür ""
+        i olsun i + 1
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
@@ -1397,6 +1416,9 @@ işlev baslik_hatasi(tokenlar, konum):
     isimsiz_hata olsun isimsiz_islev_hatasi(tokenlar, konum)
     eğer uzunluk(isimsiz_hata) büyük 0 ise:
         döndür isimsiz_hata
+    yeni_hata olsun yeni_nesne_hatasi(tokenlar, konum)
+    eğer uzunluk(yeni_hata) büyük 0 ise:
+        döndür yeni_hata
     paralel_hata olsun paralel_yap_hatasi(tokenlar, konum)
     eğer uzunluk(paralel_hata) büyük 0 ise:
         döndür paralel_hata
