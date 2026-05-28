@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.19"
+surum olsun "0.3.20"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1016,6 +1016,18 @@ işlev dilim_altlari(tokenlar, baslangic, son):
         altlar.ekle(alt_ifade_ozeti(tokenlar, iki_nokta + 1, son - 1))
     döndür altlar
 
+işlev dilim_sinir_varligi(tokenlar, baslangic, son):
+    sonuc olsun {"baslangic_var": yanlış, "bitis_var": yanlış}
+    koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
+    eğer koseli_konum küçük 0 ise:
+        döndür sonuc
+    iki_nokta olsun aralikta_deger_konumu(tokenlar, koseli_konum + 1, son - 1, ":")
+    eğer iki_nokta küçük 0 ise:
+        döndür sonuc
+    sonuc["baslangic_var"] = koseli_konum + 1 küçük iki_nokta
+    sonuc["bitis_var"] = iki_nokta + 1 küçük son - 1
+    döndür sonuc
+
 işlev guvenli_alan_altlari(tokenlar, baslangic, son):
     altlar olsun []
     soru_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "?")
@@ -1126,6 +1138,10 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
         sonuc["degisken"] = liste_uretec_degiskeni(tokenlar, baslangic, son)
     eğer tur eşit "Sozluk" ise:
         sonuc["anahtarlar"] = sozluk_anahtarlari(tokenlar, baslangic, son)
+    eğer tur eşit "DilimErisim" ise:
+        sinirlar olsun dilim_sinir_varligi(tokenlar, baslangic, son)
+        sonuc["baslangic_var"] = sinirlar["baslangic_var"]
+        sonuc["bitis_var"] = sinirlar["bitis_var"]
     döndür sonuc
 
 işlev komut_ifade_turu(tokenlar, konum):

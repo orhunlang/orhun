@@ -594,6 +594,19 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
             for item in items
             if isinstance(item, dict)
         ]
+    if summary.get("tur") == "DilimErisim":
+        if "baslangic_var" in expression and "bitis_var" in expression:
+            start_present = expression.get("baslangic_var")
+            end_present = expression.get("bitis_var")
+        else:
+            start_present = expression.get("baslangic") is not None
+            end_present = expression.get("bitis") is not None
+        require(
+            isinstance(start_present, bool) and isinstance(end_present, bool),
+            f"{source_name} slice expression missing bound presence: {expression}",
+        )
+        summary["baslangic_var"] = start_present
+        summary["bitis_var"] = end_present
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:

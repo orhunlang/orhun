@@ -1,4 +1,4 @@
-0.3.19
+0.3.20
 1
 3
 IslevTanim|Atama|Yazdir
@@ -35,9 +35,9 @@ x
 [{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]
 {"altlar":[{"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"","op":"","tur":"Liste"},{"altlar":[],"ayrinti":"0","op":"","tur":"Sayi"}],"ayrinti":"","op":"","tur":"IndeksErisim"}
 {"altlar":[{"altlar":[{"altlar":[],"ayrinti":"orhun","op":"","tur":"Metin"}],"anahtarlar":["ad"],"ayrinti":"","op":"","tur":"Sozluk"}],"ayrinti":"ad","op":"","tur":"AlanErisim"}
-{"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}],"ayrinti":"liste","op":"","tur":"DilimErisim"}
-{"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"liste","op":"","tur":"DilimErisim"}
-{"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"liste","op":"","tur":"DilimErisim"}
+{"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}],"ayrinti":"liste","baslangic_var":true,"bitis_var":true,"op":"","tur":"DilimErisim"}
+{"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"liste","baslangic_var":false,"bitis_var":true,"op":"","tur":"DilimErisim"}
+{"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"liste","baslangic_var":true,"bitis_var":false,"op":"","tur":"DilimErisim"}
 {"altlar":[{"altlar":[],"ayrinti":"nesne","op":"","tur":"Kimlik"}],"ayrinti":"deger","op":"","tur":"AlanErisim"}
 {"altlar":[],"ayrinti":"nesne.oku","op":"","tur":"IslevCagri"}
 {"altlar":[],"ayrinti":"deger","op":"","tur":"BenimErisim"}
