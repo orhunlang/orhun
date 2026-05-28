@@ -53,13 +53,13 @@ Basari olcutu:
 
 Durum: aktif; parser prototipi 138 basarili AST fixture ve 10 hata fixture
 seviyesine tasindi. Recursive block summary parity ve recursive expression
-child parity basladi. `orhun/parser.oh` 0.3.20 atama `bildirim` ve hedef
+child parity basladi. `orhun/parser.oh` 0.3.21 atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini, islev basligi varsayilan arguman
 ozetlerini, islev/sinif/dis islev/dahil_et/deneme-yakala baslik metadatasini,
 anonim islev parametre ve varsayilan arguman ozetlerini, inline anonim islev
 govde ifadesini, liste uretec degiskenini, sozluk anahtarlarini, dilim erisim
-sinir varligini ve liste/sozluk literal postfix ozetlerini C++ AST ile
-karsilastiriyor.
+sinir varligini, paralel yap govde komut sayisini ve liste/sozluk literal
+postfix ozetlerini C++ AST ile karsilastiriyor.
 
 Hedefler:
 

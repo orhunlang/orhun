@@ -1,4 +1,4 @@
-0.3.20
+0.3.21
 1
 3
 IslevTanim|Atama|Yazdir
@@ -49,7 +49,7 @@ x
 {"altlar":[{"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"b","op":"","tur":"Kimlik"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"ayrinti":"a,b","op":"","parametreler":["a","b"],"tur":"IsimsizIslev","varsayilanlar":[{"altlar":[],"ayrinti":"","op":"","tur":""},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}]}
 {"altlar":[{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"-","op":"-","tur":"TekliIslem"}
 {"altlar":[{"altlar":[],"ayrinti":"yanlış","op":"","tur":"Mantik"}],"ayrinti":"değil","op":"değil","tur":"TekliIslem"}
-{"altlar":[],"ayrinti":"","op":"","tur":"ParalelYap"}
+{"altlar":[],"ayrinti":"","komut_sayisi":1,"op":"","tur":"ParalelYap"}
 {"altlar":[{"altlar":[],"ayrinti":"Ad?","op":"","tur":"Metin"}],"ayrinti":"","op":"","tur":"Sor"}
 {"altlar":[],"ayrinti":"orhun/temel.oh","op":"","tur":"DahilEt"}
 IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
@@ -59,7 +59,7 @@ IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 {"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"Kutu","op":"","tur":"YeniNesne"}
 {"altlar":[],"ayrinti":"deger","op":"","tur":"BenimErisim"}
 {"altlar":[],"ayrinti":"kur","op":"","tur":"UstErisim"}
-{"altlar":[],"ayrinti":"","op":"","tur":"ParalelYap"}
+{"altlar":[],"ayrinti":"","komut_sayisi":1,"op":"","tur":"ParalelYap"}
 IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 {"altlar":[{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"-","op":"-","tur":"TekliIslem"}
 {"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"","op":"","tur":"Liste"}

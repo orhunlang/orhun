@@ -607,6 +607,20 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
         )
         summary["baslangic_var"] = start_present
         summary["bitis_var"] = end_present
+    if summary.get("tur") == "ParalelYap":
+        body = expression.get("govde")
+        if body is None:
+            command_count = expression.get("komut_sayisi")
+        else:
+            require(isinstance(body, dict), f"{source_name} parallel body invalid: {expression}")
+            commands = body.get("komutlar")
+            require(isinstance(commands, list), f"{source_name} parallel commands invalid: {expression}")
+            command_count = len(commands)
+        require(
+            isinstance(command_count, int),
+            f"{source_name} parallel command count missing: {expression}",
+        )
+        summary["komut_sayisi"] = command_count
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
