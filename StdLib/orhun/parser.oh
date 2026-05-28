@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.25"
+surum olsun "0.3.26"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1409,6 +1409,36 @@ işlev postfix_ifade_hatasi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev birincil_ifade_kapanis_hatasi(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "işlev" veya token.deger eşit "dış_işlev" veya token.deger eşit "dis_islev" veya token.deger eşit "tip") ise:
+        döndür ""
+
+    satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
+    i olsun konum
+    sürece i küçük satir_sonu:
+        simdiki olsun guvenli_token(tokenlar, i)
+        onceki olsun guvenli_token(tokenlar, i - 1)
+        sonraki olsun guvenli_token(tokenlar, i + 1)
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "[" ve onceki.tur eşit_değil "KIMLIK" ise:
+            kapanis olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, "]")
+            eğer kapanis küçük 0 ise:
+                döndür "Liste ifadesinin sonunda ']' bekleniyor."
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "{" ise:
+            eğer satir_sonu_mu(sonraki) ise:
+                döndür ""
+            eğer (sonraki.tur eşit "METIN" veya sonraki.tur eşit "KIMLIK") ve guvenli_token(tokenlar, i + 2).deger eşit_değil ":" ise:
+                döndür "Sözlükte anahtardan sonra ':' bekleniyor."
+            kapanis_sozluk olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, "}")
+            eğer kapanis_sozluk küçük 0 ise:
+                döndür "Sözlük ifadesinin sonunda '}' bekleniyor."
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "(" ve onceki.tur eşit_değil "KIMLIK" ise:
+            kapanis_parantez olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, ")")
+            eğer kapanis_parantez küçük 0 ise:
+                döndür "Parantezli ifade kapanırken ')' bekleniyor."
+        i olsun i + 1
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
@@ -1447,6 +1477,9 @@ işlev baslik_hatasi(tokenlar, konum):
     postfix_hata olsun postfix_ifade_hatasi(tokenlar, konum)
     eğer uzunluk(postfix_hata) büyük 0 ise:
         döndür postfix_hata
+    birincil_hata olsun birincil_ifade_kapanis_hatasi(tokenlar, konum)
+    eğer uzunluk(birincil_hata) büyük 0 ise:
+        döndür birincil_hata
     paralel_hata olsun paralel_yap_hatasi(tokenlar, konum)
     eğer uzunluk(paralel_hata) büyük 0 ise:
         döndür paralel_hata
