@@ -553,22 +553,28 @@ def orhun_expression_payload(expression: object, source_file: Path) -> dict:
 
 
 def add_expression_metadata(summary: dict, expression: dict, source_name: str) -> None:
-    if summary.get("tur") != "IsimsizIslev":
-        return
-    params = expression.get("parametreler")
-    defaults = expression.get("varsayilanlar")
-    require(
-        isinstance(params, list) and all(isinstance(param, str) for param in params),
-        f"{source_name} anonymous function expression missing params: {expression}",
-    )
-    require(
-        isinstance(defaults, list),
-        f"{source_name} anonymous function expression missing defaults: {expression}",
-    )
-    summary["parametreler"] = params
-    summary["varsayilanlar"] = [
-        definition_default_summary(default, source_name) for default in defaults
-    ]
+    if summary.get("tur") == "IsimsizIslev":
+        params = expression.get("parametreler")
+        defaults = expression.get("varsayilanlar")
+        require(
+            isinstance(params, list) and all(isinstance(param, str) for param in params),
+            f"{source_name} anonymous function expression missing params: {expression}",
+        )
+        require(
+            isinstance(defaults, list),
+            f"{source_name} anonymous function expression missing defaults: {expression}",
+        )
+        summary["parametreler"] = params
+        summary["varsayilanlar"] = [
+            definition_default_summary(default, source_name) for default in defaults
+        ]
+    if summary.get("tur") == "ListeUretec":
+        variable = expression.get("degisken")
+        require(
+            isinstance(variable, str),
+            f"{source_name} list comprehension expression missing variable: {expression}",
+        )
+        summary["degisken"] = variable
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:

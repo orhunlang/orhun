@@ -1,4 +1,4 @@
-0.3.17
+0.3.18
 1
 3
 IslevTanim|Atama|Yazdir
@@ -28,6 +28,7 @@ hata
 {"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[{"altlar":[],"ayrinti":"b","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}
 [{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]
 [{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"},{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","tur":"IkiliIslem"}]
+x
 [{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"0","op":"","tur":"Sayi"}]
 [{"altlar":[],"ayrinti":"sozluk","op":"","tur":"Kimlik"}]
 [{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]
