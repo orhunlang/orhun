@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.22"
+surum olsun "0.3.23"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1334,6 +1334,37 @@ işlev paralel_yap_hatasi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev basit_oneri_mesaji(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit "KIMLIK" ise:
+        döndür " Bunu mu demek istediniz: '" + token.deger + "'?"
+    döndür ""
+
+işlev isimsiz_islev_hatasi(tokenlar, konum):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        token olsun guvenli_token(tokenlar, i)
+        eğer satir_sonu_mu(token) ise:
+            döndür ""
+        eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "işlev" ise:
+            sonraki olsun guvenli_token(tokenlar, i + 1)
+            eğer i eşit konum ve sonraki.tur eşit "KIMLIK" ise:
+                döndür ""
+            eğer sonraki.tur eşit_değil "ISLEM" veya sonraki.deger eşit_değil "(" ise:
+                döndür "Anonim işlev ifadesinde 'işlev' sonrası '(' bekleniyor." + basit_oneri_mesaji(tokenlar, konum)
+            kapanis olsun ilk_deger_konumu(tokenlar, i + 2, satir_sonu_indeksi(tokenlar, i), ")")
+            eğer kapanis küçük 0 ise:
+                döndür ""
+            iki_nokta olsun guvenli_token(tokenlar, kapanis + 1)
+            eğer iki_nokta.tur eşit_değil "ISLEM" veya iki_nokta.deger eşit_değil ":" ise:
+                döndür "Anonim işlev başlığından sonra ':' bekleniyor." + basit_oneri_mesaji(tokenlar, konum)
+            sonraki_ifade olsun guvenli_token(tokenlar, kapanis + 2)
+            eğer satir_sonu_mu(sonraki_ifade) ise:
+                döndür "Anonim işlev ':' sonrasında tek satırlı bir ifade döndürmelidir."
+            döndür ""
+        i olsun i + 1
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
@@ -1363,6 +1394,9 @@ işlev baslik_hatasi(tokenlar, konum):
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
         eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
             döndür "'deneme' başlığından sonra ':' bekleniyor"
+    isimsiz_hata olsun isimsiz_islev_hatasi(tokenlar, konum)
+    eğer uzunluk(isimsiz_hata) büyük 0 ise:
+        döndür isimsiz_hata
     paralel_hata olsun paralel_yap_hatasi(tokenlar, konum)
     eğer uzunluk(paralel_hata) büyük 0 ise:
         döndür paralel_hata
