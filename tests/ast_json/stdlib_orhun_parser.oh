@@ -33,6 +33,12 @@ yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_adlari)
 yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_tipleri)
 yazdır dis_islev_kontrol.komutlar[0].donus_tipi
 
+dahil_kontrol olsun parser.ozetle("dahil_et \"orhun/temel.oh\"\n")
+yazdır dahil_kontrol.komutlar[0].dosya
+
+deneme_kontrol olsun parser.ozetle("deneme:\n    kır\nyakala hata:\n    devam\n")
+yazdır deneme_kontrol.komutlar[0].hata_degiskeni
+
 kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)

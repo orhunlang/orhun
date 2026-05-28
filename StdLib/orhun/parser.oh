@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.15"
+surum olsun "0.3.16"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -210,6 +210,29 @@ işlev dis_islev_donus_tipi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev yakala_degiskeni(tokenlar, konum):
+    i olsun satir_sonuna_git(tokenlar, konum)
+    derinlik olsun 0
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer token.tur eşit "GIRINTI" ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer token.tur eşit "CIKINTI" ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik küçük 0 ise:
+                    derinlik olsun 0
+            değilse:
+                eğer derinlik eşit 0 ve token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yakala" ise:
+                    sonraki olsun guvenli_token(tokenlar, i + 1)
+                    eğer sonraki.tur eşit "KIMLIK" ise:
+                        döndür sonraki.deger
+                    döndür ""
+                eğer derinlik eşit 0 ve token.tur eşit_değil "YENI_SATIR" ve token.tur eşit_değil "DOSYA_SONU" ise:
+                    döndür ""
+        i olsun i + 1
+    döndür ""
+
 işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
     sonuc olsun {"tur": tur, "satir": satir, "ifade_turu": ifade_ozeti.tur, "ifade_ozeti": ifade_ozeti, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
     eğer tur eşit "Atama" veya tur eşit "CokluAtama" ise:
@@ -232,6 +255,10 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
         sonuc["parametre_adlari"] = imza.adlar
         sonuc["parametre_tipleri"] = imza.tipler
         sonuc["donus_tipi"] = dis_islev_donus_tipi(tokenlar, konum)
+    eğer tur eşit "DahilEt" ise:
+        sonuc["dosya"] = dahil_et_dosyasi(tokenlar, konum, satir_sonu_indeksi(tokenlar, konum))
+    eğer tur eşit "DenemeYakala" ise:
+        sonuc["hata_degiskeni"] = yakala_degiskeni(tokenlar, konum)
     döndür sonuc
 
 işlev blok_tasiyan_komut_mu(tur):

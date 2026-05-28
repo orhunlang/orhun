@@ -283,6 +283,20 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
         summary["parametre_adlari"] = param_names
         summary["parametre_tipleri"] = param_types
         summary["donus_tipi"] = return_type
+    if summary.get("tur") == "DahilEt":
+        source = command.get("dosya")
+        require(
+            isinstance(source, str),
+            f"{source_name} include command missing source: {command}",
+        )
+        summary["dosya"] = source
+    if summary.get("tur") == "DenemeYakala":
+        error_name = command.get("hata_degiskeni")
+        require(
+            isinstance(error_name, str),
+            f"{source_name} try/catch command missing error variable: {command}",
+        )
+        summary["hata_degiskeni"] = error_name
 
 
 def definition_default_summary(default: object, source_name: str) -> dict:
