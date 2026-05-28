@@ -9,6 +9,7 @@ yazdır uzunluk(sonuc.komutlar)
 yazdır metin.birlestir(parser.turleri(sonuc), "|")
 yazdır sonuc.komutlar[0].ad
 yazdır json.yaz(sonuc.komutlar[0].parametreler)
+yazdır json.yaz(sonuc.komutlar[0].varsayilanlar)
 yazdır sonuc.komutlar[1].bildirim
 yazdır sonuc.komutlar[1].hedef_ozeti.ayrinti
 

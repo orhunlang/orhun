@@ -218,6 +218,7 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
     if summary.get("tur") == "IslevTanim":
         name = command.get("ad")
         params = command.get("parametreler")
+        defaults = command.get("varsayilanlar")
         require(
             isinstance(name, str),
             f"{source_name} function definition missing name: {command}",
@@ -227,8 +228,15 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
             and all(isinstance(param, str) for param in params),
             f"{source_name} function definition missing params: {command}",
         )
+        require(
+            isinstance(defaults, list),
+            f"{source_name} function definition missing defaults: {command}",
+        )
         summary["ad"] = name
         summary["parametreler"] = params
+        summary["varsayilanlar"] = [
+            definition_default_summary(default, source_name) for default in defaults
+        ]
     if summary.get("tur") == "SinifTanim":
         name = command.get("ad")
         parent = command.get("ebeveyn")
@@ -275,6 +283,18 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
         summary["parametre_adlari"] = param_names
         summary["parametre_tipleri"] = param_types
         summary["donus_tipi"] = return_type
+
+
+def definition_default_summary(default: object, source_name: str) -> dict:
+    if default is None:
+        return empty_expression_summary()
+    require(
+        isinstance(default, dict),
+        f"{source_name} function default expression invalid: {default}",
+    )
+    if "tur" in default and "altlar" in default:
+        return orhun_expression_payload(default, Path(source_name))
+    return cxx_expression_summary(default)
 
 
 def cxx_command_expression_summary(command: dict) -> dict:

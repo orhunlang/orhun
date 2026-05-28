@@ -6,7 +6,10 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.14"
+surum olsun "0.3.15"
+
+işlev bos_ifade_ozeti():
+    döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -53,7 +56,7 @@ işlev coklu_atama_hedefleri(tokenlar, konum):
 işlev atama_hedef_ozeti(tokenlar, konum):
     son olsun atama_ifade_baslangici(tokenlar, konum)
     eğer son küçük 0 ise:
-        döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
+        döndür bos_ifade_ozeti()
     döndür ifade_ozeti(tokenlar, konum, son - 1)
 
 işlev baslik_adi(tokenlar, konum):
@@ -95,6 +98,41 @@ işlev baslik_parametreleri(tokenlar, konum):
                     derinlik olsun derinlik - 1
         i olsun i + 1
     döndür parametreler
+
+işlev varsayilan_ozeti_parcasi(tokenlar, baslangic, son):
+    olsun_konum olsun aralikta_deger_konumu(tokenlar, baslangic, son, "olsun")
+    eğer olsun_konum küçük 0 veya olsun_konum + 1 büyük son - 1 ise:
+        döndür bos_ifade_ozeti()
+    döndür ifade_ozeti(tokenlar, olsun_konum + 1, son)
+
+işlev baslik_varsayilanlari(tokenlar, konum):
+    varsayilanlar olsun []
+    parantez_konum olsun deger_konumu(tokenlar, konum + 1, "(")
+    eğer parantez_konum küçük 0 ise:
+        döndür varsayilanlar
+
+    parca_baslangic olsun parantez_konum + 1
+    i olsun parantez_konum + 1
+    derinlik olsun 0
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür varsayilanlar
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
+            eğer parca_baslangic küçük i ise:
+                varsayilanlar.ekle(varsayilan_ozeti_parcasi(tokenlar, parca_baslangic, i))
+            döndür varsayilanlar
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit "," ise:
+            varsayilanlar.ekle(varsayilan_ozeti_parcasi(tokenlar, parca_baslangic, i))
+            parca_baslangic olsun i + 1
+        değilse:
+            eğer acilis_islemi_mi(token) ise:
+                derinlik olsun derinlik + 1
+            değilse:
+                eğer kapanis_islemi_mi(token) ve derinlik büyük 0 ise:
+                    derinlik olsun derinlik - 1
+        i olsun i + 1
+    döndür varsayilanlar
 
 işlev sinif_ebeveyni(tokenlar, konum):
     parantez_konum olsun deger_konumu(tokenlar, konum + 1, "(")
@@ -183,6 +221,7 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
     eğer tur eşit "IslevTanim" ise:
         sonuc["ad"] = baslik_adi(tokenlar, konum)
         sonuc["parametreler"] = baslik_parametreleri(tokenlar, konum)
+        sonuc["varsayilanlar"] = baslik_varsayilanlari(tokenlar, konum)
     eğer tur eşit "SinifTanim" ise:
         sonuc["ad"] = baslik_adi(tokenlar, konum)
         sonuc["ebeveyn"] = sinif_ebeveyni(tokenlar, konum)
