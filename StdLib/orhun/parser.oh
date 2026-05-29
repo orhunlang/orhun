@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.29"
+surum olsun "0.3.30"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1490,6 +1490,27 @@ işlev dis_islev_hatasi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev islev_imza_hatasi(tokenlar, konum):
+    parantez_token olsun guvenli_token(tokenlar, konum + 2)
+    eğer parantez_token.tur eşit_değil "ISLEM" veya parantez_token.deger eşit_değil "(" ise:
+        döndür "İşlev adından sonra '(' bekleniyor."
+    kapanis olsun ilk_deger_konumu(tokenlar, konum + 3, satir_sonu_indeksi(tokenlar, konum), ")")
+    eğer kapanis küçük 0 ise:
+        döndür "Parametre listesinin sonunda ')' bekleniyor."
+    döndür ""
+
+işlev sinif_miras_hatasi(tokenlar, konum):
+    parantez_token olsun guvenli_token(tokenlar, konum + 2)
+    eğer parantez_token.tur eşit_değil "ISLEM" veya parantez_token.deger eşit_değil "(" ise:
+        döndür ""
+    ebeveyn_token olsun guvenli_token(tokenlar, konum + 3)
+    eğer ebeveyn_token.tur eşit_değil "KIMLIK" ise:
+        döndür "Miras tanımında ebeveyn sınıf adı bekleniyor."
+    kapanis_token olsun guvenli_token(tokenlar, konum + 4)
+    eğer kapanis_token.tur eşit_değil "ISLEM" veya kapanis_token.deger eşit_değil ")" ise:
+        döndür "Miras tanımında ebeveyn sınıfından sonra ')' bekleniyor."
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
@@ -1514,6 +1535,9 @@ işlev baslik_hatasi(tokenlar, konum):
         ad_token olsun guvenli_token(tokenlar, konum + 1)
         eğer ad_token.tur eşit_değil "KIMLIK" ise:
             döndür "'işlev' başlığında işlev adı bekleniyor"
+        imza_hata olsun islev_imza_hatasi(tokenlar, konum)
+        eğer uzunluk(imza_hata) büyük 0 ise:
+            döndür imza_hata
         parametre_hata olsun islev_parametre_sirasi_hatasi(tokenlar, konum)
         eğer uzunluk(parametre_hata) büyük 0 ise:
             döndür parametre_hata
@@ -1523,6 +1547,9 @@ işlev baslik_hatasi(tokenlar, konum):
         ad_token olsun guvenli_token(tokenlar, konum + 1)
         eğer ad_token.tur eşit_değil "KIMLIK" ise:
             döndür "'tip' ifadesinden sonra sınıf adı bekleniyor."
+        miras_hata olsun sinif_miras_hatasi(tokenlar, konum)
+        eğer uzunluk(miras_hata) büyük 0 ise:
+            döndür miras_hata
         eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
             döndür "'tip' başlığından sonra ':' bekleniyor"
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
