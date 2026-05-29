@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.27"
+surum olsun "0.3.28"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1439,11 +1439,38 @@ işlev birincil_ifade_kapanis_hatasi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev eksik_ifade_hatasi(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
+    sonraki olsun guvenli_token(tokenlar, konum + 1)
+
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yazdır" ve satir_sonu_mu(sonraki) ise:
+        döndür "'yazdır' komutundan sonra bir ifade bekleniyor."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "sor" ve satir_sonu_mu(sonraki) ise:
+        döndür "'sor' komutundan sonra bir soru ifadesi bekleniyor."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "ise" ise:
+        döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "kez" ise:
+        döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
+
+    i olsun konum
+    sürece i küçük satir_sonu:
+        simdiki olsun guvenli_token(tokenlar, i)
+        sonraki_token olsun guvenli_token(tokenlar, i + 1)
+        eğer simdiki.tur eşit "ANAHTAR_KELIME" ve simdiki.deger eşit "dahil_et" ve sonraki_token.tur eşit_değil "METIN" ise:
+            eğer i büyük konum ise:
+                döndür "'dahil_et' ifadesinden sonra dosya adı bekleniyor."
+        i olsun i + 1
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
     eğer uzunluk(taninmayan_hata) büyük 0 ise:
         döndür taninmayan_hata
+    eksik_ifade olsun eksik_ifade_hatasi(tokenlar, konum)
+    eğer uzunluk(eksik_ifade) büyük 0 ise:
+        döndür eksik_ifade
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
         eğer değil satirda_anahtar_mi(tokenlar, konum, "ise") ise:
             döndür "'eğer' komutunda koşuldan sonra 'ise' bekleniyor"
