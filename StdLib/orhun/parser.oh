@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.31"
+surum olsun "0.3.32"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1507,6 +1507,45 @@ işlev dis_islev_hatasi(tokenlar, konum):
         döndür "Dış işlev bildiriminde dönüş tipi bekleniyor."
     döndür ""
 
+işlev deneme_yakala_hata_yok(token):
+    döndür {"mesaj": "", "token": token}
+
+işlev deneme_yakala_hata(mesaj, token):
+    döndür {"mesaj": mesaj, "token": token}
+
+işlev deneme_yakala_hatasi(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit_değil "ANAHTAR_KELIME" veya token.deger eşit_değil "deneme" ise:
+        döndür deneme_yakala_hata_yok(token)
+
+    i olsun satir_sonuna_git(tokenlar, konum)
+    derinlik olsun 0
+    sürece i küçük uzunluk(tokenlar):
+        simdiki olsun guvenli_token(tokenlar, i)
+        eğer simdiki.tur eşit "GIRINTI" ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer simdiki.tur eşit "CIKINTI" ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik küçük 0 ise:
+                    derinlik olsun 0
+            değilse:
+                eğer derinlik eşit 0 ise:
+                    eğer simdiki.tur eşit "YENI_SATIR" ise:
+                        i olsun i + 1
+                        devam
+                    eğer simdiki.tur eşit "ANAHTAR_KELIME" ve simdiki.deger eşit "yakala" ise:
+                        hata_degiskeni olsun guvenli_token(tokenlar, i + 1)
+                        eğer hata_degiskeni.tur eşit_değil "KIMLIK" ise:
+                            döndür deneme_yakala_hata("'yakala' ifadesinden sonra hata değişkeni bekleniyor.", hata_degiskeni)
+                        iki_nokta olsun guvenli_token(tokenlar, i + 2)
+                        eğer iki_nokta.tur eşit_değil "ISLEM" veya iki_nokta.deger eşit_değil ":" ise:
+                            döndür deneme_yakala_hata("'yakala' ifadesinden sonra ':' bekleniyor.", iki_nokta)
+                        döndür deneme_yakala_hata_yok(token)
+                    döndür deneme_yakala_hata("'deneme' bloğundan sonra 'yakala' bekleniyor.", simdiki)
+        i olsun i + 1
+    döndür deneme_yakala_hata("'deneme' bloğundan sonra 'yakala' bekleniyor.", guvenli_token(tokenlar, uzunluk(tokenlar) - 1))
+
 işlev islev_imza_hatasi(tokenlar, konum):
     parantez_token olsun guvenli_token(tokenlar, konum + 2)
     eğer parantez_token.tur eşit_değil "ISLEM" veya parantez_token.deger eşit_değil "(" ise:
@@ -1732,6 +1771,9 @@ işlev ozetle_tokenlar(tokenlar):
                             baslik_hata olsun baslik_hatasi(tokenlar, i)
                             eğer uzunluk(baslik_hata) büyük 0 ise:
                                 döndür sonuc_hata(baslik_hata, token)
+                            deneme_hata olsun deneme_yakala_hatasi(tokenlar, i)
+                            eğer uzunluk(deneme_hata.mesaj) büyük 0 ise:
+                                döndür sonuc_hata(deneme_hata.mesaj, deneme_hata.token)
                             tur olsun komut_turu(tokenlar, i)
                             eğer uzunluk(tur) eşit 0 ise:
                                 döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token)
