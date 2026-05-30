@@ -169,7 +169,8 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
     konum_ = kayit;
   }
 
-  if (kontrol(TokenTuru::ANAHTAR_KELIME, "yazdır")) {
+  if (kontrol(TokenTuru::ANAHTAR_KELIME, "yazdır") ||
+      kontrol(TokenTuru::KIMLIK, "yaz")) {
     return parseYazdir();
   }
 
@@ -261,11 +262,18 @@ Parser::parseCokluAtama(std::vector<std::string> hedefler, std::size_t satir,
 }
 
 std::unique_ptr<ASTNode> Parser::parseYazdir() {
-  const OrhunToken token =
-      tuket(TokenTuru::ANAHTAR_KELIME, "yazdır", "'yazdır' komutu bekleniyor.");
+  const OrhunToken token = bak();
+  if ((token.tur == TokenTuru::ANAHTAR_KELIME && token.deger == "yazdır") ||
+      (token.tur == TokenTuru::KIMLIK && token.deger == "yaz")) {
+    ilerle();
+  } else {
+    tuket(TokenTuru::ANAHTAR_KELIME, "yazdır",
+          "'yazdır' komutu bekleniyor.");
+  }
 
   if (kontrol(TokenTuru::YENI_SATIR) || kontrol(TokenTuru::DOSYA_SONU)) {
-    syntaxError(bak(), "'yazdır' komutundan sonra bir ifade bekleniyor.");
+    syntaxError(bak(),
+                "'" + token.deger + "' komutundan sonra bir ifade bekleniyor.");
   }
 
   return std::make_unique<YazdirNode>(parseIfade(), token.satir);

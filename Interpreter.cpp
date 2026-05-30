@@ -3241,6 +3241,7 @@ void Interpreter::gomuluIslevleriYukle() {
     std::cout << metneCevir(args[0]) << '\n';
     return args[0];
   };
+  gomuluIslevler_["yaz"] = gomuluIslevler_["yazdır"];
 
   gomuluIslevler_["sor"] = [this](const std::vector<OrhunDegeri> &args,
                                   std::size_t satir) -> OrhunDegeri {

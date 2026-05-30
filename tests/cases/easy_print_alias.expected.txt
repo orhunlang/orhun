@@ -1,0 +1,3 @@
+Merhaba
+Dünya
+değişken

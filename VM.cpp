@@ -442,6 +442,7 @@ void VM::yerlesikNativesYukle() {
     std::cout << '\n';
     return Value::bos();
   });
+  globaller_["yaz"] = globaller_["yazdir"];
 
   ekleNative("sor", 1, [](VM &vm, const std::vector<Value> &args) -> Value {
     std::cout << vm.metneCevir(args[0]);

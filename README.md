@@ -48,6 +48,8 @@ toward self-hosting.
 ## Example
 
 ```orhun
+yaz "Merhaba Orhun"
+
 tip Selamlayici:
     işlev selam(ad olsun "dünya"):
         döndür "Merhaba, " + ad
@@ -60,6 +62,7 @@ yazdır s.selam("Orhun")
 Expected output:
 
 ```text
+Merhaba Orhun
 Merhaba, dünya
 Merhaba, Orhun
 ```

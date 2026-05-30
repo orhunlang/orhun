@@ -2943,7 +2943,7 @@ void lspYanitYaz(std::ostream &out, const std::string &idToken,
 
 std::string lspTamamlamaSonucuJson() {
   static const std::vector<std::string> anahtarlar = {
-      "yazdır", "olsun",  "eğer",       "ise",   "değilse",  "doğru",
+      "yaz",    "yazdır", "olsun",      "eğer",  "ise",      "değilse", "doğru",
       "yanlış", "eşit",   "eşit_değil", "büyük", "küçük",    "ve",
       "veya",   "değil",  "tekrarla",   "kez",   "sürece",   "sor",
       "işlev",  "döndür", "tip",        "yeni",  "benim",    "ust",

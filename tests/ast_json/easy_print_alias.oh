@@ -1,0 +1,5 @@
+# ast: Yazdir,Yazdir,Atama,Yazdir
+yaz "Merhaba"
+yaz("Dünya")
+yaz olsun "değişken"
+yazdır yaz

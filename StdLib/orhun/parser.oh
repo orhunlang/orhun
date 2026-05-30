@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.35"
+surum olsun "0.3.36"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -365,6 +365,8 @@ işlev satirda_coklu_atama_mi(tokenlar, konum):
 işlev anahtar_komut_turu(deger):
     eğer deger eşit "yazdır" ise:
         döndür "Yazdir"
+    eğer deger eşit "yaz" ise:
+        döndür "Yazdir"
     eğer deger eşit "eğer" ise:
         döndür "Eger"
     eğer deger eşit "tekrarla" ise:
@@ -421,6 +423,8 @@ işlev komut_turu(tokenlar, konum):
             döndür "CokluAtama"
         eğer satirda_atama_mi(tokenlar, konum) ise:
             döndür "Atama"
+        eğer token.deger eşit "yaz" ise:
+            döndür "Yazdir"
         döndür "IfadeKomut"
 
     eğer token.tur eşit "SAYI" veya token.tur eşit "ONDALIK" veya token.tur eşit "METIN" ise:
@@ -1162,7 +1166,7 @@ işlev komut_ifade_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
 
-    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yazdır" ise:
+    eğer (token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yazdır") veya (token.tur eşit "KIMLIK" ve token.deger eşit "yaz" ve değil satirda_atama_mi(tokenlar, konum)) ise:
         döndür ifade_turu(tokenlar, konum + 1, satir_sonu)
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "döndür" ise:
         döndür ifade_turu(tokenlar, konum + 1, satir_sonu)
@@ -1206,7 +1210,7 @@ işlev komut_ifade_ozeti(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
 
-    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yazdır" ise:
+    eğer (token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yazdır") veya (token.tur eşit "KIMLIK" ve token.deger eşit "yaz" ve değil satirda_atama_mi(tokenlar, konum)) ise:
         döndür ifade_ozeti(tokenlar, konum + 1, satir_sonu)
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "döndür" ise:
         döndür ifade_ozeti(tokenlar, konum + 1, satir_sonu)
@@ -1254,6 +1258,8 @@ işlev taninmayan_komut_hatasi(tokenlar, konum):
 
     sonraki olsun guvenli_token(tokenlar, konum + 1)
     eğer satir_sonu_mu(sonraki) ise:
+        döndür ""
+    eğer token.deger eşit "yaz" ise:
         döndür ""
     eğer sonraki.tur eşit "ISLEM" ve (sonraki.deger eşit "(" veya sonraki.deger eşit "." veya sonraki.deger eşit "[" veya sonraki.deger eşit "?") ise:
         döndür ""
@@ -1463,6 +1469,8 @@ işlev eksik_ifade_hatasi(tokenlar, konum):
 
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yazdır" ve satir_sonu_mu(sonraki) ise:
         döndür "'yazdır' komutundan sonra bir ifade bekleniyor."
+    eğer token.tur eşit "KIMLIK" ve token.deger eşit "yaz" ve satir_sonu_mu(sonraki) ise:
+        döndür "'yaz' komutundan sonra bir ifade bekleniyor."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "sor" ve satir_sonu_mu(sonraki) ise:
         döndür "'sor' komutundan sonra bir soru ifadesi bekleniyor."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "döndür" ve satir_sonu_mu(sonraki) ise:

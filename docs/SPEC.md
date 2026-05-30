@@ -142,9 +142,12 @@ a, b olsun [1, 2]
 
 ## Printing
 
-`yazdır` evaluates an expression and writes its text form.
+`yazdır` evaluates an expression and writes its text form. `yaz` is the short
+beginner-friendly command alias; it behaves the same as `yazdır` without making
+`yaz` a reserved word, so `yaz olsun "değer"` is still a normal assignment.
 
 ```orhun
+yaz "Merhaba"
 yazdır "Merhaba"
 yazdır 40 + 2
 ```
@@ -415,8 +418,8 @@ The current prototype summarizes command node kinds, line numbers, primary
 expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
 children, assignment metadata, child block command counts, and recursive child
 block command summaries, then compares them against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 138 successful AST
-fixtures and 61 parser error fixtures. Command metadata covers declaration
+`tests/parser_prototype_smoke.py`. Current coverage includes 139 successful AST
+fixtures and 62 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets,
 function/class/external-function headers, includes, and try/catch error
 variables. Expression metadata covers anonymous function parameters/defaults,

@@ -15,6 +15,7 @@ BUILTINS = {
     "sistem",
     "uzunluk",
     "veritabani",
+    "yaz",
     "yazdır",
 }
 
