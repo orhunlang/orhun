@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.30"
+surum olsun "0.3.31"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1478,16 +1478,33 @@ işlev dis_islev_hatasi(tokenlar, konum):
         döndür "Dış işlev bildiriminde '(' bekleniyor."
 
     satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
+    kapanis olsun -1
     i olsun konum + 4
     sürece i küçük satir_sonu:
         simdiki olsun guvenli_token(tokenlar, i)
         onceki olsun guvenli_token(tokenlar, i - 1)
         sonraki olsun guvenli_token(tokenlar, i + 1)
         eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit ")" ise:
-            döndür ""
-        eğer simdiki.tur eşit "KIMLIK" ve (onceki.tur eşit_değil "ISLEM" veya onceki.deger eşit_değil ":") ve (sonraki.tur eşit_değil "ISLEM" veya sonraki.deger eşit_değil ":") ise:
-            döndür "Dış işlev parametre adından sonra ':' bekleniyor."
-        i olsun i + 1
+            kapanis olsun i
+            i olsun satir_sonu
+        değilse:
+            eğer simdiki.tur eşit "ISLEM" ve (simdiki.deger eşit "-" veya simdiki.deger eşit ">") ise:
+                döndür "Dış işlev parametre listesi kapanırken ')' bekleniyor."
+            eğer simdiki.tur eşit "KIMLIK" ve (onceki.tur eşit_değil "ISLEM" veya onceki.deger eşit_değil ":") ve (sonraki.tur eşit_değil "ISLEM" veya sonraki.deger eşit_değil ":") ise:
+                döndür "Dış işlev parametre adından sonra ':' bekleniyor."
+            eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit ":" ve sonraki.tur eşit_değil "KIMLIK" ise:
+                döndür "Dış işlev parametre tipi bekleniyor (örn: tam, metin, double)."
+            i olsun i + 1
+    eğer kapanis küçük 0 ise:
+        döndür "Dış işlev parametre listesi kapanırken ')' bekleniyor."
+
+    eksi olsun guvenli_token(tokenlar, kapanis + 1)
+    buyuk olsun guvenli_token(tokenlar, kapanis + 2)
+    eğer eksi.tur eşit_değil "ISLEM" veya eksi.deger eşit_değil "-" veya buyuk.tur eşit_değil "ISLEM" veya buyuk.deger eşit_değil ">" ise:
+        döndür "Dış işlev bildiriminde '->' bekleniyor. Bunu mu demek istediniz: 'ise'?"
+    donus olsun guvenli_token(tokenlar, kapanis + 3)
+    eğer donus.tur eşit_değil "KIMLIK" ise:
+        döndür "Dış işlev bildiriminde dönüş tipi bekleniyor."
     döndür ""
 
 işlev islev_imza_hatasi(tokenlar, konum):
