@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.33"
+surum olsun "0.3.34"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1403,6 +1403,12 @@ işlev postfix_ifade_hatasi(tokenlar, konum):
             kapanis olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, "]")
             eğer kapanis küçük 0 ve değil satir_sonu_mu(sonraki) ise:
                 döndür "İndeks erişiminde ']' bekleniyor."
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "?" ise:
+            eğer sonraki.tur eşit_değil "ISLEM" veya sonraki.deger eşit_değil "." ise:
+                döndür "Guvenli erisim operatorunde '?' sonrasinda '.' bekleniyor."
+            alan_token olsun guvenli_token(tokenlar, i + 2)
+            eğer alan_token.tur eşit_değil "KIMLIK" ise:
+                döndür "Guvenli erisimden sonra alan adi bekleniyor."
         eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "." ise:
             eğer sonraki.tur eşit_değil "KIMLIK" ise:
                 döndür "Nokta erişiminden sonra alan adı bekleniyor."
@@ -1421,6 +1427,17 @@ işlev birincil_ifade_kapanis_hatasi(tokenlar, konum):
         onceki olsun guvenli_token(tokenlar, i - 1)
         sonraki olsun guvenli_token(tokenlar, i + 1)
         eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "[" ve onceki.tur eşit_değil "KIMLIK" ise:
+            icin_konum olsun aralikta_deger_konumu(tokenlar, i + 1, satir_sonu, "için")
+            eğer icin_konum büyük 0 veya icin_konum eşit 0 ise:
+                degisken_token olsun guvenli_token(tokenlar, icin_konum + 1)
+                eğer degisken_token.tur eşit_değil "KIMLIK" ise:
+                    döndür "Liste üretecinde döngü değişkeni bekleniyor."
+                icinde_token olsun guvenli_token(tokenlar, icin_konum + 2)
+                eğer icinde_token.tur eşit_değil "ANAHTAR_KELIME" veya icinde_token.deger eşit_değil "içinde" ise:
+                    döndür "Liste üretecinde 'içinde' anahtar kelimesi bekleniyor. Bunu mu demek istediniz: 'ise'?"
+                uretec_kapanis olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, "]")
+                eğer uretec_kapanis küçük 0 ise:
+                    döndür "Liste üretecinin sonunda ']' bekleniyor."
             kapanis olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, "]")
             eğer kapanis küçük 0 ise:
                 döndür "Liste ifadesinin sonunda ']' bekleniyor."
