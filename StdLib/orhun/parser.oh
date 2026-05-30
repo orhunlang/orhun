@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.32"
+surum olsun "0.3.33"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1448,6 +1448,8 @@ işlev eksik_ifade_hatasi(tokenlar, konum):
         döndür "'yazdır' komutundan sonra bir ifade bekleniyor."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "sor" ve satir_sonu_mu(sonraki) ise:
         döndür "'sor' komutundan sonra bir soru ifadesi bekleniyor."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "döndür" ve satir_sonu_mu(sonraki) ise:
+        döndür "'döndür' komutundan sonra bir ifade bekleniyor."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "ise" ise:
         döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "kez" ise:
@@ -1461,6 +1463,33 @@ işlev eksik_ifade_hatasi(tokenlar, konum):
             eğer i büyük konum ise:
                 döndür "'dahil_et' ifadesinden sonra dosya adı bekleniyor."
         i olsun i + 1
+    döndür ""
+
+işlev atama_hatasi(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit_değil "KIMLIK" ve (token.tur eşit_değil "ANAHTAR_KELIME" veya (token.deger eşit_değil "benim" ve token.deger eşit_değil "ust")) ise:
+        döndür ""
+
+    atama_baslangic olsun atama_ifade_baslangici(tokenlar, konum)
+    eğer atama_baslangic küçük 0 ise:
+        döndür ""
+
+    virgul_goruldu olsun yanlış
+    i olsun konum
+    sürece i küçük atama_baslangic:
+        simdiki olsun guvenli_token(tokenlar, i)
+        sonraki olsun guvenli_token(tokenlar, i + 1)
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "," ise:
+            virgul_goruldu olsun doğru
+            eğer sonraki.tur eşit_değil "KIMLIK" ise:
+                döndür "Virgülden sonra çoklu atama hedef adı bekleniyor."
+        i olsun i + 1
+
+    deger_token olsun guvenli_token(tokenlar, atama_baslangic)
+    eğer satir_sonu_mu(deger_token) ise:
+        eğer virgul_goruldu ise:
+            döndür "Çoklu atamadan sonra bir değer bekleniyor."
+        döndür "'olsun' veya '=' atamasından sonra bir değer bekleniyor."
     döndür ""
 
 işlev dis_islev_hatasi(tokenlar, konum):
@@ -1575,6 +1604,9 @@ işlev baslik_hatasi(tokenlar, konum):
     eksik_ifade olsun eksik_ifade_hatasi(tokenlar, konum)
     eğer uzunluk(eksik_ifade) büyük 0 ise:
         döndür eksik_ifade
+    atama_hata olsun atama_hatasi(tokenlar, konum)
+    eğer uzunluk(atama_hata) büyük 0 ise:
+        döndür atama_hata
     dis_hata olsun dis_islev_hatasi(tokenlar, konum)
     eğer uzunluk(dis_hata) büyük 0 ise:
         döndür dis_hata
