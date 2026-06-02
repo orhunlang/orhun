@@ -11,6 +11,7 @@ BUILTINS = {
     "gorev",
     "json",
     "metin",
+    "oku",
     "regex",
     "sistem",
     "uzunluk",

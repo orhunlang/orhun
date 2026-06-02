@@ -158,6 +158,16 @@ Current display behavior:
 - Booleans print as `1` and `0` for interpreter/VM parity.
 - Lists and dictionaries print in structural form.
 
+## Input
+
+`sor` prompts the user and returns one input line. `oku` is the beginner-friendly
+function alias for the same behavior.
+
+```orhun
+ad olsun oku("Adın? ")
+yaz "Merhaba, " + ad
+```
+
 ## Control Flow
 
 ### If

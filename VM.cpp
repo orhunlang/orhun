@@ -451,6 +451,7 @@ void VM::yerlesikNativesYukle() {
     std::getline(std::cin, giris);
     return vm.yeniString(giris);
   });
+  globaller_["oku"] = globaller_["sor"];
 
   ekleNative("karekok", 1, [](VM &vm, const std::vector<Value> &args) -> Value {
     return Value::sayi(std::sqrt(vm.sayiyaCevir(args[0], "karekok")));

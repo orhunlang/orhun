@@ -1,0 +1,3 @@
+# ast: Atama,Yazdir
+ad olsun oku("Ad? ")
+yaz "Merhaba, " + ad

@@ -3258,6 +3258,7 @@ void Interpreter::gomuluIslevleriYukle() {
     }
     return OrhunDegeri(std::move(giris));
   };
+  gomuluIslevler_["oku"] = gomuluIslevler_["sor"];
 }
 
 void Interpreter::yerlesikModulleriYukle() {

@@ -98,6 +98,13 @@ Run a source file:
 orhun examples/merhaba.oh
 ```
 
+Read one line of input:
+
+```orhun
+ad olsun oku("Adın? ")
+yaz "Merhaba, " + ad
+```
+
 Strict VM mode:
 
 ```bash
