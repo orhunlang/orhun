@@ -493,7 +493,8 @@ orhun lsp --stdio
 
 The LSP completion provider returns language keywords plus common built-in
 functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
-and `dosya`.
+and `dosya`. Signature help also includes common built-in function signatures,
+including `aralik([baslangic], bitis, [adim])`.
 
 Stable channel defaults:
 

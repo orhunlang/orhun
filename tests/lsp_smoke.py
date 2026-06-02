@@ -59,6 +59,7 @@ def main() -> int:
             "    dondur a + b",
             "x olsun topla(1, 2)",
             "z olsun x",
+            "r olsun aralik(1, 5)",
             "",
         ]
     )
@@ -112,7 +113,7 @@ def main() -> int:
                     "method": "textDocument/signatureHelp",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 2, "character": 17},
+                        "position": {"line": 4, "character": 18},
                     },
                 }
             ),
@@ -135,7 +136,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 4, "character": 0},
+                        "position": {"line": 5, "character": 0},
                     },
                 }
             ),
@@ -224,6 +225,8 @@ def main() -> int:
     signatures = sig_resp["result"].get("signatures", [])
     if not signatures:
         raise SystemExit("LSP smoke failed: signatureHelp signatures empty")
+    if signatures[0].get("label") != "aralik([baslangic], bitis, [adim])":
+        raise SystemExit("LSP smoke failed: builtin signature label mismatch")
 
     refs_resp = next((m for m in messages if m.get("id") == 5), None)
     if refs_resp is None or "result" not in refs_resp:

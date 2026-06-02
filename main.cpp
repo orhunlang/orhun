@@ -3594,6 +3594,48 @@ bool lspIslevImzasiCoz(const std::string &trim, const std::string &ad,
   return true;
 }
 
+bool lspYerlesikImzasiCoz(const std::string &ad, std::string *etiket,
+                          std::vector<std::string> *parametreler) {
+  struct Imza {
+    const char *ad;
+    const char *etiket;
+    std::vector<std::string> parametreler;
+  };
+
+  static const std::vector<Imza> imzalar = {
+      {"yaz", "yaz(deger)", {"deger"}},
+      {"yazdır", "yazdır(deger)", {"deger"}},
+      {"sor", "sor(soru)", {"soru"}},
+      {"oku", "oku(soru)", {"soru"}},
+      {"aralik", "aralik([baslangic], bitis, [adim])",
+       {"[baslangic]", "bitis", "[adim]"}},
+      {"aralık", "aralık([baslangic], bitis, [adim])",
+       {"[baslangic]", "bitis", "[adim]"}},
+      {"ilk", "ilk(liste, [yedek])", {"liste", "[yedek]"}},
+      {"son", "son(liste, [yedek])", {"liste", "[yedek]"}},
+      {"bos_mu", "bos_mu(deger)", {"deger"}},
+      {"boş_mu", "boş_mu(deger)", {"deger"}},
+      {"dolu_mu", "dolu_mu(deger)", {"deger"}},
+      {"uzunluk", "uzunluk(deger)", {"deger"}},
+      {"metne_cevir", "metne_cevir(deger)", {"deger"}},
+      {"sayiya_cevir", "sayiya_cevir(metin)", {"metin"}},
+      {"bekle", "bekle(saniye)", {"saniye"}}};
+
+  for (const Imza &imza : imzalar) {
+    if (ad != imza.ad) {
+      continue;
+    }
+    if (etiket != nullptr) {
+      *etiket = imza.etiket;
+    }
+    if (parametreler != nullptr) {
+      *parametreler = imza.parametreler;
+    }
+    return true;
+  }
+  return false;
+}
+
 std::string lspHoverJson(const std::string &metin, int satirNo, int karakterNo) {
   const auto satirlar = metniSatirlaraBol(metin);
   const auto konum = lspKelimeKonumuBul(satirlar, satirNo, karakterNo);
@@ -3713,11 +3755,16 @@ std::string lspSignatureHelpJson(const std::string &metin, int satirNo,
 
   std::string etiket = *cagriAdi + "(...)";
   std::vector<std::string> parametreler;
+  bool imzaBulundu = false;
   for (const std::string &satir : satirlar) {
     const std::string trim = soldanBoslukKirp(sagaBoslukKirp(satir));
     if (lspIslevImzasiCoz(trim, *cagriAdi, &etiket, &parametreler)) {
+      imzaBulundu = true;
       break;
     }
+  }
+  if (!imzaBulundu) {
+    lspYerlesikImzasiCoz(*cagriAdi, &etiket, &parametreler);
   }
 
   if (aktifParametre < 0) {
