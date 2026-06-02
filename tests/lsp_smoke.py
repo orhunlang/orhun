@@ -60,6 +60,7 @@ def main() -> int:
             "x olsun topla(1, 2)",
             "z olsun x",
             "r olsun aralik(1, 5)",
+            "n olsun numaralandir([5, 6], 1)",
             "",
         ]
     )
@@ -121,6 +122,17 @@ def main() -> int:
                 {
                     "jsonrpc": "2.0",
                     "id": 5,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 5, "character": 28},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 6,
                     "method": "textDocument/references",
                     "params": {
                         "textDocument": {"uri": uri},
@@ -132,18 +144,18 @@ def main() -> int:
             encode_message(
                 {
                     "jsonrpc": "2.0",
-                    "id": 6,
+                    "id": 7,
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 5, "character": 0},
+                        "position": {"line": 6, "character": 0},
                     },
                 }
             ),
             encode_message(
                 {
                     "jsonrpc": "2.0",
-                    "id": 7,
+                    "id": 8,
                     "method": "textDocument/rename",
                     "params": {
                         "textDocument": {"uri": uri},
@@ -173,12 +185,12 @@ def main() -> int:
             encode_message(
                 {
                     "jsonrpc": "2.0",
-                    "id": 8,
+                    "id": 9,
                     "method": "textDocument/diagnostic",
                     "params": {"textDocument": {"uri": uri}},
                 }
             ),
-            encode_message({"jsonrpc": "2.0", "id": 9, "method": "shutdown", "params": {}}),
+            encode_message({"jsonrpc": "2.0", "id": 10, "method": "shutdown", "params": {}}),
             encode_message({"jsonrpc": "2.0", "method": "exit", "params": {}}),
         ]
     )
@@ -228,22 +240,42 @@ def main() -> int:
     if signatures[0].get("label") != "aralik([baslangic], bitis, [adim])":
         raise SystemExit("LSP smoke failed: builtin signature label mismatch")
 
-    refs_resp = next((m for m in messages if m.get("id") == 5), None)
+    stdlib_sig_resp = next((m for m in messages if m.get("id") == 5), None)
+    if stdlib_sig_resp is None or "result" not in stdlib_sig_resp:
+        raise SystemExit("LSP smoke failed: stdlib signatureHelp response missing")
+    stdlib_signatures = stdlib_sig_resp["result"].get("signatures", [])
+    if not stdlib_signatures:
+        raise SystemExit("LSP smoke failed: stdlib signatureHelp signatures empty")
+    if stdlib_signatures[0].get("label") != "numaralandir(liste, [baslangic])":
+        raise SystemExit("LSP smoke failed: stdlib signature label mismatch")
+
+    refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
         raise SystemExit("LSP smoke failed: references response missing")
     if not isinstance(refs_resp["result"], list) or not refs_resp["result"]:
         raise SystemExit("LSP smoke failed: references result empty")
 
-    completion_resp = next((m for m in messages if m.get("id") == 6), None)
+    completion_resp = next((m for m in messages if m.get("id") == 7), None)
     if completion_resp is None or "result" not in completion_resp:
         raise SystemExit("LSP smoke failed: completion response missing")
     completion_items = completion_resp["result"].get("items", [])
     labels = {str(item.get("label", "")) for item in completion_items}
-    for label in ("yaz", "oku", "aralik", "aralık", "ilk", "son", "dolu_mu"):
+    for label in (
+        "yaz",
+        "oku",
+        "aralik",
+        "aralık",
+        "ilk",
+        "son",
+        "dolu_mu",
+        "numaralandir",
+        "eslestir",
+        "eşleştir",
+    ):
         if label not in labels:
             raise SystemExit(f"LSP smoke failed: completion missing {label}")
 
-    rename_resp = next((m for m in messages if m.get("id") == 7), None)
+    rename_resp = next((m for m in messages if m.get("id") == 8), None)
     if rename_resp is None or "result" not in rename_resp:
         raise SystemExit("LSP smoke failed: rename response missing")
     changes = rename_resp["result"].get("changes", {})
@@ -253,7 +285,7 @@ def main() -> int:
     if uri_changes[0].get("newText") != "sonuc":
         raise SystemExit("LSP smoke failed: rename newText mismatch")
 
-    diag_resp = next((m for m in messages if m.get("id") == 8), None)
+    diag_resp = next((m for m in messages if m.get("id") == 9), None)
     if diag_resp is None or "result" not in diag_resp:
         raise SystemExit("LSP smoke failed: diagnostic response missing")
     items = diag_resp["result"].get("items", [])
