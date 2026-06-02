@@ -1,0 +1,7 @@
+yaz "Orhun kolay başlar"
+
+sayilar olsun aralik(1, 6)
+yaz sayilar
+yaz ilk(sayilar)
+yaz son(sayilar)
+yaz dolu_mu(sayilar)
