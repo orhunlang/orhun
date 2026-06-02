@@ -51,7 +51,7 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
-Durum: aktif; parser prototipi 139 basarili AST fixture ve 62 hata fixture
+Durum: aktif; parser prototipi 142 basarili AST fixture ve 62 hata fixture
 seviyesine tasindi. Recursive block summary parity ve recursive expression
 child parity basladi. `orhun/parser.oh` 0.3.36 atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini, islev basligi varsayilan arguman

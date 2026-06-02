@@ -455,7 +455,7 @@ The current prototype summarizes command node kinds, line numbers, primary
 expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
 children, assignment metadata, child block command counts, and recursive child
 block command summaries, then compares them against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 139 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 142 successful AST
 fixtures and 62 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets,
 function/class/external-function headers, includes, and try/catch error
