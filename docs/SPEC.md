@@ -373,6 +373,12 @@ paket_yardimci olsun dahil_et "orhun/paket.oh"
 lexer olsun dahil_et "orhun/lexer.oh"
 ```
 
+`orhun/koleksiyon.oh` includes beginner-friendly list helpers such as
+`haritala`, `filtrele`, `katla`, `benzersiz`, `numaralandir`, and
+`eslestir`/`eşleştir`. `numaralandir(liste, [baslangic])` returns
+`[sira, deger]` pairs, and `eslestir(sol, sag)` returns pairs up to the
+shorter list.
+
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.
 
