@@ -526,6 +526,8 @@ Stable channel defaults:
   The `ast` root is a `Program` node with nested command and expression nodes.
   `Atama` and `CokluAtama` nodes include `bildirim`: `true` for the `olsun`
   form and `false` for `=` compatibility assignment.
+  Orhun's parser prototype parity also checks function-call and new-object
+  expression argument counts through `arguman_sayisi`.
   Parser AST JSON fixtures live in `tests/ast_json/` and are checked through
   `tests/ast_json_smoke.py`.
 

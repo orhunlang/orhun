@@ -643,6 +643,21 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
             f"{source_name} parallel command count missing: {expression}",
         )
         summary["komut_sayisi"] = command_count
+    if summary.get("tur") in {"YeniNesne", "IslevCagri"}:
+        args = expression.get("argumanlar")
+        if args is None:
+            argument_count = expression.get("arguman_sayisi")
+        else:
+            require(
+                isinstance(args, list),
+                f"{source_name} call/new expression args invalid: {expression}",
+            )
+            argument_count = len(args)
+        require(
+            isinstance(argument_count, int),
+            f"{source_name} call/new expression arg count missing: {expression}",
+        )
+        summary["arguman_sayisi"] = argument_count
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
