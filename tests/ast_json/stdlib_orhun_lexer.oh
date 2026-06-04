@@ -1,9 +1,11 @@
 lexer olsun dahil_et "orhun/lexer.oh"
 
 kaynak olsun "işlev ana():\n    puan olsun 10.5\n    yazdır \"merhaba\"\n"
-tokenlar olsun lexer.tokenlestir(kaynak)
+sonuc olsun lexer.ozetle(kaynak)
+tokenlar olsun sonuc.tokenlar
 
 yazdır lexer.surum
+yazdır sonuc.hata_sayisi
 yazdır uzunluk(tokenlar)
 yazdır metin.birlestir(lexer.turleri(tokenlar), "|")
 yazdır tokenlar[0].tur + ":" + tokenlar[0].deger
@@ -26,8 +28,10 @@ yazdır crlf[4].tur + ":" + crlf[4].deger
 
 girinti_hata olsun lexer.tokenlestir("eğer doğru ise:\n  yazdır 1\n yazdır 2\n")
 yazdır lexer.hata_var_mi(girinti_hata)
+yazdır lexer.hata_sayisi(girinti_hata)
 yazdır metin.icerir(lexer.ilk_hata(girinti_hata).deger, "girinti")
 
-metin_hata olsun lexer.tokenlestir("yazdır \"acik\n")
-yazdır lexer.hata_var_mi(metin_hata)
-yazdır metin.icerir(lexer.ilk_hata(metin_hata).deger, "metin")
+metin_hata olsun lexer.ozetle("yazdır \"acik\n")
+yazdır metin_hata.hata_sayisi
+yazdır lexer.hata_var_mi(metin_hata.tokenlar)
+yazdır metin.icerir(lexer.ilk_hata(metin_hata.tokenlar).deger, "metin")

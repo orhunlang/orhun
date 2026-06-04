@@ -29,7 +29,8 @@ paket_yardimci olsun dahil_et "orhun/paket.oh"
 yazdır paket_yardimci.coz_ve_dogrula("{\"ad\":\"ornek\",\"surum\":\"0.1.0\"}").ok
 
 lexer olsun dahil_et "orhun/lexer.oh"
-yazdır lexer.tokenlestir("yazdır \"Merhaba\"\n")[0].tur
+sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")
+yazdır sonuc.tokenlar[0].tur
 ```
 
 Module lookup checks the requested path first, then searches the standard

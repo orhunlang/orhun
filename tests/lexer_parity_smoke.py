@@ -69,8 +69,8 @@ def compare_file(binary: Path, repo: Path, source_file: Path, include_position: 
         driver_file.write_text(
             'lexer olsun dahil_et "orhun/lexer.oh"\n'
             f'kaynak olsun dosya.oku("{orhun_string(source_path)}")\n'
-            "tokenlar olsun lexer.tokenlestir(kaynak)\n"
-            "yazdır json.yaz(tokenlar)\n",
+            "sonuc olsun lexer.ozetle(kaynak)\n"
+            "yazdır json.yaz(sonuc)\n",
             encoding="utf-8",
             newline="\n",
         )
@@ -80,8 +80,16 @@ def compare_file(binary: Path, repo: Path, source_file: Path, include_position: 
             orhun_proc.returncode == 0,
             f"Orhun lexer driver failed:\nSTDOUT:\n{orhun_proc.stdout}\nSTDERR:\n{orhun_proc.stderr}",
         )
-        orhun_tokens = parse_last_json(orhun_proc.stdout)
-        require(isinstance(orhun_tokens, list), "Orhun lexer output is not a list")
+        orhun_payload = parse_last_json(orhun_proc.stdout)
+        require(isinstance(orhun_payload, dict), "Orhun lexer output is not an object")
+        require(
+            orhun_payload.get("hata_sayisi") == cxx_payload.get("hata_sayisi"),
+            f"Lexer error count mismatch: {source_file}\n"
+            f"C++:   {cxx_payload.get('hata_sayisi')}\n"
+            f"Orhun: {orhun_payload.get('hata_sayisi')}",
+        )
+        orhun_tokens = orhun_payload.get("tokenlar")
+        require(isinstance(orhun_tokens, list), "Orhun lexer payload missing tokenlar list")
 
         left = normalized(cxx_tokens, include_position)
         right = normalized(orhun_tokens, include_position)
