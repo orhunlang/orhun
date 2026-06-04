@@ -644,6 +644,20 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
         )
         summary["komut_sayisi"] = command_count
     if summary.get("tur") in {"YeniNesne", "IslevCagri"}:
+        if summary.get("tur") == "YeniNesne":
+            class_name = expression.get("sinif")
+            require(
+                isinstance(class_name, str),
+                f"{source_name} new-object expression missing class name: {expression}",
+            )
+            summary["sinif"] = class_name
+        if summary.get("tur") == "IslevCagri":
+            call_name = expression.get("ad")
+            require(
+                isinstance(call_name, str),
+                f"{source_name} call expression missing name: {expression}",
+            )
+            summary["ad"] = call_name
         args = expression.get("argumanlar")
         if args is None:
             argument_count = expression.get("arguman_sayisi")

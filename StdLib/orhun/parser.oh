@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.39"
+surum olsun "0.3.40"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1165,8 +1165,10 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
     eğer tur eşit "ParalelYap" ise:
         sonuc["komut_sayisi"] = paralel_yap_komut_sayisi(tokenlar, baslangic, son)
     eğer tur eşit "YeniNesne" ise:
+        sonuc["sinif"] = yeni_sinif_adi(tokenlar, baslangic, son)
         sonuc["arguman_sayisi"] = uzunluk(yeni_nesne_altlari(tokenlar, baslangic, son))
     eğer tur eşit "IslevCagri" ise:
+        sonuc["ad"] = cagri_adi(tokenlar, baslangic, son)
         sonuc["arguman_sayisi"] = uzunluk(islev_cagri_altlari(tokenlar, baslangic, son))
     döndür sonuc
 
