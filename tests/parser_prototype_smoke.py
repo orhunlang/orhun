@@ -629,6 +629,20 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
         )
         summary["baslangic_var"] = start_present
         summary["bitis_var"] = end_present
+    if summary.get("tur") in {"AlanErisim", "GuvenliAlanErisim", "BenimErisim"}:
+        field_name = expression.get("alan")
+        require(
+            isinstance(field_name, str),
+            f"{source_name} field access expression missing field name: {expression}",
+        )
+        summary["alan"] = field_name
+    if summary.get("tur") == "UstErisim":
+        method_name = expression.get("metod")
+        require(
+            isinstance(method_name, str),
+            f"{source_name} super access expression missing method name: {expression}",
+        )
+        summary["metod"] = method_name
     if summary.get("tur") == "ParalelYap":
         body = expression.get("govde")
         if body is None:
