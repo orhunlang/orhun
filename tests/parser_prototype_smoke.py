@@ -169,6 +169,7 @@ def cxx_node_summary(command: dict) -> dict:
     }
     add_assignment_metadata(summary, command, "C++")
     add_definition_metadata(summary, command, "C++")
+    add_control_metadata(summary, command, "C++")
     return summary
 
 
@@ -182,6 +183,7 @@ def cxx_shallow_node(command: dict) -> dict:
     }
     add_assignment_metadata(summary, command, "C++")
     add_definition_metadata(summary, command, "C++")
+    add_control_metadata(summary, command, "C++")
     return summary
 
 
@@ -212,6 +214,25 @@ def add_assignment_metadata(summary: dict, command: dict, source_name: str) -> N
             f"{source_name} multi-assignment node missing target names: {command}",
         )
         summary["hedefler"] = targets
+
+
+def expression_metadata_summary(expression: object, source_name: str) -> dict:
+    require(
+        isinstance(expression, dict),
+        f"{source_name} control expression summary missing: {expression}",
+    )
+    if "tur" in expression and "altlar" in expression:
+        return orhun_expression_payload(expression, Path(source_name))
+    return cxx_expression_summary(expression)
+
+
+def add_control_metadata(summary: dict, command: dict, source_name: str) -> None:
+    if summary.get("tur") in {"Eger", "Surece"}:
+        expression = command.get("kosul") or command.get("kosul_ozeti")
+        summary["kosul_ozeti"] = expression_metadata_summary(expression, source_name)
+    if summary.get("tur") == "Tekrarla":
+        expression = command.get("kac_kez") or command.get("kac_kez_ozeti")
+        summary["kac_kez_ozeti"] = expression_metadata_summary(expression, source_name)
 
 
 def add_definition_metadata(summary: dict, command: dict, source_name: str) -> None:
@@ -518,6 +539,7 @@ def orhun_node_summary(command: dict, source_file: Path) -> dict:
     }
     add_assignment_metadata(summary, command, f"prototype {source_file}")
     add_definition_metadata(summary, command, f"prototype {source_file}")
+    add_control_metadata(summary, command, f"prototype {source_file}")
     return summary
 
 
@@ -651,6 +673,7 @@ def orhun_shallow_node(command: dict, source_file: Path) -> dict:
     }
     add_assignment_metadata(summary, command, f"prototype {source_file}")
     add_definition_metadata(summary, command, f"prototype {source_file}")
+    add_control_metadata(summary, command, f"prototype {source_file}")
     return summary
 
 

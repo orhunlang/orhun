@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.37"
+surum olsun "0.3.38"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -259,6 +259,10 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
         sonuc["dosya"] = dahil_et_dosyasi(tokenlar, konum, satir_sonu_indeksi(tokenlar, konum))
     eğer tur eşit "DenemeYakala" ise:
         sonuc["hata_degiskeni"] = yakala_degiskeni(tokenlar, konum)
+    eğer tur eşit "Eger" veya tur eşit "Surece" ise:
+        sonuc["kosul_ozeti"] = ifade_ozeti
+    eğer tur eşit "Tekrarla" ise:
+        sonuc["kac_kez_ozeti"] = ifade_ozeti
     döndür sonuc
 
 işlev blok_tasiyan_komut_mu(tur):

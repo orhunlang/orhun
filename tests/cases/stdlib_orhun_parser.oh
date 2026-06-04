@@ -42,6 +42,10 @@ yazdır deneme_kontrol.komutlar[0].hata_degiskeni
 kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)
+yazdır json.yaz(kontrol.komutlar[0].kosul_ozeti)
+
+tekrar_kontrol olsun parser.ozetle("tekrarla 3 kez:\n    yazdır \"a\"\n")
+yazdır json.yaz(tekrar_kontrol.komutlar[0].kac_kez_ozeti)
 
 zincir_kontrol olsun parser.ozetle("eğer x büyük 20 ise:\n    yazdır \"buyuk\"\ndeğilse eğer x büyük 5 ise:\n    yazdır \"orta\"\ndeğilse:\n    yazdır \"kucuk\"\n")
 yazdır json.yaz(zincir_kontrol.komutlar[0].blok_sayilari)
