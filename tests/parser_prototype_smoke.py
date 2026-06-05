@@ -214,6 +214,13 @@ def add_assignment_metadata(summary: dict, command: dict, source_name: str) -> N
             f"{source_name} multi-assignment node missing target names: {command}",
         )
         summary["hedefler"] = targets
+        summary["hedef_sayisi"] = metadata_count(
+            command,
+            "hedef_sayisi",
+            len(targets),
+            source_name,
+            "multi-assignment node",
+        )
 
 
 def expression_metadata_summary(expression: object, source_name: str) -> dict:

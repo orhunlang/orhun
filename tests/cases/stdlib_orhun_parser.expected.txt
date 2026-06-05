@@ -1,4 +1,4 @@
-0.3.44
+0.3.45
 1
 3
 IslevTanim|Atama|Yazdir
@@ -12,6 +12,7 @@ sonuc
 CokluAtama|Yazdir
 1
 ["a","b"]
+2
 0
 sayi
 Kedi

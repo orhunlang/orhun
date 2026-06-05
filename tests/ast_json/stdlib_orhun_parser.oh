@@ -19,6 +19,7 @@ coklu olsun parser.ozetle("a, b olsun [1, 2]\nyazdır a\n")
 yazdır metin.birlestir(parser.turleri(coklu), "|")
 yazdır coklu.komutlar[0].bildirim
 yazdır json.yaz(coklu.komutlar[0].hedefler)
+yazdır coklu.komutlar[0].hedef_sayisi
 
 esit_kontrol olsun parser.ozetle("sayi = 10\nyazdır sayi\n")
 yazdır esit_kontrol.komutlar[0].bildirim
