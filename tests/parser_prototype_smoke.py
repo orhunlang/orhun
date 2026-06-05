@@ -601,6 +601,10 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(payload.get("ok") is True, f"prototype returned error for {source_file}: {payload}")
     commands = payload.get("komutlar")
     require(isinstance(commands, list), f"prototype payload missing komutlar for {source_file}")
+    require(
+        payload.get("komut_sayisi") == len(commands),
+        f"prototype command count mismatch for {source_file}: {payload}",
+    )
     return [orhun_node_summary(command, source_file) for command in commands]
 
 
@@ -986,6 +990,10 @@ def main() -> int:
         if should_fail:
             require(cxx_payload.get("durum") == "fail", f"C++ payload should fail for {case}")
             require(proto_payload.get("ok") is False, f"prototype should fail for {case}")
+            require(
+                proto_payload.get("komut_sayisi") == 0,
+                f"prototype error command count mismatch for {case}: {proto_payload}",
+            )
             validate_error_parity(cxx_payload, proto_payload, case)
             error_count += 1
             continue
