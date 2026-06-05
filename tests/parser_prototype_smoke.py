@@ -606,6 +606,21 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
             f"{source_name} list comprehension expression missing condition presence: {expression}",
         )
         summary["kosul_var"] = condition_present
+    if summary.get("tur") == "Liste":
+        items = expression.get("ogeler")
+        if items is None:
+            item_count = expression.get("oge_sayisi")
+        else:
+            require(
+                isinstance(items, list),
+                f"{source_name} list expression items invalid: {expression}",
+            )
+            item_count = len(items)
+        require(
+            isinstance(item_count, int),
+            f"{source_name} list expression missing item count: {expression}",
+        )
+        summary["oge_sayisi"] = item_count
     if summary.get("tur") == "Sozluk":
         items = expression.get("ogeler")
         if items is None:
@@ -615,6 +630,12 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
                 f"{source_name} dictionary expression missing keys: {expression}",
             )
             summary["anahtarlar"] = keys
+            item_count = expression.get("oge_sayisi")
+            require(
+                isinstance(item_count, int),
+                f"{source_name} dictionary expression missing item count: {expression}",
+            )
+            summary["oge_sayisi"] = item_count
             return
         require(
             isinstance(items, list),
@@ -625,6 +646,7 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
             for item in items
             if isinstance(item, dict)
         ]
+        summary["oge_sayisi"] = len(items)
     if summary.get("tur") == "DilimErisim":
         if "baslangic_var" in expression and "bitis_var" in expression:
             start_present = expression.get("baslangic_var")
