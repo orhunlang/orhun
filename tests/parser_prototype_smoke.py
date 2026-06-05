@@ -859,6 +859,9 @@ def empty_coverage() -> dict[str, int]:
         "class_parent_false": 0,
         "external_function_definitions": 0,
         "anonymous_function_expressions": 0,
+        "block_count_zero": 0,
+        "block_count_one": 0,
+        "block_count_multi": 0,
         "assignment_nodes": 0,
         "multi_assignment_nodes": 0,
     }
@@ -890,6 +893,15 @@ def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> N
 
 
 def collect_node_coverage(node: dict, coverage: dict[str, int]) -> None:
+    block_count = node.get("blok_sayisi")
+    if isinstance(block_count, int):
+        if block_count == 0:
+            coverage["block_count_zero"] += 1
+        elif block_count == 1:
+            coverage["block_count_one"] += 1
+        elif block_count > 1:
+            coverage["block_count_multi"] += 1
+
     if node.get("tur") == "IslevTanim":
         coverage["function_definitions"] += 1
     elif node.get("tur") == "SinifTanim":
@@ -995,6 +1007,10 @@ def main() -> int:
         f"{coverage['class_definitions']}/"
         f"{coverage['class_parent_true']}/"
         f"{coverage['class_parent_false']}, "
+        "blocks zero/one/multi: "
+        f"{coverage['block_count_zero']}/"
+        f"{coverage['block_count_one']}/"
+        f"{coverage['block_count_multi']}, "
         "assignments single/multi: "
         f"{coverage['assignment_nodes']}/{coverage['multi_assignment_nodes']})."
     )
