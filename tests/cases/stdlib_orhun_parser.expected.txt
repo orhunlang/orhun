@@ -32,6 +32,7 @@ hata
 [{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"},{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","tur":"IkiliIslem"}]
 x
 1
+0
 ["ad","surum"]
 [{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"0","op":"","tur":"Sayi"}]
 [{"altlar":[],"ayrinti":"sozluk","op":"","tur":"Kimlik"}]
