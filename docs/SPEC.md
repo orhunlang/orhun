@@ -452,15 +452,16 @@ lexer.
 
 Lexer parity fixtures live in `tests/lexer_parity/` and are compared against the
 C++ lexer through `tests/lexer_parity_smoke.py`. The same smoke can sweep the
-runtime case suite with `--fixtures tests/cases --tokens-only` to guard token
-type/value parity across broader language examples.
+runtime case suite with `--fixtures tests/cases` to guard token type, value,
+line, and column parity across broader language examples.
 Fixtures that intentionally exercise lexer errors use `# parity: allow-errors`;
 for those cases the smoke compares error counts and token shape while leaving
 the exact diagnostic text free for clearer Turkish wording.
-Fixtures with non-ASCII source text currently use `# parity: tokens-only`.
-UTF-8 token values are still compared, but column parity is kept out of those
-fixtures until the Orhun-source lexer and C++ lexer agree on character-based
-position accounting.
+Fixtures with non-ASCII source text compare token values and character-based
+line/column positions. The Orhun-source lexer keeps byte offsets internally but
+uses UTF-8 code-point counts when advancing diagnostic columns.
+The runtime primitive `metin.utf8_uzunluk(metin)` exposes the same code-point
+counting rule to Orhun-source tooling.
 
 ## Orhun-Source Parser Prototype
 

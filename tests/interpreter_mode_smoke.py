@@ -18,35 +18,38 @@ def main() -> int:
     binary = Path(args.binary)
     require(binary.exists(), f"Binary not found: {binary}")
 
-    source = repo / "tests" / "cases" / "assignment_equals_scope.oh"
-    expected_path = repo / "tests" / "cases" / "assignment_equals_scope.expected.txt"
-    require(source.exists(), f"Interpreter fixture not found: {source}")
-    require(expected_path.exists(), f"Expected output not found: {expected_path}")
+    fixtures = ("assignment_equals_scope", "utf8_check")
+    for fixture in fixtures:
+        source = repo / "tests" / "cases" / f"{fixture}.oh"
+        expected_path = repo / "tests" / "cases" / f"{fixture}.expected.txt"
+        require(source.exists(), f"Interpreter fixture not found: {source}")
+        require(expected_path.exists(), f"Expected output not found: {expected_path}")
 
-    proc = subprocess.run(
-        [str(binary), "yorumla", str(source)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    combined = (proc.stdout + proc.stderr).replace("\r\n", "\n").rstrip("\n")
-    expected = (
-        expected_path.read_text(encoding="utf-8")
-        .replace("\r\n", "\n")
-        .rstrip("\n")
-    )
-    require(
-        proc.returncode == 0,
-        f"yorumla exited with {proc.returncode}: {combined}",
-    )
-    require(
-        combined == expected,
-        f"yorumla output changed: expected={expected!r} actual={combined!r}",
-    )
+        proc = subprocess.run(
+            [str(binary), "yorumla", str(source)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        combined = (proc.stdout + proc.stderr).replace("\r\n", "\n").rstrip("\n")
+        expected = (
+            expected_path.read_text(encoding="utf-8")
+            .replace("\r\n", "\n")
+            .rstrip("\n")
+        )
+        require(
+            proc.returncode == 0,
+            f"yorumla exited with {proc.returncode} for {source}: {combined}",
+        )
+        require(
+            combined == expected,
+            f"yorumla output changed for {source}: "
+            f"expected={expected!r} actual={combined!r}",
+        )
 
-    print("Interpreter mode smoke passed.")
+    print(f"Interpreter mode smoke passed ({len(fixtures)} fixtures).")
     return 0
 
 

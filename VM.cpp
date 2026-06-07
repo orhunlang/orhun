@@ -934,6 +934,11 @@ void VM::yerlesikNativesYukle() {
       "metin.uzunluk", 1, [](VM &vm, const std::vector<Value> &a) -> Value {
         return Value::sayi(static_cast<double>(vm.metneCevir(a[0]).size()));
       });
+  metin->alanlar["utf8_uzunluk"] = nativeOlustur(
+      "metin.utf8_uzunluk", 1, [](VM &vm, const std::vector<Value> &a) -> Value {
+        return Value::sayi(static_cast<double>(
+            utf8KodNoktalarinaCevir(vm.metneCevir(a[0])).size()));
+      });
   metin->alanlar["icerir"] = nativeOlustur(
       "metin.icerir", 2, [](VM &vm, const std::vector<Value> &a) -> Value {
         const std::string kaynak = vm.metneCevir(a[0]);

@@ -90,14 +90,13 @@ def main() -> int:
         ("lexer position policy", [py, "tests/lexer_position_policy_smoke.py"]),
         ("lexer parity fixtures", [py, "tests/lexer_parity_smoke.py", str(binary)]),
         (
-            "lexer token sweep",
+            "lexer position sweep",
             [
                 py,
                 "tests/lexer_parity_smoke.py",
                 str(binary),
                 "--fixtures",
                 "tests/cases",
-                "--tokens-only",
             ],
         ),
         ("AST JSON", [py, "tests/ast_json_smoke.py", str(binary)]),

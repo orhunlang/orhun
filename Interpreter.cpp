@@ -3395,6 +3395,16 @@ void Interpreter::yerlesikModulleriYukle() {
   gomuluIslevler_["metin.parcala"] = gomuluIslevler_["parcala"];
   gomuluIslevler_["metin.birlestir"] = gomuluIslevler_["birlestir"];
   gomuluIslevler_["metin.uzunluk"] = gomuluIslevler_["metin_uzunluk"];
+  gomuluIslevler_["metin.utf8_uzunluk"] =
+      [this](const std::vector<OrhunDegeri> &args,
+             std::size_t satir) -> OrhunDegeri {
+    if (args.size() != 1 ||
+        !std::holds_alternative<std::string>(args[0].veri)) {
+      hataFirlat(satir, "metin.utf8_uzunluk(metin) tek metin argumani alir.");
+    }
+    return OrhunDegeri(static_cast<int>(
+        utf8KodNoktalarinaCevir(std::get<std::string>(args[0].veri)).size()));
+  };
   gomuluIslevler_["metin.icerir"] = gomuluIslevler_["icerir"];
   gomuluIslevler_["dosya.oku"] = gomuluIslevler_["dosya_oku"];
   gomuluIslevler_["dosya.yaz"] = gomuluIslevler_["dosyaya_yaz"];
@@ -3464,6 +3474,7 @@ void Interpreter::yerlesikModulleriYukle() {
   metin["parcala"] = OrhunDegeri("__islev_ref__:metin.parcala");
   metin["birlestir"] = OrhunDegeri("__islev_ref__:metin.birlestir");
   metin["uzunluk"] = OrhunDegeri("__islev_ref__:metin.uzunluk");
+  metin["utf8_uzunluk"] = OrhunDegeri("__islev_ref__:metin.utf8_uzunluk");
   metin["icerir"] = OrhunDegeri("__islev_ref__:metin.icerir");
   globalHafiza_["metin"] = OrhunDegeri(std::move(metin));
 

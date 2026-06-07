@@ -1,10 +1,10 @@
 # Orhun ile yazilmis lexer prototipi.
 #
 # Bu modul self-hosting yolunda C++ lexer davranisini Orhun kaynaklarinda
-# ifade etmeye baslar. Metin islemleri simdilik VM'in bayt tabanli string
-# modelini kullanir; token degerleri yine kaynak metindeki UTF-8'i korur.
+# ifade etmeye baslar. Kaynak konumlari bayt indeksleriyle, sutunlar ise
+# UTF-8 kod noktasi sayilariyla izlenir.
 
-surum olsun "0.2.1"
+surum olsun "0.3.0"
 satir_donusu olsun json.coz("\"\\r\"")
 
 anahtarlar olsun []
@@ -102,14 +102,12 @@ işlev anahtar_mi(deger):
 
 işlev yorum_atla(kaynak, konum, sutun):
     i olsun konum
-    s olsun sutun
     sürece değil son_mi(kaynak, i):
         k olsun karakter(kaynak, i)
         eğer satir_sonu_mi(k) ise:
-            döndür {"konum": i, "sutun": s}
+            döndür {"konum": i, "sutun": sutun + metin.utf8_uzunluk(kaynak[konum:i])}
         i olsun i + 1
-        s olsun s + 1
-    döndür {"konum": i, "sutun": s}
+    döndür {"konum": i, "sutun": sutun + metin.utf8_uzunluk(kaynak[konum:i])}
 
 işlev son_eleman(liste):
     döndür liste[uzunluk(liste) - 1]
@@ -133,7 +131,6 @@ işlev kimlik_oku(kaynak, konum, satir, sutun):
         eğer kimlik_karakteri_mi(k) ise:
             deger olsun deger + k
             i olsun i + 1
-            sutun olsun sutun + 1
         değilse:
             kır
 
@@ -141,7 +138,7 @@ işlev kimlik_oku(kaynak, konum, satir, sutun):
     eğer anahtar_mi(deger) ise:
         tur olsun "ANAHTAR_KELIME"
 
-    döndür {"token": token(tur, deger, satir, baslangic_sutun), "konum": i, "sutun": sutun}
+    döndür {"token": token(tur, deger, satir, baslangic_sutun), "konum": i, "sutun": baslangic_sutun + metin.utf8_uzunluk(kaynak[konum:i])}
 
 işlev sayi_oku(kaynak, konum, satir, sutun):
     baslangic_sutun olsun sutun
@@ -175,23 +172,20 @@ işlev sayi_oku(kaynak, konum, satir, sutun):
 işlev metin_oku(kaynak, konum, satir, sutun):
     baslangic_sutun olsun sutun
     i olsun konum + 1
-    sutun olsun sutun + 1
     deger olsun ""
 
     sürece değil son_mi(kaynak, i):
         k olsun karakter(kaynak, i)
         i olsun i + 1
-        sutun olsun sutun + 1
 
         eğer k eşit "\"" ise:
-            döndür {"token": token("METIN", deger, satir, baslangic_sutun), "konum": i, "sutun": sutun}
+            döndür {"token": token("METIN", deger, satir, baslangic_sutun), "konum": i, "sutun": baslangic_sutun + metin.utf8_uzunluk(kaynak[konum:i])}
 
         eğer k eşit "\\" ise:
             eğer son_mi(kaynak, i) ise:
-                döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": sutun}
+                döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": baslangic_sutun + metin.utf8_uzunluk(kaynak[konum:i])}
             kacis olsun karakter(kaynak, i)
             i olsun i + 1
-            sutun olsun sutun + 1
             eğer kacis eşit "n" ise:
                 deger olsun deger + "\n"
             değilse:
@@ -201,10 +195,10 @@ işlev metin_oku(kaynak, konum, satir, sutun):
                     deger olsun deger + kacis
         değilse:
             eğer satir_sonu_mi(k) ise:
-                döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": sutun}
+                döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": baslangic_sutun + metin.utf8_uzunluk(kaynak[konum:i])}
             deger olsun deger + k
 
-    döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": sutun}
+    döndür {"token": token("HATA", "Kapanmayan metin sabiti", satir, baslangic_sutun), "konum": i, "sutun": baslangic_sutun + metin.utf8_uzunluk(kaynak[konum:i])}
 
 işlev tokenlestir(kaynak):
     tokenlar olsun []

@@ -9,6 +9,7 @@ s3 olsun "ÇŞĞİÖÜçşğüöı" # 12 karakter
 yazdır s1 + ": " + uzunluk(s1)
 yazdır s2 + ": " + uzunluk(s2)
 yazdır s3 + ": " + uzunluk(s3)
+yazdır "UTF-8 kod noktaları: " + metin.utf8_uzunluk(s3)
 
 yazdır "--- Dilimleme (Slicing) Testi ---"
 # UTF-8 slicing: Bayt degil karakter bazli olmali

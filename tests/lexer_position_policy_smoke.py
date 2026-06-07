@@ -28,14 +28,17 @@ def main() -> int:
         if has_non_ascii(text):
             header = first_line(text)
             require(
-                "parity: tokens-only" in header,
-                f"{fixture} contains non-ASCII text and must stay tokens-only "
-                "until UTF-8 column parity is explicitly implemented",
+                "parity: tokens-only" not in header,
+                f"{fixture} contains non-ASCII text and must compare UTF-8 "
+                "line/column positions",
             )
             non_ascii.append(fixture.name)
 
     require(non_ascii, "Expected at least one non-ASCII lexer parity fixture")
-    print(f"Lexer position policy smoke passed ({len(non_ascii)} non-ASCII fixtures).")
+    print(
+        "Lexer position policy smoke passed "
+        f"({len(non_ascii)} non-ASCII fixtures with position parity)."
+    )
     return 0
 
 
