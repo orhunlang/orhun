@@ -895,6 +895,9 @@ def empty_coverage() -> dict[str, int]:
         "dict_expressions": 0,
         "expression_line_zero": 0,
         "expression_line_nonzero": 0,
+        "expression_children_zero": 0,
+        "expression_children_one": 0,
+        "expression_children_multi": 0,
         "function_definitions": 0,
         "class_definitions": 0,
         "class_parent_true": 0,
@@ -921,6 +924,15 @@ def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> N
             coverage["expression_line_zero"] += 1
         elif line > 0:
             coverage["expression_line_nonzero"] += 1
+
+    child_count = expression.get("alt_sayisi")
+    if isinstance(child_count, int):
+        if child_count == 0:
+            coverage["expression_children_zero"] += 1
+        elif child_count == 1:
+            coverage["expression_children_one"] += 1
+        elif child_count > 1:
+            coverage["expression_children_multi"] += 1
 
     if expression.get("tur") == "ListeUretec":
         if expression.get("kosul_var") is True:
@@ -1064,6 +1076,10 @@ def main() -> int:
         "expression lines zero/nonzero: "
         f"{coverage['expression_line_zero']}/"
         f"{coverage['expression_line_nonzero']}, "
+        "expression children zero/one/multi: "
+        f"{coverage['expression_children_zero']}/"
+        f"{coverage['expression_children_one']}/"
+        f"{coverage['expression_children_multi']}, "
         "signatures function/external/anonymous: "
         f"{coverage['function_definitions']}/"
         f"{coverage['external_function_definitions']}/"
