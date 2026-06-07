@@ -101,11 +101,17 @@ Basari olcutu:
 
 ## Faz 3: Orhun Ile Bytecode Derleyici
 
+Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
+`orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
+hazirlandi. Siradaki adim, Orhun kaynakli derleyici prototipinin temel sabit ve
+`yazdir` komutlarini ayni komut ozetine derlemesidir.
+
 Hedefler:
 
 - Orhun kaynakli derleyici bytecode uretmeye baslar.
 - C++ VM ayni bytecode'u calistirir.
 - C++ compiler ve Orhun compiler ciktisi fixture bazinda karsilastirilir.
+- C++ compiler bytecode akisi `orhun baytkod --json` ile makine-okur kalir.
 
 Basari olcutu:
 

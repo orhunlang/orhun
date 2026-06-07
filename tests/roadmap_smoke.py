@@ -101,6 +101,7 @@ def main() -> int:
         ),
         ("AST JSON", [py, "tests/ast_json_smoke.py", str(binary)]),
         ("parser prototype", [py, "tests/parser_prototype_smoke.py", str(binary)]),
+        ("bytecode JSON", [py, "tests/bytecode_json_smoke.py", str(binary)]),
     ]
 
     failures = []

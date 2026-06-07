@@ -150,3 +150,11 @@
 - Önceki davranışta bazı döndürülen lambda'lar dış yerel değişken yerine aynı
   adlı global değere düşebiliyordu. Yeni davranışta en yakın dış yerel bağ
   kullanılır.
+
+## 14. Self-hosting: `baytkod --json`
+- `orhun baytkod <dosya.oh> --json`, C++ derleyici çıktısını artifact
+  oluşturmadan çözümlenmiş JSON olarak verir.
+- Başarılı çıktıda komutlar, sabitler, kaynak satırları ve sayımlar bulunur.
+- Derleme hatalarında komut `1` ile çıkar, `durum: "fail"` döndürür ve
+  `bytecode` alanını `null` yapar.
+- İngilizce `bytecode` komutu uyumluluk takma adıdır.

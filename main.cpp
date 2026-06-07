@@ -576,6 +576,159 @@ std::string metinDizisiJson(const std::vector<std::string> &degerler) {
   return ss.str();
 }
 
+std::string opCodeAdi(OpCode op) {
+  switch (op) {
+  case OpCode::OP_SABIT: return "OP_SABIT";
+  case OpCode::OP_BOS: return "OP_BOS";
+  case OpCode::OP_DOGRU: return "OP_DOGRU";
+  case OpCode::OP_YANLIS: return "OP_YANLIS";
+  case OpCode::OP_POP: return "OP_POP";
+  case OpCode::OP_KOPYA: return "OP_KOPYA";
+  case OpCode::OP_GET_LOCAL: return "OP_GET_LOCAL";
+  case OpCode::OP_SET_LOCAL: return "OP_SET_LOCAL";
+  case OpCode::OP_DEFINE_LOCAL: return "OP_DEFINE_LOCAL";
+  case OpCode::OP_GET_GLOBAL: return "OP_GET_GLOBAL";
+  case OpCode::OP_SET_GLOBAL: return "OP_SET_GLOBAL";
+  case OpCode::OP_ALAN_AL: return "OP_ALAN_AL";
+  case OpCode::OP_ALAN_YAZ: return "OP_ALAN_YAZ";
+  case OpCode::OP_METOD_YAZ: return "OP_METOD_YAZ";
+  case OpCode::OP_INDEKS_AL: return "OP_INDEKS_AL";
+  case OpCode::OP_INDEKS_YAZ: return "OP_INDEKS_YAZ";
+  case OpCode::OP_UZUNLUK: return "OP_UZUNLUK";
+  case OpCode::OP_LISTE_OLUSTUR: return "OP_LISTE_OLUSTUR";
+  case OpCode::OP_LISTE_PUSH: return "OP_LISTE_PUSH";
+  case OpCode::OP_LISTE_REZERVE: return "OP_LISTE_REZERVE";
+  case OpCode::OP_SOZLUK_OLUSTUR: return "OP_SOZLUK_OLUSTUR";
+  case OpCode::OP_ISLEV_OLUSTUR: return "OP_ISLEV_OLUSTUR";
+  case OpCode::OP_CAGIR: return "OP_CAGIR";
+  case OpCode::OP_SINIF: return "OP_SINIF";
+  case OpCode::OP_MIRAS_AL: return "OP_MIRAS_AL";
+  case OpCode::OP_TOPLA: return "OP_TOPLA";
+  case OpCode::OP_CIKAR: return "OP_CIKAR";
+  case OpCode::OP_CARP: return "OP_CARP";
+  case OpCode::OP_BOL: return "OP_BOL";
+  case OpCode::OP_MOD: return "OP_MOD";
+  case OpCode::OP_NEGATE: return "OP_NEGATE";
+  case OpCode::OP_NOT: return "OP_NOT";
+  case OpCode::OP_ESIT: return "OP_ESIT";
+  case OpCode::OP_BUYUK: return "OP_BUYUK";
+  case OpCode::OP_KUCUK: return "OP_KUCUK";
+  case OpCode::OP_VE: return "OP_VE";
+  case OpCode::OP_VEYA: return "OP_VEYA";
+  case OpCode::OP_YAZDIR: return "OP_YAZDIR";
+  case OpCode::OP_ATLA: return "OP_ATLA";
+  case OpCode::OP_ATLA_EGER_YANLIS: return "OP_ATLA_EGER_YANLIS";
+  case OpCode::OP_DONGU: return "OP_DONGU";
+  case OpCode::OP_TRY_BASLA: return "OP_TRY_BASLA";
+  case OpCode::OP_TRY_BITIR: return "OP_TRY_BITIR";
+  case OpCode::OP_DON: return "OP_DON";
+  case OpCode::OP_NOP: return "OP_NOP";
+  case OpCode::OP_GUVENLI_ALAN_AL: return "OP_GUVENLI_ALAN_AL";
+  }
+  return "OP_BILINMEYEN";
+}
+
+std::uint16_t bytecodeU16(const BytecodeChunk &chunk, std::size_t ip) {
+  if (ip + 1 >= chunk.kod.size()) {
+    throw std::runtime_error("Bozuk bytecode: U16 operand eksik.");
+  }
+  return static_cast<std::uint16_t>(
+      (static_cast<std::uint16_t>(chunk.kod[ip]) << 8) |
+      static_cast<std::uint16_t>(chunk.kod[ip + 1]));
+}
+
+std::size_t bytecodeKomutUzunlugu(const BytecodeChunk &chunk, std::size_t ip) {
+  if (ip >= chunk.kod.size()) {
+    return 0;
+  }
+  const OpCode op = static_cast<OpCode>(chunk.kod[ip]);
+  switch (op) {
+  case OpCode::OP_SABIT:
+  case OpCode::OP_GET_LOCAL:
+  case OpCode::OP_SET_LOCAL:
+  case OpCode::OP_DEFINE_LOCAL:
+  case OpCode::OP_GET_GLOBAL:
+  case OpCode::OP_SET_GLOBAL:
+  case OpCode::OP_ALAN_AL:
+  case OpCode::OP_GUVENLI_ALAN_AL:
+  case OpCode::OP_ALAN_YAZ:
+  case OpCode::OP_METOD_YAZ:
+  case OpCode::OP_LISTE_OLUSTUR:
+  case OpCode::OP_SOZLUK_OLUSTUR:
+  case OpCode::OP_CAGIR:
+  case OpCode::OP_SINIF:
+  case OpCode::OP_ATLA:
+  case OpCode::OP_ATLA_EGER_YANLIS:
+  case OpCode::OP_DONGU:
+  case OpCode::OP_TRY_BASLA:
+    return 3;
+  case OpCode::OP_ISLEV_OLUSTUR: {
+    if (ip + 14 >= chunk.kod.size()) {
+      throw std::runtime_error("Bozuk bytecode: islev operandlari eksik.");
+    }
+    const std::uint16_t localAdSayisi = bytecodeU16(chunk, ip + 13);
+    return 15 + static_cast<std::size_t>(localAdSayisi) * 4;
+  }
+  default:
+    return 1;
+  }
+}
+
+std::string bytecodeSabitlerJson(const BytecodeChunk &chunk) {
+  std::ostringstream ss;
+  ss << std::setprecision(17) << "[";
+  for (std::size_t i = 0; i < chunk.sabitler.size(); ++i) {
+    if (i > 0) {
+      ss << ",";
+    }
+    const SabitDeger &sabit = chunk.sabitler[i];
+    if (std::holds_alternative<std::monostate>(sabit.veri)) {
+      ss << "{\"tur\":\"bos\"}";
+    } else if (const auto *sayi = std::get_if<double>(&sabit.veri)) {
+      ss << "{\"tur\":\"sayi\",\"deger\":" << *sayi << "}";
+    } else if (const auto *metin = std::get_if<std::string>(&sabit.veri)) {
+      ss << "{\"tur\":\"metin\",\"deger\":\"" << jsonKacis(*metin)
+         << "\"}";
+    } else if (const auto *mantik = std::get_if<bool>(&sabit.veri)) {
+      ss << "{\"tur\":\"mantik\",\"deger\":"
+         << (*mantik ? "true" : "false") << "}";
+    }
+  }
+  ss << "]";
+  return ss.str();
+}
+
+std::string bytecodeKomutlarJson(const BytecodeChunk &chunk,
+                                 std::size_t *komutSayisi = nullptr) {
+  std::ostringstream ss;
+  ss << "[";
+  std::size_t ip = 0;
+  std::size_t sayi = 0;
+  while (ip < chunk.kod.size()) {
+    const OpCode op = static_cast<OpCode>(chunk.kod[ip]);
+    const std::size_t uzunluk = bytecodeKomutUzunlugu(chunk, ip);
+    if (uzunluk == 0 || ip + uzunluk > chunk.kod.size()) {
+      throw std::runtime_error("Bozuk bytecode: komut uzunlugu gecersiz.");
+    }
+    if (sayi > 0) {
+      ss << ",";
+    }
+    ss << "{\"ip\":" << ip << ",\"op\":\"" << opCodeAdi(op)
+       << "\",\"satir\":" << chunk.satirlar.at(ip);
+    if (uzunluk == 3) {
+      ss << ",\"operand\":" << bytecodeU16(chunk, ip + 1);
+    }
+    ss << "}";
+    ++sayi;
+    ip += uzunluk;
+  }
+  ss << "]";
+  if (komutSayisi != nullptr) {
+    *komutSayisi = sayi;
+  }
+  return ss.str();
+}
+
 void astJsonBaslat(std::ostringstream &ss, const ASTNode *dugum,
                    const std::string &tur) {
   ss << "{\"tur\":\"" << tur << "\",\"satir\":" << dugum->satir();
@@ -894,6 +1047,46 @@ int komutParse(const std::string &dosyaYolu, bool jsonCikti) {
               << "\"hata\":{\"mesaj\":\"" << jsonKacis(ex.what())
               << "\"},"
               << "\"ast\":null"
+              << "}\n";
+    return 1;
+  }
+}
+
+int komutBytecode(const std::string &dosyaYolu, bool jsonCikti) {
+  if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
+    throw std::runtime_error("Hata: baytkod komutu icin .oh dosyasi bekleniyor.");
+  }
+
+  try {
+    const BytecodeChunk chunk = bytecodeDerle(dosyaOku(dosyaYolu));
+    std::size_t komutSayisi = 0;
+    const std::string komutlar = bytecodeKomutlarJson(chunk, &komutSayisi);
+    if (jsonCikti) {
+      std::cout << "{"
+                << "\"dosya\":\"" << jsonKacis(dosyaYolu) << "\","
+                << "\"durum\":\"ok\","
+                << "\"hata_sayisi\":0,"
+                << "\"bytecode\":{\"kod_boyutu\":" << chunk.kod.size() << ","
+                << "\"komut_sayisi\":" << komutSayisi << ","
+                << "\"sabit_sayisi\":" << chunk.sabitler.size() << ","
+                << "\"komutlar\":" << komutlar << ","
+                << "\"sabitler\":" << bytecodeSabitlerJson(chunk) << "}}\n";
+    } else {
+      std::cout << "Bytecode komut sayisi: " << komutSayisi << "\n";
+      std::cout << "Sabit sayisi: " << chunk.sabitler.size() << "\n";
+      std::cout << komutlar << "\n";
+    }
+    return 0;
+  } catch (const std::exception &ex) {
+    if (!jsonCikti) {
+      throw;
+    }
+    std::cout << "{"
+              << "\"dosya\":\"" << jsonKacis(dosyaYolu) << "\","
+              << "\"durum\":\"fail\","
+              << "\"hata_sayisi\":1,"
+              << "\"hata\":{\"mesaj\":\"" << jsonKacis(ex.what()) << "\"},"
+              << "\"bytecode\":null"
               << "}\n";
     return 1;
   }
@@ -4346,7 +4539,8 @@ int main(int argc, char *argv[]) {
 
     auto dahiliKomutMu = [](const std::string &deger) {
       return deger == "fmt" || deger == "lex" || deger == "tokenler" ||
-             deger == "parse" || deger == "ast" ||
+             deger == "parse" || deger == "ast" || deger == "baytkod" ||
+             deger == "bytecode" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -4395,6 +4589,24 @@ int main(int argc, char *argv[]) {
             "Hata: parse secenekleri yalnizca '--json' olabilir.");
       }
       return komutParse(argv[2], jsonCikti);
+    }
+
+    if (komut == "baytkod" || komut == "bytecode") {
+      if (argc < 3) {
+        throw std::runtime_error(
+            "Hata: baytkod komutu icin dosya adi bekleniyor.");
+      }
+      bool jsonCikti = false;
+      for (int i = 3; i < argc; ++i) {
+        const std::string secenek = argv[i];
+        if (secenek == "--json") {
+          jsonCikti = true;
+          continue;
+        }
+        throw std::runtime_error(
+            "Hata: baytkod secenekleri yalnizca '--json' olabilir.");
+      }
+      return komutBytecode(argv[2], jsonCikti);
     }
 
     if (komut == "fmt") {

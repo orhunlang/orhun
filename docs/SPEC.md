@@ -516,6 +516,7 @@ orhun fmt dosya.oh
 orhun lint dosya.oh
 orhun lex dosya.oh --json
 orhun parse dosya.oh --json
+orhun baytkod dosya.oh --json
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 ```
@@ -549,6 +550,13 @@ Stable channel defaults:
   `arguman_sayisi`.
   Parser AST JSON fixtures live in `tests/ast_json/` and are checked through
   `tests/ast_json_smoke.py`.
+- `baytkod --json` exposes the C++ compiler output as a decoded, machine-readable
+  bytecode contract for self-hosting parity checks. Its successful payload
+  contains bytecode size, instruction and constant counts, decoded instructions,
+  source lines, operands, and primitive constants. Compiler errors return exit
+  code `1`, set `durum` to `fail`, and leave `bytecode` as `null`. The English
+  `bytecode` command is a compatibility alias. This is an inspection and parity
+  surface; it does not write build artifacts.
 
 ## Compatibility Rules
 
