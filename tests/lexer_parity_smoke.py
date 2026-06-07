@@ -126,6 +126,14 @@ def compare_file(
         )
         orhun_tokens = orhun_payload.get("tokenlar")
         require(isinstance(orhun_tokens, list), "Orhun lexer payload missing tokenlar list")
+        require(
+            orhun_payload.get("token_sayisi") == len(orhun_tokens),
+            f"Orhun lexer token count mismatch: {source_file}",
+        )
+        require(
+            orhun_payload.get("token_sayisi") == len(cxx_tokens),
+            f"C++ / Orhun lexer token count mismatch: {source_file}",
+        )
 
         left = normalized(cxx_tokens, include_position, include_error_value=not allow_errors)
         right = normalized(orhun_tokens, include_position, include_error_value=not allow_errors)

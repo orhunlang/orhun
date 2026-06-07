@@ -6,6 +6,7 @@ tokenlar olsun sonuc.tokenlar
 
 yazdır lexer.surum
 yazdır sonuc.hata_sayisi
+yazdır sonuc.token_sayisi
 yazdır uzunluk(tokenlar)
 yazdır metin.birlestir(lexer.turleri(tokenlar), "|")
 yazdır tokenlar[0].tur + ":" + tokenlar[0].deger
@@ -33,5 +34,6 @@ yazdır metin.icerir(lexer.ilk_hata(girinti_hata).deger, "girinti")
 
 metin_hata olsun lexer.ozetle("yazdır \"acik\n")
 yazdır metin_hata.hata_sayisi
+yazdır metin_hata.token_sayisi
 yazdır lexer.hata_var_mi(metin_hata.tokenlar)
 yazdır metin.icerir(lexer.ilk_hata(metin_hata.tokenlar).deger, "metin")

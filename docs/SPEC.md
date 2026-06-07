@@ -443,7 +443,7 @@ tokenlar olsun sonuc.tokenlar
 ```
 
 Each token is a dictionary with `tur`, `deger`, `satir`, and `sutun` fields.
-`ozetle(kaynak)` returns a dictionary with `hata_sayisi` and `tokenlar`,
+`ozetle(kaynak)` returns a dictionary with `hata_sayisi`, `token_sayisi`, and `tokenlar`,
 matching the C++ `lex --json` health shape used by parity tests.
 The current prototype recognizes keywords, identifiers, numbers, decimals,
 strings, one-character operators, indentation, LF newlines, end-of-file, and

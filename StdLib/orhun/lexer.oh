@@ -4,7 +4,7 @@
 # ifade etmeye baslar. Metin islemleri simdilik VM'in bayt tabanli string
 # modelini kullanir; token degerleri yine kaynak metindeki UTF-8'i korur.
 
-surum olsun "0.2.0"
+surum olsun "0.2.1"
 satir_donusu olsun json.coz("\"\\r\"")
 
 anahtarlar olsun []
@@ -346,4 +346,4 @@ işlev hata_var_mi(tokenlar):
 
 işlev ozetle(kaynak):
     tokenlar olsun tokenlestir(kaynak)
-    döndür {"hata_sayisi": hata_sayisi(tokenlar), "tokenlar": tokenlar}
+    döndür {"hata_sayisi": hata_sayisi(tokenlar), "token_sayisi": uzunluk(tokenlar), "tokenlar": tokenlar}

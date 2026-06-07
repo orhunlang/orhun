@@ -51,8 +51,8 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
-Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.2.0 ile `hata_sayisi` ve
-`tokenlar` payload'i ureten `ozetle` giris noktasini sagliyor. Lexer parity
+Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.2.1 ile `hata_sayisi`,
+`token_sayisi` ve `tokenlar` payload'i ureten `ozetle` giris noktasini sagliyor. Lexer parity
 7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
 seviyesine tasindi; non-ASCII fixture'lar UTF-8 sutun parity tamamlanana kadar
 `tokens-only` politikasi ile korunuyor. Parser prototipi 142 basarili AST
