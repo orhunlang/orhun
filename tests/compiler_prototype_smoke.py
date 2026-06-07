@@ -153,6 +153,13 @@ PARITY_CASES = {
         "    döndür [x * x için x içinde sayilar eğer x büyük 1]\n\n"
         "yazdır kareler([1, 2, 3])\n"
     ),
+    "external_function": (
+        'dış_işlev lstrlenA "kernel32.dll" (metin: string) -> int\n'
+        'yazdır lstrlenA("Orhun")\n'
+    ),
+    "external_function_two_params": (
+        'dış_işlev topla "ornek.dll" (a: int, b: int) -> int\n'
+    ),
 }
 
 

@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.17.0"
+surum olsun "0.18.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -657,6 +657,20 @@ işlev komut_derle(durum, komut):
         islev_komut_ekle(durum, komut.satir, ad_sabit, komut.ad, giris, min_arity, komut.parametre_sayisi, islev_yerelleri)
         global_sabit olsun sabit_ekle(durum, "metin", komut.ad)
         operandli_komut_ekle(durum, "OP_SET_GLOBAL", komut.satir, global_sabit)
+        komut_ekle(durum, "OP_POP", komut.satir)
+        döndür 0
+
+    eğer komut.tur eşit "DisIslevTanim" ise:
+        cagrilan_ad_yukle(durum, "ffi_dis_islev_tanimla", komut.satir)
+        sabit_deger_yaz(durum, "metin", komut.ad, komut.satir)
+        sabit_deger_yaz(durum, "metin", komut.kutuphane, komut.satir)
+        sabit_deger_yaz(durum, "metin", komut.donus_tipi, komut.satir)
+        i olsun 0
+        sürece i küçük uzunluk(komut.parametre_tipleri):
+            sabit_deger_yaz(durum, "metin", komut.parametre_tipleri[i], komut.satir)
+            i olsun i + 1
+        operandli_komut_ekle(durum, "OP_LISTE_OLUSTUR", komut.satir, uzunluk(komut.parametre_tipleri))
+        operandli_komut_ekle(durum, "OP_CAGIR", komut.satir, 4)
         komut_ekle(durum, "OP_POP", komut.satir)
         döndür 0
 

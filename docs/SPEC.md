@@ -538,6 +538,9 @@ future work.
 Filtered and unfiltered list comprehensions are covered by compiler parity,
 including deterministic temporary names, the unfiltered reserve optimization,
 and function-local temporary metadata.
+External function declarations are covered by compiler parity and lower to the
+existing `ffi_dis_islev_tanimla` policy surface with their library, return type,
+and parameter type list.
 `tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
 source lines, operands, constant-pool entries, and aggregate counts against the
 C++ compiler. Unsupported constructs return an explicit error instead of
