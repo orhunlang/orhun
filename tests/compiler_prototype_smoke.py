@@ -75,6 +75,45 @@ PARITY_CASES = {
     ),
     "constant_while_false": 'sürece yanlış:\n    yazdır "olmaz"\n',
     "constant_repeat_zero": 'tekrarla 0 kez:\n    yazdır "olmaz"\n',
+    "field_assignment": (
+        'ayar olsun {"ad": "eski"}\nayar.ad olsun "Orhun"\nyazdır ayar.ad\n'
+    ),
+    "index_assignment": (
+        "liste olsun [1, 2]\nliste[0] olsun 9\nyazdır liste[0]\n"
+    ),
+    "slice_bounds": (
+        "liste olsun [10, 20, 30]\nyazdır liste[1:3]\n"
+        "yazdır liste[:2]\nyazdır liste[1:]\n"
+    ),
+    "multi_assignment": "a, b olsun [1, 2]\nyazdır a + b\n",
+    "function_multi_assignment": (
+        "işlev ayir():\n    a, b olsun [1, 2]\n"
+        "    döndür a + b\n\nyazdır ayir()\n"
+    ),
+    "dotted_call": 'yazdır metin.birlestir(["a", "b"], "-")\n',
+    "include_assignment": (
+        'temel olsun dahil_et "orhun/temel.oh"\n'
+        "yazdır temel.ilk([1, 2], 0)\n"
+    ),
+    "include_command": 'dahil_et "orhun/temel.oh"\n',
+    "try_catch": (
+        'deneme:\n    yazdır "ok"\nyakala hata:\n    yazdır hata\n'
+    ),
+    "function_try_catch": (
+        'işlev dene():\n    deneme:\n        yazdır "ok"\n'
+        "    yakala hata:\n        döndür hata\n"
+        '    döndür "tamam"\n\nyazdır dene()\n'
+    ),
+    "new_object": "nesne olsun yeni Kutu(3)\nyazdır yeni Kutu(1, 2)\n",
+    "prompt": 'yazdır sor "Ad?"\n',
+    "prompt_command": 'sor "Ad?"\n',
+    "while_break_continue": (
+        "x olsun 0\nsürece x küçük 3:\n    x olsun x + 1\n"
+        "    eğer x eşit 2 ise:\n        devam\n"
+        "    eğer x eşit 3 ise:\n        kır\n    yazdır x\n"
+    ),
+    "repeat_continue": 'tekrarla 3 kez:\n    yazdır "a"\n    devam\n',
+    "repeat_break": "tekrarla 3 kez:\n    kır\n",
 }
 
 

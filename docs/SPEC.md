@@ -521,6 +521,16 @@ Direct literal number, string, boolean, and unary expressions follow the C++
 compiler's initial constant-folding rules.
 Constant-truthiness branches and loops follow the C++ compiler's initial
 dead-code elimination behavior.
+Field/index assignments, slice reads, and global/local multiple assignments are
+covered by compiler parity.
+Dotted module/function calls and expression/command forms of `dahil_et` are
+covered by compiler parity.
+`deneme/yakala` control flow and global/local caught-error bindings are covered
+by compiler parity.
+`yeni` object construction and expression/command forms of `sor` are covered by
+compiler parity.
+Nested loop contexts and `kır`/`devam` jump patching are covered by compiler
+parity.
 `tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
 source lines, operands, constant-pool entries, and aggregate counts against the
 C++ compiler. Unsupported constructs return an explicit error instead of

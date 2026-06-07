@@ -23,7 +23,7 @@ These percentages are planning estimates, not promises.
 | Working experimental language / MVP | 55-60% | Orhun already has a lexer, parser, interpreter, bytecode compiler, VM, stdlib surface, package/security flows, tests, and tooling. |
 | 1.0 stable language | 35-40% | Needs a stable spec, compatibility policy, release binaries, cleaner docs, stronger package flow, and hardened performance/security gates. |
 | 2.1.0 production-ready product bar | 20-25% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
-| Full self-hosting / independent compiler path | ~25% | Orhun lexer/parser prototypes and a growing bytecode compiler subset are tested against C++; broad compiler/runtime replacement remains. |
+| Full self-hosting / independent compiler path | ~27% | Orhun lexer/parser prototypes and a growing bytecode compiler subset are tested against C++; broad compiler/runtime replacement remains. |
 
 ## What Is Already Real
 
