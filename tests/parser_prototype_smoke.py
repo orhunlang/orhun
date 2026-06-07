@@ -421,19 +421,21 @@ def cxx_command_expression_summary(command: dict) -> dict:
 
 
 def empty_expression_summary() -> dict:
-    return {"tur": "", "satir": 0, "op": "", "ayrinti": "", "altlar": []}
+    return {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
 
 
 def cxx_expression_summary(expression: dict) -> dict:
     kind = expression.get("tur")
     if not isinstance(kind, str):
         return empty_expression_summary()
+    children = cxx_expression_children(expression)
     summary = {
         "tur": kind,
         "satir": expression.get("satir"),
         "op": expression.get("op", ""),
         "ayrinti": cxx_expression_detail(expression),
-        "altlar": cxx_expression_children(expression),
+        "alt_sayisi": len(children),
+        "altlar": children,
     }
     add_expression_metadata(summary, expression, "C++")
     return summary
@@ -658,6 +660,13 @@ def orhun_expression_summary(command: dict, source_file: Path) -> dict:
         "satir": expression.get("satir"),
         "op": expression.get("op", ""),
         "ayrinti": expression.get("ayrinti", ""),
+        "alt_sayisi": metadata_count(
+            expression,
+            "alt_sayisi",
+            len(children),
+            f"prototype {source_file}",
+            "expression",
+        ),
         "altlar": [orhun_expression_payload(child, source_file) for child in children],
     }
     add_expression_metadata(summary, expression, f"prototype {source_file}")
@@ -673,6 +682,13 @@ def orhun_expression_payload(expression: object, source_file: Path) -> dict:
         "satir": expression.get("satir"),
         "op": expression.get("op", ""),
         "ayrinti": expression.get("ayrinti", ""),
+        "alt_sayisi": metadata_count(
+            expression,
+            "alt_sayisi",
+            len(children),
+            f"prototype {source_file}",
+            "child expression",
+        ),
         "altlar": [orhun_expression_payload(child, source_file) for child in children],
     }
     add_expression_metadata(summary, expression, f"prototype {source_file}")

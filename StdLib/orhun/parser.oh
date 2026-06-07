@@ -6,10 +6,10 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.52"
+surum olsun "0.3.53"
 
 işlev bos_ifade_ozeti():
-    döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "altlar": []}
+    döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -1206,7 +1206,8 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
     op olsun ""
     eğer tur eşit "IkiliIslem" veya tur eşit "TekliIslem" ise:
         op olsun ifade_ayrintisi(tokenlar, baslangic, son, tur)
-    sonuc olsun {"tur": tur, "satir": ifade_satiri(tokenlar, baslangic, son, tur), "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": ifade_altlari(tokenlar, baslangic, son, tur)}
+    altlar olsun ifade_altlari(tokenlar, baslangic, son, tur)
+    sonuc olsun {"tur": tur, "satir": ifade_satiri(tokenlar, baslangic, son, tur), "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "alt_sayisi": uzunluk(altlar), "altlar": altlar}
     eğer tur eşit "IsimsizIslev" ise:
         parametreler olsun baslik_parametreleri(tokenlar, baslangic)
         varsayilanlar olsun baslik_varsayilanlari(tokenlar, baslangic)
