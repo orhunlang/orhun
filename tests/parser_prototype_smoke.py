@@ -877,6 +877,8 @@ def empty_coverage() -> dict[str, int]:
         "list_comp_condition_false": 0,
         "list_expressions": 0,
         "dict_expressions": 0,
+        "expression_line_zero": 0,
+        "expression_line_nonzero": 0,
         "function_definitions": 0,
         "class_definitions": 0,
         "class_parent_true": 0,
@@ -897,6 +899,13 @@ def add_coverage(target: dict[str, int], source: dict[str, int]) -> None:
 
 
 def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> None:
+    line = expression.get("satir")
+    if isinstance(line, int):
+        if line == 0:
+            coverage["expression_line_zero"] += 1
+        elif line > 0:
+            coverage["expression_line_nonzero"] += 1
+
     if expression.get("tur") == "ListeUretec":
         if expression.get("kosul_var") is True:
             coverage["list_comp_condition_true"] += 1
@@ -1036,6 +1045,9 @@ def main() -> int:
         f"{coverage['list_comp_condition_true']}/{coverage['list_comp_condition_false']}, "
         "collections list/dict: "
         f"{coverage['list_expressions']}/{coverage['dict_expressions']}, "
+        "expression lines zero/nonzero: "
+        f"{coverage['expression_line_zero']}/"
+        f"{coverage['expression_line_nonzero']}, "
         "signatures function/external/anonymous: "
         f"{coverage['function_definitions']}/"
         f"{coverage['external_function_definitions']}/"
