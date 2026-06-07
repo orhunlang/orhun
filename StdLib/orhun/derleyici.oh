@@ -6,10 +6,10 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.15.0"
+surum olsun "0.16.0"
 
 işlev durum_yeni():
-    döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": []}
+    döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
 
 işlev hata_ayarla(durum, mesaj):
     eğer uzunluk(durum.hata) eşit 0 ise:
@@ -42,6 +42,11 @@ işlev liste_kopyala(kaynak):
         sonuc.ekle(kaynak[i])
         i olsun i + 1
     döndür sonuc
+
+işlev gecici_ad_uret(durum, on_ek):
+    ad olsun on_ek + "_" + metne_cevir(durum.gecici_sayac)
+    durum["gecici_sayac"] = durum.gecici_sayac + 1
+    döndür ad
 
 işlev yerel_indeksi(yereller, ad):
     i olsun 0
@@ -268,6 +273,32 @@ işlev dahil_et_derle(durum, dosya, satir):
     operandli_komut_ekle(durum, "OP_CAGIR", satir, 1)
     döndür 0
 
+işlev isimsiz_islev_derle(durum, ifade):
+    eğer uzunluk(ifade.altlar) eşit_değil 1 ise:
+        hata_ayarla(durum, "Isimsiz islev tek bir govde ifadesi bekliyor.")
+        döndür 0
+
+    govde_atlama olsun atlama_ekle(durum, "OP_ATLA", ifade.satir)
+    giris olsun durum.ip
+    eski_yereller olsun durum.yereller
+    durum["yereller"] = liste_kopyala(ifade.parametreler)
+    durum["islev_derinligi"] = durum.islev_derinligi + 1
+    varsayilanlari_derle(durum, ifade)
+    ifade_derle(durum, ifade.altlar[0])
+    komut_ekle(durum, "OP_DON", ifade.satir)
+    durum["islev_derinligi"] = durum.islev_derinligi - 1
+    islev_yerelleri olsun durum.yereller
+    durum["yereller"] = eski_yereller
+    komut_ekle(durum, "OP_BOS", ifade.satir)
+    komut_ekle(durum, "OP_DON", ifade.satir)
+    atlama_yamala(durum, govde_atlama)
+
+    ad olsun gecici_ad_uret(durum, "__anonim_islev")
+    ad_sabit olsun sabit_ekle(durum, "metin", ad)
+    min_arity olsun ifade.parametre_sayisi - ifade.varsayilan_sayisi
+    islev_komut_ekle(durum, ifade.satir, ad_sabit, ad, giris, min_arity, ifade.parametre_sayisi, islev_yerelleri)
+    döndür 0
+
 işlev ifade_derle(durum, ifade):
     eğer uzunluk(durum.hata) büyük 0 ise:
         döndür 0
@@ -354,6 +385,10 @@ işlev ifade_derle(durum, ifade):
             ifade_derle(durum, ifade.altlar[i])
             i olsun i + 1
         operandli_komut_ekle(durum, "OP_CAGIR", ifade.satir, uzunluk(ifade.altlar))
+        döndür 0
+
+    eğer ifade.tur eşit "IsimsizIslev" ise:
+        isimsiz_islev_derle(durum, ifade)
         döndür 0
 
     eğer ifade.tur eşit "DahilEt" ise:

@@ -37,8 +37,8 @@ These percentages are planning estimates, not promises.
   policy surfaces.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.
 - Orhun-written lexer/parser prototypes and a bytecode compiler subset covering
-  expressions, collections, control flow, functions, locals, and optimizations
-  with parity smoke tests.
+  expressions, collections, control flow, functions, non-capturing lambdas,
+  locals, and optimizations with parity smoke tests.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.

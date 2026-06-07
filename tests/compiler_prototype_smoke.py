@@ -114,6 +114,25 @@ PARITY_CASES = {
     ),
     "repeat_continue": 'tekrarla 3 kez:\n    yazdır "a"\n    devam\n',
     "repeat_break": "tekrarla 3 kez:\n    kır\n",
+    "lambda_basic": "f olsun işlev(x): x * 2\nyazdır f(4)\n",
+    "lambda_default": (
+        "f olsun işlev(x olsun 7): x + 1\n"
+        "yazdır f()\nyazdır f(9)\n"
+    ),
+    "lambda_math": (
+        "g olsun işlev(a, b olsun 3): a * b + 1\n"
+        "yazdır g(2)\nyazdır g(2, 5)\n"
+    ),
+    "lambda_composed": (
+        "f olsun işlev(x): x * 2\n"
+        "g olsun işlev(x): f(x) + 1\n"
+        "yazdır g(5)\n"
+    ),
+    "lambda_param_call": (
+        "işlev uygula(f, deger):\n    döndür f(deger)\n\n"
+        "kare olsun işlev(x, k olsun 2): x * k\n"
+        "yazdır uygula(kare, 5)\n"
+    ),
 }
 
 

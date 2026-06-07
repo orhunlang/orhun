@@ -103,7 +103,7 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.15.0; sabitler, global kimlik okuma/atama,
+hazirlandi. `orhun/derleyici.oh` 0.16.0; sabitler, global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
 cagrilari, indeks/alan/guvenli alan okumalari, `eger/degilse`, basit `surece`
 ve `tekrarla` donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
@@ -124,7 +124,10 @@ da parity kapsamindadir.
 kapsamindadir.
 Ic ice dongu baglamlari, `kir` atlamalari ve `devam` hedef/yama davranisi da
 parity kapsamindadir.
-Compiler prototype smoke su anda 53 kucuk programda C++ bytecode ozetini birebir
+Yakalama gerektirmeyen isimsiz islevler, varsayilan argumanlari ve kararlı
+`__anonim_islev_N` metadata adlariyla parity kapsamindadir. Closure yakalama
+derleyici prototipinin sonraki asamalarindan biridir.
+Compiler prototype smoke su anda 58 kucuk programda C++ bytecode ozetini birebir
 eslestirir ve desteklenmeyen yapilar icin acik hata bekler.
 
 Hedefler:

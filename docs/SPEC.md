@@ -531,6 +531,10 @@ by compiler parity.
 compiler parity.
 Nested loop contexts and `kır`/`devam` jump patching are covered by compiler
 parity.
+Anonymous functions that do not capture an enclosing local are covered by
+compiler parity, including default arguments and deterministic
+`__anonim_islev_N` metadata names. Compiler-prototype closure capture remains
+future work.
 `tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
 source lines, operands, constant-pool entries, and aggregate counts against the
 C++ compiler. Unsupported constructs return an explicit error instead of
