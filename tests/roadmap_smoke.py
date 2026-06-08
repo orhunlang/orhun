@@ -104,6 +104,7 @@ def main() -> int:
         ("bytecode JSON", [py, "tests/bytecode_json_smoke.py", str(binary)]),
         ("compiler prototype", [py, "tests/compiler_prototype_smoke.py", str(binary)]),
         ("compiler prototype sweep", [py, "tests/compiler_prototype_sweep.py", str(binary)]),
+        ("compiler bootstrap", [py, "tests/compiler_bootstrap_smoke.py", str(binary)]),
     ]
 
     failures = []

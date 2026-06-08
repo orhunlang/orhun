@@ -144,6 +144,7 @@ orhun lint dosya.oh
 orhun lex dosya.oh --json
 orhun parse dosya.oh --json
 orhun baytkod dosya.oh --json
+orhun baytkod-yurut derlenmis.bytecode.json
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 orhun paket dogrula
@@ -193,6 +194,7 @@ self-hosting plan.
 - Parser AST JSON fixtures: `tests/ast_json/`
 - Bytecode JSON contract smoke: `tests/bytecode_json_smoke.py`
 - Compiler prototype parity smoke: `tests/compiler_prototype_smoke.py`
+- Compiler bootstrap execution smoke: `tests/compiler_bootstrap_smoke.py`
 - Roadmap smoke aggregate: `tests/roadmap_smoke.py`
 - Parser prototype parity smoke: `tests/parser_prototype_smoke.py`
 - Closure capture analysis smoke: `tests/closure_capture_analysis_smoke.py`

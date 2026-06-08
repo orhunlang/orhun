@@ -5,6 +5,7 @@
 #include "Parser.h"
 #include "Security/Hash.h"
 #include "VM.h"
+#include "Yerlesik.h"
 
 #include <algorithm>
 #include <cctype>
@@ -25,6 +26,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -773,6 +775,249 @@ std::string bytecodeKomutlarJson(const BytecodeChunk &chunk,
     *komutSayisi = sayi;
   }
   return ss.str();
+}
+
+const yerlesik::JsonDeger::Sozluk &
+jsonSozlukBekle(const yerlesik::JsonDeger &deger, std::string_view baglam) {
+  const auto *ptr =
+      std::get_if<yerlesik::JsonDeger::SozlukPtr>(&deger.veri);
+  if (ptr == nullptr || *ptr == nullptr) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             " sozluk olmali.");
+  }
+  return **ptr;
+}
+
+const yerlesik::JsonDeger::Liste &
+jsonListeBekle(const yerlesik::JsonDeger &deger, std::string_view baglam) {
+  const auto *ptr =
+      std::get_if<yerlesik::JsonDeger::ListePtr>(&deger.veri);
+  if (ptr == nullptr || *ptr == nullptr) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             " liste olmali.");
+  }
+  return **ptr;
+}
+
+const yerlesik::JsonDeger *
+jsonAlanBul(const yerlesik::JsonDeger::Sozluk &sozluk, std::string_view ad) {
+  const auto it = sozluk.find(std::string(ad));
+  return it == sozluk.end() ? nullptr : &it->second;
+}
+
+const yerlesik::JsonDeger &
+jsonAlanBekle(const yerlesik::JsonDeger::Sozluk &sozluk, std::string_view ad,
+              std::string_view baglam) {
+  const yerlesik::JsonDeger *deger = jsonAlanBul(sozluk, ad);
+  if (deger == nullptr) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             "." + std::string(ad) + " alani eksik.");
+  }
+  return *deger;
+}
+
+std::string jsonMetinBekle(const yerlesik::JsonDeger &deger,
+                           std::string_view baglam) {
+  const auto *metin = std::get_if<std::string>(&deger.veri);
+  if (metin == nullptr) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             " metin olmali.");
+  }
+  return *metin;
+}
+
+double jsonSayiBekle(const yerlesik::JsonDeger &deger,
+                     std::string_view baglam) {
+  const auto *sayi = std::get_if<double>(&deger.veri);
+  if (sayi == nullptr || !std::isfinite(*sayi)) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             " sonlu sayi olmali.");
+  }
+  return *sayi;
+}
+
+bool jsonMantikBekle(const yerlesik::JsonDeger &deger,
+                     std::string_view baglam) {
+  const auto *mantik = std::get_if<bool>(&deger.veri);
+  if (mantik == nullptr) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             " mantik olmali.");
+  }
+  return *mantik;
+}
+
+std::size_t jsonBoyutBekle(const yerlesik::JsonDeger &deger,
+                           std::string_view baglam) {
+  const double sayi = jsonSayiBekle(deger, baglam);
+  if (sayi < 0.0 || std::floor(sayi) != sayi ||
+      sayi > static_cast<double>(std::numeric_limits<std::size_t>::max())) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             " negatif olmayan tam sayi olmali.");
+  }
+  return static_cast<std::size_t>(sayi);
+}
+
+std::uint16_t jsonU16Bekle(const yerlesik::JsonDeger &deger,
+                           std::string_view baglam) {
+  const std::size_t sayi = jsonBoyutBekle(deger, baglam);
+  if (sayi > std::numeric_limits<std::uint16_t>::max()) {
+    throw std::runtime_error("Gecersiz bytecode JSON: " + std::string(baglam) +
+                             " U16 sinirini asiyor.");
+  }
+  return static_cast<std::uint16_t>(sayi);
+}
+
+OpCode opCodeAdindanCoz(const std::string &ad) {
+  for (int i = static_cast<int>(OpCode::OP_SABIT);
+       i <= static_cast<int>(OpCode::OP_GUVENLI_ALAN_AL); ++i) {
+    const OpCode op = static_cast<OpCode>(i);
+    if (opCodeAdi(op) == ad) {
+      return op;
+    }
+  }
+  throw std::runtime_error("Gecersiz bytecode JSON: bilinmeyen opcode '" + ad +
+                           "'.");
+}
+
+bool bytecodeOperandliMi(OpCode op) {
+  switch (op) {
+  case OpCode::OP_SABIT:
+  case OpCode::OP_GET_LOCAL:
+  case OpCode::OP_SET_LOCAL:
+  case OpCode::OP_DEFINE_LOCAL:
+  case OpCode::OP_GET_GLOBAL:
+  case OpCode::OP_SET_GLOBAL:
+  case OpCode::OP_ALAN_AL:
+  case OpCode::OP_GUVENLI_ALAN_AL:
+  case OpCode::OP_ALAN_YAZ:
+  case OpCode::OP_METOD_YAZ:
+  case OpCode::OP_LISTE_OLUSTUR:
+  case OpCode::OP_SOZLUK_OLUSTUR:
+  case OpCode::OP_CAGIR:
+  case OpCode::OP_SINIF:
+  case OpCode::OP_ATLA:
+  case OpCode::OP_ATLA_EGER_YANLIS:
+  case OpCode::OP_DONGU:
+  case OpCode::OP_TRY_BASLA:
+    return true;
+  default:
+    return false;
+  }
+}
+
+BytecodeChunk bytecodeJsonCoz(const std::string &metin) {
+  const yerlesik::JsonDeger kok = yerlesik::jsonCoz(metin);
+  const yerlesik::JsonDeger::Sozluk &kokSozluk =
+      jsonSozlukBekle(kok, "kok");
+  const yerlesik::JsonDeger *bytecodeDegeri = jsonAlanBul(kokSozluk, "bytecode");
+  const yerlesik::JsonDeger::Sozluk &bytecode =
+      bytecodeDegeri == nullptr
+          ? kokSozluk
+          : jsonSozlukBekle(*bytecodeDegeri, "bytecode");
+
+  BytecodeChunk chunk;
+  const auto &sabitler = jsonListeBekle(
+      jsonAlanBekle(bytecode, "sabitler", "bytecode"), "bytecode.sabitler");
+  for (std::size_t i = 0; i < sabitler.size(); ++i) {
+    const std::string baglam = "bytecode.sabitler[" + std::to_string(i) + "]";
+    const auto &sabit = jsonSozlukBekle(sabitler[i], baglam);
+    const std::string tur =
+        jsonMetinBekle(jsonAlanBekle(sabit, "tur", baglam), baglam + ".tur");
+    if (tur == "bos") {
+      chunk.sabitEkle(SabitDeger());
+    } else if (tur == "sayi") {
+      chunk.sabitEkle(SabitDeger(
+          jsonSayiBekle(jsonAlanBekle(sabit, "deger", baglam),
+                        baglam + ".deger")));
+    } else if (tur == "metin") {
+      chunk.sabitEkle(SabitDeger(
+          jsonMetinBekle(jsonAlanBekle(sabit, "deger", baglam),
+                         baglam + ".deger")));
+    } else if (tur == "mantik") {
+      chunk.sabitEkle(SabitDeger(
+          jsonMantikBekle(jsonAlanBekle(sabit, "deger", baglam),
+                          baglam + ".deger")));
+    } else {
+      throw std::runtime_error("Gecersiz bytecode JSON: bilinmeyen sabit turu '" +
+                               tur + "'.");
+    }
+  }
+
+  const auto &komutlar = jsonListeBekle(
+      jsonAlanBekle(bytecode, "komutlar", "bytecode"), "bytecode.komutlar");
+  for (std::size_t i = 0; i < komutlar.size(); ++i) {
+    const std::string baglam = "bytecode.komutlar[" + std::to_string(i) + "]";
+    const auto &komut = jsonSozlukBekle(komutlar[i], baglam);
+    const std::size_t ip =
+        jsonBoyutBekle(jsonAlanBekle(komut, "ip", baglam), baglam + ".ip");
+    if (ip != chunk.kod.size()) {
+      throw std::runtime_error("Gecersiz bytecode JSON: " + baglam +
+                               ".ip beklenen komut konumuyla uyusmuyor.");
+    }
+    const OpCode op = opCodeAdindanCoz(
+        jsonMetinBekle(jsonAlanBekle(komut, "op", baglam), baglam + ".op"));
+    const std::size_t satir = jsonBoyutBekle(
+        jsonAlanBekle(komut, "satir", baglam), baglam + ".satir");
+    if (satir == 0) {
+      throw std::runtime_error("Gecersiz bytecode JSON: " + baglam +
+                               ".satir en az 1 olmali.");
+    }
+    chunk.yazOpCode(op, satir);
+
+    if (op == OpCode::OP_ISLEV_OLUSTUR) {
+      const auto &islev = jsonSozlukBekle(
+          jsonAlanBekle(komut, "islev", baglam), baglam + ".islev");
+      for (const char *alan :
+           {"ad_sabit", "min_arity", "max_arity", "giris", "local_sayisi",
+            "baglam_arg"}) {
+        chunk.yazU16(jsonU16Bekle(jsonAlanBekle(islev, alan, baglam + ".islev"),
+                                  baglam + ".islev." + alan),
+                       satir);
+      }
+      const auto &localAdlari =
+          jsonListeBekle(jsonAlanBekle(islev, "local_adlari", baglam + ".islev"),
+                         baglam + ".islev.local_adlari");
+      if (localAdlari.size() > std::numeric_limits<std::uint16_t>::max()) {
+        throw std::runtime_error("Gecersiz bytecode JSON: local ad sayisi "
+                                 "U16 sinirini asiyor.");
+      }
+      chunk.yazU16(static_cast<std::uint16_t>(localAdlari.size()), satir);
+      for (std::size_t j = 0; j < localAdlari.size(); ++j) {
+        const std::string localBaglam =
+            baglam + ".islev.local_adlari[" + std::to_string(j) + "]";
+        const auto &local = jsonSozlukBekle(localAdlari[j], localBaglam);
+        chunk.yazU16(
+            jsonU16Bekle(jsonAlanBekle(local, "indeks", localBaglam),
+                         localBaglam + ".indeks"),
+            satir);
+        chunk.yazU16(
+            jsonU16Bekle(jsonAlanBekle(local, "ad_sabit", localBaglam),
+                         localBaglam + ".ad_sabit"),
+            satir);
+      }
+    } else if (bytecodeOperandliMi(op)) {
+      chunk.yazU16(jsonU16Bekle(jsonAlanBekle(komut, "operand", baglam),
+                                baglam + ".operand"),
+                   satir);
+    } else if (jsonAlanBul(komut, "operand") != nullptr) {
+      throw std::runtime_error("Gecersiz bytecode JSON: " + baglam +
+                               " operandsiz opcode icin operand iceriyor.");
+    }
+  }
+
+  const auto sayimDogrula = [&](const std::string &alan, std::size_t gercek) {
+    const std::size_t beklenen = jsonBoyutBekle(
+        jsonAlanBekle(bytecode, alan, "bytecode"), "bytecode." + alan);
+    if (beklenen != gercek) {
+      throw std::runtime_error("Gecersiz bytecode JSON: bytecode." + alan +
+                               " sayimi uyusmuyor.");
+    }
+  };
+  sayimDogrula("kod_boyutu", chunk.kod.size());
+  sayimDogrula("komut_sayisi", komutlar.size());
+  sayimDogrula("sabit_sayisi", chunk.sabitler.size());
+  static_cast<void>(bytecodeKomutlarJson(chunk));
+  return chunk;
 }
 
 void astJsonBaslat(std::ostringstream &ss, const ASTNode *dugum,
@@ -2866,6 +3111,13 @@ int komutObcCalistir(const std::string &obcDosyaYolu) {
   return 0;
 }
 
+int komutBytecodeJsonCalistir(const std::string &jsonDosyaYolu) {
+  const BytecodeChunk chunk = bytecodeJsonCoz(dosyaOku(jsonDosyaYolu));
+  VM vm;
+  vm.calistir(chunk);
+  return 0;
+}
+
 int komutDerle(const std::string &kaynakYolu, const std::string &calisanExeYolu,
                const std::string &ciktiTemel) {
   namespace fs = std::filesystem;
@@ -4586,7 +4838,8 @@ int main(int argc, char *argv[]) {
     auto dahiliKomutMu = [](const std::string &deger) {
       return deger == "fmt" || deger == "lex" || deger == "tokenler" ||
              deger == "parse" || deger == "ast" || deger == "baytkod" ||
-             deger == "bytecode" ||
+             deger == "bytecode" || deger == "baytkod-yurut" ||
+             deger == "bytecode-run" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -4653,6 +4906,14 @@ int main(int argc, char *argv[]) {
             "Hata: baytkod secenekleri yalnizca '--json' olabilir.");
       }
       return komutBytecode(argv[2], jsonCikti);
+    }
+
+    if (komut == "baytkod-yurut" || komut == "bytecode-run") {
+      if (argc != 3) {
+        throw std::runtime_error(
+            "Hata: baytkod-yurut komutu tek bir JSON dosyasi bekliyor.");
+      }
+      return komutBytecodeJsonCalistir(argv[2]);
     }
 
     if (komut == "fmt") {

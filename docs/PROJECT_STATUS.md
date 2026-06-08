@@ -23,7 +23,7 @@ These percentages are planning estimates, not promises.
 | Working experimental language / MVP | 55-60% | Orhun already has a lexer, parser, interpreter, bytecode compiler, VM, stdlib surface, package/security flows, tests, and tooling. |
 | 1.0 stable language | 35-40% | Needs a stable spec, compatibility policy, release binaries, cleaner docs, stronger package flow, and hardened performance/security gates. |
 | 2.1.0 production-ready product bar | 20-25% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
-| Full self-hosting / independent compiler path | ~33% | Orhun lexer/parser prototypes and the Orhun-written compiler are tested against C++; the compiler now has exact bytecode parity across every current runtime case that the C++ compiler accepts, while bootstrap/runtime replacement remains. |
+| Full self-hosting / independent compiler path | ~35% | Orhun lexer/parser prototypes and the Orhun-written compiler are tested against C++; the compiler has exact bytecode parity across every current runtime case that the C++ compiler accepts, and its decoded output can now execute through the C++ VM bridge. |
 
 ## What Is Already Real
 
@@ -42,6 +42,8 @@ These percentages are planning estimates, not promises.
   fields/methods/inheritance, locals, and optimizations with parity smoke tests.
 - Exact Orhun/C++ compiler bytecode parity across all current C++-compileable
   runtime cases, guarded by a full-case sweep.
+- Strict decoded-bytecode execution bridge from the Orhun-written compiler to
+  the C++ VM, guarded by end-to-end bootstrap tests.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.

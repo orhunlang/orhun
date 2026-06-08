@@ -145,6 +145,10 @@ desteklenmeyen yapilar icin acik hata bekler.
 Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 131
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 3 bilincli hata fixture'i ayri izlenir.
+`orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis
+bytecode ciktisini siki dogrulamadan sonra C++ VM'de calistirir. Bootstrap smoke
+testi bicimlendirilmis metin, ic ice islev, OOP/ust ve hata yakalama programlarini
+bu kopruyle yurutup dogrudan `vm-kati` ciktisiyla karsilastirir.
 
 Hedefler:
 

@@ -614,6 +614,12 @@ Stable channel defaults:
   code `1`, set `durum` to `fail`, and leave `bytecode` as `null`. The English
   `bytecode` command is a compatibility alias. This is an inspection and parity
   surface; it does not write build artifacts.
+- `baytkod-yurut <dosya.json>` validates and executes the decoded bytecode
+  contract through the C++ VM. It accepts the full successful compiler payload
+  or its inner `bytecode` object. Unknown opcodes, missing fields, invalid
+  operand widths, mismatched instruction positions/counts, and malformed
+  function metadata are rejected before execution. `bytecode-run` is the
+  English compatibility alias.
 
 ## Compatibility Rules
 

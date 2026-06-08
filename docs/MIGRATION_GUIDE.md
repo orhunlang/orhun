@@ -169,3 +169,12 @@
   `baytkod --json` çıktısıyla birebir karşılaştırır.
 - Desteklenmeyen yapılar sessizce yanlış bytecode üretmek yerine açık hata
   döndürür.
+
+## 16. Self-hosting: decoded bytecode execution bridge
+- `orhun baytkod-yurut <dosya.json>`, Orhun ile yazılan derleyicinin çözümlenmiş
+  bytecode JSON çıktısını doğrular ve C++ VM üzerinde çalıştırır.
+- Komut, tam derleyici payload'ını veya doğrudan iç `bytecode` sözlüğünü kabul
+  eder.
+- Bilinmeyen opcode, eksik alan, geçersiz U16 operand, uyuşmayan IP/sayım ve
+  bozuk işlev metadata'sı çalıştırmadan önce reddedilir.
+- İngilizce `bytecode-run` komutu uyumluluk takma adıdır.
