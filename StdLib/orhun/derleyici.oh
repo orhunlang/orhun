@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.20.0"
+surum olsun "0.21.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -728,9 +728,6 @@ işlev komut_derle(durum, komut):
         döndür 0
 
     eğer komut.tur eşit "IslevTanim" ise:
-        eğer durum.islev_derinligi büyük 0 ise:
-            hata_ayarla(durum, "Ilk islev prototipi ic ice islevleri desteklemiyor.")
-            döndür 0
         govde_atlama olsun atlama_ekle(durum, "OP_ATLA", komut.satir)
         giris olsun durum.ip
         eski_yereller olsun durum.yereller

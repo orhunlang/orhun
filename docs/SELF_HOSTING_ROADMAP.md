@@ -103,7 +103,7 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.20.0; sabitler, global kimlik okuma/atama,
+hazirlandi. `orhun/derleyici.oh` 0.21.0; sabitler, global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
 cagrilari, indeks/alan/guvenli alan okumalari, `eger/degilse`, basit `surece`
 ve `tekrarla` donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
@@ -124,9 +124,10 @@ da parity kapsamindadir.
 kapsamindadir.
 Ic ice dongu baglamlari, `kir` atlamalari ve `devam` hedef/yama davranisi da
 parity kapsamindadir.
-Yakalama gerektirmeyen isimsiz islevler, varsayilan argumanlari ve kararlı
-`__anonim_islev_N` metadata adlariyla parity kapsamindadir. Closure yakalama
-derleyici prototipinin sonraki asamalarindan biridir.
+Isimsiz islevler, ic ice isimli islevler, varsayilan argumanlar ve kararlı
+`__anonim_islev_N` metadata adlariyla parity kapsamindadir. Dis yerel okuma ve
+degistirme, C++ derleyicisiyle ayni isim tabanli opcode + VM yakalama
+sozlesmesini uretir.
 Filtreli/filtresiz liste uretecleri, kapasite ayirma optimizasyonu, gecici
 degisken adlari ve islev-ici yerel metadata davranisiyla parity kapsamindadir.
 Dis islev tanimlari ad, kutuphane, donus tipi ve parametre tipi listesiyle
@@ -134,8 +135,10 @@ mevcut FFI politika yuzeyine derlenir.
 Alan tanimli siniflar, metodlar, temel kalitim kurulumu, `benim` alan
 okuma/yazma ve `ust` metod cagrilari parity kapsamindadir. Metod metadata'si
 baglam argumanlarini ve varsayilan parametre ofsetlerini C++ ile ayni uretir.
-Compiler prototype smoke su anda 73 kucuk programda C++ bytecode ozetini birebir
-eslestirir ve desteklenmeyen yapilar icin acik hata bekler.
+Compiler prototype smoke su anda 85 programda C++ bytecode ozetini birebir
+eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
+liste-ureteci/lambda fixture'larini da dogrudan karsilastirir; desteklenmeyen
+yapilar icin acik hata bekler.
 
 Hedefler:
 

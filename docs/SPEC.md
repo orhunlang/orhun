@@ -516,7 +516,7 @@ field and safe-field reads, `eğer/değilse`, basic `sürece` loops, and `yazdı
 Counted `tekrarla ... kez` loops are also covered by compiler parity.
 Functions with required/default parameters and local assignments, explicit/implicit
 returns, and function-creation/local-name metadata are covered by the initial
-function subset. Nested functions remain outside it.
+function subset. Nested named functions and returned functions are also covered.
 Direct literal number, string, boolean, and unary expressions follow the C++
 compiler's initial constant-folding rules.
 Constant-truthiness branches and loops follow the C++ compiler's initial
@@ -531,10 +531,10 @@ by compiler parity.
 compiler parity.
 Nested loop contexts and `kır`/`devam` jump patching are covered by compiler
 parity.
-Anonymous functions that do not capture an enclosing local are covered by
-compiler parity, including default arguments and deterministic
-`__anonim_islev_N` metadata names. Compiler-prototype closure capture remains
-future work.
+Anonymous functions and nested named functions are covered by compiler parity,
+including default arguments, deterministic `__anonim_islev_N` metadata names,
+and captured outer-local reads/writes through the same name-based bytecode and
+VM capture-cell contract used by the C++ compiler.
 Filtered and unfiltered list comprehensions are covered by compiler parity,
 including deterministic temporary names, the unfiltered reserve optimization,
 and function-local temporary metadata.
@@ -547,8 +547,10 @@ arguments and default-parameter local offsets; field reads/writes and super
 method calls are also covered.
 `tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
 source lines, operands, constant-pool entries, and aggregate counts against the
-C++ compiler. Unsupported constructs return an explicit error instead of
-silently emitting incorrect bytecode. It is not yet the production compiler.
+C++ compiler. It includes focused generated programs plus larger checked-in
+closure, OOP, default-method, and list-comprehension fixtures. Unsupported
+constructs return an explicit error instead of silently emitting incorrect
+bytecode. It is not yet the production compiler.
 
 ## CLI Contract
 

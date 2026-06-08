@@ -211,7 +211,35 @@ PARITY_CASES = {
         "    işlev bilgi():\n        ust.bilgi()\n        yazdır benim.turbo\n\n"
         "f olsun yeni SporAraba(220, doğru)\nf.bilgi()\n"
     ),
+    "nested_function": (
+        "işlev dis(x):\n    işlev ic(y):\n        döndür y + 5\n"
+        "    döndür ic(x)\n\nyazdır dis(10)\n"
+    ),
+    "returned_nested_function": (
+        "işlev sec():\n    işlev cevap():\n        döndür 42\n"
+        "    döndür cevap\n\nf olsun sec()\nyazdır f()\n"
+    ),
+    "nested_function_capture": (
+        "işlev sayac_uret():\n    adet olsun 0\n"
+        "    işlev artir():\n        adet = adet + 1\n        döndür adet\n"
+        "    döndür artir\n\ns olsun sayac_uret()\nyazdır s()\nyazdır s()\n"
+    ),
+    "nested_lambda_capture": (
+        "işlev carpani_uret(k):\n    döndür işlev(x): x * k\n\n"
+        "iki_kat olsun carpani_uret(2)\nyazdır iki_kat(5)\n"
+    ),
 }
+
+PARITY_FIXTURES = (
+    "tests/cases/nested_functions.oh",
+    "tests/cases/function_returned_named.oh",
+    "tests/cases/closure_missing_feature.oh",
+    "tests/cases/lambda_capture_shadow.oh",
+    "tests/cases/lambda_nested_return.oh",
+    "tests/cases/oop_super.oh",
+    "tests/cases/default_args_method_super.oh",
+    "tests/cases/vm_list_comp_lambda_filter.oh",
+)
 
 
 def require(condition: bool, message: str) -> None:
@@ -303,6 +331,21 @@ def main() -> int:
                 f"C++: {expected}\nOrhun: {payload.get('bytecode')}",
             )
 
+        for relative_path in PARITY_FIXTURES:
+            source = repo / relative_path
+            require(source.exists(), f"parity fixture not found: {relative_path}")
+            expected = cxx_bytecode(binary, repo, source)
+            payload = prototype_payload(binary, repo, source, tmpdir)
+            require(
+                payload.get("durum") == "ok" and payload.get("hata_sayisi") == 0,
+                f"prototype returned error for {relative_path}: {payload}",
+            )
+            require(
+                payload.get("bytecode") == expected,
+                f"Compiler prototype bytecode mismatch for {relative_path}\n"
+                f"C++: {expected}\nOrhun: {payload.get('bytecode')}",
+            )
+
         unsupported = tmpdir / "unsupported.oh"
         unsupported.write_text(
             'tip Kutu:\n    yazdır "merhaba"\n',
@@ -318,7 +361,8 @@ def main() -> int:
         )
 
     print(
-        f"Compiler prototype smoke passed ({len(PARITY_CASES)} parity, "
+        f"Compiler prototype smoke passed "
+        f"({len(PARITY_CASES) + len(PARITY_FIXTURES)} parity, "
         "1 unsupported fixture)."
     )
     return 0

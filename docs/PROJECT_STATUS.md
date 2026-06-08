@@ -23,7 +23,7 @@ These percentages are planning estimates, not promises.
 | Working experimental language / MVP | 55-60% | Orhun already has a lexer, parser, interpreter, bytecode compiler, VM, stdlib surface, package/security flows, tests, and tooling. |
 | 1.0 stable language | 35-40% | Needs a stable spec, compatibility policy, release binaries, cleaner docs, stronger package flow, and hardened performance/security gates. |
 | 2.1.0 production-ready product bar | 20-25% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
-| Full self-hosting / independent compiler path | ~29% | Orhun lexer/parser prototypes and a growing bytecode compiler subset are tested against C++; broad compiler/runtime replacement remains. |
+| Full self-hosting / independent compiler path | ~31% | Orhun lexer/parser prototypes and a growing bytecode compiler subset are tested against C++; broad compiler/runtime replacement remains. |
 
 ## What Is Already Real
 
@@ -37,7 +37,7 @@ These percentages are planning estimates, not promises.
   policy surfaces.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.
 - Orhun-written lexer/parser prototypes and a bytecode compiler subset covering
-  expressions, collections, control flow, functions, non-capturing lambdas,
+  expressions, collections, control flow, functions, closures, lambdas,
   list comprehensions, external declarations, class fields/methods/inheritance,
   locals, and optimizations with parity smoke tests.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
@@ -51,8 +51,9 @@ These percentages are planning estimates, not promises.
   parser path.
 - Grow Orhun-written bytecode compiler parity beyond its current expressions,
   collections, control flow, functions, globals, locals, calls, class-field,
-  method/inheritance, and external-declaration subset; especially closure
-  capture, nested functions, and broader class behavior.
+  method/inheritance, closure, and external-declaration subset; especially
+  broader class behavior and the remaining specialized expression/command
+  forms.
 - Make release binaries easy on Windows, Linux, and macOS.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.
