@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.5.0"
+surum olsun "0.6.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -473,7 +473,7 @@ işlev deger_konumu(tokenlar, konum, deger):
         token olsun tokenlar[i]
         eğer satir_sonu_mu(token) ise:
             döndür -1
-        eğer token.deger eşit deger ise:
+        eğer token.tur eşit_değil "METIN" ve token.deger eşit deger ise:
             döndür i
         i olsun i + 1
     döndür -1
@@ -494,7 +494,7 @@ işlev atama_ifade_baslangici(tokenlar, konum):
 işlev aralikta_deger_var_mi(tokenlar, baslangic, son, deger):
     i olsun baslangic
     sürece i küçük son:
-        eğer tokenlar[i].deger eşit deger ise:
+        eğer tokenlar[i].tur eşit_değil "METIN" ve tokenlar[i].deger eşit deger ise:
             döndür doğru
         i olsun i + 1
     döndür yanlış
@@ -512,7 +512,7 @@ işlev aralikta_deger_konumu(tokenlar, baslangic, son, deger):
                 eğer derinlik küçük 0 ise:
                     derinlik olsun 0
             değilse:
-                eğer derinlik eşit 0 ve token.deger eşit deger ise:
+                eğer derinlik eşit 0 ve token.tur eşit_değil "METIN" ve token.deger eşit deger ise:
                     döndür i
         i olsun i + 1
     döndür -1
@@ -523,7 +523,7 @@ işlev son_aralikta_deger_konumu(tokenlar, baslangic, son, deger):
     bulunan olsun -1
     sürece i küçük son:
         token olsun tokenlar[i]
-        eğer derinlik eşit 0 ve token.deger eşit deger ise:
+        eğer derinlik eşit 0 ve token.tur eşit_değil "METIN" ve token.deger eşit deger ise:
             bulunan olsun i
         eğer acilis_islemi_mi(token) ise:
             derinlik olsun derinlik + 1
@@ -538,7 +538,7 @@ işlev son_aralikta_deger_konumu(tokenlar, baslangic, son, deger):
 işlev ilk_deger_konumu(tokenlar, baslangic, son, deger):
     i olsun baslangic
     sürece i küçük son:
-        eğer tokenlar[i].deger eşit deger ise:
+        eğer tokenlar[i].tur eşit_değil "METIN" ve tokenlar[i].deger eşit deger ise:
             döndür i
         i olsun i + 1
     döndür -1

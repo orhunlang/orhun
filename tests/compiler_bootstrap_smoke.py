@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import os
 import tempfile
 from pathlib import Path
 
@@ -183,11 +184,60 @@ def main() -> int:
             "Orhun compiler self-source OBC must match C++ compiler artifact",
         )
 
+        obc_stdlib = tmpdir / "obc_stdlib"
+        obc_orhun = obc_stdlib / "orhun"
+        obc_orhun.mkdir(parents=True)
+        for module in ("lexer", "parser", "derleyici"):
+            module_source = repo / "StdLib" / "orhun" / f"{module}.oh"
+            module_compile = run_cmd(
+                [
+                    str(binary),
+                    "orhun-derle",
+                    str(module_source),
+                    str(obc_orhun / module),
+                ],
+                repo,
+            )
+            require(
+                module_compile.returncode == 0,
+                f"precompiled module failed for {module}: {combined(module_compile)}",
+            )
+
+        obc_only_env = os.environ.copy()
+        obc_only_env["ORHUN_STDLIB_PATH"] = str(obc_stdlib)
+        obc_only_env["ORHUN_MODULE_MODE"] = "obc-only"
+        obc_only = run_cmd(
+            [str(binary), "orhun-vm", str(artifact_source)],
+            repo,
+            env=obc_only_env,
+        )
+        require(
+            obc_only.returncode == 0,
+            f"obc-only compiler chain failed: {combined(obc_only)}",
+        )
+        require(
+            combined(obc_only) == combined(artifact_direct),
+            "source-free obc-only compiler chain must match direct VM output",
+        )
+
+        (obc_orhun / "parser.obc").unlink()
+        missing_obc = run_cmd(
+            [str(binary), "orhun-vm", str(artifact_source)],
+            repo,
+            env=obc_only_env,
+        )
+        require(missing_obc.returncode != 0, "obc-only must reject missing modules")
+        require(
+            "obc-only modunda onceden derlenmis modul bulunamadi"
+            in combined(missing_obc),
+            "obc-only missing-module error must explain the strict policy",
+        )
+
     print(
         f"Compiler bootstrap smoke passed ({len(FIXTURES)} bridge and "
         f"{len(FIXTURES)} orhun-vm parity, "
         "1 artifact parity, 1 self-source artifact parity, "
-        "1 rejected invalid payload)."
+        "1 obc-only module chain, 2 rejected invalid inputs)."
     )
     return 0
 

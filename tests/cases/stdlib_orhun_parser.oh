@@ -182,3 +182,9 @@ yazdır metin.icerir(tip_hata.hata.mesaj, ":")
 deneme_hata olsun parser.ozetle("deneme\n")
 yazdır deneme_hata.ok
 yazdır metin.icerir(deneme_hata.hata.mesaj, ":")
+
+metin_operator_kontrol olsun parser.ozetle("soru olsun token.deger eşit \"?\"\nnokta olsun token.deger eşit \".\"\n")
+yazdır metin_operator_kontrol.komutlar[0].ifade_ozeti.altlar[1].tur
+yazdır metin_operator_kontrol.komutlar[0].ifade_ozeti.altlar[1].ayrinti
+yazdır metin_operator_kontrol.komutlar[1].ifade_ozeti.altlar[1].tur
+yazdır metin_operator_kontrol.komutlar[1].ifade_ozeti.altlar[1].ayrinti

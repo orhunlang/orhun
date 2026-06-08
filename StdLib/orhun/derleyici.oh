@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.24.0"
+surum olsun "0.25.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -686,7 +686,7 @@ işlev ifade_derle(durum, ifade):
         operandli_komut_ekle(durum, "OP_CAGIR", ifade.satir, 3)
         döndür 0
 
-    hata_ayarla(durum, "Desteklenmeyen ifade turu: " + ifade.tur)
+    hata_ayarla(durum, "Desteklenmeyen ifade turu: " + ifade.tur + " (satir " + metne_cevir(ifade.satir) + ")")
     döndür 0
 
 işlev ad_atama_komutu_yaz(durum, ad, satir, bildirim):

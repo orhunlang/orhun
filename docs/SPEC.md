@@ -630,6 +630,13 @@ Stable channel defaults:
 - The guarded bootstrap path can compile `StdLib/orhun/derleyici.oh` itself
   into an `.obc` artifact byte-identical to the C++ compiler output. This is a
   self-source bootstrap milestone, not yet a standalone compiler CLI.
+- VM module loading defaults to `ORHUN_MODULE_MODE=source`. Explicit
+  `obc-first` mode loads a sibling `.obc` module when available and otherwise
+  falls back to source compilation. Explicit `obc-only` mode requires the
+  corresponding `.obc`, does not require a sibling `.oh`, and rejects missing
+  precompiled modules without C++ compiler fallback. The guarded bootstrap
+  test runs the Orhun compiler/parser/lexer module chain source-free in
+  `obc-only` mode.
 
 ## Compatibility Rules
 

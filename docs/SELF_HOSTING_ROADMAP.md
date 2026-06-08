@@ -58,7 +58,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. Parser prototipi 143 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.5.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.6.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -103,7 +103,7 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.24.0; sabitler, bicimlendirilmis metinler,
+hazirlandi. `orhun/derleyici.oh` 0.25.0; sabitler, bicimlendirilmis metinler,
 global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
 cagrilari, indeks/alan/guvenli alan okumalari, `eger/degilse`, basit `surece`
@@ -173,6 +173,9 @@ Durum: basladi; `orhun orhun-derle StdLib/orhun/derleyici.oh <cikti>` calisir
 ve C++ derleyicinin ayni kaynak icin urettigi `.obc` ile byte duzeyinde ayni
 bootstrap artifact'ini uretir. Bu artifact henuz tek basina kaynak kabul eden
 bagimsiz bir derleyici CLI'i degildir.
+`ORHUN_MODULE_MODE=obc-only` ile onceden derlenmis Orhun
+derleyici/parser/lexer modul zinciri `.oh` kaynaklari olmadan ve C++ kaynak
+derleme fallback'i yapmadan calisir; eksik modul artifact'i acik hata verir.
 
 Hedefler:
 

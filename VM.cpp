@@ -17,6 +17,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <random>
 #include <regex>
@@ -2132,28 +2133,69 @@ void VM::yerlesikNativesYukle() {
 
   ekleNative("dahil_et", 1,
              [](VM &vm, const std::vector<Value> &args) -> Value {
+               namespace fs = std::filesystem;
                const std::string yol = vm.metneCevir(args[0]);
-               const auto cozulmusYol = orhunDahilYolunuCoz(yol);
-               if (!cozulmusYol.has_value()) {
-                 throw std::runtime_error("dahil_et: dosya acilamadi: " + yol +
-                                          orhunDahilAramaYollariMetni());
+               std::string modulModu = "source";
+               if (const char *env = std::getenv("ORHUN_MODULE_MODE")) {
+                 modulModu = env;
+                 std::transform(
+                     modulModu.begin(), modulModu.end(), modulModu.begin(),
+                     [](unsigned char c) {
+                       return static_cast<char>(std::tolower(c));
+                     });
+               }
+               if (modulModu != "source" && modulModu != "obc-first" &&
+                   modulModu != "obc-only") {
+                 throw std::runtime_error(
+                     "dahil_et: ORHUN_MODULE_MODE source, obc-first veya "
+                     "obc-only olmali.");
                }
 
-               std::ifstream in(*cozulmusYol, std::ios::binary);
-               if (!in.is_open()) {
-                 throw std::runtime_error("dahil_et: dosya acilamadi: " + yol);
-               }
-               std::ostringstream ss;
-               ss << in.rdbuf();
-               const std::string kaynak = ss.str();
+               const auto cozulmusKaynakYol = orhunDahilYolunuCoz(yol);
+               fs::path obcIstegi = yol;
+               obcIstegi.replace_extension(".obc");
+               const auto cozulmusObcYol =
+                   orhunDahilYolunuCoz(obcIstegi.string());
+               std::unique_ptr<BytecodeChunk> modulChunk;
+               if (modulModu != "source" && cozulmusObcYol.has_value()) {
+                 std::ifstream in(*cozulmusObcYol, std::ios::binary);
+                 if (!in.is_open()) {
+                   throw std::runtime_error("dahil_et: OBC dosyasi acilamadi: " +
+                                            cozulmusObcYol->string());
+                 }
+                 const std::vector<std::uint8_t> ham{
+                     std::istreambuf_iterator<char>(in),
+                     std::istreambuf_iterator<char>()};
+                 modulChunk =
+                     std::make_unique<BytecodeChunk>(chunkCoz(ham));
+               } else {
+                 if (modulModu == "obc-only") {
+                   throw std::runtime_error(
+                       "dahil_et: obc-only modunda onceden derlenmis modul "
+                       "bulunamadi: " +
+                       obcIstegi.string() + orhunDahilAramaYollariMetni());
+                 }
+                 if (!cozulmusKaynakYol.has_value()) {
+                   throw std::runtime_error("dahil_et: dosya acilamadi: " + yol +
+                                            orhunDahilAramaYollariMetni());
+                 }
+                 std::ifstream in(*cozulmusKaynakYol, std::ios::binary);
+                 if (!in.is_open()) {
+                   throw std::runtime_error("dahil_et: dosya acilamadi: " +
+                                            yol);
+                 }
+                 std::ostringstream ss;
+                 ss << in.rdbuf();
+                 const std::string kaynak = ss.str();
 
-               Lexer lexer(kaynak);
-               std::vector<OrhunToken> tokenlar = lexer.tokenize();
-               Parser parser(std::move(tokenlar));
-               std::unique_ptr<ProgramNode> program = parser.parse();
-               Compiler derleyici;
-               auto modulChunk =
-                   std::make_unique<BytecodeChunk>(derleyici.derle(program.get()));
+                 Lexer lexer(kaynak);
+                 std::vector<OrhunToken> tokenlar = lexer.tokenize();
+                 Parser parser(std::move(tokenlar));
+                 std::unique_ptr<ProgramNode> program = parser.parse();
+                 Compiler derleyici;
+                 modulChunk = std::make_unique<BytecodeChunk>(
+                     derleyici.derle(program.get()));
+               }
                BytecodeChunk &chunk = *modulChunk;
 
                const auto oncekiGloballer = vm.globaller_;

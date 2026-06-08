@@ -183,3 +183,7 @@
 - `orhun orhun-derle <dosya.oh> [çıktı]`, Orhun-yazılı derleyici üzerinden
   `.obc`, paketli çalıştırılabilir dosya ve metadata üretir. İngilizce uyumluluk
   takma adı `bootstrap-compile`'dır.
+- `ORHUN_MODULE_MODE` varsayılan olarak `source` kalır. `obc-first`, bulunan
+  kardeş `.obc` modülünü tercih eder ve gerekirse kaynağa düşer. `obc-only`,
+  eksik önceden derlenmiş modülü açık hatayla reddeder ve C++ derleyici
+  fallback'i yapmaz.

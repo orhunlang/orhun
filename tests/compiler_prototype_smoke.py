@@ -271,10 +271,13 @@ def parse_last_json(text: str) -> dict:
     return payload
 
 
-def run_cmd(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+def run_cmd(
+    args: list[str], cwd: Path, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         args,
         cwd=cwd,
+        env=env,
         text=True,
         encoding="utf-8",
         errors="replace",
