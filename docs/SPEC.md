@@ -639,6 +639,9 @@ Stable channel defaults:
   `obc-only` mode.
 - `orhun-vm` and `orhun-derle` accept `--source`, `--obc-first`,
   `--obc-only`, or `--modul-modu=<mode>` to select the policy for that process.
+- `bootstrap-hazirla <directory>` writes source-free `lexer.obc`,
+  `parser.obc`, and `derleyici.obc` modules plus a CRC-bearing
+  `bootstrap.manifest.json`. `bootstrap-prepare` is its compatibility alias.
 
 ## Compatibility Rules
 

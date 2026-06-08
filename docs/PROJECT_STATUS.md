@@ -53,6 +53,8 @@ These percentages are planning estimates, not promises.
 - Explicit `obc-only` module mode runs the precompiled Orhun
   compiler/parser/lexer chain without requiring `.oh` sources or silently
   falling back to C++ source compilation.
+- `bootstrap-hazirla` produces that source-free three-module toolchain and a
+  CRC-bearing machine-readable manifest in one command.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.

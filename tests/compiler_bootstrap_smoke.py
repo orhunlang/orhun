@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import tempfile
+import zlib
 from pathlib import Path
 
 from compiler_prototype_smoke import prototype_payload, require, run_cmd
@@ -186,21 +187,54 @@ def main() -> int:
 
         obc_stdlib = tmpdir / "obc_stdlib"
         obc_orhun = obc_stdlib / "orhun"
-        obc_orhun.mkdir(parents=True)
+        prepare_env = os.environ.copy()
+        prepare_env["ORHUN_MODULE_MODE"] = "obc-only"
+        prepare = run_cmd(
+            [str(binary), "bootstrap-hazirla", str(obc_stdlib)],
+            repo,
+            env=prepare_env,
+        )
+        require(
+            prepare.returncode == 0,
+            f"bootstrap prepare failed: {combined(prepare)}",
+        )
+        manifest_path = obc_stdlib / "bootstrap.manifest.json"
+        require(manifest_path.exists(), "bootstrap prepare manifest missing")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        require(
+            manifest.get("format") == "orhun-bootstrap-v1"
+            and manifest.get("module_mode") == "obc-only",
+            "bootstrap prepare manifest contract mismatch",
+        )
+        modules = manifest.get("modules")
+        require(
+            isinstance(modules, list) and len(modules) == 3,
+            "bootstrap prepare manifest must list three modules",
+        )
+        manifest_modules = {
+            entry.get("module"): entry for entry in modules if isinstance(entry, dict)
+        }
         for module in ("lexer", "parser", "derleyici"):
-            module_source = repo / "StdLib" / "orhun" / f"{module}.oh"
-            module_compile = run_cmd(
-                [
-                    str(binary),
-                    "orhun-derle",
-                    str(module_source),
-                    str(obc_orhun / module),
-                ],
-                repo,
+            module_name = f"orhun/{module}.oh"
+            artifact = obc_orhun / f"{module}.obc"
+            require(
+                artifact.exists(),
+                f"bootstrap prepare artifact missing for {module}",
             )
             require(
-                module_compile.returncode == 0,
-                f"precompiled module failed for {module}: {combined(module_compile)}",
+                not (obc_orhun / f"{module}.oh").exists(),
+                f"bootstrap prepare must remain source-free for {module}",
+            )
+            entry = manifest_modules.get(module_name)
+            require(isinstance(entry, dict), f"manifest entry missing for {module}")
+            payload = artifact.read_bytes()
+            require(
+                entry.get("payload_size") == len(payload),
+                f"manifest payload size mismatch for {module}",
+            )
+            require(
+                entry.get("payload_crc32") == f"{zlib.crc32(payload) & 0xFFFFFFFF:08x}",
+                f"manifest CRC mismatch for {module}",
             )
 
         obc_only_env = os.environ.copy()
@@ -285,7 +319,7 @@ def main() -> int:
         f"Compiler bootstrap smoke passed ({len(FIXTURES)} bridge and "
         f"{len(FIXTURES)} orhun-vm parity, "
         "1 artifact parity, 1 self-source artifact parity, "
-        "1 obc-only module chain, 1 source-free strict compile, "
+        "1 prepared obc-only module chain, 1 source-free strict compile, "
         "1 source override, 3 rejected invalid inputs)."
     )
     return 0

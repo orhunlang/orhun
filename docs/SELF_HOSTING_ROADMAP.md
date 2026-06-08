@@ -178,6 +178,8 @@ derleyici/parser/lexer modul zinciri `.oh` kaynaklari olmadan ve C++ kaynak
 derleme fallback'i yapmadan calisir; eksik modul artifact'i acik hata verir.
 `orhun-vm` ve `orhun-derle`, bu zinciri tek komutta secmek icin `--obc-only`
 ve `--obc-first` CLI politikalarini destekler.
+`orhun bootstrap-hazirla <dizin>`, uc modulu kaynak dosyasi icermeyen bir
+toolchain klasorune ve CRC tasiyan makine-okur manifeste donusturur.
 
 Hedefler:
 

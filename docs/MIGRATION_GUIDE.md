@@ -189,3 +189,6 @@
   fallback'i yapmaz.
 - `orhun-vm` ve `orhun-derle` aynı politikaları doğrudan `--source`,
   `--obc-first`, `--obc-only` veya `--modul-modu=<değer>` ile seçebilir.
+- `orhun bootstrap-hazirla <dizin>`, kaynak dosyası içermeyen lexer/parser/
+  derleyici `.obc` zincirini ve `bootstrap.manifest.json` dosyasını üretir.
+  İngilizce uyumluluk takma adı `bootstrap-prepare`'dır.

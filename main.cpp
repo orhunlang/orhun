@@ -5,6 +5,7 @@
 #include "Parser.h"
 #include "Security/Hash.h"
 #include "VM.h"
+#include "Yardimci.h"
 #include "Yerlesik.h"
 
 #include <algorithm>
@@ -3250,6 +3251,61 @@ int komutOrhunDerle(const std::string &kaynakYolu,
                               calisanExeYolu, ciktiTemel);
 }
 
+int komutBootstrapHazirla(const std::string &ciktiKoku) {
+  namespace fs = std::filesystem;
+  if (ciktiKoku.empty()) {
+    throw std::runtime_error("Hata: bootstrap-hazirla <dizin> kullanin.");
+  }
+  cliModulModunuAyarla(std::string("source"));
+
+  const fs::path kok = fs::absolute(ciktiKoku);
+  const fs::path orhunKoku = kok / "orhun";
+  std::error_code ec;
+  fs::create_directories(orhunKoku, ec);
+  if (ec) {
+    throw std::runtime_error("Hata: bootstrap dizini olusturulamadi: " +
+                             ec.message());
+  }
+
+  const std::vector<std::string> moduller = {"lexer", "parser", "derleyici"};
+  std::ostringstream manifest;
+  manifest << "{\n"
+           << "  \"format\": \"orhun-bootstrap-v1\",\n"
+           << "  \"module_mode\": \"obc-only\",\n"
+           << "  \"modules\": [\n";
+
+  for (std::size_t i = 0; i < moduller.size(); ++i) {
+    const std::string dahilYolu = "orhun/" + moduller[i] + ".oh";
+    const auto kaynakYolu = orhunDahilYolunuCoz(dahilYolu);
+    if (!kaynakYolu.has_value()) {
+      throw std::runtime_error("Hata: bootstrap modulu bulunamadi: " +
+                               dahilYolu + orhunDahilAramaYollariMetni());
+    }
+
+    const BytecodeChunk chunk = orhunDerleyiciyleDerle(kaynakYolu->string());
+    const std::vector<std::uint8_t> payload = chunkSerilestir(chunk);
+    const fs::path artifact = orhunKoku / (moduller[i] + ".obc");
+    dosyaYazIkili(artifact.string(), payload);
+
+    manifest << "    {\"module\":\"" << dahilYolu << "\",\"artifact\":\"orhun/"
+             << moduller[i] << ".obc\",\"payload_size\":" << payload.size()
+             << ",\"payload_crc32\":\"" << std::hex << std::setfill('0')
+             << std::setw(8) << crc32Hesapla(payload) << std::dec << "\"}";
+    if (i + 1 < moduller.size()) {
+      manifest << ",";
+    }
+    manifest << "\n";
+    std::cout << "Bootstrap modulu uretildi: " << artifact.string() << "\n";
+  }
+
+  manifest << "  ]\n"
+           << "}\n";
+  const fs::path manifestYolu = kok / "bootstrap.manifest.json";
+  dosyaYaz(manifestYolu.string(), manifest.str());
+  std::cout << "Bootstrap manifest yazildi: " << manifestYolu.string() << "\n";
+  return 0;
+}
+
 std::string evetHayir(bool deger) { return deger ? "evet" : "hayir"; }
 
 bool doctorOrtamDegiskeniAcik(const char *ad) {
@@ -4926,7 +4982,8 @@ int main(int argc, char *argv[]) {
              deger == "bytecode" || deger == "baytkod-yurut" ||
              deger == "bytecode-run" || deger == "orhun-vm" ||
              deger == "bootstrap-vm" || deger == "orhun-derle" ||
-             deger == "bootstrap-compile" ||
+             deger == "bootstrap-compile" || deger == "bootstrap-hazirla" ||
+             deger == "bootstrap-prepare" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -5279,6 +5336,13 @@ int main(int argc, char *argv[]) {
       }
       cliModulModunuAyarla(modulModu);
       return komutOrhunDerle(argv[2], argv[0], ciktiTemel);
+    }
+
+    if (komut == "bootstrap-hazirla" || komut == "bootstrap-prepare") {
+      if (argc != 3) {
+        throw std::runtime_error("Hata: bootstrap-hazirla <dizin> kullanin.");
+      }
+      return komutBootstrapHazirla(argv[2]);
     }
 
     if (komut == "hiz") {
