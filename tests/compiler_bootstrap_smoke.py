@@ -296,6 +296,24 @@ def main() -> int:
             "standalone bootstrap compile artifact must match C++ compiler",
         )
 
+        standalone_run = run_cmd(
+            [
+                str(binary),
+                "bootstrap-calistir",
+                str(obc_stdlib),
+                str(artifact_source),
+            ],
+            repo,
+        )
+        require(
+            standalone_run.returncode == 0,
+            f"standalone bootstrap run failed: {combined(standalone_run)}",
+        )
+        require(
+            combined(standalone_run) == combined(artifact_direct),
+            "standalone bootstrap run output must match direct VM output",
+        )
+
         (obc_orhun / "parser.obc").unlink()
         missing_standalone = run_cmd(
             [
@@ -360,7 +378,8 @@ def main() -> int:
         f"{len(FIXTURES)} orhun-vm parity, "
         "1 artifact parity, 1 self-source artifact parity, "
         "1 prepared obc-only module chain, 1 source-free strict compile, "
-        "1 standalone bootstrap compile, 1 source override, "
+        "1 standalone bootstrap compile, 1 standalone bootstrap run, "
+        "1 source override, "
         "4 rejected invalid inputs)."
     )
     return 0

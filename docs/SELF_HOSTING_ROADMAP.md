@@ -182,6 +182,8 @@ ve `--obc-first` CLI politikalarini destekler.
 toolchain klasorune ve CRC tasiyan makine-okur manifeste donusturur.
 `orhun bootstrap-derle <toolchain> <kaynak.oh> [cikti]`, hazirlanan toolchain'i
 ortam degiskeni gerektirmeden kati `obc-only` modunda kullanir.
+`orhun bootstrap-calistir <toolchain> <kaynak.oh>`, ayni zincirle hedefi
+derleyip VM'de calistirir.
 
 Hedefler:
 

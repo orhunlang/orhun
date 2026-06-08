@@ -645,6 +645,9 @@ Stable channel defaults:
 - `bootstrap-derle <toolchain-directory> <source.oh> [output]` consumes a
   prepared toolchain in strict `obc-only` mode without environment-variable
   setup. `bootstrap-build` is its compatibility alias.
+- `bootstrap-calistir <toolchain-directory> <source.oh>` compiles and executes
+  through the same prepared strict toolchain. `bootstrap-run` is its
+  compatibility alias.
 
 ## Compatibility Rules
 

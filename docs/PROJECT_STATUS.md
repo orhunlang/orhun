@@ -57,6 +57,8 @@ These percentages are planning estimates, not promises.
   CRC-bearing machine-readable manifest in one command.
 - `bootstrap-derle` consumes a prepared toolchain in strict `obc-only` mode
   without requiring environment-variable setup.
+- `bootstrap-calistir` uses the same prepared toolchain contract for a
+  source-free compiler-module run path.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.

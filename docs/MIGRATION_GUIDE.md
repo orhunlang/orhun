@@ -195,3 +195,6 @@
 - `orhun bootstrap-derle <toolchain-dizini> <kaynak.oh> [çıktı]`, hazırlanmış
   toolchain'i `obc-only` politikasında kullanır; ortam değişkeni gerektirmez.
   İngilizce uyumluluk takma adı `bootstrap-build`'dir.
+- `orhun bootstrap-calistir <toolchain-dizini> <kaynak.oh>`, aynı doğrulanmış
+  toolchain ile hedefi strict modda derleyip VM'de çalıştırır. İngilizce
+  uyumluluk takma adı `bootstrap-run`'dır.

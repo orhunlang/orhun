@@ -3310,10 +3310,7 @@ int komutBootstrapHazirla(const std::string &ciktiKoku) {
   return 0;
 }
 
-int komutBootstrapDerle(const std::string &toolchainKoku,
-                        const std::string &kaynakYolu,
-                        const std::string &calisanExeYolu,
-                        const std::string &ciktiTemel) {
+void bootstrapToolchainEtkinlestir(const std::string &toolchainKoku) {
   namespace fs = std::filesystem;
   const fs::path kok = fs::absolute(toolchainKoku);
   if (!orhunNormalDosyaMi(kok / "bootstrap.manifest.json")) {
@@ -3332,7 +3329,20 @@ int komutBootstrapDerle(const std::string &toolchainKoku,
 
   cliOrtamDegiskeniniAyarla("ORHUN_STDLIB_PATH", kok.string());
   cliModulModunuAyarla(std::string("obc-only"));
+}
+
+int komutBootstrapDerle(const std::string &toolchainKoku,
+                        const std::string &kaynakYolu,
+                        const std::string &calisanExeYolu,
+                        const std::string &ciktiTemel) {
+  bootstrapToolchainEtkinlestir(toolchainKoku);
   return komutOrhunDerle(kaynakYolu, calisanExeYolu, ciktiTemel);
+}
+
+int komutBootstrapCalistir(const std::string &toolchainKoku,
+                           const std::string &kaynakYolu) {
+  bootstrapToolchainEtkinlestir(toolchainKoku);
+  return komutOrhunVm(kaynakYolu);
 }
 
 std::string evetHayir(bool deger) { return deger ? "evet" : "hayir"; }
@@ -5013,7 +5023,8 @@ int main(int argc, char *argv[]) {
              deger == "bootstrap-vm" || deger == "orhun-derle" ||
              deger == "bootstrap-compile" || deger == "bootstrap-hazirla" ||
              deger == "bootstrap-prepare" || deger == "bootstrap-derle" ||
-             deger == "bootstrap-build" ||
+             deger == "bootstrap-build" || deger == "bootstrap-calistir" ||
+             deger == "bootstrap-run" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -5383,6 +5394,15 @@ int main(int argc, char *argv[]) {
       }
       const std::string ciktiTemel = argc == 5 ? argv[4] : "";
       return komutBootstrapDerle(argv[2], argv[3], argv[0], ciktiTemel);
+    }
+
+    if (komut == "bootstrap-calistir" || komut == "bootstrap-run") {
+      if (argc != 4) {
+        throw std::runtime_error(
+            "Hata: bootstrap-calistir <toolchain-dizini> <kaynak.oh> "
+            "kullanin.");
+      }
+      return komutBootstrapCalistir(argv[2], argv[3]);
     }
 
     if (komut == "hiz") {
