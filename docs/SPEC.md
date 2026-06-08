@@ -671,6 +671,12 @@ Stable channel defaults:
   program argument. `orhun-derleyici --derle <source.oh> [output]` uses the
   same Orhun-written compiler and the runtime serialization bridge to emit
   `.obc`, packaged executable, and metadata artifacts directly.
+- `bootstrap-yeniden-uret <seed-toolchain> <output-directory>` performs a
+  reproducible three-stage bootstrap gate: the seed builds stage 2, stage 2
+  builds stage 3, and every stage-2/stage-3 OBC artifact must be byte-identical.
+  It refuses non-empty output directories and writes
+  `bootstrap-rebuild.manifest.json` after success. `bootstrap-rebuild` is its
+  compatibility alias.
 
 ## Compatibility Rules
 

@@ -208,6 +208,10 @@
   `bootstrap-compiler-bundle`'dır. Üretilen derleyici tek kaynak argümanıyla
   bytecode JSON, `--derle <kaynak.oh> [çıktı]` ile `.obc`, paketli
   çalıştırılabilir dosya ve metadata üretir.
+- `orhun bootstrap-yeniden-uret <tohum-toolchain> <çıktı-dizini>`, tohumdan
+  aşama 2 ve aşama 2'den aşama 3 üretir; son iki aşamanın dört `.obc`
+  artifact'i byte düzeyinde eşleşmezse başarısız olur. Dolu çıktı dizinleri
+  korunur. İngilizce uyumluluk takma adı `bootstrap-rebuild`'dir.
 - Kullanıcı programlarına kaynak/komut sonrasında verilen değerler artık
   `sistem.argumanlar` listesinde bulunur. `orhun-vm` yolunda çalışma zamanı
   argümanlarını modül seçeneklerinden ayırmak için `--` kullanılır.

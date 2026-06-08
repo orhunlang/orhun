@@ -195,6 +195,10 @@ Bu ilk bagimsiz derleyici CLI'i bytecode JSON uretir; `--derle` modu ayni
 Orhun-yazili compiler zinciriyle byte-duzeyinde esit `.obc`, paketli
 calistirilabilir dosya ve metadata artifact'larini dogrudan uretir. Artifact
 serilestirme koprusu ve runtime halen C++ cekirdektedir.
+`orhun bootstrap-yeniden-uret <tohum-toolchain> <cikti-dizini>`, tohum ile
+asama 2'yi, asama 2 ile asama 3'u uretir ve son iki asamadaki dort artifact'in
+byte duzeyinde ayni olmasini zorunlu tutar. Dolu cikti dizinini ezmez ve
+basarili kapinin sonucunu `bootstrap-rebuild.manifest.json` ile kaydeder.
 `sistem.argumanlar`, dogrudan, paketli ve bootstrap calistirma yollarinda ayni
 program argumani sozlesmesini saglar; Orhun ile yazilacak bagimsiz derleyici
 CLI'inin kaynak/cikti yollarini okuyabilmesi icin gereken primitive hazirdir.
@@ -204,8 +208,7 @@ Hedefler:
 - Orhun compiler kaynagi Orhun ile derlenebilir.
 - Release surecinde C++ bootstrap sadece ilk araci uretir.
 - Sonraki asamada Orhun compiler kendi yeni surumunu uretebilir.
-- Tasinabilir Orhun compiler CLI kendi yeni compiler toolchain surumunu
-  tekrarlanabilir release adimlariyla uretebilir.
+- Uc-asamali self-rebuild kapisi Windows/Linux/macOS release CI'inda calisir.
 
 Basari olcutu:
 

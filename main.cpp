@@ -3311,12 +3311,11 @@ int komutOrhunDerle(const std::string &kaynakYolu,
                               calisanExeYolu, ciktiTemel);
 }
 
-int komutBootstrapHazirla(const std::string &ciktiKoku) {
+int bootstrapToolchainUret(const std::string &ciktiKoku) {
   namespace fs = std::filesystem;
   if (ciktiKoku.empty()) {
-    throw std::runtime_error("Hata: bootstrap-hazirla <dizin> kullanin.");
+    throw std::runtime_error("Hata: bootstrap toolchain cikti dizini bos.");
   }
-  cliModulModunuAyarla(std::string("source"));
 
   const fs::path kok = fs::absolute(ciktiKoku);
   const fs::path orhunKoku = kok / "orhun";
@@ -3365,6 +3364,11 @@ int komutBootstrapHazirla(const std::string &ciktiKoku) {
   dosyaYaz(manifestYolu.string(), manifest.str());
   std::cout << "Bootstrap manifest yazildi: " << manifestYolu.string() << "\n";
   return 0;
+}
+
+int komutBootstrapHazirla(const std::string &ciktiKoku) {
+  cliModulModunuAyarla(std::string("source"));
+  return bootstrapToolchainUret(ciktiKoku);
 }
 
 [[noreturn]] void bootstrapManifestHatasi(const std::string &mesaj) {
@@ -3594,6 +3598,74 @@ int komutBootstrapDerleyiciPaketle(const std::string &toolchainKoku,
   std::cout << "Bootstrap derleyici paketi hazirlandi: " << cikti.string()
             << "\n";
   std::cout << "Derleyici calistirilabilir dosyasi: " << derleyiciExe.string()
+            << "\n";
+  return 0;
+}
+
+int komutBootstrapYenidenUret(const std::string &tohumToolchainKoku,
+                              const std::string &ciktiKoku) {
+  namespace fs = std::filesystem;
+  const fs::path tohum = fs::absolute(tohumToolchainKoku).lexically_normal();
+  const fs::path cikti = fs::absolute(ciktiKoku).lexically_normal();
+  if (tohum == cikti) {
+    throw std::runtime_error(
+        "Hata: bootstrap yeniden uretim ciktisi tohum toolchain olamaz.");
+  }
+
+  std::error_code ec;
+  if (fs::exists(cikti, ec) && !ec && !fs::is_empty(cikti, ec)) {
+    throw std::runtime_error(
+        "Hata: bootstrap yeniden uretim cikti dizini bos olmali: " +
+        cikti.string());
+  }
+  if (ec) {
+    throw std::runtime_error(
+        "Hata: bootstrap yeniden uretim cikti dizini denetlenemedi: " +
+        ec.message());
+  }
+  fs::create_directories(cikti, ec);
+  if (ec) {
+    throw std::runtime_error(
+        "Hata: bootstrap yeniden uretim cikti dizini olusturulamadi: " +
+        ec.message());
+  }
+
+  const fs::path asama2 = cikti / ".asama2";
+  bootstrapToolchainEtkinlestir(tohum.string());
+  bootstrapToolchainUret(asama2.string());
+  bootstrapToolchainDogrula(asama2.string());
+
+  bootstrapToolchainEtkinlestir(asama2.string());
+  bootstrapToolchainUret(cikti.string());
+  bootstrapToolchainDogrula(cikti.string());
+
+  for (const char *modul :
+       {"lexer", "parser", "derleyici", "derleyici_cli"}) {
+    const fs::path goreli = fs::path("orhun") /
+                            (std::string(modul) + ".obc");
+    if (dosyaOkuIkili((asama2 / goreli).string()) !=
+        dosyaOkuIkili((cikti / goreli).string())) {
+      throw std::runtime_error(
+          "Hata: bootstrap yeniden uretim asamalari uyusmuyor: " +
+          goreli.string());
+    }
+  }
+
+  std::ostringstream manifest;
+  manifest << "{\n"
+           << "  \"format\": \"orhun-bootstrap-rebuild-v1\",\n"
+           << "  \"stage2_stage3_equal\": true,\n"
+           << "  \"module_count\": 4\n"
+           << "}\n";
+  dosyaYaz((cikti / "bootstrap-rebuild.manifest.json").string(),
+           manifest.str());
+
+  fs::remove_all(asama2, ec);
+  if (ec) {
+    throw std::runtime_error(
+        "Hata: bootstrap gecici ikinci asama temizlenemedi: " + ec.message());
+  }
+  std::cout << "Bootstrap yeniden uretim dogrulandi: " << cikti.string()
             << "\n";
   return 0;
 }
@@ -5696,6 +5768,15 @@ int main(int argc, char *argv[]) {
             "<cikti-dizini> kullanin.");
       }
       return komutBootstrapDerleyiciPaketle(argv[2], argv[3], argv[0]);
+    }
+
+    if (komut == "bootstrap-yeniden-uret" || komut == "bootstrap-rebuild") {
+      if (argc != 4) {
+        throw std::runtime_error(
+            "Hata: bootstrap-yeniden-uret <tohum-toolchain> <cikti-dizini> "
+            "kullanin.");
+      }
+      return komutBootstrapYenidenUret(argv[2], argv[3]);
     }
 
     if (komut == "hiz") {

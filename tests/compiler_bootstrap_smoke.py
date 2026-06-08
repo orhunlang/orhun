@@ -250,6 +250,56 @@ def main() -> int:
             "bootstrap verification must report success",
         )
 
+        rebuilt_toolchain = tmpdir / "rebuilt_toolchain"
+        rebuild = run_cmd(
+            [
+                str(binary),
+                "bootstrap-yeniden-uret",
+                str(obc_stdlib),
+                str(rebuilt_toolchain),
+            ],
+            repo,
+        )
+        require(
+            rebuild.returncode == 0,
+            f"bootstrap reproducible rebuild failed: {combined(rebuild)}",
+        )
+        require(
+            (rebuilt_toolchain / "bootstrap-rebuild.manifest.json").exists(),
+            "bootstrap rebuild manifest missing",
+        )
+        require(
+            not (rebuilt_toolchain / ".asama2").exists(),
+            "bootstrap rebuild temporary stage must be removed",
+        )
+        for module in ("lexer", "parser", "derleyici", "derleyici_cli"):
+            require(
+                (rebuilt_toolchain / "orhun" / f"{module}.obc").read_bytes()
+                == (obc_orhun / f"{module}.obc").read_bytes(),
+                f"rebuilt bootstrap artifact changed for {module}",
+            )
+
+        nonempty_rebuild = tmpdir / "nonempty_rebuild"
+        nonempty_rebuild.mkdir()
+        (nonempty_rebuild / "koru.txt").write_text("koru", encoding="utf-8")
+        rejected_nonempty_rebuild = run_cmd(
+            [
+                str(binary),
+                "bootstrap-rebuild",
+                str(obc_stdlib),
+                str(nonempty_rebuild),
+            ],
+            repo,
+        )
+        require(
+            rejected_nonempty_rebuild.returncode != 0,
+            "bootstrap rebuild must reject non-empty output directories",
+        )
+        require(
+            "cikti dizini bos olmali" in combined(rejected_nonempty_rebuild),
+            "bootstrap rebuild rejection must explain non-empty output safety",
+        )
+
         original_manifest_text = manifest_path.read_text(encoding="utf-8")
         bad_crc_manifest = json.loads(original_manifest_text)
         bad_crc_manifest["modules"][0]["payload_crc32"] = "00000000"
@@ -579,7 +629,7 @@ def main() -> int:
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
         "1 bundled direct artifact compile, 1 source override, "
-        "8 rejected invalid inputs)."
+        "1 reproducible bootstrap rebuild, 9 rejected invalid inputs)."
     )
     return 0
 
