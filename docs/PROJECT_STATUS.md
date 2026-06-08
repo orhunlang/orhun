@@ -38,7 +38,7 @@ These percentages are planning estimates, not promises.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.
 - Orhun-written lexer/parser prototypes and a bytecode compiler subset covering
   expressions, collections, control flow, functions, non-capturing lambdas,
-  list comprehensions, external declarations, class fields/basic inheritance,
+  list comprehensions, external declarations, class fields/methods/inheritance,
   locals, and optimizations with parity smoke tests.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
@@ -51,8 +51,8 @@ These percentages are planning estimates, not promises.
   parser path.
 - Grow Orhun-written bytecode compiler parity beyond its current expressions,
   collections, control flow, functions, globals, locals, calls, class-field,
-  and external-declaration subset; especially methods, `benim`/`üst`, closure
-  capture, and broader class behavior.
+  method/inheritance, and external-declaration subset; especially closure
+  capture, nested functions, and broader class behavior.
 - Make release binaries easy on Windows, Linux, and macOS.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.

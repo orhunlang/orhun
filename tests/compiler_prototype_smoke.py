@@ -169,6 +169,48 @@ PARITY_CASES = {
         "tip Alt (Temel):\n    deger olsun 2\n\n"
         "a olsun yeni Alt()\nyazdır a.ad\nyazdır a.deger\n"
     ),
+    "class_method": (
+        "tip Kutu:\n    işlev iki_kat(x):\n        döndür x * 2\n\n"
+        "k olsun yeni Kutu()\nyazdır k.iki_kat(3)\n"
+    ),
+    "class_method_default": (
+        "tip Kutu:\n    işlev carp(x, y olsun 4):\n        döndür x * y\n\n"
+        "k olsun yeni Kutu()\nyazdır k.carp(3)\nyazdır k.carp(3, 5)\n"
+    ),
+    "class_method_self": (
+        "tip Sayac:\n    deger olsun 0\n"
+        "    işlev kur(baslangic):\n        benim.deger olsun baslangic\n"
+        "    işlev artir():\n        benim.deger = benim.deger + 1\n\n"
+        "s olsun yeni Sayac(2)\ns.artir()\nyazdır s.deger\n"
+    ),
+    "class_method_inheritance": (
+        'tip A:\n    işlev kim():\n        yazdır "A"\n\n'
+        'tip B (A):\n    işlev selamla():\n        yazdır "B"\n\n'
+        "b olsun yeni B()\nb.kim()\nb.selamla()\n"
+    ),
+    "class_method_super": (
+        "tip A:\n    işlev selam(x olsun 4):\n        döndür x * 2\n\n"
+        "tip B (A):\n    işlev selam(x olsun 6):\n"
+        "        döndür ust.selam(x) + 1\n\n"
+        "b olsun yeni B()\nyazdır b.selam()\n"
+    ),
+    "class_method_chain": (
+        "tip Sayac:\n    deger olsun 0\n"
+        "    işlev kur(baslangic):\n        benim.deger olsun baslangic\n"
+        "    işlev artir():\n        benim.deger = benim.deger + 1\n"
+        "    işlev azalt():\n        benim.deger = benim.deger - 1\n"
+        "    işlev goster():\n        yazdır benim.deger\n\n"
+        "s olsun yeni Sayac(10)\ns.artir()\ns.artir()\ns.azalt()\ns.goster()\n"
+    ),
+    "class_super_chain": (
+        "tip Arac:\n    hiz olsun 0\n"
+        "    işlev kur(baslangic):\n        benim.hiz olsun baslangic\n"
+        "    işlev bilgi():\n        yazdır benim.hiz\n\n"
+        "tip SporAraba (Arac):\n    turbo olsun yanlış\n"
+        "    işlev kur(hiz, t):\n        ust.kur(hiz)\n        benim.turbo olsun t\n"
+        "    işlev bilgi():\n        ust.bilgi()\n        yazdır benim.turbo\n\n"
+        "f olsun yeni SporAraba(220, doğru)\nf.bilgi()\n"
+    ),
 }
 
 

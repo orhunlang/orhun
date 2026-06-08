@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.19.0"
+surum olsun "0.20.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -82,14 +82,14 @@ işlev atlamalari_yamala(durum, atlamalar):
         i olsun i + 1
     döndür 0
 
-işlev islev_komut_ekle(durum, satir, ad_sabit, ad, giris, min_arity, max_arity, yereller):
+işlev islev_komut_ekle(durum, satir, ad_sabit, ad, giris, min_arity, max_arity, yereller, baglam_arg):
     local_adlari olsun []
     i olsun 0
     sürece i küçük uzunluk(yereller):
         local_ad_sabit olsun sabit_ekle(durum, "metin", yereller[i])
         local_adlari.ekle({"indeks": i, "ad_sabit": local_ad_sabit, "ad": yereller[i]})
         i olsun i + 1
-    metadata olsun {"ad_sabit": ad_sabit, "ad": ad, "min_arity": min_arity, "max_arity": max_arity, "giris": giris, "local_sayisi": uzunluk(yereller), "baglam_arg": 0, "local_adlari": local_adlari}
+    metadata olsun {"ad_sabit": ad_sabit, "ad": ad, "min_arity": min_arity, "max_arity": max_arity, "giris": giris, "local_sayisi": uzunluk(yereller), "baglam_arg": baglam_arg, "local_adlari": local_adlari}
     durum.komutlar.ekle({"ip": durum.ip, "op": "OP_ISLEV_OLUSTUR", "satir": satir, "islev": metadata})
     durum["ip"] = durum.ip + 15 + uzunluk(yereller) * 4
 
@@ -283,7 +283,7 @@ işlev isimsiz_islev_derle(durum, ifade):
     eski_yereller olsun durum.yereller
     durum["yereller"] = liste_kopyala(ifade.parametreler)
     durum["islev_derinligi"] = durum.islev_derinligi + 1
-    varsayilanlari_derle(durum, ifade)
+    varsayilanlari_derle(durum, ifade, 0)
     ifade_derle(durum, ifade.altlar[0])
     komut_ekle(durum, "OP_DON", ifade.satir)
     durum["islev_derinligi"] = durum.islev_derinligi - 1
@@ -296,7 +296,7 @@ işlev isimsiz_islev_derle(durum, ifade):
     ad olsun gecici_ad_uret(durum, "__anonim_islev")
     ad_sabit olsun sabit_ekle(durum, "metin", ad)
     min_arity olsun ifade.parametre_sayisi - ifade.varsayilan_sayisi
-    islev_komut_ekle(durum, ifade.satir, ad_sabit, ad, giris, min_arity, ifade.parametre_sayisi, islev_yerelleri)
+    islev_komut_ekle(durum, ifade.satir, ad_sabit, ad, giris, min_arity, ifade.parametre_sayisi, islev_yerelleri, 0)
     döndür 0
 
 işlev liste_uretec_derle(durum, ifade):
@@ -512,6 +512,19 @@ işlev ifade_derle(durum, ifade):
             operandli_komut_ekle(durum, "OP_ALAN_AL", ifade.satir, sabit)
         döndür 0
 
+    eğer ifade.tur eşit "BenimErisim" ise:
+        cagrilan_ad_yukle(durum, "benim", ifade.satir)
+        sabit olsun sabit_ekle(durum, "metin", ifade.alan)
+        operandli_komut_ekle(durum, "OP_ALAN_AL", ifade.satir, sabit)
+        döndür 0
+
+    eğer ifade.tur eşit "UstErisim" ise:
+        sabit olsun sabit_ekle(durum, "metin", "ust")
+        operandli_komut_ekle(durum, "OP_GET_GLOBAL", ifade.satir, sabit)
+        metod_sabit olsun sabit_ekle(durum, "metin", ifade.metod)
+        operandli_komut_ekle(durum, "OP_ALAN_AL", ifade.satir, metod_sabit)
+        döndür 0
+
     eğer ifade.tur eşit "DilimErisim" ise:
         eğer uzunluk(ifade.altlar) küçük 1 ise:
             hata_ayarla(durum, "Dilim erisimi bir kaynak ifade bekliyor.")
@@ -558,6 +571,42 @@ işlev ad_zorunlu_set_komutu_yaz(durum, ad, satir):
     operandli_komut_ekle(durum, "OP_SET_GLOBAL", satir, sabit)
     döndür 0
 
+işlev metod_derle(durum, sinif_adi, uye, ust_gerekiyor):
+    cagrilan_ad_yukle(durum, sinif_adi, uye.satir)
+    govde_atlama olsun atlama_ekle(durum, "OP_ATLA", uye.satir)
+    giris olsun durum.ip
+    eski_yereller olsun durum.yereller
+    yeni_yereller olsun ["benim"]
+    baglam_arg olsun 1
+    eğer ust_gerekiyor ise:
+        yeni_yereller.ekle("ust")
+        baglam_arg olsun 2
+    i olsun 0
+    sürece i küçük uzunluk(uye.parametreler):
+        yeni_yereller.ekle(uye.parametreler[i])
+        i olsun i + 1
+    durum["yereller"] = yeni_yereller
+    durum["islev_derinligi"] = durum.islev_derinligi + 1
+    varsayilanlari_derle(durum, uye, baglam_arg)
+    eğer uzunluk(uye.bloklar) büyük 0 ise:
+        blok_derle(durum, uye.bloklar[0])
+    durum["islev_derinligi"] = durum.islev_derinligi - 1
+    islev_yerelleri olsun durum.yereller
+    durum["yereller"] = eski_yereller
+    komut_ekle(durum, "OP_BOS", uye.satir)
+    komut_ekle(durum, "OP_DON", uye.satir)
+    atlama_yamala(durum, govde_atlama)
+
+    tam_ad olsun sinif_adi + "." + uye.ad
+    ad_sabit olsun sabit_ekle(durum, "metin", tam_ad)
+    min_arity olsun uye.parametre_sayisi - uye.varsayilan_sayisi + baglam_arg
+    max_arity olsun uye.parametre_sayisi + baglam_arg
+    islev_komut_ekle(durum, uye.satir, ad_sabit, tam_ad, giris, min_arity, max_arity, islev_yerelleri, baglam_arg)
+    metod_sabit olsun sabit_ekle(durum, "metin", uye.ad)
+    operandli_komut_ekle(durum, "OP_METOD_YAZ", uye.satir, metod_sabit)
+    komut_ekle(durum, "OP_POP", uye.satir)
+    döndür 0
+
 işlev sinif_derle(durum, komut):
     ad_sabit olsun sabit_ekle(durum, "metin", komut.ad)
     operandli_komut_ekle(durum, "OP_SINIF", komut.satir, ad_sabit)
@@ -576,8 +625,12 @@ işlev sinif_derle(durum, komut):
     i olsun 0
     sürece i küçük uzunluk(govde.komutlar):
         uye olsun govde.komutlar[i]
+        eğer uye.tur eşit "IslevTanim" ise:
+            metod_derle(durum, komut.ad, uye, komut.ebeveyn_var)
+            i olsun i + 1
+            devam
         eğer uye.tur eşit_değil "Atama" ise:
-            hata_ayarla(durum, "Desteklenmeyen sinif uyesi: prototip simdilik yalnizca alan tanimlarini destekliyor.")
+            hata_ayarla(durum, "Desteklenmeyen sinif uyesi: prototip alan ve metod tanimlarini destekliyor.")
             döndür 0
         eğer uye.hedef_ozeti.tur eşit_değil "Kimlik" ise:
             hata_ayarla(durum, "Desteklenmeyen sinif alani hedefi: " + uye.hedef_ozeti.tur)
@@ -598,6 +651,14 @@ işlev komut_derle(durum, komut):
         döndür 0
 
     eğer komut.tur eşit "Atama" ise:
+        eğer komut.hedef_ozeti.tur eşit "BenimErisim" ise:
+            cagrilan_ad_yukle(durum, "benim", komut.satir)
+            ifade_derle(durum, komut.ifade_ozeti)
+            sabit olsun sabit_ekle(durum, "metin", komut.hedef_ozeti.alan)
+            operandli_komut_ekle(durum, "OP_ALAN_YAZ", komut.satir, sabit)
+            komut_ekle(durum, "OP_POP", komut.satir)
+            döndür 0
+
         eğer komut.hedef_ozeti.tur eşit "AlanErisim" ise:
             eğer uzunluk(komut.hedef_ozeti.altlar) eşit_değil 1 ise:
                 hata_ayarla(durum, "Alan atamasi bir hedef ifade bekliyor.")
@@ -675,7 +736,7 @@ işlev komut_derle(durum, komut):
         eski_yereller olsun durum.yereller
         durum["yereller"] = liste_kopyala(komut.parametreler)
         durum["islev_derinligi"] = durum.islev_derinligi + 1
-        varsayilanlari_derle(durum, komut)
+        varsayilanlari_derle(durum, komut, 0)
         eğer uzunluk(komut.bloklar) büyük 0 ise:
             blok_derle(durum, komut.bloklar[0])
         durum["islev_derinligi"] = durum.islev_derinligi - 1
@@ -686,7 +747,7 @@ işlev komut_derle(durum, komut):
         atlama_yamala(durum, govde_atlama)
         ad_sabit olsun sabit_ekle(durum, "metin", komut.ad)
         min_arity olsun komut.parametre_sayisi - komut.varsayilan_sayisi
-        islev_komut_ekle(durum, komut.satir, ad_sabit, komut.ad, giris, min_arity, komut.parametre_sayisi, islev_yerelleri)
+        islev_komut_ekle(durum, komut.satir, ad_sabit, komut.ad, giris, min_arity, komut.parametre_sayisi, islev_yerelleri, 0)
         global_sabit olsun sabit_ekle(durum, "metin", komut.ad)
         operandli_komut_ekle(durum, "OP_SET_GLOBAL", komut.satir, global_sabit)
         komut_ekle(durum, "OP_POP", komut.satir)
@@ -827,18 +888,19 @@ işlev komut_derle(durum, komut):
     hata_ayarla(durum, "Desteklenmeyen komut turu: " + komut.tur)
     döndür 0
 
-işlev varsayilanlari_derle(durum, komut):
+işlev varsayilanlari_derle(durum, komut, parametre_ofseti):
     i olsun 0
     sürece i küçük uzunluk(komut.varsayilanlar):
         varsayilan olsun komut.varsayilanlar[i]
         eğer uzunluk(varsayilan.tur) büyük 0 ise:
-            operandli_komut_ekle(durum, "OP_GET_LOCAL", komut.satir, i)
+            yerel_indeks olsun i + parametre_ofseti
+            operandli_komut_ekle(durum, "OP_GET_LOCAL", komut.satir, yerel_indeks)
             komut_ekle(durum, "OP_BOS", komut.satir)
             komut_ekle(durum, "OP_ESIT", komut.satir)
             deger_var_atlama olsun atlama_ekle(durum, "OP_ATLA_EGER_YANLIS", komut.satir)
             komut_ekle(durum, "OP_POP", komut.satir)
             ifade_derle(durum, varsayilan)
-            operandli_komut_ekle(durum, "OP_SET_LOCAL", komut.satir, i)
+            operandli_komut_ekle(durum, "OP_SET_LOCAL", komut.satir, yerel_indeks)
             komut_ekle(durum, "OP_POP", komut.satir)
             son_atlama olsun atlama_ekle(durum, "OP_ATLA", komut.satir)
             atlama_yamala(durum, deger_var_atlama)
