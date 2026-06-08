@@ -150,6 +150,7 @@ orhun orhun-vm dosya.oh --obc-only
 orhun orhun-derle dosya.oh cikti
 orhun orhun-derle dosya.oh cikti --obc-only
 orhun bootstrap-hazirla build/bootstrap
+orhun bootstrap-derle build/bootstrap dosya.oh cikti
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 orhun paket dogrula

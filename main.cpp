@@ -78,19 +78,23 @@ std::optional<std::string> cliModulModuCoz(const std::string &secenek) {
       "Hata: --modul-modu source, obc-first veya obc-only olmali.");
 }
 
-void cliModulModunuAyarla(const std::optional<std::string> &mod) {
-  if (!mod.has_value()) {
-    return;
-  }
+void cliOrtamDegiskeniniAyarla(const std::string &ad,
+                               const std::string &deger) {
 #ifdef _WIN32
-  if (_putenv_s("ORHUN_MODULE_MODE", mod->c_str()) != 0) {
-    throw std::runtime_error("Hata: ORHUN_MODULE_MODE ayarlanamadi.");
+  if (_putenv_s(ad.c_str(), deger.c_str()) != 0) {
+    throw std::runtime_error("Hata: " + ad + " ayarlanamadi.");
   }
 #else
-  if (setenv("ORHUN_MODULE_MODE", mod->c_str(), 1) != 0) {
-    throw std::runtime_error("Hata: ORHUN_MODULE_MODE ayarlanamadi.");
+  if (setenv(ad.c_str(), deger.c_str(), 1) != 0) {
+    throw std::runtime_error("Hata: " + ad + " ayarlanamadi.");
   }
 #endif
+}
+
+void cliModulModunuAyarla(const std::optional<std::string> &mod) {
+  if (mod.has_value()) {
+    cliOrtamDegiskeniniAyarla("ORHUN_MODULE_MODE", *mod);
+  }
 }
 
 std::string dosyaOku(const std::string &dosyaYolu) {
@@ -3306,6 +3310,31 @@ int komutBootstrapHazirla(const std::string &ciktiKoku) {
   return 0;
 }
 
+int komutBootstrapDerle(const std::string &toolchainKoku,
+                        const std::string &kaynakYolu,
+                        const std::string &calisanExeYolu,
+                        const std::string &ciktiTemel) {
+  namespace fs = std::filesystem;
+  const fs::path kok = fs::absolute(toolchainKoku);
+  if (!orhunNormalDosyaMi(kok / "bootstrap.manifest.json")) {
+    throw std::runtime_error(
+        "Hata: bootstrap toolchain manifesti bulunamadi: " +
+        (kok / "bootstrap.manifest.json").string());
+  }
+  for (const char *modul : {"lexer", "parser", "derleyici"}) {
+    const fs::path artifact =
+        kok / "orhun" / (std::string(modul) + ".obc");
+    if (!orhunNormalDosyaMi(artifact)) {
+      throw std::runtime_error("Hata: bootstrap toolchain modulu bulunamadi: " +
+                               artifact.string());
+    }
+  }
+
+  cliOrtamDegiskeniniAyarla("ORHUN_STDLIB_PATH", kok.string());
+  cliModulModunuAyarla(std::string("obc-only"));
+  return komutOrhunDerle(kaynakYolu, calisanExeYolu, ciktiTemel);
+}
+
 std::string evetHayir(bool deger) { return deger ? "evet" : "hayir"; }
 
 bool doctorOrtamDegiskeniAcik(const char *ad) {
@@ -4983,7 +5012,8 @@ int main(int argc, char *argv[]) {
              deger == "bytecode-run" || deger == "orhun-vm" ||
              deger == "bootstrap-vm" || deger == "orhun-derle" ||
              deger == "bootstrap-compile" || deger == "bootstrap-hazirla" ||
-             deger == "bootstrap-prepare" ||
+             deger == "bootstrap-prepare" || deger == "bootstrap-derle" ||
+             deger == "bootstrap-build" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -5343,6 +5373,16 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error("Hata: bootstrap-hazirla <dizin> kullanin.");
       }
       return komutBootstrapHazirla(argv[2]);
+    }
+
+    if (komut == "bootstrap-derle" || komut == "bootstrap-build") {
+      if (argc < 4 || argc > 5) {
+        throw std::runtime_error(
+            "Hata: bootstrap-derle <toolchain-dizini> <kaynak.oh> [cikti] "
+            "kullanin.");
+      }
+      const std::string ciktiTemel = argc == 5 ? argv[4] : "";
+      return komutBootstrapDerle(argv[2], argv[3], argv[0], ciktiTemel);
     }
 
     if (komut == "hiz") {

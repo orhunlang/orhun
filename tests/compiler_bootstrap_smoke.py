@@ -275,7 +275,47 @@ def main() -> int:
             "source-free strict compile artifact must match C++ compiler",
         )
 
+        standalone_base = tmpdir / "standalone_artifact"
+        standalone_compile = run_cmd(
+            [
+                str(binary),
+                "bootstrap-derle",
+                str(obc_stdlib),
+                str(artifact_source),
+                str(standalone_base),
+            ],
+            repo,
+        )
+        require(
+            standalone_compile.returncode == 0,
+            f"standalone bootstrap compile failed: {combined(standalone_compile)}",
+        )
+        require(
+            standalone_base.with_suffix(".obc").read_bytes()
+            == cxx_base.with_suffix(".obc").read_bytes(),
+            "standalone bootstrap compile artifact must match C++ compiler",
+        )
+
         (obc_orhun / "parser.obc").unlink()
+        missing_standalone = run_cmd(
+            [
+                str(binary),
+                "bootstrap-derle",
+                str(obc_stdlib),
+                str(artifact_source),
+                str(tmpdir / "missing_standalone"),
+            ],
+            repo,
+        )
+        require(
+            missing_standalone.returncode != 0,
+            "bootstrap-derle must reject incomplete toolchains",
+        )
+        require(
+            "bootstrap toolchain modulu bulunamadi" in combined(missing_standalone),
+            "bootstrap-derle missing-module error must explain the toolchain issue",
+        )
+
         missing_obc = run_cmd(
             [str(binary), "orhun-vm", str(artifact_source), "--obc-only"],
             repo,
@@ -320,7 +360,8 @@ def main() -> int:
         f"{len(FIXTURES)} orhun-vm parity, "
         "1 artifact parity, 1 self-source artifact parity, "
         "1 prepared obc-only module chain, 1 source-free strict compile, "
-        "1 source override, 3 rejected invalid inputs)."
+        "1 standalone bootstrap compile, 1 source override, "
+        "4 rejected invalid inputs)."
     )
     return 0
 
