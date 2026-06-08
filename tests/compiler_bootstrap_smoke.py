@@ -205,9 +205,8 @@ def main() -> int:
 
         obc_only_env = os.environ.copy()
         obc_only_env["ORHUN_STDLIB_PATH"] = str(obc_stdlib)
-        obc_only_env["ORHUN_MODULE_MODE"] = "obc-only"
         obc_only = run_cmd(
-            [str(binary), "orhun-vm", str(artifact_source)],
+            [str(binary), "orhun-vm", str(artifact_source), "--obc-only"],
             repo,
             env=obc_only_env,
         )
@@ -220,9 +219,31 @@ def main() -> int:
             "source-free obc-only compiler chain must match direct VM output",
         )
 
+        strict_base = tmpdir / "strict_artifact"
+        strict_compile = run_cmd(
+            [
+                str(binary),
+                "orhun-derle",
+                str(artifact_source),
+                "--obc-only",
+                str(strict_base),
+            ],
+            repo,
+            env=obc_only_env,
+        )
+        require(
+            strict_compile.returncode == 0,
+            f"source-free strict compile failed: {combined(strict_compile)}",
+        )
+        require(
+            strict_base.with_suffix(".obc").read_bytes()
+            == cxx_base.with_suffix(".obc").read_bytes(),
+            "source-free strict compile artifact must match C++ compiler",
+        )
+
         (obc_orhun / "parser.obc").unlink()
         missing_obc = run_cmd(
-            [str(binary), "orhun-vm", str(artifact_source)],
+            [str(binary), "orhun-vm", str(artifact_source), "--obc-only"],
             repo,
             env=obc_only_env,
         )
@@ -233,11 +254,39 @@ def main() -> int:
             "obc-only missing-module error must explain the strict policy",
         )
 
+        source_override_env = os.environ.copy()
+        source_override_env["ORHUN_MODULE_MODE"] = "obc-only"
+        source_override = run_cmd(
+            [str(binary), "orhun-vm", str(artifact_source), "--source"],
+            repo,
+            env=source_override_env,
+        )
+        require(
+            source_override.returncode == 0,
+            f"--source must override environment policy: {combined(source_override)}",
+        )
+        require(
+            combined(source_override) == combined(artifact_direct),
+            "--source override output must match direct VM output",
+        )
+
+        invalid_mode = run_cmd(
+            [str(binary), "orhun-vm", str(artifact_source), "--modul-modu=yanlis"],
+            repo,
+        )
+        require(invalid_mode.returncode != 0, "invalid module mode must fail")
+        require(
+            "--modul-modu source, obc-first veya obc-only olmali"
+            in combined(invalid_mode),
+            "invalid module mode error must list accepted policies",
+        )
+
     print(
         f"Compiler bootstrap smoke passed ({len(FIXTURES)} bridge and "
         f"{len(FIXTURES)} orhun-vm parity, "
         "1 artifact parity, 1 self-source artifact parity, "
-        "1 obc-only module chain, 2 rejected invalid inputs)."
+        "1 obc-only module chain, 1 source-free strict compile, "
+        "1 source override, 3 rejected invalid inputs)."
     )
     return 0
 

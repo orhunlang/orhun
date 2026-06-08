@@ -55,6 +55,43 @@ private:
   int kod_;
 };
 
+std::optional<std::string> cliModulModuCoz(const std::string &secenek) {
+  if (secenek == "--source") {
+    return "source";
+  }
+  if (secenek == "--obc-first") {
+    return "obc-first";
+  }
+  if (secenek == "--obc-only") {
+    return "obc-only";
+  }
+  if (secenek.rfind("--modul-modu=", 0) != 0) {
+    return std::nullopt;
+  }
+
+  const std::string mod = secenek.substr(std::string("--modul-modu=").size());
+  if (mod == "source" || mod == "obc-first" || mod == "obc-only") {
+    return mod;
+  }
+  throw std::runtime_error(
+      "Hata: --modul-modu source, obc-first veya obc-only olmali.");
+}
+
+void cliModulModunuAyarla(const std::optional<std::string> &mod) {
+  if (!mod.has_value()) {
+    return;
+  }
+#ifdef _WIN32
+  if (_putenv_s("ORHUN_MODULE_MODE", mod->c_str()) != 0) {
+    throw std::runtime_error("Hata: ORHUN_MODULE_MODE ayarlanamadi.");
+  }
+#else
+  if (setenv("ORHUN_MODULE_MODE", mod->c_str(), 1) != 0) {
+    throw std::runtime_error("Hata: ORHUN_MODULE_MODE ayarlanamadi.");
+  }
+#endif
+}
+
 std::string dosyaOku(const std::string &dosyaYolu) {
   std::ifstream dosya(dosyaYolu, std::ios::binary);
   if (!dosya.is_open()) {
@@ -5171,10 +5208,18 @@ int main(int argc, char *argv[]) {
     }
 
     if (komut == "orhun-vm" || komut == "bootstrap-vm") {
-      if (argc != 3) {
+      if (argc < 3 || argc > 4) {
         throw std::runtime_error(
-            "Hata: orhun-vm komutu tek bir .oh dosyasi bekliyor.");
+            "Hata: orhun-vm <kaynak.oh> "
+            "[--source|--obc-first|--obc-only] kullanin.");
       }
+      const std::optional<std::string> modulModu =
+          argc == 4 ? cliModulModuCoz(argv[3]) : std::nullopt;
+      if (argc == 4 && !modulModu.has_value()) {
+        throw std::runtime_error("Hata: bilinmeyen orhun-vm secenegi: " +
+                                 std::string(argv[3]));
+      }
+      cliModulModunuAyarla(modulModu);
       return komutOrhunVm(argv[2]);
     }
 
@@ -5204,11 +5249,35 @@ int main(int argc, char *argv[]) {
     }
 
     if (komut == "orhun-derle" || komut == "bootstrap-compile") {
-      if (argc < 3 || argc > 4) {
+      if (argc < 3) {
         throw std::runtime_error(
-            "Hata: orhun-derle <kaynak.oh> [cikti] kullanin.");
+            "Hata: orhun-derle <kaynak.oh> [cikti] "
+            "[--source|--obc-first|--obc-only] kullanin.");
       }
-      const std::string ciktiTemel = argc == 4 ? argv[3] : "";
+      std::string ciktiTemel;
+      std::optional<std::string> modulModu;
+      for (int i = 3; i < argc; ++i) {
+        const std::string secenek = argv[i];
+        const std::optional<std::string> adayMod = cliModulModuCoz(secenek);
+        if (adayMod.has_value()) {
+          if (modulModu.has_value()) {
+            throw std::runtime_error(
+                "Hata: orhun-derle modul modu yalnizca bir kez verilebilir.");
+          }
+          modulModu = adayMod;
+          continue;
+        }
+        if (!secenek.empty() && secenek[0] == '-') {
+          throw std::runtime_error("Hata: bilinmeyen orhun-derle secenegi: " +
+                                   secenek);
+        }
+        if (!ciktiTemel.empty()) {
+          throw std::runtime_error(
+              "Hata: orhun-derle yalnizca bir cikti yolu kabul eder.");
+        }
+        ciktiTemel = secenek;
+      }
+      cliModulModunuAyarla(modulModu);
       return komutOrhunDerle(argv[2], argv[0], ciktiTemel);
     }
 

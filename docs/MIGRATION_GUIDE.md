@@ -187,3 +187,5 @@
   kardeş `.obc` modülünü tercih eder ve gerekirse kaynağa düşer. `obc-only`,
   eksik önceden derlenmiş modülü açık hatayla reddeder ve C++ derleyici
   fallback'i yapmaz.
+- `orhun-vm` ve `orhun-derle` aynı politikaları doğrudan `--source`,
+  `--obc-first`, `--obc-only` veya `--modul-modu=<değer>` ile seçebilir.

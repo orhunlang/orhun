@@ -637,6 +637,8 @@ Stable channel defaults:
   precompiled modules without C++ compiler fallback. The guarded bootstrap
   test runs the Orhun compiler/parser/lexer module chain source-free in
   `obc-only` mode.
+- `orhun-vm` and `orhun-derle` accept `--source`, `--obc-first`,
+  `--obc-only`, or `--modul-modu=<mode>` to select the policy for that process.
 
 ## Compatibility Rules
 

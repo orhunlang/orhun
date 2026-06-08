@@ -176,6 +176,8 @@ bagimsiz bir derleyici CLI'i degildir.
 `ORHUN_MODULE_MODE=obc-only` ile onceden derlenmis Orhun
 derleyici/parser/lexer modul zinciri `.oh` kaynaklari olmadan ve C++ kaynak
 derleme fallback'i yapmadan calisir; eksik modul artifact'i acik hata verir.
+`orhun-vm` ve `orhun-derle`, bu zinciri tek komutta secmek icin `--obc-only`
+ve `--obc-first` CLI politikalarini destekler.
 
 Hedefler:
 
