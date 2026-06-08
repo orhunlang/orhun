@@ -208,13 +208,13 @@ def main() -> int:
         )
         modules = manifest.get("modules")
         require(
-            isinstance(modules, list) and len(modules) == 3,
-            "bootstrap prepare manifest must list three modules",
+            isinstance(modules, list) and len(modules) == 4,
+            "bootstrap prepare manifest must list four modules",
         )
         manifest_modules = {
             entry.get("module"): entry for entry in modules if isinstance(entry, dict)
         }
-        for module in ("lexer", "parser", "derleyici"):
+        for module in ("lexer", "parser", "derleyici", "derleyici_cli"):
             module_name = f"orhun/{module}.oh"
             artifact = obc_orhun / f"{module}.obc"
             require(
@@ -391,6 +391,81 @@ def main() -> int:
             "standalone bootstrap run output must match direct VM output",
         )
 
+        compiler_bundle = tmpdir / "compiler_bundle"
+        bundle_create = run_cmd(
+            [
+                str(binary),
+                "bootstrap-derleyici-paketle",
+                str(obc_stdlib),
+                str(compiler_bundle),
+            ],
+            repo,
+        )
+        require(
+            bundle_create.returncode == 0,
+            f"bootstrap compiler bundle failed: {combined(bundle_create)}",
+        )
+        bundle_exe = compiler_bundle / (
+            "orhun-derleyici.exe" if os.name == "nt" else "orhun-derleyici"
+        )
+        require(bundle_exe.exists(), "bootstrap compiler executable missing")
+        require(
+            (compiler_bundle / "bootstrap-compiler.manifest.json").exists(),
+            "bootstrap compiler bundle manifest missing",
+        )
+        require(
+            not list((compiler_bundle / "StdLib").rglob("*.oh")),
+            "bootstrap compiler bundle must remain source-free",
+        )
+
+        bundled_compile = run_cmd(
+            [str(bundle_exe), str(artifact_source)],
+            tmpdir,
+        )
+        require(
+            bundled_compile.returncode == 0,
+            f"bundled Orhun compiler failed: {combined(bundled_compile)}",
+        )
+        bundled_payload = json.loads(bundled_compile.stdout)
+        require(
+            bundled_payload.get("durum") == "ok"
+            and bundled_payload.get("hata_sayisi") == 0,
+            f"bundled Orhun compiler payload failed: {bundled_payload}",
+        )
+        bundled_json = tmpdir / "bundled.bytecode.json"
+        bundled_json.write_text(
+            json.dumps(bundled_payload, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        bundled_run = run_cmd(
+            [str(binary), "baytkod-yurut", str(bundled_json)],
+            repo,
+        )
+        require(
+            bundled_run.returncode == 0,
+            f"bundled compiler bytecode failed: {combined(bundled_run)}",
+        )
+        require(
+            combined(bundled_run) == combined(artifact_direct),
+            "bundled compiler output must execute like direct VM output",
+        )
+
+        bundle_parser = compiler_bundle / "StdLib" / "orhun" / "parser.obc"
+        bundle_parser.write_bytes(bundle_parser.read_bytes()[:-1])
+        corrupt_bundle = run_cmd(
+            [str(bundle_exe), str(artifact_source)],
+            tmpdir,
+        )
+        require(
+            corrupt_bundle.returncode != 0,
+            "bundled compiler must reject corrupt sibling toolchain",
+        )
+        require(
+            "bootstrap manifesti gecersiz" in combined(corrupt_bundle),
+            "bundled compiler corruption error must explain toolchain failure",
+        )
+
         (obc_orhun / "parser.obc").unlink()
         missing_verify = run_cmd(
             [str(binary), "bootstrap-dogrula", str(obc_stdlib)],
@@ -469,8 +544,8 @@ def main() -> int:
         "1 artifact parity, 1 self-source artifact parity, "
         "1 prepared obc-only module chain, 1 source-free strict compile, "
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
-        "1 standalone bootstrap verification, 1 source override, "
-        "7 rejected invalid inputs)."
+        "1 standalone bootstrap verification, 1 source-free compiler bundle, "
+        "1 source override, 8 rejected invalid inputs)."
     )
     return 0
 

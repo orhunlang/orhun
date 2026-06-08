@@ -190,7 +190,8 @@
 - `orhun-vm` ve `orhun-derle` aynı politikaları doğrudan `--source`,
   `--obc-first`, `--obc-only` veya `--modul-modu=<değer>` ile seçebilir.
 - `orhun bootstrap-hazirla <dizin>`, kaynak dosyası içermeyen lexer/parser/
-  derleyici `.obc` zincirini ve `bootstrap.manifest.json` dosyasını üretir.
+  derleyici ve derleyici-CLI `.obc` zincirini ve `bootstrap.manifest.json`
+  dosyasını üretir.
   İngilizce uyumluluk takma adı `bootstrap-prepare`'dır.
 - `orhun bootstrap-dogrula <toolchain-dizini>`, manifest sözleşmesini, modül
   kümesini, boyut/CRC değerlerini ve OBC yapısını çalıştırmadan denetler.
@@ -201,6 +202,10 @@
 - `orhun bootstrap-calistir <toolchain-dizini> <kaynak.oh>`, aynı doğrulanmış
   toolchain ile hedefi strict modda derleyip VM'de çalıştırır. İngilizce
   uyumluluk takma adı `bootstrap-run`'dır.
+- `orhun bootstrap-derleyici-paketle <toolchain-dizini> <çıktı-dizini>`,
+  kaynak-kodsuz taşınabilir `orhun-derleyici` çalıştırılabilir dosyasını ve
+  kardeş strict toolchain'ini üretir. İngilizce uyumluluk takma adı
+  `bootstrap-compiler-bundle`'dır.
 - Kullanıcı programlarına kaynak/komut sonrasında verilen değerler artık
   `sistem.argumanlar` listesinde bulunur. `orhun-vm` yolunda çalışma zamanı
   argümanlarını modül seçeneklerinden ayırmak için `--` kullanılır.

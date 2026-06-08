@@ -429,6 +429,7 @@ Current built-in module surfaces include:
 - `orhun/lexer.oh`
 - `orhun/parser.oh`
 - `orhun/derleyici.oh`
+- `orhun/derleyici_cli.oh`
 
 Safety-sensitive modules must keep policy checks enabled by default.
 
@@ -648,8 +649,9 @@ Stable channel defaults:
 - `orhun-vm` and `orhun-derle` accept `--source`, `--obc-first`,
   `--obc-only`, or `--modul-modu=<mode>` to select the policy for that process.
 - `bootstrap-hazirla <directory>` writes source-free `lexer.obc`,
-  `parser.obc`, and `derleyici.obc` modules plus a CRC-bearing
-  `bootstrap.manifest.json`. `bootstrap-prepare` is its compatibility alias.
+  `parser.obc`, `derleyici.obc`, and `derleyici_cli.obc` artifacts plus a
+  CRC-bearing `bootstrap.manifest.json`. `bootstrap-prepare` is its
+  compatibility alias.
 - `bootstrap-dogrula <toolchain-directory>` validates the manifest contract,
   exact module set, payload sizes, CRC32 values, and OBC structure without
   compiling or executing a target. `bootstrap-verify` is its compatibility
@@ -660,6 +662,13 @@ Stable channel defaults:
 - `bootstrap-calistir <toolchain-directory> <source.oh>` compiles and executes
   through the same prepared strict toolchain. `bootstrap-run` is its
   compatibility alias.
+- `bootstrap-derleyici-paketle <toolchain-directory> <output-directory>`
+  creates a source-free portable compiler bundle containing an
+  `orhun-derleyici` executable and its sibling `StdLib` toolchain.
+  `bootstrap-compiler-bundle` is its compatibility alias. The executable
+  validates and activates the sibling strict toolchain automatically, then
+  emits Orhun compiler bytecode JSON for the source path passed as its first
+  program argument.
 
 ## Compatibility Rules
 

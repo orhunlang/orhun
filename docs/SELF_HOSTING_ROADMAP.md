@@ -178,8 +178,9 @@ derleyici/parser/lexer modul zinciri `.oh` kaynaklari olmadan ve C++ kaynak
 derleme fallback'i yapmadan calisir; eksik modul artifact'i acik hata verir.
 `orhun-vm` ve `orhun-derle`, bu zinciri tek komutta secmek icin `--obc-only`
 ve `--obc-first` CLI politikalarini destekler.
-`orhun bootstrap-hazirla <dizin>`, uc modulu kaynak dosyasi icermeyen bir
-toolchain klasorune ve CRC tasiyan makine-okur manifeste donusturur.
+`orhun bootstrap-hazirla <dizin>`, lexer/parser/derleyici modulleri ile
+derleyici CLI girisini kaynak dosyasi icermeyen bir toolchain klasorune ve CRC
+tasiyan makine-okur manifeste donusturur.
 `orhun bootstrap-dogrula <toolchain>`, manifest sozlesmesini, tam modul
 listesini, payload boyut/CRC degerlerini ve OBC yapisini hedef calistirmadan
 dogrular; derleme ve calistirma komutlari da once ayni denetimi yapar.
@@ -187,6 +188,11 @@ dogrular; derleme ve calistirma komutlari da once ayni denetimi yapar.
 ortam degiskeni gerektirmeden kati `obc-only` modunda kullanir.
 `orhun bootstrap-calistir <toolchain> <kaynak.oh>`, ayni zincirle hedefi
 derleyip VM'de calistirir.
+`orhun bootstrap-derleyici-paketle <toolchain> <cikti-dizini>`, kardes
+toolchain'ini farkli calisma klasorlerinden otomatik bulan ve dogrulayan,
+kaynak-kodsuz tasinabilir `orhun-derleyici` calistirilabilir dosyasini uretir.
+Bu ilk bagimsiz derleyici CLI'i bytecode JSON uretir; dogrudan `.obc` yazma
+hala sonraki kilometre tasidir.
 `sistem.argumanlar`, dogrudan, paketli ve bootstrap calistirma yollarinda ayni
 program argumani sozlesmesini saglar; Orhun ile yazilacak bagimsiz derleyici
 CLI'inin kaynak/cikti yollarini okuyabilmesi icin gereken primitive hazirdir.
@@ -196,6 +202,8 @@ Hedefler:
 - Orhun compiler kaynagi Orhun ile derlenebilir.
 - Release surecinde C++ bootstrap sadece ilk araci uretir.
 - Sonraki asamada Orhun compiler kendi yeni surumunu uretebilir.
+- Tasinabilir Orhun compiler CLI bytecode JSON yerine dogrudan `.obc` ve
+  paketli calistirilabilir dosya uretebilir.
 
 Basari olcutu:
 

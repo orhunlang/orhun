@@ -56,6 +56,8 @@ private:
   int kod_;
 };
 
+void bootstrapToolchainDogrula(const std::string &toolchainKoku);
+
 std::optional<std::string> cliModulModuCoz(const std::string &secenek) {
   if (secenek == "--source") {
     return "source";
@@ -317,9 +319,18 @@ bool paketPayloadOku(const std::string &calisanExeYolu,
 bool gomuluPaketiCalistir(
     const std::string &calisanExeYolu,
     const std::vector<std::string> &programArgumanlari = {}) {
+  namespace fs = std::filesystem;
   std::vector<std::uint8_t> payload;
   if (!paketPayloadOku(calisanExeYolu, payload)) {
     return false;
+  }
+
+  const fs::path komsuStdlib =
+      fs::absolute(calisanExeYolu).parent_path() / "StdLib";
+  if (orhunNormalDosyaMi(komsuStdlib / "bootstrap.manifest.json")) {
+    bootstrapToolchainDogrula(komsuStdlib.string());
+    cliOrtamDegiskeniniAyarla("ORHUN_STDLIB_PATH", komsuStdlib.string());
+    cliModulModunuAyarla(std::string("obc-only"));
   }
 
   BytecodeChunk chunk = chunkCoz(payload);
@@ -3293,7 +3304,8 @@ int komutBootstrapHazirla(const std::string &ciktiKoku) {
                              ec.message());
   }
 
-  const std::vector<std::string> moduller = {"lexer", "parser", "derleyici"};
+  const std::vector<std::string> moduller = {
+      "lexer", "parser", "derleyici", "derleyici_cli"};
   std::ostringstream manifest;
   manifest << "{\n"
            << "  \"format\": \"orhun-bootstrap-v1\",\n"
@@ -3432,9 +3444,10 @@ void bootstrapToolchainDogrula(const std::string &toolchainKoku) {
       {"orhun/lexer.oh", "orhun/lexer.obc"},
       {"orhun/parser.oh", "orhun/parser.obc"},
       {"orhun/derleyici.oh", "orhun/derleyici.obc"},
+      {"orhun/derleyici_cli.oh", "orhun/derleyici_cli.obc"},
   };
   if (moduller.size() != beklenenModuller.size()) {
-    bootstrapManifestHatasi("kok.modules tam olarak uc modul icermeli.");
+    bootstrapManifestHatasi("kok.modules tam olarak dort modul icermeli.");
   }
 
   std::set<std::string> gorulenModuller;
@@ -3497,6 +3510,69 @@ void bootstrapToolchainEtkinlestir(const std::string &toolchainKoku) {
   bootstrapToolchainDogrula(toolchainKoku);
   cliOrtamDegiskeniniAyarla("ORHUN_STDLIB_PATH", kok.string());
   cliModulModunuAyarla(std::string("obc-only"));
+}
+
+int komutBootstrapDerleyiciPaketle(const std::string &toolchainKoku,
+                                   const std::string &ciktiKoku,
+                                   const std::string &calisanExeYolu) {
+  namespace fs = std::filesystem;
+  const fs::path kaynakKok = fs::absolute(toolchainKoku);
+  const fs::path cikti = fs::absolute(ciktiKoku);
+  const fs::path ciktiStdlib = cikti / "StdLib";
+  bootstrapToolchainDogrula(kaynakKok.string());
+
+  std::error_code ec;
+  fs::create_directories(ciktiStdlib / "orhun", ec);
+  if (ec) {
+    throw std::runtime_error(
+        "Hata: bootstrap derleyici paketi olusturulamadi: " + ec.message());
+  }
+
+  const std::vector<fs::path> goreliDosyalar = {
+      "bootstrap.manifest.json",
+      fs::path("orhun") / "lexer.obc",
+      fs::path("orhun") / "parser.obc",
+      fs::path("orhun") / "derleyici.obc",
+      fs::path("orhun") / "derleyici_cli.obc",
+  };
+  for (const fs::path &goreli : goreliDosyalar) {
+    ec.clear();
+    fs::copy_file(kaynakKok / goreli, ciktiStdlib / goreli,
+                  fs::copy_options::overwrite_existing, ec);
+    if (ec) {
+      throw std::runtime_error("Hata: bootstrap paket dosyasi kopyalanamadi: " +
+                               goreli.string() + ": " + ec.message());
+    }
+  }
+  bootstrapToolchainDogrula(ciktiStdlib.string());
+
+  const std::vector<std::uint8_t> payload =
+      dosyaOkuIkili((ciktiStdlib / "orhun" / "derleyici_cli.obc").string());
+  static_cast<void>(chunkCoz(payload));
+#ifdef _WIN32
+  const fs::path derleyiciExe = cikti / "orhun-derleyici.exe";
+#else
+  const fs::path derleyiciExe = cikti / "orhun-derleyici";
+#endif
+  paketliExeUret(calisanExeYolu, derleyiciExe.string(), payload);
+
+  std::ostringstream manifest;
+  manifest << "{\n"
+           << "  \"format\": \"orhun-bootstrap-compiler-bundle-v1\",\n"
+           << "  \"compiler\": \""
+           << jsonKacis(derleyiciExe.filename().u8string()) << "\",\n"
+           << "  \"toolchain\": \"StdLib/bootstrap.manifest.json\",\n"
+           << "  \"payload_size\": " << payload.size() << ",\n"
+           << "  \"payload_crc32\": \"" << bootstrapCrc32Hex(payload) << "\"\n"
+           << "}\n";
+  dosyaYaz((cikti / "bootstrap-compiler.manifest.json").string(),
+           manifest.str());
+
+  std::cout << "Bootstrap derleyici paketi hazirlandi: " << cikti.string()
+            << "\n";
+  std::cout << "Derleyici calistirilabilir dosyasi: " << derleyiciExe.string()
+            << "\n";
+  return 0;
 }
 
 int komutBootstrapDerle(const std::string &toolchainKoku,
@@ -5587,6 +5663,16 @@ int main(int argc, char *argv[]) {
             "Hata: bootstrap-dogrula <toolchain-dizini> kullanin.");
       }
       return komutBootstrapDogrula(argv[2]);
+    }
+
+    if (komut == "bootstrap-derleyici-paketle" ||
+        komut == "bootstrap-compiler-bundle") {
+      if (argc != 4) {
+        throw std::runtime_error(
+            "Hata: bootstrap-derleyici-paketle <toolchain-dizini> "
+            "<cikti-dizini> kullanin.");
+      }
+      return komutBootstrapDerleyiciPaketle(argv[2], argv[3], argv[0]);
     }
 
     if (komut == "hiz") {
