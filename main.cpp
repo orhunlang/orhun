@@ -71,7 +71,13 @@ struct DerleyiciCliArtifactIstegi {
   std::string ciktiTemel;
 };
 
-DerleyiciCliArtifactIstegi derleyiciCliArtifactIsteginiCalistir(
+struct DerleyiciCliSonucu {
+  std::string jsonCiktisi;
+  int cikisKodu = 0;
+  std::optional<DerleyiciCliArtifactIstegi> artifactIstegi;
+};
+
+DerleyiciCliSonucu derleyiciCliCalistir(
     const BytecodeChunk &cliChunk,
     const std::vector<std::string> &programArgumanlari);
 
@@ -356,14 +362,19 @@ bool gomuluPaketiCalistir(
       (exeAdi == "orhun-derleyici.exe" || exeAdi == "orhun-derleyici") &&
       orhunNormalDosyaMi(calisanExe.parent_path() /
                          "bootstrap-compiler.manifest.json");
-  if (bootstrapDerleyiciMi && !programArgumanlari.empty() &&
-      (programArgumanlari[0] == "--derle" ||
-       programArgumanlari[0] == "--compile")) {
-    DerleyiciCliArtifactIstegi istek =
-        derleyiciCliArtifactIsteginiCalistir(chunkCoz(payload),
-                                             programArgumanlari);
-    static_cast<void>(derlemeCiktilariniYaz(
-        istek.chunk, istek.kaynakYolu, calisanExeYolu, istek.ciktiTemel));
+  if (bootstrapDerleyiciMi) {
+    DerleyiciCliSonucu sonuc =
+        derleyiciCliCalistir(chunkCoz(payload), programArgumanlari);
+    if (sonuc.artifactIstegi.has_value()) {
+      const DerleyiciCliArtifactIstegi &istek = *sonuc.artifactIstegi;
+      static_cast<void>(derlemeCiktilariniYaz(
+          istek.chunk, istek.kaynakYolu, calisanExeYolu, istek.ciktiTemel));
+      return true;
+    }
+    if (sonuc.cikisKodu != 0) {
+      throw CliCikisHatasi(sonuc.cikisKodu, sagaBoslukKirp(sonuc.jsonCiktisi));
+    }
+    std::cout << sonuc.jsonCiktisi;
     return true;
   }
 
@@ -1121,7 +1132,7 @@ BytecodeChunk bytecodeJsonCoz(const std::string &metin) {
   return chunk;
 }
 
-DerleyiciCliArtifactIstegi derleyiciCliArtifactIsteginiCalistir(
+DerleyiciCliSonucu derleyiciCliCalistir(
     const BytecodeChunk &cliChunk,
     const std::vector<std::string> &programArgumanlari) {
   std::ostringstream yakalanan;
@@ -1138,39 +1149,43 @@ DerleyiciCliArtifactIstegi derleyiciCliArtifactIsteginiCalistir(
   const std::string cliCiktisi = yakalanan.str();
   const yerlesik::JsonDeger kok = yerlesik::jsonCoz(cliCiktisi);
   const auto &kokSozluk = jsonSozlukBekle(kok, "derleyici_cli");
+  const std::size_t cikisKodu = jsonBoyutBekle(
+      jsonAlanBekle(kokSozluk, "cikis_kodu", "derleyici_cli"),
+      "derleyici_cli.cikis_kodu");
+  if (cikisKodu > 255) {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI cikis kodu 255 sinirini asiyor.");
+  }
+
+  DerleyiciCliSonucu sonuc;
+  sonuc.jsonCiktisi = cliCiktisi;
+  sonuc.cikisKodu = static_cast<int>(cikisKodu);
+
   const yerlesik::JsonDeger *artifactIstegi =
       jsonAlanBul(kokSozluk, "artifact_istegi");
   if (artifactIstegi == nullptr) {
-    const yerlesik::JsonDeger *hataDegeri = jsonAlanBul(kokSozluk, "hata");
-    if (hataDegeri != nullptr) {
-      const auto &hataSozluk =
-          jsonSozlukBekle(*hataDegeri, "derleyici_cli.hata");
-      const yerlesik::JsonDeger *mesajDegeri =
-          jsonAlanBul(hataSozluk, "mesaj");
-      if (mesajDegeri != nullptr) {
-        throw std::runtime_error(
-            "Hata: Orhun derleyici CLI: " +
-            jsonMetinBekle(*mesajDegeri, "derleyici_cli.hata.mesaj"));
-      }
-    }
+    return sonuc;
+  }
+  if (sonuc.cikisKodu != 0) {
     throw std::runtime_error(
-        "Hata: Orhun derleyici CLI artifact istegi uretmedi.");
+        "Hata: Orhun derleyici CLI basarisiz sonuc ile artifact istedi.");
   }
 
   const auto &istek =
       jsonSozlukBekle(*artifactIstegi, "derleyici_cli.artifact_istegi");
-  DerleyiciCliArtifactIstegi sonuc;
-  sonuc.chunk = bytecodeJsonCoz(cliCiktisi);
-  sonuc.kaynakYolu = jsonMetinBekle(
+  DerleyiciCliArtifactIstegi artifact;
+  artifact.chunk = bytecodeJsonCoz(cliCiktisi);
+  artifact.kaynakYolu = jsonMetinBekle(
       jsonAlanBekle(istek, "kaynak", "derleyici_cli.artifact_istegi"),
       "derleyici_cli.artifact_istegi.kaynak");
-  sonuc.ciktiTemel = jsonMetinBekle(
+  artifact.ciktiTemel = jsonMetinBekle(
       jsonAlanBekle(istek, "cikti", "derleyici_cli.artifact_istegi"),
       "derleyici_cli.artifact_istegi.cikti");
-  if (sonuc.kaynakYolu.empty()) {
+  if (artifact.kaynakYolu.empty()) {
     throw std::runtime_error(
         "Hata: Orhun derleyici CLI artifact kaynak yolu bos olamaz.");
   }
+  sonuc.artifactIstegi = std::move(artifact);
   return sonuc;
 }
 

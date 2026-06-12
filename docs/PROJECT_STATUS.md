@@ -69,6 +69,9 @@ These percentages are planning estimates, not promises.
 - The portable compiler's source/output argument parsing and artifact request
   are owned by Orhun-written `derleyici_cli.oh`; C++ remains only as the
   validated OBC/package serialization bootstrap bridge for that request.
+- The packaged compiler C++ host no longer recognizes individual compiler CLI
+  command names; Orhun-written CLI bytecode returns the structured exit code
+  and optional artifact request for every invocation.
 - `bootstrap-yeniden-uret` performs a seed -> stage 2 -> stage 3 rebuild and
   rejects the result unless every generated compiler artifact is byte-identical
   across the final two stages.

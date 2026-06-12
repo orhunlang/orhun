@@ -673,7 +673,9 @@ Stable channel defaults:
   `.obc`, packaged executable, and metadata artifacts directly. Source/output
   argument parsing and the validated artifact request are produced by
   `orhun/derleyici_cli.oh`; the OBC/package serialization bridge remains in the
-  C++ bootstrap runtime.
+  C++ bootstrap runtime. The packaged host does not dispatch individual
+  compiler command names; it consumes the structured exit code and optional
+  artifact request returned by Orhun CLI bytecode.
 - `bootstrap-yeniden-uret <seed-toolchain> <output-directory>` performs a
   reproducible three-stage bootstrap gate: the seed builds stage 2, stage 2
   builds stage 3, and every stage-2/stage-3 OBC artifact must be byte-identical.

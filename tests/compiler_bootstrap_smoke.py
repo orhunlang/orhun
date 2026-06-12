@@ -462,6 +462,7 @@ def main() -> int:
         cli_control_payload = json.loads(cli_control.stdout)
         require(
             cli_control_payload.get("durum") == "ok"
+            and cli_control_payload.get("cikis_kodu") == 0
             and cli_control_payload.get("artifact_istegi")
             == {
                 "kaynak": str(artifact_source),
@@ -591,7 +592,8 @@ def main() -> int:
             "bundled compiler must reject incomplete artifact arguments",
         )
         require(
-            "Orhun derleyici CLI: Kullanim: orhun-derleyici --derle"
+            '"cikis_kodu":1' in combined(rejected_bundle_usage)
+            and "Kullanim: orhun-derleyici --derle"
             in combined(rejected_bundle_usage),
             "bundled compiler usage error must come from the Orhun CLI control plane",
         )

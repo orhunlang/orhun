@@ -2,7 +2,7 @@
 
 derleyici olsun dahil_et "orhun/derleyici.oh"
 
-surum olsun "0.2.0"
+surum olsun "0.3.0"
 
 işlev basarisiz(mesaj):
     döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
@@ -31,4 +31,9 @@ işlev cli_calistir(argumanlar):
         döndür basarisiz("Kullanim: orhun-derleyici <kaynak.oh>")
     döndür kaynak_derle(argumanlar[0])
 
-yazdır json.yaz(cli_calistir(sistem.argumanlar))
+sonuc olsun cli_calistir(sistem.argumanlar)
+eğer sonuc.durum eşit "ok" ise:
+    sonuc["cikis_kodu"] = 0
+değilse:
+    sonuc["cikis_kodu"] = 1
+yazdır json.yaz(sonuc)
