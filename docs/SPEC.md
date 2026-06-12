@@ -679,6 +679,9 @@ Stable channel defaults:
   validates the compiler-bundle manifest, embedded CLI payload size/CRC, and
   sibling toolchain path. Compiler-bundle identity does not depend on the
   executable filename, so a valid bundle executable may be renamed.
+- `bootstrap-derleyici-dogrula <bundle-directory>` validates the complete
+  portable compiler bundle without executing compiler CLI bytecode.
+  `bootstrap-compiler-verify` is its compatibility alias.
 - `bootstrap-yeniden-uret <seed-toolchain> <output-directory>` performs a
   reproducible three-stage bootstrap gate: the seed builds stage 2, stage 2
   builds stage 3, and every stage-2/stage-3 OBC artifact must be byte-identical.

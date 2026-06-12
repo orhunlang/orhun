@@ -60,7 +60,7 @@ jobs:
           .\build\orhun_release.exe bootstrap-hazirla build/bootstrap-release-seed
           .\build\orhun_release.exe bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
           .\build\orhun_release.exe bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
-          .\build\orhun_release.exe bootstrap-dogrula artifacts/compiler-bundle/StdLib
+          .\build\orhun_release.exe bootstrap-derleyici-dogrula artifacts/compiler-bundle
 
       - name: Build validated compiler bundle (Linux/macOS)
         if: runner.os != 'Windows'
@@ -68,7 +68,7 @@ jobs:
           ./build/orhun_release bootstrap-hazirla build/bootstrap-release-seed
           ./build/orhun_release bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
           ./build/orhun_release bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
-          ./build/orhun_release bootstrap-dogrula artifacts/compiler-bundle/StdLib
+          ./build/orhun_release bootstrap-derleyici-dogrula artifacts/compiler-bundle
 
       - name: Create release archive (Windows)
         if: runner.os == 'Windows'

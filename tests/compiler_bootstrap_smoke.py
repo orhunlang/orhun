@@ -509,6 +509,18 @@ def main() -> int:
             not list((compiler_bundle / "StdLib").rglob("*.oh")),
             "bootstrap compiler bundle must remain source-free",
         )
+        bundle_verify = run_cmd(
+            [str(binary), "bootstrap-derleyici-dogrula", str(compiler_bundle)],
+            repo,
+        )
+        require(
+            bundle_verify.returncode == 0,
+            f"bootstrap compiler bundle verification failed: {combined(bundle_verify)}",
+        )
+        require(
+            "Bootstrap derleyici paketi dogrulandi:" in combined(bundle_verify),
+            "bootstrap compiler bundle verification must report success",
+        )
 
         bundled_compile = run_cmd(
             [str(bundle_exe), str(artifact_source)],
@@ -553,8 +565,8 @@ def main() -> int:
             newline="\n",
         )
         corrupt_compiler_manifest = run_cmd(
-            [str(bundle_exe), str(artifact_source)],
-            tmpdir,
+            [str(binary), "bootstrap-compiler-verify", str(compiler_bundle)],
+            repo,
         )
         require(
             corrupt_compiler_manifest.returncode != 0,
@@ -753,9 +765,10 @@ def main() -> int:
         "1 prepared obc-only module chain, 1 source-free strict compile, "
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
-        "1 Orhun-owned compiler CLI control plane, 2 bundled direct artifact "
-        "compile modes, 1 renamed compiler bundle, 1 source override, "
-        "1 reproducible bootstrap rebuild, 11 rejected invalid inputs)."
+        "1 standalone compiler bundle verification, 1 Orhun-owned compiler CLI "
+        "control plane, 2 bundled direct artifact compile modes, 1 renamed "
+        "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
+        "11 rejected invalid inputs)."
     )
     return 0
 

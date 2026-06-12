@@ -3672,6 +3672,35 @@ bool bootstrapDerleyiciPaketiDogrula(
   return true;
 }
 
+int komutBootstrapDerleyiciDogrula(const std::string &paketKoku) {
+  namespace fs = std::filesystem;
+  const fs::path kok = fs::absolute(paketKoku);
+#ifdef _WIN32
+  const fs::path derleyiciExe = kok / "orhun-derleyici.exe";
+#else
+  const fs::path derleyiciExe = kok / "orhun-derleyici";
+#endif
+  if (!orhunNormalDosyaMi(derleyiciExe)) {
+    throw std::runtime_error(
+        "Hata: bootstrap derleyici executable bulunamadi: " +
+        derleyiciExe.string());
+  }
+
+  std::vector<std::uint8_t> payload;
+  if (!paketPayloadOku(derleyiciExe.string(), payload)) {
+    throw std::runtime_error(
+        "Hata: bootstrap derleyici executable embedded payload icermiyor.");
+  }
+  if (!bootstrapDerleyiciPaketiDogrula(derleyiciExe.string(), payload)) {
+    throw std::runtime_error(
+        "Hata: bootstrap derleyici manifesti bulunamadi.");
+  }
+
+  std::cout << "Bootstrap derleyici paketi dogrulandi: " << kok.string()
+            << "\n";
+  return 0;
+}
+
 int komutBootstrapDogrula(const std::string &toolchainKoku) {
   namespace fs = std::filesystem;
   bootstrapToolchainDogrula(toolchainKoku);
@@ -5917,6 +5946,15 @@ int main(int argc, char *argv[]) {
             "<cikti-dizini> kullanin.");
       }
       return komutBootstrapDerleyiciPaketle(argv[2], argv[3], argv[0]);
+    }
+
+    if (komut == "bootstrap-derleyici-dogrula" ||
+        komut == "bootstrap-compiler-verify") {
+      if (argc != 3) {
+        throw std::runtime_error(
+            "Hata: bootstrap-derleyici-dogrula <bundle-dizini> kullanin.");
+      }
+      return komutBootstrapDerleyiciDogrula(argv[2]);
     }
 
     if (komut == "bootstrap-yeniden-uret" || komut == "bootstrap-rebuild") {

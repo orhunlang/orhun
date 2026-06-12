@@ -153,6 +153,7 @@ orhun bootstrap-hazirla build/bootstrap
 orhun bootstrap-dogrula build/bootstrap
 orhun bootstrap-yeniden-uret build/bootstrap build/yeniden-uretilen
 orhun bootstrap-derleyici-paketle build/bootstrap build/derleyici-paketi
+orhun bootstrap-derleyici-dogrula build/derleyici-paketi
 orhun bootstrap-derle build/bootstrap dosya.oh cikti
 orhun bootstrap-calistir build/bootstrap dosya.oh
 orhun hiz dosya.oh --json

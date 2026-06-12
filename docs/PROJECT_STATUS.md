@@ -75,6 +75,8 @@ These percentages are planning estimates, not promises.
 - Portable compiler startup strictly validates its compiler-bundle manifest,
   embedded CLI payload size/CRC, and sibling toolchain link. Bundle identity is
   manifest/payload based, so the executable can be safely renamed.
+- `bootstrap-derleyici-dogrula` performs the same complete compiler-bundle
+  verification before CI upload or release packaging.
 - `bootstrap-yeniden-uret` performs a seed -> stage 2 -> stage 3 rebuild and
   rejects the result unless every generated compiler artifact is byte-identical
   across the final two stages.

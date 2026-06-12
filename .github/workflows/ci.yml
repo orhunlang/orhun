@@ -321,6 +321,7 @@ jobs:
           .\build\orhun_test.exe bootstrap-hazirla build/bootstrap-release-seed
           .\build\orhun_test.exe bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
           .\build\orhun_test.exe bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+          .\build\orhun_test.exe bootstrap-derleyici-dogrula artifacts/compiler-bundle
 
       - name: Build validated compiler bundle (Linux)
         if: runner.os == 'Linux'
@@ -328,6 +329,7 @@ jobs:
           ./build/orhun_test bootstrap-hazirla build/bootstrap-release-seed
           ./build/orhun_test bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
           ./build/orhun_test bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+          ./build/orhun_test bootstrap-derleyici-dogrula artifacts/compiler-bundle
 
       - name: Build validated compiler bundle (macOS)
         if: runner.os == 'macOS'
@@ -335,6 +337,7 @@ jobs:
           ./build/orhun_test bootstrap-hazirla build/bootstrap-release-seed
           ./build/orhun_test bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
           ./build/orhun_test bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+          ./build/orhun_test bootstrap-derleyici-dogrula artifacts/compiler-bundle
 
       - name: Upload validated compiler bundle
         uses: actions/upload-artifact@v4

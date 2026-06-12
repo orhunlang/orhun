@@ -208,6 +208,10 @@
   `bootstrap-compiler-bundle`'dır. Üretilen derleyici tek kaynak argümanıyla
   bytecode JSON, `--derle <kaynak.oh> [çıktı]` ile `.obc`, paketli
   çalıştırılabilir dosya ve metadata üretir.
+- `orhun bootstrap-derleyici-dogrula <bundle-dizini>`, dağıtımdan önce compiler
+  manifestini, embedded CLI payload boyut/CRC değerini ve kardeş strict
+  toolchain'i birlikte doğrular. İngilizce uyumluluk takma adı
+  `bootstrap-compiler-verify`'dır.
 - `orhun bootstrap-yeniden-uret <tohum-toolchain> <çıktı-dizini>`, tohumdan
   aşama 2 ve aşama 2'den aşama 3 üretir; son iki aşamanın dört `.obc`
   artifact'i byte düzeyinde eşleşmezse başarısız olur. Dolu çıktı dizinleri
