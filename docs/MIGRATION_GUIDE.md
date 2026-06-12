@@ -43,7 +43,11 @@
   - `.obc`
   - `.exe`
   - `.obc.meta.json` üretir
-- `.obc.meta.json` dosyasında payload boyutu ve CRC32 bulunur.
+- Yeni `.obc.meta.json` dosyaları `orhun-obc-v2` formatında payload boyutu,
+  CRC32 ve SHA-256 içerir.
+- `orhun obc-dogrula <dosya.obc> [metadata.json]`, OBC yapısını ve metadata
+  bütünlüğünü doğrular. İngilizce uyumluluk takma adı `obc-verify`'dır.
+- Eski `orhun-obc-v1` metadata dosyaları CRC32 ile doğrulanmaya devam eder.
 
 ## 5. Benchmark Semantiği (`orhun hiz`)
 - Yeni ölçüm seçenekleri:

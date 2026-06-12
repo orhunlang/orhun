@@ -629,6 +629,11 @@ Stable channel defaults:
   operand widths, mismatched instruction positions/counts, and malformed
   function metadata are rejected before execution. `bytecode-run` is the
   English compatibility alias.
+- `obc-dogrula <file.obc> [metadata.json]` validates the serialized OBC
+  structure and its metadata contract without executing it. New
+  `orhun-obc-v2` metadata records payload size, CRC32, and SHA-256.
+  `orhun-obc-v1` metadata remains verifiable through size and CRC32.
+  `obc-verify` is the English compatibility alias.
 - `orhun-vm <dosya.oh>` is the experimental single-command bootstrap path. It
   compiles the target through `orhun/derleyici.oh`, validates the decoded
   bytecode contract, and executes it through the C++ VM. `bootstrap-vm` is the

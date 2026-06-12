@@ -271,6 +271,12 @@ std::uint32_t crc32Hesapla(const std::vector<std::uint8_t> &veri) {
   return ~crc;
 }
 
+std::string crc32Hex(const std::vector<std::uint8_t> &veri) {
+  std::ostringstream ss;
+  ss << std::hex << std::setfill('0') << std::setw(8) << crc32Hesapla(veri);
+  return ss.str();
+}
+
 void streamU32Yaz(std::ofstream &dosya, std::uint32_t deger) {
   const std::uint8_t ham[4] = {
       static_cast<std::uint8_t>(deger & 0xFF),
@@ -3326,6 +3332,61 @@ int komutObcCalistir(
   return 0;
 }
 
+int komutObcDogrula(const std::string &obcDosyaYolu,
+                     const std::string &metadataDosyaYolu) {
+  const std::vector<std::uint8_t> payload = dosyaOkuIkili(obcDosyaYolu);
+  static_cast<void>(chunkCoz(payload));
+
+  const std::string metaYolu =
+      metadataDosyaYolu.empty() ? obcDosyaYolu + ".meta.json"
+                                : metadataDosyaYolu;
+  try {
+    const yerlesik::JsonDeger kok = yerlesik::jsonCoz(dosyaOku(metaYolu));
+    const auto &meta = jsonSozlukBekle(kok, "obc_metadata");
+    const std::string format = jsonMetinBekle(
+        jsonAlanBekle(meta, "format", "obc_metadata"), "obc_metadata.format");
+    if (format != "orhun-obc-v1" && format != "orhun-obc-v2") {
+      throw std::runtime_error("desteklenmeyen metadata formati: " + format);
+    }
+
+    const std::size_t beklenenBoyut = jsonBoyutBekle(
+        jsonAlanBekle(meta, "payload_size", "obc_metadata"),
+        "obc_metadata.payload_size");
+    if (beklenenBoyut != payload.size()) {
+      throw std::runtime_error("payload boyutu uyusmuyor");
+    }
+
+    const std::string beklenenCrc = jsonMetinBekle(
+        jsonAlanBekle(meta, "payload_crc32", "obc_metadata"),
+        "obc_metadata.payload_crc32");
+    if (beklenenCrc != crc32Hex(payload)) {
+      throw std::runtime_error("payload CRC32 uyusmuyor");
+    }
+
+    if (format == "orhun-obc-v2") {
+      const std::string beklenenSha = jsonMetinBekle(
+          jsonAlanBekle(meta, "payload_sha256", "obc_metadata"),
+          "obc_metadata.payload_sha256");
+      if (beklenenSha != security::sha256Hex(payload)) {
+        throw std::runtime_error("payload SHA256 uyusmuyor");
+      }
+    }
+
+    const std::string kaynakAdi = jsonMetinBekle(
+        jsonAlanBekle(meta, "source_name", "obc_metadata"),
+        "obc_metadata.source_name");
+    if (kaynakAdi.empty()) {
+      throw std::runtime_error("source_name bos olamaz");
+    }
+  } catch (const std::exception &ex) {
+    throw std::runtime_error("Hata: OBC metadata gecersiz: " +
+                             std::string(ex.what()));
+  }
+
+  std::cout << "OBC artifact dogrulandi: " << obcDosyaYolu << "\n";
+  return 0;
+}
+
 int komutBytecodeJsonCalistir(const std::string &jsonDosyaYolu) {
   const BytecodeChunk chunk = bytecodeJsonCoz(dosyaOku(jsonDosyaYolu));
   VM vm;
@@ -3535,13 +3596,12 @@ int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
   derlemeCiktiPlaniniDogrula(plan);
   const std::vector<std::uint8_t> payload = chunkSerilestir(chunk);
 
-  const std::uint32_t payloadCrc = crc32Hesapla(payload);
   std::ostringstream meta;
   meta << "{\n"
-       << "  \"format\": \"orhun-obc-v1\",\n"
+       << "  \"format\": \"orhun-obc-v2\",\n"
        << "  \"payload_size\": " << payload.size() << ",\n"
-       << "  \"payload_crc32\": \"" << std::hex << std::setfill('0')
-       << std::setw(8) << payloadCrc << "\",\n"
+       << "  \"payload_crc32\": \"" << crc32Hex(payload) << "\",\n"
+       << "  \"payload_sha256\": \"" << security::sha256Hex(payload) << "\",\n"
        << "  \"source_name\": \""
        << jsonKacis(plan.kaynakAdi) << "\"\n"
        << "}\n";
@@ -3716,10 +3776,7 @@ std::size_t bootstrapBoyutBekle(const yerlesik::JsonDeger &deger,
 }
 
 std::string bootstrapCrc32Hex(const std::vector<std::uint8_t> &payload) {
-  std::ostringstream ss;
-  ss << std::hex << std::setfill('0') << std::setw(8)
-     << crc32Hesapla(payload);
-  return ss.str();
+  return crc32Hex(payload);
 }
 
 void bootstrapToolchainDogrula(const std::string &toolchainKoku) {
@@ -6068,6 +6125,14 @@ int main(int argc, char *argv[]) {
             "Hata: obc komutu icin .obc dosyasi bekleniyor.");
       }
       return komutObcCalistir(argv[2], cliProgramArgumanlari(argc, argv, 3));
+    }
+
+    if (komut == "obc-dogrula" || komut == "obc-verify") {
+      if (argc < 3 || argc > 4) {
+        throw std::runtime_error(
+            "Hata: obc-dogrula <dosya.obc> [metadata.json] kullanin.");
+      }
+      return komutObcDogrula(argv[2], argc == 4 ? argv[3] : "");
     }
 
     if (komut == "derle") {

@@ -90,6 +90,9 @@ These percentages are planning estimates, not promises.
 - Matching version tags run the full gate on all three platforms and publish
   deterministic versioned compiler archives, per-archive SHA-256 files, and a
   combined `SHA256SUMS` manifest as GitHub Release assets.
+- Compiled OBC artifacts carry `orhun-obc-v2` metadata with size, CRC32, and
+  SHA-256; `obc-dogrula`/`obc-verify` validates the artifact without executing
+  it while retaining `orhun-obc-v1` compatibility.
 - Release assets receive signed GitHub/Sigstore build-provenance attestations
   without storing a long-lived signing key in the repository.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
