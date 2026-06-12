@@ -22,6 +22,21 @@ def combined(proc) -> str:
     return (proc.stdout + proc.stderr).replace("\r\n", "\n")
 
 
+def expected_artifact_plan(source: str, output: str = "") -> dict[str, str]:
+    target = output or source
+    separator = max(target.rfind("/"), target.rfind("\\"))
+    extension = target.rfind(".")
+    if extension > separator + 1:
+        target = target[:extension]
+    source_separator = max(source.rfind("/"), source.rfind("\\"))
+    return {
+        "obc": target + ".obc",
+        "exe": target + ".exe",
+        "metadata": target + ".obc.meta.json",
+        "kaynak_adi": source[source_separator + 1 :],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Execute Orhun-written compiler bytecode JSON through the C++ VM"
@@ -465,12 +480,35 @@ def main() -> int:
             cli_control_payload.get("durum") == "ok"
             and cli_control_payload.get("cikis_kodu") == 0
             and cli_control_payload.get("artifact_istegi")
-            == {
-                "kaynak": str(artifact_source),
-                "cikti": str(cli_control_output),
-            },
-            "Orhun compiler CLI must own artifact source/output selection",
+            == expected_artifact_plan(str(artifact_source), str(cli_control_output)),
+            "Orhun compiler CLI must own the complete artifact output plan",
         )
+        for output in (
+            "",
+            "portable.dir/output.release.bin",
+            r"portable.dir\output.release.bin",
+            ".hidden",
+        ):
+            plan_args = [
+                str(binary),
+                "vm-kati",
+                str(compiler_cli_source),
+                "--derle",
+                str(artifact_source),
+            ]
+            if output:
+                plan_args.append(output)
+            planned = run_cmd(plan_args, repo)
+            require(
+                planned.returncode == 0,
+                f"Orhun compiler artifact planning failed: {combined(planned)}",
+            )
+            planned_payload = json.loads(planned.stdout)
+            require(
+                planned_payload.get("artifact_istegi")
+                == expected_artifact_plan(str(artifact_source), output),
+                f"Orhun compiler artifact plan mismatch for output {output!r}",
+            )
 
         bundle_create = run_cmd(
             [
@@ -656,6 +694,72 @@ def main() -> int:
             "bundled compiler --compile alias OBC must match C++ compiler artifact",
         )
 
+        invalid_plan_source = tmpdir / "invalid_plan_cli.oh"
+        invalid_plan_source.write_text(
+            'derleyici olsun dahil_et "orhun/derleyici.oh"\n'
+            "kaynak olsun dosya.oku(sistem.argumanlar[1])\n"
+            "sonuc olsun derleyici.derle(kaynak)\n"
+            'sonuc["cikis_kodu"] = 0\n'
+            'sonuc["artifact_istegi"] = {"obc": "ayni.obc", '
+            '"exe": "yanlis.obc", "metadata": "meta.obc.meta.json", '
+            '"kaynak_adi": "kaynak.oh"}\n'
+            "yazdır json.yaz(sonuc)\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        invalid_plan_base = tmpdir / "invalid_plan_payload"
+        invalid_plan_compile = run_cmd(
+            [str(binary), "derle", str(invalid_plan_source), str(invalid_plan_base)],
+            repo,
+        )
+        require(
+            invalid_plan_compile.returncode == 0,
+            "invalid-plan compiler fixture could not be packaged: "
+            + combined(invalid_plan_compile),
+        )
+        invalid_plan_bundle = tmpdir / "invalid_plan_bundle"
+        shutil.copytree(compiler_bundle, invalid_plan_bundle)
+        invalid_plan_exe = invalid_plan_bundle / bundle_exe.name
+        shutil.copy2(invalid_plan_base.with_suffix(".exe"), invalid_plan_exe)
+        invalid_plan_payload = invalid_plan_base.with_suffix(".obc").read_bytes()
+        invalid_plan_manifest_path = (
+            invalid_plan_bundle / "bootstrap-compiler.manifest.json"
+        )
+        invalid_plan_manifest = json.loads(
+            invalid_plan_manifest_path.read_text(encoding="utf-8")
+        )
+        invalid_plan_manifest["payload_size"] = len(invalid_plan_payload)
+        invalid_plan_manifest["payload_crc32"] = (
+            f"{zlib.crc32(invalid_plan_payload) & 0xFFFFFFFF:08x}"
+        )
+        invalid_plan_manifest_path.write_text(
+            json.dumps(invalid_plan_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        rejected_invalid_plan = run_cmd(
+            [
+                str(invalid_plan_exe),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "rejected_invalid_plan"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_invalid_plan.returncode != 0,
+            "bundled compiler host must reject an invalid Orhun artifact plan",
+        )
+        require(
+            "artifact plani beklenen dosya uzantilarini kullanmiyor"
+            in combined(rejected_invalid_plan),
+            "invalid artifact plan rejection must explain the contract violation",
+        )
+        require(
+            not (tmpdir / "ayni.obc").exists(),
+            "invalid artifact plan must be rejected before writing files",
+        )
+
         rejected_bundle_usage = run_cmd(
             [str(bundle_exe), "--derle"],
             tmpdir,
@@ -766,9 +870,10 @@ def main() -> int:
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
         "1 standalone compiler bundle verification, 1 Orhun-owned compiler CLI "
-        "control plane, 2 bundled direct artifact compile modes, 1 renamed "
+        "control plane, 4 Orhun-owned artifact plans, 2 bundled direct artifact "
+        "compile modes, 1 renamed "
         "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
-        "11 rejected invalid inputs)."
+        "12 rejected invalid inputs)."
     )
     return 0
 

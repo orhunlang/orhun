@@ -194,20 +194,23 @@ kaynak-kodsuz tasinabilir `orhun-derleyici` calistirilabilir dosyasini uretir.
 Bu ilk bagimsiz derleyici CLI'i bytecode JSON uretir; `--derle` modu ayni
 Orhun-yazili compiler zinciriyle byte-duzeyinde esit `.obc`, paketli
 calistirilabilir dosya ve metadata artifact'larini dogrudan uretir. Artifact
-isteginin kaynak/cikti argumanlarini artik Orhun-yazili `derleyici_cli.oh`
-cozer; dogrulanmis istegin OBC/paket serilestirme koprusu ve runtime halen C++
-cekirdektedir. Paketli C++ host `--derle` veya `--compile` komut adlarini
-bilmez; her cagrinin yapilandirilmis cikis kodu ve artifact istegi Orhun CLI
-bytecode'u tarafindan uretilir. Compiler bundle kimligi dosya adina degil,
-dogrulanan bundle manifestine, embedded CLI payload boyut/CRC degerine ve
-kardes toolchain bagina dayanir.
+isteginin kaynak/cikti argumanlarini ve `.obc`, paketli calistirilabilir,
+metadata yollarindan olusan tam cikti planini artik Orhun-yazili
+`derleyici_cli.oh` cozer. C++ cekirdegi plani bos alan, beklenmeyen uzanti,
+kaynak adinda yol ayirici ve cakisan cikti yollarina karsi dogruladiktan sonra
+yalniz OBC/paket serilestirme ve dosya yazma koprusu olarak kalir. Paketli C++
+host `--derle` veya `--compile` komut adlarini bilmez; her cagrinin
+yapilandirilmis cikis kodu ve artifact plani Orhun CLI bytecode'u tarafindan
+uretilir. Compiler bundle kimligi dosya adina degil, dogrulanan bundle
+manifestine, embedded CLI payload boyut/CRC degerine ve kardes toolchain
+bagina dayanir.
 `orhun bootstrap-yeniden-uret <tohum-toolchain> <cikti-dizini>`, tohum ile
 asama 2'yi, asama 2 ile asama 3'u uretir ve son iki asamadaki dort artifact'in
 byte duzeyinde ayni olmasini zorunlu tutar. Dolu cikti dizinini ezmez ve
 basarili kapinin sonucunu `bootstrap-rebuild.manifest.json` ile kaydeder.
 `sistem.argumanlar`, dogrudan, paketli ve bootstrap calistirma yollarinda ayni
-program argumani sozlesmesini saglar; Orhun ile yazilacak bagimsiz derleyici
-CLI'inin kaynak/cikti yollarini okuyabilmesi icin gereken primitive hazirdir.
+program argumani sozlesmesini saglar; bagimsiz derleyici CLI'i bu primitive ile
+kaynak/cikti yollarini okuyup tam artifact planini Orhun kodunda uretir.
 
 Hedefler:
 

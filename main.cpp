@@ -68,10 +68,20 @@ int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
                           const std::string &calisanExeYolu,
                           const std::string &ciktiTemel);
 
+struct DerlemeCiktiPlani {
+  std::string obcYolu;
+  std::string exeYolu;
+  std::string metaYolu;
+  std::string kaynakAdi;
+};
+
+int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
+                          const std::string &calisanExeYolu,
+                          const DerlemeCiktiPlani &plan);
+
 struct DerleyiciCliArtifactIstegi {
   BytecodeChunk chunk;
-  std::string kaynakYolu;
-  std::string ciktiTemel;
+  DerlemeCiktiPlani plan;
 };
 
 struct DerleyiciCliSonucu {
@@ -366,8 +376,8 @@ bool gomuluPaketiCalistir(
         derleyiciCliCalistir(chunkCoz(payload), programArgumanlari);
     if (sonuc.artifactIstegi.has_value()) {
       const DerleyiciCliArtifactIstegi &istek = *sonuc.artifactIstegi;
-      static_cast<void>(derlemeCiktilariniYaz(
-          istek.chunk, istek.kaynakYolu, calisanExeYolu, istek.ciktiTemel));
+      static_cast<void>(
+          derlemeCiktilariniYaz(istek.chunk, calisanExeYolu, istek.plan));
       return true;
     }
     if (sonuc.cikisKodu != 0) {
@@ -1174,15 +1184,22 @@ DerleyiciCliSonucu derleyiciCliCalistir(
       jsonSozlukBekle(*artifactIstegi, "derleyici_cli.artifact_istegi");
   DerleyiciCliArtifactIstegi artifact;
   artifact.chunk = bytecodeJsonCoz(cliCiktisi);
-  artifact.kaynakYolu = jsonMetinBekle(
-      jsonAlanBekle(istek, "kaynak", "derleyici_cli.artifact_istegi"),
-      "derleyici_cli.artifact_istegi.kaynak");
-  artifact.ciktiTemel = jsonMetinBekle(
-      jsonAlanBekle(istek, "cikti", "derleyici_cli.artifact_istegi"),
-      "derleyici_cli.artifact_istegi.cikti");
-  if (artifact.kaynakYolu.empty()) {
+  artifact.plan.obcYolu = jsonMetinBekle(
+      jsonAlanBekle(istek, "obc", "derleyici_cli.artifact_istegi"),
+      "derleyici_cli.artifact_istegi.obc");
+  artifact.plan.exeYolu = jsonMetinBekle(
+      jsonAlanBekle(istek, "exe", "derleyici_cli.artifact_istegi"),
+      "derleyici_cli.artifact_istegi.exe");
+  artifact.plan.metaYolu = jsonMetinBekle(
+      jsonAlanBekle(istek, "metadata", "derleyici_cli.artifact_istegi"),
+      "derleyici_cli.artifact_istegi.metadata");
+  artifact.plan.kaynakAdi = jsonMetinBekle(
+      jsonAlanBekle(istek, "kaynak_adi", "derleyici_cli.artifact_istegi"),
+      "derleyici_cli.artifact_istegi.kaynak_adi");
+  if (artifact.plan.obcYolu.empty() || artifact.plan.exeYolu.empty() ||
+      artifact.plan.metaYolu.empty() || artifact.plan.kaynakAdi.empty()) {
     throw std::runtime_error(
-        "Hata: Orhun derleyici CLI artifact kaynak yolu bos olamaz.");
+        "Hata: Orhun derleyici CLI artifact plani bos alan iceremez.");
   }
   sonuc.artifactIstegi = std::move(artifact);
   return sonuc;
@@ -3329,13 +3346,9 @@ int komutOrhunVm(
   return 0;
 }
 
-int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
-                          const std::string &kaynakYolu,
-                          const std::string &calisanExeYolu,
-                          const std::string &ciktiTemel) {
+DerlemeCiktiPlani derlemeCiktiPlaniOlustur(const std::string &kaynakYolu,
+                                           const std::string &ciktiTemel) {
   namespace fs = std::filesystem;
-  const std::vector<std::uint8_t> payload = chunkSerilestir(chunk);
-
   fs::path temel =
       ciktiTemel.empty() ? fs::path(kaynakYolu) : fs::path(ciktiTemel);
   if (temel.has_extension()) {
@@ -3351,8 +3364,48 @@ int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
   fs::path metaYolu = temel;
   metaYolu.replace_extension(".obc.meta.json");
 
-  dosyaYazIkili(obcYolu.string(), payload);
-  paketliExeUret(calisanExeYolu, exeYolu.string(), payload);
+  return {obcYolu.string(), exeYolu.string(), metaYolu.string(),
+          fs::path(kaynakYolu).filename().u8string()};
+}
+
+void derlemeCiktiPlaniniDogrula(const DerlemeCiktiPlani &plan) {
+  namespace fs = std::filesystem;
+  const auto biterMi = [](const std::string &deger,
+                          const std::string &sonEk) -> bool {
+    return deger.size() >= sonEk.size() &&
+           deger.compare(deger.size() - sonEk.size(), sonEk.size(), sonEk) == 0;
+  };
+  if (plan.obcYolu.empty() || plan.exeYolu.empty() || plan.metaYolu.empty() ||
+      plan.kaynakAdi.empty()) {
+    throw std::runtime_error("Hata: artifact plani bos alan iceremez.");
+  }
+  if (!biterMi(plan.obcYolu, ".obc") || !biterMi(plan.exeYolu, ".exe") ||
+      !biterMi(plan.metaYolu, ".obc.meta.json")) {
+    throw std::runtime_error(
+        "Hata: artifact plani beklenen dosya uzantilarini kullanmiyor.");
+  }
+  if (plan.kaynakAdi.find('/') != std::string::npos ||
+      plan.kaynakAdi.find('\\') != std::string::npos) {
+    throw std::runtime_error(
+        "Hata: artifact plani kaynak adi yol ayirici iceremez.");
+  }
+  const fs::path obc = fs::absolute(plan.obcYolu).lexically_normal();
+  const fs::path exe = fs::absolute(plan.exeYolu).lexically_normal();
+  const fs::path meta = fs::absolute(plan.metaYolu).lexically_normal();
+  if (obc == exe || obc == meta || exe == meta) {
+    throw std::runtime_error(
+        "Hata: artifact plani ayni dosyayi birden fazla cikti icin kullaniyor.");
+  }
+}
+
+int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
+                          const std::string &calisanExeYolu,
+                          const DerlemeCiktiPlani &plan) {
+  derlemeCiktiPlaniniDogrula(plan);
+  const std::vector<std::uint8_t> payload = chunkSerilestir(chunk);
+
+  dosyaYazIkili(plan.obcYolu, payload);
+  paketliExeUret(calisanExeYolu, plan.exeYolu, payload);
 
   const std::uint32_t payloadCrc = crc32Hesapla(payload);
   std::ostringstream meta;
@@ -3362,14 +3415,22 @@ int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
        << "  \"payload_crc32\": \"" << std::hex << std::setfill('0')
        << std::setw(8) << payloadCrc << "\",\n"
        << "  \"source_name\": \""
-       << jsonKacis(fs::path(kaynakYolu).filename().u8string()) << "\"\n"
+       << jsonKacis(plan.kaynakAdi) << "\"\n"
        << "}\n";
-  dosyaYaz(metaYolu.string(), meta.str());
+  dosyaYaz(plan.metaYolu, meta.str());
 
-  std::cout << "Bytecode uretildi: " << obcYolu.string() << "\n";
-  std::cout << "Paketli exe uretildi: " << exeYolu.string() << "\n";
-  std::cout << "Metadata yazildi: " << metaYolu.string() << "\n";
+  std::cout << "Bytecode uretildi: " << plan.obcYolu << "\n";
+  std::cout << "Paketli exe uretildi: " << plan.exeYolu << "\n";
+  std::cout << "Metadata yazildi: " << plan.metaYolu << "\n";
   return 0;
+}
+
+int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
+                          const std::string &kaynakYolu,
+                          const std::string &calisanExeYolu,
+                          const std::string &ciktiTemel) {
+  return derlemeCiktilariniYaz(
+      chunk, calisanExeYolu, derlemeCiktiPlaniOlustur(kaynakYolu, ciktiTemel));
 }
 
 int komutDerle(const std::string &kaynakYolu, const std::string &calisanExeYolu,

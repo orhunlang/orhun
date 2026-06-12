@@ -2,7 +2,7 @@
 
 derleyici olsun dahil_et "orhun/derleyici.oh"
 
-surum olsun "0.3.0"
+surum olsun "0.4.0"
 
 işlev basarisiz(mesaj):
     döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
@@ -10,6 +10,36 @@ işlev basarisiz(mesaj):
 işlev kaynak_derle(kaynak_yolu):
     kaynak olsun dosya.oku(kaynak_yolu)
     döndür derleyici.derle(kaynak)
+
+işlev son_yol_ayirici(yol):
+    i olsun uzunluk(yol) - 1
+    sürece i büyük -1:
+        eğer yol[i] eşit "/" veya yol[i] eşit "\\" ise:
+            döndür i
+        i olsun i - 1
+    döndür -1
+
+işlev uzantisiz_taban(yol):
+    ayirici olsun son_yol_ayirici(yol)
+    i olsun uzunluk(yol) - 1
+    sürece i büyük ayirici:
+        eğer yol[i] eşit "." ise:
+            eğer i büyük ayirici + 1 ise:
+                döndür yol[:i]
+            döndür yol
+        i olsun i - 1
+    döndür yol
+
+işlev dosya_adi(yol):
+    ayirici olsun son_yol_ayirici(yol)
+    döndür yol[ayirici + 1:]
+
+işlev artifact_plani(kaynak_yolu, cikti):
+    temel olsun cikti
+    eğer temel eşit "" ise:
+        temel olsun kaynak_yolu
+    temel olsun uzantisiz_taban(temel)
+    döndür {"obc": temel + ".obc", "exe": temel + ".exe", "metadata": temel + ".obc.meta.json", "kaynak_adi": dosya_adi(kaynak_yolu)}
 
 işlev artifact_istegi_derle(argumanlar):
     eğer uzunluk(argumanlar) küçük 2 veya uzunluk(argumanlar) büyük 3 ise:
@@ -19,7 +49,7 @@ işlev artifact_istegi_derle(argumanlar):
         cikti olsun ""
         eğer uzunluk(argumanlar) eşit 3 ise:
             cikti olsun argumanlar[2]
-        sonuc["artifact_istegi"] = {"kaynak": argumanlar[1], "cikti": cikti}
+        sonuc["artifact_istegi"] = artifact_plani(argumanlar[1], cikti)
     döndür sonuc
 
 işlev cli_calistir(argumanlar):

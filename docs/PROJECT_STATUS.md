@@ -66,12 +66,13 @@ These percentages are planning estimates, not promises.
   `orhun-derleyici` executable bundle that discovers and validates its sibling
   strict toolchain before emitting bytecode JSON or complete `.obc`, packaged
   executable, and metadata artifacts.
-- The portable compiler's source/output argument parsing and artifact request
-  are owned by Orhun-written `derleyici_cli.oh`; C++ remains only as the
-  validated OBC/package serialization bootstrap bridge for that request.
+- The portable compiler's source/output argument parsing and complete artifact
+  plan are owned by Orhun-written `derleyici_cli.oh`, including all output
+  paths and the metadata source name. C++ remains only as the strict
+  plan-validation and OBC/package serialization bootstrap bridge.
 - The packaged compiler C++ host no longer recognizes individual compiler CLI
   command names; Orhun-written CLI bytecode returns the structured exit code
-  and optional artifact request for every invocation.
+  and optional complete artifact plan for every invocation.
 - Portable compiler startup strictly validates its compiler-bundle manifest,
   embedded CLI payload size/CRC, and sibling toolchain link. Bundle identity is
   manifest/payload based, so the executable can be safely renamed.

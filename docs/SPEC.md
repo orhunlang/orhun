@@ -671,11 +671,14 @@ Stable channel defaults:
   program argument. `orhun-derleyici --derle <source.oh> [output]` uses the
   same Orhun-written compiler and the runtime serialization bridge to emit
   `.obc`, packaged executable, and metadata artifacts directly. Source/output
-  argument parsing and the validated artifact request are produced by
-  `orhun/derleyici_cli.oh`; the OBC/package serialization bridge remains in the
-  C++ bootstrap runtime. The packaged host does not dispatch individual
+  argument parsing and the complete artifact output plan are produced by
+  `orhun/derleyici_cli.oh`. That plan contains the `.obc`, packaged executable,
+  metadata paths, and metadata source name. The C++ bootstrap runtime rejects
+  empty fields, unexpected output suffixes, source names containing path
+  separators, and colliding output paths before its OBC/package serialization
+  bridge writes anything. The packaged host does not dispatch individual
   compiler command names; it consumes the structured exit code and optional
-  artifact request returned by Orhun CLI bytecode. At startup it strictly
+  artifact plan returned by Orhun CLI bytecode. At startup it strictly
   validates the compiler-bundle manifest, embedded CLI payload size/CRC, and
   sibling toolchain path. Compiler-bundle identity does not depend on the
   executable filename, so a valid bundle executable may be renamed.

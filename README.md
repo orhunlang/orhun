@@ -168,6 +168,11 @@ build/derleyici-paketi/orhun-derleyici.exe dosya.oh
 build/derleyici-paketi/orhun-derleyici.exe --derle dosya.oh cikti
 ```
 
+For complete artifacts, the Orhun-written compiler CLI owns the output plan,
+including `.obc`, packaged executable, metadata paths, and metadata source
+name. The C++ bootstrap host strictly validates that plan before serializing
+and writing it.
+
 ## Releases
 
 Version tags must exactly match `VERSION`, for example `v0.8.0`. Pushing a
