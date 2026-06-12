@@ -673,10 +673,11 @@ Stable channel defaults:
   `.obc`, packaged executable, and metadata artifacts directly. Source/output
   argument parsing and the complete artifact output plan are produced by
   `orhun/derleyici_cli.oh`. That plan contains the `.obc`, packaged executable,
-  metadata paths, and metadata source name. The C++ bootstrap runtime rejects
-  empty fields, unexpected output suffixes, source names containing path
-  separators, and colliding output paths before its OBC/package serialization
-  bridge writes anything. The packaged host does not dispatch individual
+  metadata paths, and metadata source name, and identifies its contract as
+  `orhun-artifact-plan-v1`. The C++ bootstrap runtime rejects unknown plan
+  contracts, empty fields, unexpected output suffixes, source names containing
+  path separators, and colliding output paths before its OBC/package
+  serialization bridge writes anything. The packaged host does not dispatch individual
   compiler command names; it consumes the structured exit code and optional
   artifact plan returned by Orhun CLI bytecode. At startup it strictly
   validates the compiler-bundle manifest, embedded CLI payload size/CRC, and

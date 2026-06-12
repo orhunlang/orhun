@@ -2,7 +2,7 @@
 
 derleyici olsun dahil_et "orhun/derleyici.oh"
 
-surum olsun "0.4.0"
+surum olsun "0.5.0"
 
 işlev basarisiz(mesaj):
     döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
@@ -39,7 +39,7 @@ işlev artifact_plani(kaynak_yolu, cikti):
     eğer temel eşit "" ise:
         temel olsun kaynak_yolu
     temel olsun uzantisiz_taban(temel)
-    döndür {"obc": temel + ".obc", "exe": temel + ".exe", "metadata": temel + ".obc.meta.json", "kaynak_adi": dosya_adi(kaynak_yolu)}
+    döndür {"format": "orhun-artifact-plan-v1", "obc": temel + ".obc", "exe": temel + ".exe", "metadata": temel + ".obc.meta.json", "kaynak_adi": dosya_adi(kaynak_yolu)}
 
 işlev artifact_istegi_derle(argumanlar):
     eğer uzunluk(argumanlar) küçük 2 veya uzunluk(argumanlar) büyük 3 ise:

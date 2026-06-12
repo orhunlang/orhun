@@ -30,11 +30,56 @@ def expected_artifact_plan(source: str, output: str = "") -> dict[str, str]:
         target = target[:extension]
     source_separator = max(source.rfind("/"), source.rfind("\\"))
     return {
+        "format": "orhun-artifact-plan-v1",
         "obc": target + ".obc",
         "exe": target + ".exe",
         "metadata": target + ".obc.meta.json",
         "kaynak_adi": source[source_separator + 1 :],
     }
+
+
+def packaged_compiler_fixture(
+    binary: Path,
+    repo: Path,
+    tmpdir: Path,
+    compiler_bundle: Path,
+    bundle_exe: Path,
+    name: str,
+    artifact_request: dict[str, str],
+) -> Path:
+    source = tmpdir / f"{name}.oh"
+    source.write_text(
+        'derleyici olsun dahil_et "orhun/derleyici.oh"\n'
+        "kaynak olsun dosya.oku(sistem.argumanlar[1])\n"
+        "sonuc olsun derleyici.derle(kaynak)\n"
+        'sonuc["cikis_kodu"] = 0\n'
+        f'sonuc["artifact_istegi"] = '
+        f"{json.dumps(artifact_request, ensure_ascii=False, separators=(',', ':'))}\n"
+        "yazdır json.yaz(sonuc)\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    base = tmpdir / f"{name}_payload"
+    compiled = run_cmd([str(binary), "derle", str(source), str(base)], repo)
+    require(
+        compiled.returncode == 0,
+        f"{name} compiler fixture could not be packaged: {combined(compiled)}",
+    )
+    bundle = tmpdir / f"{name}_bundle"
+    shutil.copytree(compiler_bundle, bundle)
+    fixture_exe = bundle / bundle_exe.name
+    shutil.copy2(base.with_suffix(".exe"), fixture_exe)
+    payload = base.with_suffix(".obc").read_bytes()
+    manifest_path = bundle / "bootstrap-compiler.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["payload_size"] = len(payload)
+    manifest["payload_crc32"] = f"{zlib.crc32(payload) & 0xFFFFFFFF:08x}"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False),
+        encoding="utf-8",
+        newline="\n",
+    )
+    return fixture_exe
 
 
 def main() -> int:
@@ -694,48 +739,20 @@ def main() -> int:
             "bundled compiler --compile alias OBC must match C++ compiler artifact",
         )
 
-        invalid_plan_source = tmpdir / "invalid_plan_cli.oh"
-        invalid_plan_source.write_text(
-            'derleyici olsun dahil_et "orhun/derleyici.oh"\n'
-            "kaynak olsun dosya.oku(sistem.argumanlar[1])\n"
-            "sonuc olsun derleyici.derle(kaynak)\n"
-            'sonuc["cikis_kodu"] = 0\n'
-            'sonuc["artifact_istegi"] = {"obc": "ayni.obc", '
-            '"exe": "yanlis.obc", "metadata": "meta.obc.meta.json", '
-            '"kaynak_adi": "kaynak.oh"}\n'
-            "yazdır json.yaz(sonuc)\n",
-            encoding="utf-8",
-            newline="\n",
-        )
-        invalid_plan_base = tmpdir / "invalid_plan_payload"
-        invalid_plan_compile = run_cmd(
-            [str(binary), "derle", str(invalid_plan_source), str(invalid_plan_base)],
+        invalid_plan_exe = packaged_compiler_fixture(
+            binary,
             repo,
-        )
-        require(
-            invalid_plan_compile.returncode == 0,
-            "invalid-plan compiler fixture could not be packaged: "
-            + combined(invalid_plan_compile),
-        )
-        invalid_plan_bundle = tmpdir / "invalid_plan_bundle"
-        shutil.copytree(compiler_bundle, invalid_plan_bundle)
-        invalid_plan_exe = invalid_plan_bundle / bundle_exe.name
-        shutil.copy2(invalid_plan_base.with_suffix(".exe"), invalid_plan_exe)
-        invalid_plan_payload = invalid_plan_base.with_suffix(".obc").read_bytes()
-        invalid_plan_manifest_path = (
-            invalid_plan_bundle / "bootstrap-compiler.manifest.json"
-        )
-        invalid_plan_manifest = json.loads(
-            invalid_plan_manifest_path.read_text(encoding="utf-8")
-        )
-        invalid_plan_manifest["payload_size"] = len(invalid_plan_payload)
-        invalid_plan_manifest["payload_crc32"] = (
-            f"{zlib.crc32(invalid_plan_payload) & 0xFFFFFFFF:08x}"
-        )
-        invalid_plan_manifest_path.write_text(
-            json.dumps(invalid_plan_manifest, ensure_ascii=False),
-            encoding="utf-8",
-            newline="\n",
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "invalid_plan",
+            {
+                "format": "orhun-artifact-plan-v1",
+                "obc": "ayni.obc",
+                "exe": "yanlis.obc",
+                "metadata": "meta.obc.meta.json",
+                "kaynak_adi": "kaynak.oh",
+            },
         )
         rejected_invalid_plan = run_cmd(
             [
@@ -758,6 +775,44 @@ def main() -> int:
         require(
             not (tmpdir / "ayni.obc").exists(),
             "invalid artifact plan must be rejected before writing files",
+        )
+
+        unknown_plan_exe = packaged_compiler_fixture(
+            binary,
+            repo,
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "unknown_plan_contract",
+            {
+                "format": "orhun-artifact-plan-v0",
+                "obc": "bilinmeyen.obc",
+                "exe": "bilinmeyen.exe",
+                "metadata": "bilinmeyen.obc.meta.json",
+                "kaynak_adi": "kaynak.oh",
+            },
+        )
+        rejected_unknown_plan = run_cmd(
+            [
+                str(unknown_plan_exe),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "rejected_unknown_plan"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_unknown_plan.returncode != 0,
+            "bundled compiler host must reject an unknown artifact plan contract",
+        )
+        require(
+            "artifact plan formati desteklenmiyor: orhun-artifact-plan-v0"
+            in combined(rejected_unknown_plan),
+            "unknown artifact plan rejection must identify the contract version",
+        )
+        require(
+            not (tmpdir / "bilinmeyen.obc").exists(),
+            "unknown artifact plan must be rejected before writing files",
         )
 
         rejected_bundle_usage = run_cmd(
@@ -873,7 +928,7 @@ def main() -> int:
         "control plane, 4 Orhun-owned artifact plans, 2 bundled direct artifact "
         "compile modes, 1 renamed "
         "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
-        "12 rejected invalid inputs)."
+        "13 rejected invalid inputs)."
     )
     return 0
 

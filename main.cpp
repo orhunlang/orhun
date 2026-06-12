@@ -1184,6 +1184,14 @@ DerleyiciCliSonucu derleyiciCliCalistir(
       jsonSozlukBekle(*artifactIstegi, "derleyici_cli.artifact_istegi");
   DerleyiciCliArtifactIstegi artifact;
   artifact.chunk = bytecodeJsonCoz(cliCiktisi);
+  const std::string artifactPlaniFormati = jsonMetinBekle(
+      jsonAlanBekle(istek, "format", "derleyici_cli.artifact_istegi"),
+      "derleyici_cli.artifact_istegi.format");
+  if (artifactPlaniFormati != "orhun-artifact-plan-v1") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI artifact plan formati desteklenmiyor: " +
+        artifactPlaniFormati);
+  }
   artifact.plan.obcYolu = jsonMetinBekle(
       jsonAlanBekle(istek, "obc", "derleyici_cli.artifact_istegi"),
       "derleyici_cli.artifact_istegi.obc");
