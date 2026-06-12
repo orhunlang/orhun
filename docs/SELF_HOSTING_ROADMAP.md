@@ -198,7 +198,9 @@ isteginin kaynak/cikti argumanlarini artik Orhun-yazili `derleyici_cli.oh`
 cozer; dogrulanmis istegin OBC/paket serilestirme koprusu ve runtime halen C++
 cekirdektedir. Paketli C++ host `--derle` veya `--compile` komut adlarini
 bilmez; her cagrinin yapilandirilmis cikis kodu ve artifact istegi Orhun CLI
-bytecode'u tarafindan uretilir.
+bytecode'u tarafindan uretilir. Compiler bundle kimligi dosya adina degil,
+dogrulanan bundle manifestine, embedded CLI payload boyut/CRC degerine ve
+kardes toolchain bagina dayanir.
 `orhun bootstrap-yeniden-uret <tohum-toolchain> <cikti-dizini>`, tohum ile
 asama 2'yi, asama 2 ile asama 3'u uretir ve son iki asamadaki dort artifact'in
 byte duzeyinde ayni olmasini zorunlu tutar. Dolu cikti dizinini ezmez ve

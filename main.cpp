@@ -57,6 +57,9 @@ private:
 };
 
 void bootstrapToolchainDogrula(const std::string &toolchainKoku);
+bool bootstrapDerleyiciPaketiDogrula(
+    const std::string &calisanExeYolu,
+    const std::vector<std::uint8_t> &payload);
 int komutOrhunDerle(const std::string &kaynakYolu,
                     const std::string &calisanExeYolu,
                     const std::string &ciktiTemel);
@@ -356,12 +359,8 @@ bool gomuluPaketiCalistir(
     cliModulModunuAyarla(std::string("obc-only"));
   }
 
-  const fs::path calisanExe = fs::absolute(calisanExeYolu);
-  const std::string exeAdi = calisanExe.filename().u8string();
   const bool bootstrapDerleyiciMi =
-      (exeAdi == "orhun-derleyici.exe" || exeAdi == "orhun-derleyici") &&
-      orhunNormalDosyaMi(calisanExe.parent_path() /
-                         "bootstrap-compiler.manifest.json");
+      bootstrapDerleyiciPaketiDogrula(calisanExeYolu, payload);
   if (bootstrapDerleyiciMi) {
     DerleyiciCliSonucu sonuc =
         derleyiciCliCalistir(chunkCoz(payload), programArgumanlari);
@@ -3600,6 +3599,77 @@ void bootstrapToolchainDogrula(const std::string &toolchainKoku) {
       bootstrapManifestHatasi(modul + " bytecode gecersiz: " + ex.what());
     }
   }
+}
+
+[[noreturn]] void bootstrapDerleyiciManifestHatasi(const std::string &mesaj) {
+  throw std::runtime_error("Hata: bootstrap derleyici manifesti gecersiz: " +
+                           mesaj);
+}
+
+bool bootstrapDerleyiciPaketiDogrula(
+    const std::string &calisanExeYolu,
+    const std::vector<std::uint8_t> &payload) {
+  namespace fs = std::filesystem;
+  const fs::path paketKoku = fs::absolute(calisanExeYolu).parent_path();
+  const fs::path manifestYolu =
+      paketKoku / "bootstrap-compiler.manifest.json";
+  if (!orhunNormalDosyaMi(manifestYolu)) {
+    return false;
+  }
+
+  yerlesik::JsonDeger manifest;
+  try {
+    manifest = yerlesik::jsonCoz(dosyaOku(manifestYolu.string()));
+  } catch (const std::exception &ex) {
+    bootstrapDerleyiciManifestHatasi(std::string("JSON okunamadi: ") +
+                                     ex.what());
+  }
+
+  const auto &kok = bootstrapSozlukBekle(manifest, "compiler_bundle");
+  const std::string format = bootstrapMetinBekle(
+      bootstrapAlanBekle(kok, "format", "compiler_bundle"),
+      "compiler_bundle.format");
+  if (format != "orhun-bootstrap-compiler-bundle-v1") {
+    bootstrapDerleyiciManifestHatasi(
+        "compiler_bundle.format 'orhun-bootstrap-compiler-bundle-v1' olmali.");
+  }
+
+  const std::string compiler = bootstrapMetinBekle(
+      bootstrapAlanBekle(kok, "compiler", "compiler_bundle"),
+      "compiler_bundle.compiler");
+  if (compiler != "orhun-derleyici" && compiler != "orhun-derleyici.exe") {
+    bootstrapDerleyiciManifestHatasi(
+        "compiler_bundle.compiler beklenen derleyici giris adini tasimiyor.");
+  }
+
+  const std::string toolchain = bootstrapMetinBekle(
+      bootstrapAlanBekle(kok, "toolchain", "compiler_bundle"),
+      "compiler_bundle.toolchain");
+  if (toolchain != "StdLib/bootstrap.manifest.json") {
+    bootstrapDerleyiciManifestHatasi(
+        "compiler_bundle.toolchain 'StdLib/bootstrap.manifest.json' olmali.");
+  }
+
+  const std::size_t beklenenBoyut = bootstrapBoyutBekle(
+      bootstrapAlanBekle(kok, "payload_size", "compiler_bundle"),
+      "compiler_bundle.payload_size");
+  if (payload.size() != beklenenBoyut) {
+    bootstrapDerleyiciManifestHatasi("embedded payload boyutu uyusmuyor.");
+  }
+
+  const std::string beklenenCrc = bootstrapMetinBekle(
+      bootstrapAlanBekle(kok, "payload_crc32", "compiler_bundle"),
+      "compiler_bundle.payload_crc32");
+  if (bootstrapCrc32Hex(payload) != beklenenCrc) {
+    bootstrapDerleyiciManifestHatasi("embedded payload CRC32 uyusmuyor.");
+  }
+
+  const fs::path toolchainManifest = paketKoku / fs::path(toolchain);
+  if (!orhunNormalDosyaMi(toolchainManifest)) {
+    bootstrapDerleyiciManifestHatasi("kardes toolchain manifesti bulunamadi.");
+  }
+  bootstrapToolchainDogrula(toolchainManifest.parent_path().string());
+  return true;
 }
 
 int komutBootstrapDogrula(const std::string &toolchainKoku) {

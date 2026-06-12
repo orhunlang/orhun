@@ -72,6 +72,9 @@ These percentages are planning estimates, not promises.
 - The packaged compiler C++ host no longer recognizes individual compiler CLI
   command names; Orhun-written CLI bytecode returns the structured exit code
   and optional artifact request for every invocation.
+- Portable compiler startup strictly validates its compiler-bundle manifest,
+  embedded CLI payload size/CRC, and sibling toolchain link. Bundle identity is
+  manifest/payload based, so the executable can be safely renamed.
 - `bootstrap-yeniden-uret` performs a seed -> stage 2 -> stage 3 rebuild and
   rejects the result unless every generated compiler artifact is byte-identical
   across the final two stages.

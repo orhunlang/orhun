@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import shutil
 import tempfile
 import zlib
 from pathlib import Path
@@ -488,9 +489,21 @@ def main() -> int:
             "orhun-derleyici.exe" if os.name == "nt" else "orhun-derleyici"
         )
         require(bundle_exe.exists(), "bootstrap compiler executable missing")
+        compiler_manifest_path = (
+            compiler_bundle / "bootstrap-compiler.manifest.json"
+        )
         require(
-            (compiler_bundle / "bootstrap-compiler.manifest.json").exists(),
+            compiler_manifest_path.exists(),
             "bootstrap compiler bundle manifest missing",
+        )
+        compiler_manifest_text = compiler_manifest_path.read_text(encoding="utf-8")
+        compiler_manifest = json.loads(compiler_manifest_text)
+        require(
+            compiler_manifest.get("format")
+            == "orhun-bootstrap-compiler-bundle-v1"
+            and compiler_manifest.get("toolchain")
+            == "StdLib/bootstrap.manifest.json",
+            "bootstrap compiler bundle manifest contract mismatch",
         )
         require(
             not list((compiler_bundle / "StdLib").rglob("*.oh")),
@@ -511,6 +524,54 @@ def main() -> int:
             and bundled_payload.get("hata_sayisi") == 0,
             f"bundled Orhun compiler payload failed: {bundled_payload}",
         )
+
+        renamed_bundle_exe = compiler_bundle / (
+            "orhun-yeniden-adlandirilmis.exe"
+            if os.name == "nt"
+            else "orhun-yeniden-adlandirilmis"
+        )
+        shutil.copy2(bundle_exe, renamed_bundle_exe)
+        renamed_compile = run_cmd(
+            [str(renamed_bundle_exe), str(artifact_source)],
+            tmpdir,
+        )
+        require(
+            renamed_compile.returncode == 0,
+            f"renamed compiler bundle failed: {combined(renamed_compile)}",
+        )
+        renamed_payload = json.loads(renamed_compile.stdout)
+        require(
+            renamed_payload.get("bytecode") == bundled_payload.get("bytecode"),
+            "renamed compiler bundle must keep the same compiler behavior",
+        )
+
+        bad_compiler_manifest = dict(compiler_manifest)
+        bad_compiler_manifest["payload_crc32"] = "00000000"
+        compiler_manifest_path.write_text(
+            json.dumps(bad_compiler_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        corrupt_compiler_manifest = run_cmd(
+            [str(bundle_exe), str(artifact_source)],
+            tmpdir,
+        )
+        require(
+            corrupt_compiler_manifest.returncode != 0,
+            "bundled compiler must reject corrupt compiler manifest",
+        )
+        require(
+            "bootstrap derleyici manifesti gecersiz"
+            in combined(corrupt_compiler_manifest)
+            and "payload CRC32 uyusmuyor" in combined(corrupt_compiler_manifest),
+            "compiler manifest rejection must explain the payload mismatch",
+        )
+        compiler_manifest_path.write_text(
+            compiler_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
         bundled_json = tmpdir / "bundled.bytecode.json"
         bundled_json.write_text(
             json.dumps(bundled_payload, ensure_ascii=False),
@@ -693,8 +754,8 @@ def main() -> int:
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
         "1 Orhun-owned compiler CLI control plane, 2 bundled direct artifact "
-        "compile modes, 1 source override, 1 reproducible bootstrap rebuild, "
-        "10 rejected invalid inputs)."
+        "compile modes, 1 renamed compiler bundle, 1 source override, "
+        "1 reproducible bootstrap rebuild, 11 rejected invalid inputs)."
     )
     return 0
 
