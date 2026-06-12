@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -74,6 +75,7 @@ def packaged_compiler_fixture(
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["payload_size"] = len(payload)
     manifest["payload_crc32"] = f"{zlib.crc32(payload) & 0xFFFFFFFF:08x}"
+    manifest["payload_sha256"] = hashlib.sha256(payload).hexdigest()
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False),
         encoding="utf-8",
@@ -263,7 +265,7 @@ def main() -> int:
         require(manifest_path.exists(), "bootstrap prepare manifest missing")
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         require(
-            manifest.get("format") == "orhun-bootstrap-v1"
+            manifest.get("format") == "orhun-bootstrap-v2"
             and manifest.get("module_mode") == "obc-only",
             "bootstrap prepare manifest contract mismatch",
         )
@@ -296,6 +298,10 @@ def main() -> int:
             require(
                 entry.get("payload_crc32") == f"{zlib.crc32(payload) & 0xFFFFFFFF:08x}",
                 f"manifest CRC mismatch for {module}",
+            )
+            require(
+                entry.get("payload_sha256") == hashlib.sha256(payload).hexdigest(),
+                f"manifest SHA256 mismatch for {module}",
             )
 
         valid_verify = run_cmd(
@@ -387,6 +393,51 @@ def main() -> int:
             newline="\n",
         )
 
+        legacy_manifest = json.loads(original_manifest_text)
+        legacy_manifest["format"] = "orhun-bootstrap-v1"
+        for entry in legacy_manifest["modules"]:
+            entry.pop("payload_sha256")
+        manifest_path.write_text(
+            json.dumps(legacy_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        legacy_verify = run_cmd(
+            [str(binary), "bootstrap-verify", str(obc_stdlib)],
+            repo,
+        )
+        require(
+            legacy_verify.returncode == 0,
+            f"legacy bootstrap v1 manifest must remain valid: {combined(legacy_verify)}",
+        )
+        manifest_path.write_text(
+            original_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        bad_sha_manifest = json.loads(original_manifest_text)
+        bad_sha_manifest["modules"][0]["payload_sha256"] = "0" * 64
+        manifest_path.write_text(
+            json.dumps(bad_sha_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        bad_sha_verify = run_cmd(
+            [str(binary), "bootstrap-verify", str(obc_stdlib)],
+            repo,
+        )
+        require(
+            bad_sha_verify.returncode != 0
+            and "payload SHA256 uyusmuyor" in combined(bad_sha_verify),
+            "bootstrap verification must reject manifest SHA256 mismatch",
+        )
+        manifest_path.write_text(
+            original_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
         parser_artifact = obc_orhun / "parser.obc"
         original_parser_payload = parser_artifact.read_bytes()
         invalid_parser_payload = bytearray(original_parser_payload)
@@ -401,6 +452,7 @@ def main() -> int:
         parser_entry["payload_crc32"] = (
             f"{zlib.crc32(invalid_parser_payload) & 0xFFFFFFFF:08x}"
         )
+        parser_entry["payload_sha256"] = hashlib.sha256(invalid_parser_payload).hexdigest()
         manifest_path.write_text(
             json.dumps(bad_obc_manifest, ensure_ascii=False),
             encoding="utf-8",
@@ -583,9 +635,13 @@ def main() -> int:
         compiler_manifest = json.loads(compiler_manifest_text)
         require(
             compiler_manifest.get("format")
-            == "orhun-bootstrap-compiler-bundle-v1"
+            == "orhun-bootstrap-compiler-bundle-v2"
             and compiler_manifest.get("toolchain")
-            == "StdLib/bootstrap.manifest.json",
+            == "StdLib/bootstrap.manifest.json"
+            and compiler_manifest.get("payload_sha256")
+            == hashlib.sha256(
+                (compiler_bundle / "StdLib" / "orhun" / "derleyici_cli.obc").read_bytes()
+            ).hexdigest(),
             "bootstrap compiler bundle manifest contract mismatch",
         )
         require(
@@ -660,6 +716,51 @@ def main() -> int:
             in combined(corrupt_compiler_manifest)
             and "payload CRC32 uyusmuyor" in combined(corrupt_compiler_manifest),
             "compiler manifest rejection must explain the payload mismatch",
+        )
+        compiler_manifest_path.write_text(
+            compiler_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        legacy_compiler_manifest = dict(compiler_manifest)
+        legacy_compiler_manifest["format"] = "orhun-bootstrap-compiler-bundle-v1"
+        legacy_compiler_manifest.pop("payload_sha256")
+        compiler_manifest_path.write_text(
+            json.dumps(legacy_compiler_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        legacy_compiler_verify = run_cmd(
+            [str(binary), "bootstrap-compiler-verify", str(compiler_bundle)],
+            repo,
+        )
+        require(
+            legacy_compiler_verify.returncode == 0,
+            "legacy compiler bundle v1 manifest must remain valid: "
+            + combined(legacy_compiler_verify),
+        )
+        compiler_manifest_path.write_text(
+            compiler_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        bad_compiler_sha = dict(compiler_manifest)
+        bad_compiler_sha["payload_sha256"] = "0" * 64
+        compiler_manifest_path.write_text(
+            json.dumps(bad_compiler_sha, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        corrupt_compiler_sha = run_cmd(
+            [str(binary), "bootstrap-compiler-verify", str(compiler_bundle)],
+            repo,
+        )
+        require(
+            corrupt_compiler_sha.returncode != 0
+            and "embedded payload SHA256 uyusmuyor" in combined(corrupt_compiler_sha),
+            "compiler manifest verification must reject SHA256 mismatch",
         )
         compiler_manifest_path.write_text(
             compiler_manifest_text,
@@ -1031,9 +1132,9 @@ def main() -> int:
         "1 standalone compiler bundle verification, 1 Orhun-owned compiler CLI "
         "control plane, 4 Orhun-owned artifact plans, 2 bundled direct artifact "
         "compile modes, 1 staged artifact replacement, 1 staged artifact "
-        "rollback, 1 renamed "
+        "rollback, 2 legacy v1 manifest compatibility checks, 1 renamed "
         "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
-        "14 rejected invalid inputs)."
+        "16 rejected invalid inputs)."
     )
     return 0
 

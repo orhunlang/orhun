@@ -659,8 +659,9 @@ Stable channel defaults:
   `--obc-only`, or `--modul-modu=<mode>` to select the policy for that process.
 - `bootstrap-hazirla <directory>` writes source-free `lexer.obc`,
   `parser.obc`, `derleyici.obc`, and `derleyici_cli.obc` artifacts plus a
-  CRC-bearing `bootstrap.manifest.json`. `bootstrap-prepare` is its
-  compatibility alias.
+  size/CRC32/SHA-256-bearing `orhun-bootstrap-v2`
+  `bootstrap.manifest.json`. `orhun-bootstrap-v1` manifests remain verifiable.
+  `bootstrap-prepare` is its compatibility alias.
 - `bootstrap-dogrula <toolchain-directory>` validates the manifest contract,
   exact module set, payload sizes, CRC32 values, and OBC structure without
   compiling or executing a target. `bootstrap-verify` is its compatibility
@@ -692,9 +693,10 @@ Stable channel defaults:
   cannot be produced. The packaged host does not dispatch individual
   compiler command names; it consumes the structured exit code and optional
   artifact plan returned by Orhun CLI bytecode. At startup it strictly
-  validates the compiler-bundle manifest, embedded CLI payload size/CRC, and
-  sibling toolchain path. Compiler-bundle identity does not depend on the
-  executable filename, so a valid bundle executable may be renamed.
+  validates the `orhun-bootstrap-compiler-bundle-v2` manifest, embedded CLI
+  payload size/CRC32/SHA-256, and sibling toolchain path. V1 bundle manifests
+  remain verifiable. Compiler-bundle identity does not depend on the executable
+  filename, so a valid bundle executable may be renamed.
 - `bootstrap-derleyici-dogrula <bundle-directory>` validates the complete
   portable compiler bundle without executing compiler CLI bytecode.
   `bootstrap-compiler-verify` is its compatibility alias.

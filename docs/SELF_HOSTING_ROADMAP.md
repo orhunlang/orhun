@@ -179,11 +179,12 @@ derleme fallback'i yapmadan calisir; eksik modul artifact'i acik hata verir.
 `orhun-vm` ve `orhun-derle`, bu zinciri tek komutta secmek icin `--obc-only`
 ve `--obc-first` CLI politikalarini destekler.
 `orhun bootstrap-hazirla <dizin>`, lexer/parser/derleyici modulleri ile
-derleyici CLI girisini kaynak dosyasi icermeyen bir toolchain klasorune ve CRC
-tasiyan makine-okur manifeste donusturur.
+derleyici CLI girisini kaynak dosyasi icermeyen bir toolchain klasorune ve
+boyut/CRC32/SHA-256 tasiyan makine-okur manifeste donusturur.
 `orhun bootstrap-dogrula <toolchain>`, manifest sozlesmesini, tam modul
-listesini, payload boyut/CRC degerlerini ve OBC yapisini hedef calistirmadan
-dogrular; derleme ve calistirma komutlari da once ayni denetimi yapar.
+listesini, payload boyut/CRC32/SHA-256 degerlerini ve OBC yapisini hedef
+calistirmadan dogrular; derleme ve calistirma komutlari da once ayni denetimi
+yapar.
 `orhun bootstrap-derle <toolchain> <kaynak.oh> [cikti]`, hazirlanan toolchain'i
 ortam degiskeni gerektirmeden kati `obc-only` modunda kullanir.
 `orhun bootstrap-calistir <toolchain> <kaynak.oh>`, ayni zincirle hedefi
@@ -205,8 +206,9 @@ yazilir; tumu hazirlanmadan yayinlanmaz ve hazirlama hatasi mevcut ciktilari
 korur. Paketli C++ host `--derle` veya `--compile` komut adlarini bilmez; her
 cagrinin yapilandirilmis cikis kodu ve artifact plani Orhun CLI bytecode'u
 tarafindan uretilir. Compiler bundle kimligi dosya adina degil, dogrulanan
-bundle manifestine, embedded CLI payload boyut/CRC degerine ve kardes toolchain
-bagina dayanir.
+v2 bundle manifestine, embedded CLI payload boyut/CRC32/SHA-256 degerine ve
+kardes v2 toolchain manifestindeki modullerinin boyut/CRC32/SHA-256
+degerlerine dayanir. Eski v1 manifestleri dogrulanmaya devam eder.
 `orhun bootstrap-yeniden-uret <tohum-toolchain> <cikti-dizini>`, tohum ile
 asama 2'yi, asama 2 ile asama 3'u uretir ve son iki asamadaki dort artifact'in
 byte duzeyinde ayni olmasini zorunlu tutar. Dolu cikti dizinini ezmez ve

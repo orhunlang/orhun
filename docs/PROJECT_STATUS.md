@@ -54,8 +54,8 @@ These percentages are planning estimates, not promises.
   compiler/parser/lexer chain without requiring `.oh` sources or silently
   falling back to C++ source compilation.
 - `bootstrap-hazirla` produces the source-free compiler/parser/lexer plus
-  compiler-CLI artifact toolchain and a CRC-bearing machine-readable manifest
-  in one command.
+  compiler-CLI artifact toolchain and a size/CRC32/SHA-256-bearing
+  machine-readable manifest in one command.
 - `bootstrap-dogrula` validates the complete prepared-toolchain contract,
   payload integrity, and OBC structure before distribution or execution.
 - `bootstrap-derle` consumes a prepared toolchain in strict `obc-only` mode
@@ -76,8 +76,10 @@ These percentages are planning estimates, not promises.
   command names; Orhun-written CLI bytecode returns the structured exit code
   and optional complete artifact plan for every invocation.
 - Portable compiler startup strictly validates its compiler-bundle manifest,
-  embedded CLI payload size/CRC, and sibling toolchain link. Bundle identity is
-  manifest/payload based, so the executable can be safely renamed.
+  embedded CLI payload size/CRC32/SHA-256, and sibling toolchain link. Source-
+  free toolchain module manifests carry the same v2 integrity fields, while v1
+  manifests remain verifiable. Bundle identity is manifest/payload based, so
+  the executable can be safely renamed.
 - `bootstrap-derleyici-dogrula` performs the same complete compiler-bundle
   verification before CI upload or release packaging.
 - `bootstrap-yeniden-uret` performs a seed -> stage 2 -> stage 3 rebuild and

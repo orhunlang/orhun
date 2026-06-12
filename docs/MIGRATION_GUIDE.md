@@ -200,10 +200,12 @@
   `--obc-first`, `--obc-only` veya `--modul-modu=<değer>` ile seçebilir.
 - `orhun bootstrap-hazirla <dizin>`, kaynak dosyası içermeyen lexer/parser/
   derleyici ve derleyici-CLI `.obc` zincirini ve `bootstrap.manifest.json`
-  dosyasını üretir.
+  dosyasını üretir. Yeni `orhun-bootstrap-v2` manifesti her modül için boyut,
+  CRC32 ve SHA-256 taşır; v1 manifestleri doğrulanmaya devam eder.
   İngilizce uyumluluk takma adı `bootstrap-prepare`'dır.
 - `orhun bootstrap-dogrula <toolchain-dizini>`, manifest sözleşmesini, modül
-  kümesini, boyut/CRC değerlerini ve OBC yapısını çalıştırmadan denetler.
+  kümesini, boyut/CRC32/SHA-256 değerlerini ve OBC yapısını çalıştırmadan
+  denetler.
   İngilizce uyumluluk takma adı `bootstrap-verify`'dır.
 - `orhun bootstrap-derle <toolchain-dizini> <kaynak.oh> [çıktı]`, hazırlanmış
   toolchain'i `obc-only` politikasında kullanır; ortam değişkeni gerektirmez.
@@ -218,8 +220,9 @@
   bytecode JSON, `--derle <kaynak.oh> [çıktı]` ile `.obc`, paketli
   çalıştırılabilir dosya ve metadata üretir.
 - `orhun bootstrap-derleyici-dogrula <bundle-dizini>`, dağıtımdan önce compiler
-  manifestini, embedded CLI payload boyut/CRC değerini ve kardeş strict
-  toolchain'i birlikte doğrular. İngilizce uyumluluk takma adı
+  manifestini, embedded CLI payload boyut/CRC32/SHA-256 değerini ve kardeş
+  strict toolchain'i birlikte doğrular. Yeni bundle manifestleri v2'dir; v1
+  manifestleri doğrulanmaya devam eder. İngilizce uyumluluk takma adı
   `bootstrap-compiler-verify`'dır.
 - `orhun bootstrap-yeniden-uret <tohum-toolchain> <çıktı-dizini>`, tohumdan
   aşama 2 ve aşama 2'den aşama 3 üretir; son iki aşamanın dört `.obc`

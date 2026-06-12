@@ -3730,7 +3730,7 @@ int bootstrapToolchainUret(const std::string &ciktiKoku) {
       "lexer", "parser", "derleyici", "derleyici_cli"};
   std::ostringstream manifest;
   manifest << "{\n"
-           << "  \"format\": \"orhun-bootstrap-v1\",\n"
+           << "  \"format\": \"orhun-bootstrap-v2\",\n"
            << "  \"module_mode\": \"obc-only\",\n"
            << "  \"modules\": [\n";
 
@@ -3749,8 +3749,9 @@ int bootstrapToolchainUret(const std::string &ciktiKoku) {
 
     manifest << "    {\"module\":\"" << dahilYolu << "\",\"artifact\":\"orhun/"
              << moduller[i] << ".obc\",\"payload_size\":" << payload.size()
-             << ",\"payload_crc32\":\"" << std::hex << std::setfill('0')
-             << std::setw(8) << crc32Hesapla(payload) << std::dec << "\"}";
+             << ",\"payload_crc32\":\"" << crc32Hex(payload)
+             << "\",\"payload_sha256\":\"" << security::sha256Hex(payload)
+             << "\"}";
     if (i + 1 < moduller.size()) {
       manifest << ",";
     }
@@ -3852,9 +3853,11 @@ void bootstrapToolchainDogrula(const std::string &toolchainKoku) {
   const auto &kokSozluk = bootstrapSozlukBekle(manifest, "kok");
   const std::string format = bootstrapMetinBekle(
       bootstrapAlanBekle(kokSozluk, "format", "kok"), "kok.format");
-  if (format != "orhun-bootstrap-v1") {
-    bootstrapManifestHatasi("kok.format 'orhun-bootstrap-v1' olmali.");
+  if (format != "orhun-bootstrap-v1" && format != "orhun-bootstrap-v2") {
+    bootstrapManifestHatasi(
+        "kok.format 'orhun-bootstrap-v1' veya 'orhun-bootstrap-v2' olmali.");
   }
+  const bool sha256Zorunlu = format == "orhun-bootstrap-v2";
   const std::string modulModu = bootstrapMetinBekle(
       bootstrapAlanBekle(kokSozluk, "module_mode", "kok"),
       "kok.module_mode");
@@ -3912,6 +3915,14 @@ void bootstrapToolchainDogrula(const std::string &toolchainKoku) {
     if (bootstrapCrc32Hex(payload) != beklenenCrc) {
       bootstrapManifestHatasi(modul + " payload CRC32 uyusmuyor.");
     }
+    if (sha256Zorunlu) {
+      const std::string beklenenSha = bootstrapMetinBekle(
+          bootstrapAlanBekle(kayit, "payload_sha256", baglam),
+          baglam + ".payload_sha256");
+      if (security::sha256Hex(payload) != beklenenSha) {
+        bootstrapManifestHatasi(modul + " payload SHA256 uyusmuyor.");
+      }
+    }
     try {
       static_cast<void>(chunkCoz(payload));
     } catch (const std::exception &ex) {
@@ -3948,10 +3959,13 @@ bool bootstrapDerleyiciPaketiDogrula(
   const std::string format = bootstrapMetinBekle(
       bootstrapAlanBekle(kok, "format", "compiler_bundle"),
       "compiler_bundle.format");
-  if (format != "orhun-bootstrap-compiler-bundle-v1") {
+  if (format != "orhun-bootstrap-compiler-bundle-v1" &&
+      format != "orhun-bootstrap-compiler-bundle-v2") {
     bootstrapDerleyiciManifestHatasi(
-        "compiler_bundle.format 'orhun-bootstrap-compiler-bundle-v1' olmali.");
+        "compiler_bundle.format 'orhun-bootstrap-compiler-bundle-v1' veya "
+        "'orhun-bootstrap-compiler-bundle-v2' olmali.");
   }
+  const bool sha256Zorunlu = format == "orhun-bootstrap-compiler-bundle-v2";
 
   const std::string compiler = bootstrapMetinBekle(
       bootstrapAlanBekle(kok, "compiler", "compiler_bundle"),
@@ -3981,6 +3995,14 @@ bool bootstrapDerleyiciPaketiDogrula(
       "compiler_bundle.payload_crc32");
   if (bootstrapCrc32Hex(payload) != beklenenCrc) {
     bootstrapDerleyiciManifestHatasi("embedded payload CRC32 uyusmuyor.");
+  }
+  if (sha256Zorunlu) {
+    const std::string beklenenSha = bootstrapMetinBekle(
+        bootstrapAlanBekle(kok, "payload_sha256", "compiler_bundle"),
+        "compiler_bundle.payload_sha256");
+    if (security::sha256Hex(payload) != beklenenSha) {
+      bootstrapDerleyiciManifestHatasi("embedded payload SHA256 uyusmuyor.");
+    }
   }
 
   const fs::path toolchainManifest = paketKoku / fs::path(toolchain);
@@ -4082,12 +4104,14 @@ int komutBootstrapDerleyiciPaketle(const std::string &toolchainKoku,
 
   std::ostringstream manifest;
   manifest << "{\n"
-           << "  \"format\": \"orhun-bootstrap-compiler-bundle-v1\",\n"
+           << "  \"format\": \"orhun-bootstrap-compiler-bundle-v2\",\n"
            << "  \"compiler\": \""
            << jsonKacis(derleyiciExe.filename().u8string()) << "\",\n"
            << "  \"toolchain\": \"StdLib/bootstrap.manifest.json\",\n"
            << "  \"payload_size\": " << payload.size() << ",\n"
-           << "  \"payload_crc32\": \"" << bootstrapCrc32Hex(payload) << "\"\n"
+           << "  \"payload_crc32\": \"" << bootstrapCrc32Hex(payload) << "\",\n"
+           << "  \"payload_sha256\": \"" << security::sha256Hex(payload)
+           << "\"\n"
            << "}\n";
   dosyaYaz((cikti / "bootstrap-compiler.manifest.json").string(),
            manifest.str());
