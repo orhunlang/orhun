@@ -15,6 +15,11 @@ yazdır paket_yardimci.bagimli_mi(manifest, "metin")
 yazdır paket_yardimci.dogrula(manifest).ok
 yazdır paket_yardimci.ad_gecerli_mi("ornek_paket-1.0")
 yazdır paket_yardimci.ad_gecerli_mi("kotu/ad")
+yazdır paket_yardimci.surum_gecerli_mi("1.2.3")
+yazdır paket_yardimci.surum_gecerli_mi("1.2.3-alpha.1+build.5")
+yazdır paket_yardimci.surum_gecerli_mi("01.2.3")
+yazdır paket_yardimci.surum_gecerli_mi("1.2")
+yazdır paket_yardimci.surum_gecerli_mi("1.2.3-alpha.01")
 
 varsayilanli olsun json.coz("{\"ad\":\"yalin\",\"surum\":\"1.0.0\"}")
 yazdır paket_yardimci.giris(varsayilanli)
@@ -24,6 +29,10 @@ yazdır paket_yardimci.coz_ve_dogrula(json.yaz(varsayilanli)).ok
 eksik olsun json.coz("{\"ad\":\"eksik\"}")
 yazdır paket_yardimci.dogrula(eksik).ok
 yazdır metin.icerir(paket_yardimci.dogrula(eksik).hata, "surum")
+
+gecersiz_surum olsun json.coz("{\"ad\":\"ornek\",\"surum\":\"son\"}")
+yazdır paket_yardimci.dogrula(gecersiz_surum).ok
+yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_surum).hata, "semantik")
 
 yanlis_bagimlilik olsun json.coz("{\"ad\":\"yanlis\",\"surum\":\"1.0.0\",\"bagimliliklar\":\"temel\"}")
 yazdır paket_yardimci.dogrula(yanlis_bagimlilik).ok

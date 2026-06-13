@@ -108,6 +108,8 @@ These percentages are planning estimates, not promises.
   reserving those words as keywords.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
+- The Orhun-written package manifest helper validates package/dependency names
+  and Semantic Versioning 2.0 versions, including prerelease/build identifiers.
 
 ## Main Remaining Work
 

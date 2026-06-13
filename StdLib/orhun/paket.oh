@@ -2,8 +2,9 @@
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 
-surum olsun "0.2.0"
+surum olsun "0.3.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
+izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 
 işlev coz(kaynak):
     deneme:
@@ -41,6 +42,80 @@ işlev bagimli_mi(manifest, paket_adi):
 işlev ozet(manifest):
     döndür ad(manifest) + "@" + surum_al(manifest)
 
+işlev sayisal_mi(deger):
+    eğer uzunluk(deger) eşit 0 ise:
+        döndür yanlış
+    i olsun 0
+    sürece i küçük uzunluk(deger):
+        eğer metin.icerir("0123456789", deger[i]) ise:
+            i olsun i + 1
+        değilse:
+            döndür yanlış
+    döndür doğru
+
+işlev sayisal_surum_parcasi_gecerli_mi(parca):
+    eğer değil sayisal_mi(parca) ise:
+        döndür yanlış
+    eğer uzunluk(parca) büyük 1 ve parca[0] eşit "0" ise:
+        döndür yanlış
+    döndür doğru
+
+işlev ilk_tire_konumu(deger):
+    i olsun 0
+    sürece i küçük uzunluk(deger):
+        eğer deger[i] eşit "-" ise:
+            döndür i
+        i olsun i + 1
+    döndür -1
+
+işlev surum_kimlikleri_gecerli_mi(deger, on_surum_mu):
+    kimlikler olsun parcala(deger, ".")
+    i olsun 0
+    sürece i küçük uzunluk(kimlikler):
+        kimlik olsun kimlikler[i]
+        eğer uzunluk(kimlik) eşit 0 ise:
+            döndür yanlış
+        j olsun 0
+        sürece j küçük uzunluk(kimlik):
+            eğer metin.icerir(izinli_surum_karakterleri, kimlik[j]) ise:
+                j olsun j + 1
+            değilse:
+                döndür yanlış
+        eğer on_surum_mu ve sayisal_mi(kimlik) ve uzunluk(kimlik) büyük 1 ve kimlik[0] eşit "0" ise:
+            döndür yanlış
+        i olsun i + 1
+    döndür doğru
+
+işlev surum_gecerli_mi(paket_surumu):
+    deneme:
+        arti_parcalari olsun parcala(paket_surumu, "+")
+        eğer uzunluk(arti_parcalari) büyük 2 ise:
+            döndür yanlış
+        eğer uzunluk(arti_parcalari) eşit 2 ise:
+            eğer değil surum_kimlikleri_gecerli_mi(arti_parcalari[1], yanlış) ise:
+                döndür yanlış
+
+        cekirdek_ve_on_surum olsun arti_parcalari[0]
+        tire_konumu olsun ilk_tire_konumu(cekirdek_ve_on_surum)
+        cekirdek olsun cekirdek_ve_on_surum
+        eğer tire_konumu eşit_değil -1 ise:
+            cekirdek = cekirdek_ve_on_surum[:tire_konumu]
+            on_surum olsun cekirdek_ve_on_surum[tire_konumu + 1:]
+            eğer değil surum_kimlikleri_gecerli_mi(on_surum, doğru) ise:
+                döndür yanlış
+
+        cekirdek_parcalari olsun parcala(cekirdek, ".")
+        eğer uzunluk(cekirdek_parcalari) eşit_değil 3 ise:
+            döndür yanlış
+        i olsun 0
+        sürece i küçük 3:
+            eğer değil sayisal_surum_parcasi_gecerli_mi(cekirdek_parcalari[i]) ise:
+                döndür yanlış
+            i olsun i + 1
+        döndür doğru
+    yakala hata:
+        döndür yanlış
+
 işlev ad_gecerli_mi(paket_adi):
     deneme:
         eğer uzunluk(paket_adi) eşit 0 ise:
@@ -75,8 +150,14 @@ işlev dogrula(manifest):
             yakala hata:
                 döndür sonuc_yardimci.hata("manifest ad alani gecersiz")
             döndür sonuc_yardimci.hata("manifest ad alani gecersiz")
-        eğer uzunluk(surum_al(manifest)) eşit 0 ise:
-            döndür sonuc_yardimci.hata("manifest surum alani zorunlu")
+        manifest_surumu olsun surum_al(manifest)
+        eğer değil surum_gecerli_mi(manifest_surumu) ise:
+            deneme:
+                eğer uzunluk(manifest_surumu) eşit 0 ise:
+                    döndür sonuc_yardimci.hata("manifest surum alani zorunlu")
+            yakala hata:
+                döndür sonuc_yardimci.hata("manifest surum alani semantik surum olmali")
+            döndür sonuc_yardimci.hata("manifest surum alani semantik surum olmali")
         eğer uzunluk(giris(manifest)) eşit 0 ise:
             döndür sonuc_yardimci.hata("manifest giris alani bos olamaz")
 

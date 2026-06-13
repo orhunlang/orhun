@@ -382,7 +382,9 @@ shorter list.
 `orhun/paket.oh` includes package manifest helpers such as `coz`,
 `coz_ve_dogrula`, `dogrula`, `bagimliliklar`, `bagimli_mi`, and
 `ad_gecerli_mi`. Manifest package names and dependency names should contain
-only letters, digits, `_`, `.`, and `-`.
+only letters, digits, `_`, `.`, and `-`. Manifest versions are validated as
+Semantic Versioning 2.0 versions by the Orhun-written `surum_gecerli_mi`
+helper, including prerelease and build identifiers.
 
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.
