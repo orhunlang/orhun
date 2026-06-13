@@ -41,13 +41,14 @@ def main() -> int:
 
     blocked_chars = [";", "|", "&", "<", ">", "`", "$", "\"", "'"]
     for ch in blocked_chars:
-        src = f'sistem.komut("echo a{ch}echo b")\n'
+        source_char = r"\"" if ch == '"' else ch
+        src = f'sistem.komut("echo a{source_char}echo b")\n'
         proc = run_case(binary, src, base_env)
         text = (proc.stdout + proc.stderr).lower()
         require(proc.returncode != 0, f"restricted mode should block char: {ch!r}")
         require("kisitli modda tehlikeli karakter" in text, f"missing block message for char: {ch!r}")
 
-    safe = run_case(binary, 'sistem.komut("echo orhun_smoke")\n', base_env)
+    safe = run_case(binary, 'sistem.komut("whoami")\n', base_env)
     require(safe.returncode == 0, "safe command should pass in restricted mode")
 
     unsafe_env = dict(base_env)
@@ -62,4 +63,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

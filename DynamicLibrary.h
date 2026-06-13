@@ -57,7 +57,8 @@ public:
     handle_ = dlopen(yol_.c_str(), RTLD_LAZY);
     if (!handle_) {
       if (hata) {
-        *hata = dlerror() ? dlerror() : "dlopen basarisiz.";
+        const char* dlHatasi = dlerror();
+        *hata = dlHatasi != nullptr ? dlHatasi : "dlopen basarisiz.";
       }
       return false;
     }

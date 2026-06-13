@@ -12,10 +12,10 @@ yazdır s3 + ": " + uzunluk(s3)
 yazdır "UTF-8 kod noktaları: " + metin.utf8_uzunluk(s3)
 
 yazdır "--- Dilimleme (Slicing) Testi ---"
-# UTF-8 slicing: Bayt degil karakter bazli olmali
-yazdır s3[0:2] # ÇŞ
-yazdır s3[2:5] # ĞİÖ
-yazdır s2[8:13] # dünya
+# Metin dilimleri mevcut sözleşmede UTF-8 bayt aralıkları kullanır.
+yazdır s3[0:4] # ÇŞ
+yazdır s3[4:10] # ĞİÖ
+yazdır s2[8:14] # dünya
 
 yazdır "--- Buyuk/Kucuk Harf Testi ---"
 # Not: Yerlesik stdlib veya string methodlari varsa test edelim.

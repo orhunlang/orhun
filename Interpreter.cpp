@@ -1137,6 +1137,7 @@ void grafikBekle(int milisaniye) {
     kalan -= bekle;
   }
 }
+#endif
 
 #if defined(_WIN32)
 #define ORHUN_FFI_CALLCONV WINAPI
@@ -1277,6 +1278,7 @@ double ffiCiftCagir(std::uintptr_t fonksiyon,
   }
 }
 
+#ifdef _WIN32
 struct WinHttpApi {
   using CrackUrlFn = BOOL(WINAPI *)(LPCWSTR, DWORD, DWORD, LPURL_COMPONENTS);
   using OpenFn = HINTERNET(WINAPI *)(LPCWSTR, DWORD, LPCWSTR, LPCWSTR, DWORD);

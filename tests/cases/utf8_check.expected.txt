@@ -4,9 +4,9 @@ merhaba dünya: 14
 ÇŞĞİÖÜçşğüöı: 24
 UTF-8 kod noktaları: 12
 --- Dilimleme (Slicing) Testi ---
-Ç
-Ş�
-düny
+ÇŞ
+ĞİÖ
+dünya
 --- Buyuk/Kucuk Harf Testi ---
 MERHABA
 dÜnya

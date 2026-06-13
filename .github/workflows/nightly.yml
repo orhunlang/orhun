@@ -24,7 +24,7 @@ jobs:
       ORHUN_CHANNEL: "nightly"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup C++ toolchain (Linux)
         if: runner.os == 'Linux'
@@ -608,7 +608,7 @@ jobs:
           ./tests/benchmark_gate.sh build/benchmark_results.jsonl "${ORHUN_BENCH_GATE_P50}" "${ORHUN_BENCH_GATE_P90}" "${ORHUN_BENCH_GATE_MODE}" "${ORHUN_BENCH_BASELINE_JSONL}" "${ORHUN_BENCH_BASELINE_P50_RATIO}" "${ORHUN_BENCH_BASELINE_P90_RATIO}"
 
       - name: Upload benchmark artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: benchmark-${{ runner.os }}
           path: |
@@ -617,7 +617,7 @@ jobs:
 
       - name: Upload coverage artifact (Linux)
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-linux
           path: |

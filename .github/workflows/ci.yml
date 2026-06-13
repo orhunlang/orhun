@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install build tools (Linux)
         if: runner.os == 'Linux'
@@ -366,7 +366,7 @@ jobs:
           ./build/orhun_test bootstrap-derleyici-dogrula artifacts/compiler-bundle
 
       - name: Upload validated compiler bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: orhun-compiler-bundle-${{ runner.os }}
           path: artifacts/compiler-bundle
@@ -495,7 +495,7 @@ jobs:
 
       - name: Upload coverage artifact (Linux)
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-linux
           path: |
@@ -507,7 +507,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install sanitizer toolchain
         run: sudo apt-get update && sudo apt-get install -y clang python3
@@ -530,7 +530,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install clang-tidy
         run: sudo apt-get update && sudo apt-get install -y clang-tidy
