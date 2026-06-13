@@ -331,20 +331,82 @@ def main() -> int:
             rebuild.returncode == 0,
             f"bootstrap reproducible rebuild failed: {combined(rebuild)}",
         )
+        rebuild_manifest_path = rebuilt_toolchain / "bootstrap-rebuild.manifest.json"
+        require(rebuild_manifest_path.exists(), "bootstrap rebuild manifest missing")
+        rebuild_manifest_text = rebuild_manifest_path.read_text(encoding="utf-8")
+        rebuild_manifest = json.loads(rebuild_manifest_text)
         require(
-            (rebuilt_toolchain / "bootstrap-rebuild.manifest.json").exists(),
-            "bootstrap rebuild manifest missing",
+            rebuild_manifest.get("format") == "orhun-bootstrap-rebuild-v2"
+            and rebuild_manifest.get("stage2_stage3_equal") is True
+            and rebuild_manifest.get("module_count") == 4,
+            "bootstrap rebuild manifest contract mismatch",
         )
+        rebuild_modules = rebuild_manifest.get("modules")
+        require(
+            isinstance(rebuild_modules, list) and len(rebuild_modules) == 4,
+            "bootstrap rebuild manifest must list four modules",
+        )
+        rebuild_entries = {
+            entry.get("module"): entry
+            for entry in rebuild_modules
+            if isinstance(entry, dict)
+        }
         require(
             not (rebuilt_toolchain / ".asama2").exists(),
             "bootstrap rebuild temporary stage must be removed",
         )
         for module in ("lexer", "parser", "derleyici", "derleyici_cli"):
+            module_name = f"orhun/{module}.oh"
+            artifact = rebuilt_toolchain / "orhun" / f"{module}.obc"
+            payload = artifact.read_bytes()
+            entry = rebuild_entries.get(module_name)
             require(
-                (rebuilt_toolchain / "orhun" / f"{module}.obc").read_bytes()
-                == (obc_orhun / f"{module}.obc").read_bytes(),
+                isinstance(entry, dict)
+                and entry.get("artifact") == f"orhun/{module}.obc"
+                and entry.get("payload_size") == len(payload)
+                and entry.get("payload_crc32")
+                == f"{zlib.crc32(payload) & 0xFFFFFFFF:08x}"
+                and entry.get("payload_sha256") == hashlib.sha256(payload).hexdigest(),
+                f"bootstrap rebuild manifest integrity mismatch for {module}",
+            )
+            require(
+                payload == (obc_orhun / f"{module}.obc").read_bytes(),
                 f"rebuilt bootstrap artifact changed for {module}",
             )
+
+        rebuild_verify = run_cmd(
+            [str(binary), "bootstrap-yeniden-dogrula", str(rebuilt_toolchain)],
+            repo,
+        )
+        require(
+            rebuild_verify.returncode == 0
+            and "Bootstrap yeniden uretim manifesti dogrulandi:"
+            in combined(rebuild_verify),
+            f"bootstrap rebuild verification failed: {combined(rebuild_verify)}",
+        )
+
+        bad_rebuild_manifest = json.loads(rebuild_manifest_text)
+        bad_rebuild_manifest["modules"][0]["payload_sha256"] = "0" * 64
+        rebuild_manifest_path.write_text(
+            json.dumps(bad_rebuild_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        rejected_rebuild_manifest = run_cmd(
+            [str(binary), "bootstrap-rebuild-verify", str(rebuilt_toolchain)],
+            repo,
+        )
+        require(
+            rejected_rebuild_manifest.returncode != 0
+            and "yeniden uretim SHA256 uyusmuyor"
+            in combined(rejected_rebuild_manifest),
+            "bootstrap rebuild verification must reject manifest SHA256 mismatch",
+        )
+        rebuild_manifest_path.write_text(
+            rebuild_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
 
         nonempty_rebuild = tmpdir / "nonempty_rebuild"
         nonempty_rebuild.mkdir()
@@ -1134,7 +1196,7 @@ def main() -> int:
         "compile modes, 1 staged artifact replacement, 1 staged artifact "
         "rollback, 2 legacy v1 manifest compatibility checks, 1 renamed "
         "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
-        "16 rejected invalid inputs)."
+        "1 standalone rebuild manifest verification, 17 rejected invalid inputs)."
     )
     return 0
 

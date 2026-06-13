@@ -212,7 +212,10 @@ degerlerine dayanir. Eski v1 manifestleri dogrulanmaya devam eder.
 `orhun bootstrap-yeniden-uret <tohum-toolchain> <cikti-dizini>`, tohum ile
 asama 2'yi, asama 2 ile asama 3'u uretir ve son iki asamadaki dort artifact'in
 byte duzeyinde ayni olmasini zorunlu tutar. Dolu cikti dizinini ezmez ve
-basarili kapinin sonucunu `bootstrap-rebuild.manifest.json` ile kaydeder.
+basarili kapinin sonucunu dort artifact'in boyut/CRC32/SHA-256 kimligini
+tasiyan `orhun-bootstrap-rebuild-v2` manifestiyle kaydeder.
+`orhun bootstrap-yeniden-dogrula <toolchain>`, bu yeniden uretim kanitini ve
+eslik eden strict toolchain manifestini daha sonra yeniden dogrular.
 `sistem.argumanlar`, dogrudan, paketli ve bootstrap calistirma yollarinda ayni
 program argumani sozlesmesini saglar; bagimsiz derleyici CLI'i bu primitive ile
 kaynak/cikti yollarini okuyup tam artifact planini Orhun kodunda uretir.

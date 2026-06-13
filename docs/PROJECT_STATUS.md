@@ -85,6 +85,9 @@ These percentages are planning estimates, not promises.
 - `bootstrap-yeniden-uret` performs a seed -> stage 2 -> stage 3 rebuild and
   rejects the result unless every generated compiler artifact is byte-identical
   across the final two stages.
+- Rebuild results carry an `orhun-bootstrap-rebuild-v2` evidence manifest with
+  per-module size, CRC32, and SHA-256 identity; `bootstrap-yeniden-dogrula`
+  verifies that evidence and the companion strict toolchain later.
 - The compiler bootstrap and self-rebuild gate runs on Windows, Ubuntu, and
   macOS in both the main CI and nightly matrices.
 - Main CI builds and uploads validated source-free portable compiler bundles

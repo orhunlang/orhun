@@ -704,8 +704,12 @@ Stable channel defaults:
   reproducible three-stage bootstrap gate: the seed builds stage 2, stage 2
   builds stage 3, and every stage-2/stage-3 OBC artifact must be byte-identical.
   It refuses non-empty output directories and writes
-  `bootstrap-rebuild.manifest.json` after success. `bootstrap-rebuild` is its
-  compatibility alias.
+  an `orhun-bootstrap-rebuild-v2` `bootstrap-rebuild.manifest.json` containing
+  size, CRC32, and SHA-256 identity for every compiler module after success.
+  `bootstrap-rebuild` is its compatibility alias.
+- `bootstrap-yeniden-dogrula <toolchain-directory>` validates the rebuild-v2
+  evidence and the companion strict toolchain without rebuilding it.
+  `bootstrap-rebuild-verify` is its compatibility alias.
 
 ## Compatibility Rules
 

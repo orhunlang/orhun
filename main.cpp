@@ -3829,6 +3829,15 @@ std::size_t bootstrapBoyutBekle(const yerlesik::JsonDeger &deger,
   return static_cast<std::size_t>(*sayi);
 }
 
+bool bootstrapMantikBekle(const yerlesik::JsonDeger &deger,
+                          std::string_view baglam) {
+  const auto *mantik = std::get_if<bool>(&deger.veri);
+  if (mantik == nullptr) {
+    bootstrapManifestHatasi(std::string(baglam) + " mantik olmali.");
+  }
+  return *mantik;
+}
+
 std::string bootstrapCrc32Hex(const std::vector<std::uint8_t> &payload) {
   return crc32Hex(payload);
 }
@@ -4123,6 +4132,110 @@ int komutBootstrapDerleyiciPaketle(const std::string &toolchainKoku,
   return 0;
 }
 
+void bootstrapYenidenUretManifestDogrula(const std::string &toolchainKoku) {
+  namespace fs = std::filesystem;
+  const fs::path kok = fs::absolute(toolchainKoku);
+  bootstrapToolchainDogrula(kok.string());
+
+  const fs::path manifestYolu = kok / "bootstrap-rebuild.manifest.json";
+  if (!orhunNormalDosyaMi(manifestYolu)) {
+    throw std::runtime_error(
+        "Hata: bootstrap yeniden uretim manifesti bulunamadi: " +
+        manifestYolu.string());
+  }
+
+  yerlesik::JsonDeger manifest;
+  try {
+    manifest = yerlesik::jsonCoz(dosyaOku(manifestYolu.string()));
+  } catch (const std::exception &ex) {
+    bootstrapManifestHatasi(std::string("yeniden uretim JSON okunamadi: ") +
+                            ex.what());
+  }
+  const auto &kokSozluk = bootstrapSozlukBekle(manifest, "rebuild");
+  const std::string format = bootstrapMetinBekle(
+      bootstrapAlanBekle(kokSozluk, "format", "rebuild"), "rebuild.format");
+  if (format != "orhun-bootstrap-rebuild-v2") {
+    bootstrapManifestHatasi(
+        "rebuild.format 'orhun-bootstrap-rebuild-v2' olmali.");
+  }
+  if (!bootstrapMantikBekle(
+          bootstrapAlanBekle(kokSozluk, "stage2_stage3_equal", "rebuild"),
+          "rebuild.stage2_stage3_equal")) {
+    bootstrapManifestHatasi("rebuild.stage2_stage3_equal true olmali.");
+  }
+
+  const std::map<std::string, std::string> beklenenModuller = {
+      {"orhun/lexer.oh", "orhun/lexer.obc"},
+      {"orhun/parser.oh", "orhun/parser.obc"},
+      {"orhun/derleyici.oh", "orhun/derleyici.obc"},
+      {"orhun/derleyici_cli.oh", "orhun/derleyici_cli.obc"},
+  };
+  const std::size_t modulSayisi = bootstrapBoyutBekle(
+      bootstrapAlanBekle(kokSozluk, "module_count", "rebuild"),
+      "rebuild.module_count");
+  const auto &moduller = bootstrapListeBekle(
+      bootstrapAlanBekle(kokSozluk, "modules", "rebuild"), "rebuild.modules");
+  if (modulSayisi != beklenenModuller.size() ||
+      moduller.size() != beklenenModuller.size()) {
+    bootstrapManifestHatasi(
+        "rebuild tam olarak dort modul kaydi icermeli.");
+  }
+
+  std::set<std::string> gorulenModuller;
+  for (std::size_t i = 0; i < moduller.size(); ++i) {
+    const std::string baglam = "rebuild.modules[" + std::to_string(i) + "]";
+    const auto &kayit = bootstrapSozlukBekle(moduller[i], baglam);
+    const std::string modul = bootstrapMetinBekle(
+        bootstrapAlanBekle(kayit, "module", baglam), baglam + ".module");
+    const auto beklenen = beklenenModuller.find(modul);
+    if (beklenen == beklenenModuller.end()) {
+      bootstrapManifestHatasi(baglam + ".module bilinmiyor: " + modul);
+    }
+    if (!gorulenModuller.insert(modul).second) {
+      bootstrapManifestHatasi(baglam + ".module yinelenmis: " + modul);
+    }
+    const std::string artifactAdi = bootstrapMetinBekle(
+        bootstrapAlanBekle(kayit, "artifact", baglam), baglam + ".artifact");
+    if (artifactAdi != beklenen->second) {
+      bootstrapManifestHatasi(baglam + ".artifact beklenen yolla uyusmuyor.");
+    }
+    const std::size_t beklenenBoyut = bootstrapBoyutBekle(
+        bootstrapAlanBekle(kayit, "payload_size", baglam),
+        baglam + ".payload_size");
+    const std::string beklenenCrc = bootstrapMetinBekle(
+        bootstrapAlanBekle(kayit, "payload_crc32", baglam),
+        baglam + ".payload_crc32");
+    const std::string beklenenSha = bootstrapMetinBekle(
+        bootstrapAlanBekle(kayit, "payload_sha256", baglam),
+        baglam + ".payload_sha256");
+
+    const fs::path artifact = kok / fs::path(artifactAdi);
+    if (!orhunNormalDosyaMi(artifact)) {
+      throw std::runtime_error(
+          "Hata: bootstrap yeniden uretim artifact'i bulunamadi: " +
+          artifact.string());
+    }
+    const std::vector<std::uint8_t> payload = dosyaOkuIkili(artifact.string());
+    if (payload.size() != beklenenBoyut) {
+      bootstrapManifestHatasi(modul + " yeniden uretim boyutu uyusmuyor.");
+    }
+    if (bootstrapCrc32Hex(payload) != beklenenCrc) {
+      bootstrapManifestHatasi(modul + " yeniden uretim CRC32 uyusmuyor.");
+    }
+    if (security::sha256Hex(payload) != beklenenSha) {
+      bootstrapManifestHatasi(modul + " yeniden uretim SHA256 uyusmuyor.");
+    }
+  }
+}
+
+int komutBootstrapYenidenUretDogrula(const std::string &toolchainKoku) {
+  const std::filesystem::path kok = std::filesystem::absolute(toolchainKoku);
+  bootstrapYenidenUretManifestDogrula(kok.string());
+  std::cout << "Bootstrap yeniden uretim manifesti dogrulandi: " << kok.string()
+            << "\n";
+  return 0;
+}
+
 int komutBootstrapYenidenUret(const std::string &tohumToolchainKoku,
                               const std::string &ciktiKoku) {
   namespace fs = std::filesystem;
@@ -4160,26 +4273,45 @@ int komutBootstrapYenidenUret(const std::string &tohumToolchainKoku,
   bootstrapToolchainUret(cikti.string());
   bootstrapToolchainDogrula(cikti.string());
 
-  for (const char *modul :
-       {"lexer", "parser", "derleyici", "derleyici_cli"}) {
+  std::ostringstream modulKayitlari;
+  bool ilkModul = true;
+  for (const char *modul : {"lexer", "parser", "derleyici", "derleyici_cli"}) {
     const fs::path goreli = fs::path("orhun") /
                             (std::string(modul) + ".obc");
-    if (dosyaOkuIkili((asama2 / goreli).string()) !=
-        dosyaOkuIkili((cikti / goreli).string())) {
+    const std::vector<std::uint8_t> asama2Payload =
+        dosyaOkuIkili((asama2 / goreli).string());
+    const std::vector<std::uint8_t> asama3Payload =
+        dosyaOkuIkili((cikti / goreli).string());
+    if (asama2Payload != asama3Payload) {
       throw std::runtime_error(
           "Hata: bootstrap yeniden uretim asamalari uyusmuyor: " +
           goreli.string());
     }
+    if (!ilkModul) {
+      modulKayitlari << ",\n";
+    }
+    ilkModul = false;
+    modulKayitlari << "    {\"module\":\"orhun/" << modul
+                   << ".oh\",\"artifact\":\"" << goreli.generic_string()
+                   << "\",\"payload_size\":" << asama3Payload.size()
+                   << ",\"payload_crc32\":\""
+                   << bootstrapCrc32Hex(asama3Payload)
+                   << "\",\"payload_sha256\":\""
+                   << security::sha256Hex(asama3Payload) << "\"}";
   }
 
   std::ostringstream manifest;
   manifest << "{\n"
-           << "  \"format\": \"orhun-bootstrap-rebuild-v1\",\n"
+           << "  \"format\": \"orhun-bootstrap-rebuild-v2\",\n"
            << "  \"stage2_stage3_equal\": true,\n"
-           << "  \"module_count\": 4\n"
+           << "  \"module_count\": 4,\n"
+           << "  \"modules\": [\n"
+           << modulKayitlari.str() << "\n"
+           << "  ]\n"
            << "}\n";
   dosyaYaz((cikti / "bootstrap-rebuild.manifest.json").string(),
            manifest.str());
+  bootstrapYenidenUretManifestDogrula(cikti.string());
 
   fs::remove_all(asama2, ec);
   if (ec) {
@@ -6323,6 +6455,15 @@ int main(int argc, char *argv[]) {
             "kullanin.");
       }
       return komutBootstrapYenidenUret(argv[2], argv[3]);
+    }
+
+    if (komut == "bootstrap-yeniden-dogrula" ||
+        komut == "bootstrap-rebuild-verify") {
+      if (argc != 3) {
+        throw std::runtime_error(
+            "Hata: bootstrap-yeniden-dogrula <toolchain-dizini> kullanin.");
+      }
+      return komutBootstrapYenidenUretDogrula(argv[2]);
     }
 
     if (komut == "hiz") {

@@ -227,7 +227,11 @@
 - `orhun bootstrap-yeniden-uret <tohum-toolchain> <çıktı-dizini>`, tohumdan
   aşama 2 ve aşama 2'den aşama 3 üretir; son iki aşamanın dört `.obc`
   artifact'i byte düzeyinde eşleşmezse başarısız olur. Dolu çıktı dizinleri
-  korunur. İngilizce uyumluluk takma adı `bootstrap-rebuild`'dir.
+  korunur. Sonuç manifesti artık her artifact için boyut/CRC32/SHA-256 taşır.
+  İngilizce uyumluluk takma adı `bootstrap-rebuild`'dir.
+- `orhun bootstrap-yeniden-dogrula <toolchain-dizini>`, yeniden üretim
+  manifestini ve eşlik eden strict toolchain'i tekrar doğrular. İngilizce
+  uyumluluk takma adı `bootstrap-rebuild-verify`'dır.
 - Kullanıcı programlarına kaynak/komut sonrasında verilen değerler artık
   `sistem.argumanlar` listesinde bulunur. `orhun-vm` yolunda çalışma zamanı
   argümanlarını modül seçeneklerinden ayırmak için `--` kullanılır.
