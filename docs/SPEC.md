@@ -392,6 +392,12 @@ shorter list. `toplam(liste, [baslangic])` accumulates values with `+`.
 `en_kucuk`/`en_küçük` and `en_buyuk`/`en_büyük` return their explicit fallback
 value for an empty list.
 
+`orhun/metin.oh` includes beginner-friendly string helpers such as `say`,
+`on_eki_kaldir`/`ön_eki_kaldır`, and `son_eki_kaldir`/`son_eki_kaldır`.
+`say` counts non-overlapping occurrences and returns zero for an empty search
+string. Prefix and suffix removal return the original string when it does not
+match.
+
 `orhun/paket.oh` includes package manifest helpers such as `coz`,
 `coz_ve_dogrula`, `dogrula`, `bagimliliklar`, `bagimli_mi`, and
 `ad_gecerli_mi`. Manifest package names and dependency names should contain

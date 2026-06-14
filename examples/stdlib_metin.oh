@@ -3,4 +3,7 @@ metin_yardimci olsun dahil_et "orhun/metin.oh"
 yazdır metin_yardimci.baslar_mi("orhun dili", "orhun")
 yazdır metin_yardimci.biter_mi("orhun dili", "dili")
 yazdır metin_yardimci.degistir("orhun dili", "dili", "gucu")
+yazdır metin_yardimci.say("orhun orhun", "orhun")
+yazdır metin_yardimci.ön_eki_kaldır("orhun-dili", "orhun-")
+yazdır metin_yardimci.son_eki_kaldır("orhun.oh", ".oh")
 yazdır metin_yardimci.kirp("  orhun  ")
