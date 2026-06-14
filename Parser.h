@@ -53,7 +53,8 @@ private:
   std::unique_ptr<ASTNode> parseBirincil();
   void parseIslevParametreleri(
       std::vector<std::string> &parametreler,
-      std::vector<std::unique_ptr<ASTNode>> &varsayilanlar);
+      std::vector<std::unique_ptr<ASTNode>> &varsayilanlar,
+      std::size_t &girintiDerinligi);
   std::string parseSozlukAnahtari();
   bool atanabilirHedefMi(const ASTNode *dugum) const;
 

@@ -1,0 +1,30 @@
+# ast: IslevTanim,SinifTanim,Atama,DisIslevTanim,Atama,Yazdir,Yazdir,Yazdir
+işlev topla(
+    a,
+    b olsun
+        2,
+):
+    döndür a + b
+
+tip Kutu:
+    işlev carp(
+        x,
+        y olsun
+            3,
+    ):
+        döndür x * y
+
+birlesik olsun işlev(
+    x,
+    y olsun
+        4,
+): x + y
+
+dış_işlev uzunluk "kernel32.dll" (
+    metin: string,
+) -> int
+
+kutu olsun yeni Kutu()
+yazdır topla(5)
+yazdır kutu.carp(4)
+yazdır birlesik(6)

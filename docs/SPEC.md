@@ -263,6 +263,19 @@ işlev selam(ad olsun "dünya"):
 
 Required parameters may not appear after default-valued parameters.
 
+Named functions, methods, anonymous functions, and external-function
+declarations may split their parameter lists across multiple lines. A trailing
+comma before `)` is allowed, and a default value may begin on the next line.
+
+```orhun
+işlev selamla(
+    ad,
+    selam olsun
+        "Merhaba",
+):
+    yazdır selam + ", " + ad
+```
+
 Anonymous functions are supported by the current parser/runtime.
 
 ```orhun
@@ -539,7 +552,7 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 149 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 150 successful AST
 fixtures and 62 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,

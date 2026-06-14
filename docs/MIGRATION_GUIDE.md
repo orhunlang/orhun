@@ -152,6 +152,9 @@
 - İşlev, metot ve kurucu çağrıları artık birden fazla satıra bölünebilir ve
   kapanış parantezinden önce son virgül kullanabilir. Parantezli ifadelerdeki
   satır sonları ve girintiler de düzen olarak değerlendirilir.
+- Normal, metot, anonim ve dış işlev parametre listeleri artık birden fazla
+  satıra bölünebilir; son parametreden sonra virgül ve alt satırda başlayan
+  varsayılan değer kullanılabilir.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri

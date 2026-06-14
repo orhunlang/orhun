@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.8.0"
+surum olsun "0.9.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -81,7 +81,7 @@ işlev baslik_parametreleri(tokenlar, konum):
     parametre_basinda olsun doğru
     sürece i küçük uzunluk(tokenlar):
         token olsun tokenlar[i]
-        eğer satir_sonu_mu(token) ise:
+        eğer token.tur eşit "DOSYA_SONU" ise:
             döndür parametreler
         eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
             döndür parametreler
@@ -103,7 +103,7 @@ işlev varsayilan_ozeti_parcasi(tokenlar, baslangic, son):
     olsun_konum olsun aralikta_deger_konumu(tokenlar, baslangic, son, "olsun")
     eğer olsun_konum küçük 0 veya olsun_konum + 1 büyük son - 1 ise:
         döndür bos_ifade_ozeti()
-    döndür ifade_ozeti(tokenlar, olsun_konum + 1, son)
+    döndür alt_ifade_ozeti(tokenlar, olsun_konum + 1, son)
 
 işlev baslik_varsayilanlari(tokenlar, konum):
     varsayilanlar olsun []
@@ -116,10 +116,12 @@ işlev baslik_varsayilanlari(tokenlar, konum):
     derinlik olsun 0
     sürece i küçük uzunluk(tokenlar):
         token olsun tokenlar[i]
-        eğer satir_sonu_mu(token) ise:
+        eğer token.tur eşit "DOSYA_SONU" ise:
             döndür varsayilanlar
         eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
-            eğer parca_baslangic küçük i ise:
+            duzenli_baslangic olsun duzenli_aralik_baslangici(tokenlar, parca_baslangic, i)
+            duzenli_son olsun duzenli_aralik_sonu(tokenlar, duzenli_baslangic, i)
+            eğer duzenli_baslangic küçük duzenli_son ise:
                 varsayilanlar.ekle(varsayilan_ozeti_parcasi(tokenlar, parca_baslangic, i))
             döndür varsayilanlar
         eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit "," ise:
@@ -180,7 +182,7 @@ işlev dis_islev_parametreleri(tokenlar, konum):
     tip_bekleniyor olsun yanlış
     sürece i küçük uzunluk(tokenlar):
         token olsun tokenlar[i]
-        eğer satir_sonu_mu(token) ise:
+        eğer token.tur eşit "DOSYA_SONU" ise:
             döndür {"adlar": adlar, "tipler": tipler}
         eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
             döndür {"adlar": adlar, "tipler": tipler}
@@ -368,10 +370,9 @@ işlev satirda_atama_mi(tokenlar, konum):
 
 işlev satirda_anahtar_mi(tokenlar, konum, deger):
     i olsun konum
-    sürece i küçük uzunluk(tokenlar):
+    son olsun satir_sonu_indeksi(tokenlar, konum)
+    sürece i küçük son:
         token olsun tokenlar[i]
-        eğer satir_sonu_mu(token) ise:
-            döndür yanlış
         eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit deger ise:
             döndür doğru
         i olsun i + 1
@@ -379,10 +380,9 @@ işlev satirda_anahtar_mi(tokenlar, konum, deger):
 
 işlev satirda_islem_mi(tokenlar, konum, deger):
     i olsun konum
-    sürece i küçük uzunluk(tokenlar):
+    son olsun satir_sonu_indeksi(tokenlar, konum)
+    sürece i küçük son:
         token olsun tokenlar[i]
-        eğer satir_sonu_mu(token) ise:
-            döndür yanlış
         eğer token.tur eşit "ISLEM" ve token.deger eşit deger ise:
             döndür doğru
         i olsun i + 1
@@ -1420,7 +1420,7 @@ işlev islev_parametre_sirasi_hatasi(tokenlar, konum):
 
     sürece i küçük uzunluk(tokenlar):
         token olsun guvenli_token(tokenlar, i)
-        eğer satir_sonu_mu(token) ise:
+        eğer token.tur eşit "DOSYA_SONU" ise:
             döndür ""
         eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
             eğer parametre_goruldu ve değil parametre_varsayilanli ve varsayilan_goruldu ise:
@@ -1893,7 +1893,9 @@ işlev bloklari(tokenlar, konum):
         bloklar.ekle({"tur": "Block", "satir": token.satir, "komut_sayisi": 1, "komutlar": [komut_dugumu(tokenlar, satir_ici_konum)]})
         sonraki_konum olsun satir_sonuna_git(tokenlar, konum)
     değilse:
-        ilk_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, konum), token.satir)
+        baslik_sonu olsun satir_sonu_indeksi(tokenlar, konum)
+        blok_satiri olsun guvenli_token(tokenlar, baslik_sonu - 1).satir
+        ilk_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, konum), blok_satiri)
 
         eğer ilk_blok.sayi büyük 0 ise:
             bloklar.ekle({"tur": ilk_blok.tur, "satir": ilk_blok.satir, "komut_sayisi": ilk_blok.komut_sayisi, "komutlar": ilk_blok.komutlar})

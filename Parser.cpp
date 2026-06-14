@@ -339,8 +339,10 @@ std::unique_ptr<ASTNode> Parser::parseIslevTanim() {
 
   std::vector<std::string> parametreler;
   std::vector<std::unique_ptr<ASTNode>> varsayilanlar;
+  std::size_t girintiDerinligi = 0;
+  ayracDuzeniniAtla(girintiDerinligi);
   if (!kontrol(TokenTuru::ISLEM, ")")) {
-    parseIslevParametreleri(parametreler, varsayilanlar);
+    parseIslevParametreleri(parametreler, varsayilanlar, girintiDerinligi);
   }
 
   tuket(TokenTuru::ISLEM, ")", "Parametre listesinin sonunda ')' bekleniyor.");
@@ -353,7 +355,8 @@ std::unique_ptr<ASTNode> Parser::parseIslevTanim() {
 
 void Parser::parseIslevParametreleri(
     std::vector<std::string> &parametreler,
-    std::vector<std::unique_ptr<ASTNode>> &varsayilanlar) {
+    std::vector<std::unique_ptr<ASTNode>> &varsayilanlar,
+    std::size_t &girintiDerinligi) {
   bool varsayilanGoruldu = false;
   while (true) {
     parametreler.push_back(
@@ -361,8 +364,9 @@ void Parser::parseIslevParametreleri(
 
     std::unique_ptr<ASTNode> varsayilanDeger;
     if (eslesir(TokenTuru::ANAHTAR_KELIME, "olsun")) {
+      ayracDuzeniniAtla(girintiDerinligi);
       if (kontrol(TokenTuru::ISLEM, ")") || kontrol(TokenTuru::ISLEM, ",") ||
-          kontrol(TokenTuru::YENI_SATIR) || kontrol(TokenTuru::DOSYA_SONU)) {
+          kontrol(TokenTuru::DOSYA_SONU)) {
         syntaxError(bak(), "'olsun' ifadesinden sonra varsayılan değer "
                            "ifadesi bekleniyor.");
       }
@@ -374,7 +378,12 @@ void Parser::parseIslevParametreleri(
     }
 
     varsayilanlar.push_back(std::move(varsayilanDeger));
+    ayracDuzeniniAtla(girintiDerinligi);
     if (!eslesir(TokenTuru::ISLEM, ",")) {
+      break;
+    }
+    ayracDuzeniniAtla(girintiDerinligi);
+    if (kontrol(TokenTuru::ISLEM, ")")) {
       break;
     }
   }
@@ -396,6 +405,8 @@ std::unique_ptr<ASTNode> Parser::parseDisIslevTanim() {
 
   std::vector<std::string> parametreAdlari;
   std::vector<std::string> parametreTipleri;
+  std::size_t girintiDerinligi = 0;
+  ayracDuzeniniAtla(girintiDerinligi);
   if (!kontrol(TokenTuru::ISLEM, ")")) {
     while (true) {
       const OrhunToken paramAdi =
@@ -416,7 +427,12 @@ std::unique_ptr<ASTNode> Parser::parseDisIslevTanim() {
       parametreAdlari.push_back(paramAdi.deger);
       parametreTipleri.push_back(tipToken.deger);
 
+      ayracDuzeniniAtla(girintiDerinligi);
       if (!eslesir(TokenTuru::ISLEM, ",")) {
+        break;
+      }
+      ayracDuzeniniAtla(girintiDerinligi);
+      if (kontrol(TokenTuru::ISLEM, ")")) {
         break;
       }
     }
@@ -807,8 +823,10 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
 
     std::vector<std::string> parametreler;
     std::vector<std::unique_ptr<ASTNode>> varsayilanlar;
+    std::size_t girintiDerinligi = 0;
+    ayracDuzeniniAtla(girintiDerinligi);
     if (!kontrol(TokenTuru::ISLEM, ")")) {
-      parseIslevParametreleri(parametreler, varsayilanlar);
+      parseIslevParametreleri(parametreler, varsayilanlar, girintiDerinligi);
     }
 
     tuket(TokenTuru::ISLEM, ")",
