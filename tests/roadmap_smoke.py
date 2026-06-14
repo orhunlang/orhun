@@ -2,6 +2,7 @@
 import argparse
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 
@@ -28,6 +29,8 @@ def last_non_empty_line(text: str) -> str:
 
 
 def run_step(name: str, args: list[str], repo: Path) -> tuple[bool, str]:
+    print(f"[RUN] {name}", flush=True)
+    started_at = time.monotonic()
     proc = subprocess.run(
         args,
         cwd=repo,
@@ -37,16 +40,17 @@ def run_step(name: str, args: list[str], repo: Path) -> tuple[bool, str]:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+    elapsed = time.monotonic() - started_at
 
     command = " ".join(args)
     if proc.returncode == 0:
         detail = last_non_empty_line(proc.stdout) or "ok"
-        return True, f"[OK] {name}: {detail}"
+        return True, f"[OK] {name} ({elapsed:.1f}s): {detail}"
 
     output = "\n".join(
         part
         for part in (
-            f"[FAIL] {name}",
+            f"[FAIL] {name} ({elapsed:.1f}s)",
             f"Command: {command}",
             "STDOUT:",
             proc.stdout.rstrip(),
@@ -114,7 +118,7 @@ def main() -> int:
     failures = []
     for name, command in steps:
         ok, message = run_step(name, command, repo)
-        print(message)
+        print(message, flush=True)
         if not ok:
             failures.append(name)
 
