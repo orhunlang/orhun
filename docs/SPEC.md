@@ -403,7 +403,10 @@ match.
 `ad_gecerli_mi`. Manifest package names and dependency names should contain
 only letters, digits, `_`, `.`, and `-`. Manifest versions are validated as
 Semantic Versioning 2.0 versions by the Orhun-written `surum_gecerli_mi`
-helper, including prerelease and build identifiers.
+helper, including prerelease and build identifiers. `surum_ayristir` returns a
+result record whose value separates a valid version into numeric `ana`, `yan`,
+and `duzeltme` fields plus `on_surum` and `yapi` strings. Invalid versions
+return an error result.
 
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.

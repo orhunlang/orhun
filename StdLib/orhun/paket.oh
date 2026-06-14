@@ -2,7 +2,7 @@
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 
-surum olsun "0.3.0"
+surum olsun "0.4.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 
@@ -115,6 +115,26 @@ işlev surum_gecerli_mi(paket_surumu):
         döndür doğru
     yakala hata:
         döndür yanlış
+
+işlev surum_ayristir(paket_surumu):
+    eğer değil surum_gecerli_mi(paket_surumu) ise:
+        döndür sonuc_yardimci.hata("semantik surum gecersiz")
+
+    arti_parcalari olsun parcala(paket_surumu, "+")
+    yapi olsun ""
+    eğer uzunluk(arti_parcalari) eşit 2 ise:
+        yapi = arti_parcalari[1]
+
+    cekirdek_ve_on_surum olsun arti_parcalari[0]
+    tire_konumu olsun ilk_tire_konumu(cekirdek_ve_on_surum)
+    cekirdek olsun cekirdek_ve_on_surum
+    on_surum olsun ""
+    eğer tire_konumu eşit_değil -1 ise:
+        cekirdek = cekirdek_ve_on_surum[:tire_konumu]
+        on_surum = cekirdek_ve_on_surum[tire_konumu + 1:]
+
+    cekirdek_parcalari olsun parcala(cekirdek, ".")
+    döndür sonuc_yardimci.ok({"ana": sayiya_cevir(cekirdek_parcalari[0]), "yan": sayiya_cevir(cekirdek_parcalari[1]), "duzeltme": sayiya_cevir(cekirdek_parcalari[2]), "on_surum": on_surum, "yapi": yapi})
 
 işlev ad_gecerli_mi(paket_adi):
     deneme:

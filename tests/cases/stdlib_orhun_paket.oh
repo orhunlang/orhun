@@ -21,6 +21,16 @@ yazdır paket_yardimci.surum_gecerli_mi("01.2.3")
 yazdır paket_yardimci.surum_gecerli_mi("1.2")
 yazdır paket_yardimci.surum_gecerli_mi("1.2.3-alpha.01")
 
+ayristirilmis olsun paket_yardimci.surum_ayristir("1.2.3-alpha.1+build.5")
+yazdır ayristirilmis.ok
+yazdır ayristirilmis.deger.ana
+yazdır ayristirilmis.deger.yan
+yazdır ayristirilmis.deger.duzeltme
+yazdır ayristirilmis.deger.on_surum
+yazdır ayristirilmis.deger.yapi
+yazdır paket_yardimci.surum_ayristir("1.2.3").deger.on_surum eşit ""
+yazdır paket_yardimci.surum_ayristir("1.2").ok
+
 varsayilanli olsun json.coz("{\"ad\":\"yalin\",\"surum\":\"1.0.0\"}")
 yazdır paket_yardimci.giris(varsayilanli)
 yazdır uzunluk(paket_yardimci.bagimliliklar(varsayilanli))

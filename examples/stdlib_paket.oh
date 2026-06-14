@@ -6,5 +6,6 @@ sonuc olsun paket_yardimci.coz_ve_dogrula(manifest_metin)
 eğer sonuc.ok ise:
     yazdır paket_yardimci.ozet(sonuc.deger)
     yazdır paket_yardimci.bagimli_mi(sonuc.deger, "temel")
+    yazdır paket_yardimci.surum_ayristir(paket_yardimci.surum_al(sonuc.deger)).deger.ana
 değilse:
     yazdır sonuc.hata

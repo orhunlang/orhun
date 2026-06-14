@@ -1,4 +1,4 @@
-# ast: Atama,Atama,Atama,Atama,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir
+# ast: Atama,Atama,Atama,Atama,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir
 paket_yardimci olsun dahil_et "orhun/paket.oh"
 
 manifest_metin olsun "{\"ad\":\"ornek\",\"surum\":\"0.1.0\",\"giris\":\"ana.oh\",\"bagimliliklar\":[\"temel\",\"sonuc\"]}"
@@ -16,6 +16,11 @@ yazdır paket_yardimci.bagimli_mi(manifest, "metin")
 yazdır paket_yardimci.dogrula(manifest).ok
 yazdır paket_yardimci.ad_gecerli_mi("ornek_paket-1.0")
 yazdır paket_yardimci.ad_gecerli_mi("kotu/ad")
+
+ayristirilmis olsun paket_yardimci.surum_ayristir("1.2.3-alpha.1+build.5")
+yazdır ayristirilmis.ok
+yazdır ayristirilmis.deger.ana
+yazdır ayristirilmis.deger.on_surum
 
 varsayilanli olsun json.coz("{\"ad\":\"yalin\",\"surum\":\"1.0.0\"}")
 yazdır paket_yardimci.giris(varsayilanli)
