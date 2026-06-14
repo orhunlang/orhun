@@ -17,7 +17,8 @@ baslar. Orhun icin asil bagimsizlik hedefi sudur:
 
 Durum: aktif; ana Windows ve POSIX test kosuculari her vaka icin timeout
 uygular. Coverage kosuculari enstrumante binary'yi yeniden derlemeden ayni
-vaka paketini calistirir.
+vaka paketini calistirir; coverage kapisi varsayilan VM/derleyici cekirdegini
+izler.
 
 Hedefler:
 

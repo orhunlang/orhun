@@ -4,6 +4,7 @@ set -euo pipefail
 COMPILER="${1:-g++}"
 OUTPUT="${2:-build/orhun_cov}"
 REPORT_DIR="${3:-coverage}"
+COVERAGE_FILTER='(^|/)(Chunk|Compiler|Lexer|Parser|VM)\.cpp$'
 
 mkdir -p "$(dirname "${OUTPUT}")"
 mkdir -p "${REPORT_DIR}"
@@ -18,9 +19,9 @@ ORHUN_SKIP_BUILD=1 bash tests/run_tests.sh "${COMPILER}" "${OUTPUT}"
 
 if command -v gcovr >/dev/null 2>&1; then
   echo "[coverage] Generating gcovr reports..."
-  gcovr -r . --txt > "${REPORT_DIR}/summary.txt"
-  gcovr -r . --xml-pretty -o "${REPORT_DIR}/coverage.xml"
-  gcovr -r . --html --html-details -o "${REPORT_DIR}/index.html"
+  gcovr -r . --filter "${COVERAGE_FILTER}" --txt > "${REPORT_DIR}/summary.txt"
+  gcovr -r . --filter "${COVERAGE_FILTER}" --xml-pretty -o "${REPORT_DIR}/coverage.xml"
+  gcovr -r . --filter "${COVERAGE_FILTER}" --html --html-details -o "${REPORT_DIR}/index.html"
   cat "${REPORT_DIR}/summary.txt"
   summary_line="$(grep -E '^lines:' "${REPORT_DIR}/summary.txt" | head -n 1 || true)"
   if [[ -n "${summary_line}" ]]; then

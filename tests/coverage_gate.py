@@ -15,6 +15,15 @@ def parse_coverage_percent(summary_text: str) -> float:
     if m:
         return float(m.group(1))
 
+    # gcovr 7 text table sample: "TOTAL 4847 3310 68%"
+    m = re.search(
+        r"^TOTAL\s+\d+\s+\d+\s+([0-9]+(?:\.[0-9]+)?)%",
+        summary_text,
+        re.MULTILINE,
+    )
+    if m:
+        return float(m.group(1))
+
     # Fallback gcov line sample: "Lines executed:54.32% of 1234"
     m = re.search(r"Lines executed:([0-9]+(?:\.[0-9]+)?)%", summary_text)
     if m:
@@ -52,4 +61,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

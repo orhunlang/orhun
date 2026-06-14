@@ -460,6 +460,10 @@ jobs:
         if: runner.os == 'Linux'
         run: bash tests/coverage.sh g++ build/orhun_cov coverage
 
+      - name: Coverage gate parser smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/coverage_gate_smoke.py
+
       - name: Coverage gate (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/coverage_gate.py --summary coverage/summary.txt --min-lines 55

@@ -6,6 +6,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$coverageFilter = '(^|/)(Chunk|Compiler|Lexer|Parser|VM)\.cpp$'
 
 $outputDir = Split-Path -Parent $Output
 if ($outputDir -and !(Test-Path $outputDir)) {
@@ -26,9 +27,9 @@ Write-Host "[coverage] Running test suite..."
 $gcovr = Get-Command gcovr -ErrorAction SilentlyContinue
 if ($gcovr) {
     Write-Host "[coverage] Generating gcovr reports..."
-    gcovr -r . --txt | Tee-Object -FilePath "$ReportDir/summary.txt" | Out-Null
-    gcovr -r . --xml-pretty -o "$ReportDir/coverage.xml" | Out-Null
-    gcovr -r . --html --html-details -o "$ReportDir/index.html" | Out-Null
+    gcovr -r . --filter $coverageFilter --txt | Tee-Object -FilePath "$ReportDir/summary.txt" | Out-Null
+    gcovr -r . --filter $coverageFilter --xml-pretty -o "$ReportDir/coverage.xml" | Out-Null
+    gcovr -r . --filter $coverageFilter --html --html-details -o "$ReportDir/index.html" | Out-Null
     Get-Content "$ReportDir/summary.txt"
     $summary = Get-Content "$ReportDir/summary.txt" | Where-Object { $_ -match '^lines:' } | Select-Object -First 1
     if ($summary) {
