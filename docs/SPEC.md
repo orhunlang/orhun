@@ -388,7 +388,9 @@ lexer olsun dahil_et "orhun/lexer.oh"
 `haritala`, `filtrele`, `katla`, `benzersiz`, `numaralandir`, and
 `eslestir`/`eşleştir`. `numaralandir(liste, [baslangic])` returns
 `[sira, deger]` pairs, and `eslestir(sol, sag)` returns pairs up to the
-shorter list.
+shorter list. `toplam(liste, [baslangic])` accumulates values with `+`.
+`en_kucuk`/`en_küçük` and `en_buyuk`/`en_büyük` return their explicit fallback
+value for an empty list.
 
 `orhun/paket.oh` includes package manifest helpers such as `coz`,
 `coz_ve_dogrula`, `dogrula`, `bagimliliklar`, `bagimli_mi`, and
