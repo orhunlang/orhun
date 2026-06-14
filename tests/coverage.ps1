@@ -21,7 +21,7 @@ Write-Host "[coverage] Building with instrumentation..."
     -o $Output
 
 Write-Host "[coverage] Running test suite..."
-./tests/run_tests.ps1 -Compiler $Compiler -Output $Output
+./tests/run_tests.ps1 -Compiler $Compiler -Output $Output -SkipBuild
 
 $gcovr = Get-Command gcovr -ErrorAction SilentlyContinue
 if ($gcovr) {

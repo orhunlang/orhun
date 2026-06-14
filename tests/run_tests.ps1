@@ -1,7 +1,8 @@
 param(
     [string]$Compiler = "g++",
     [string]$Output = "build/orhun_test.exe",
-    [int]$TimeoutSeconds = 10
+    [int]$TimeoutSeconds = 10,
+    [switch]$SkipBuild
 )
 
 $ErrorActionPreference = "Continue"
@@ -12,12 +13,20 @@ if ($outputDir -and !(Test-Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 }
 
-Write-Host "[1/3] Derleniyor..."
-& $Compiler -std=c++17 -Wall -Wextra -pedantic `
-    main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp `
-    -o $Output
-if ($LASTEXITCODE -ne 0) {
-    throw "Derleme basarisiz."
+if ($SkipBuild) {
+    Write-Host "[1/3] Mevcut binary kullaniliyor..."
+    if (!(Test-Path $Output)) {
+        throw "Mevcut test binary bulunamadi: $Output"
+    }
+}
+else {
+    Write-Host "[1/3] Derleniyor..."
+    & $Compiler -std=c++17 -Wall -Wextra -pedantic `
+        main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp `
+        -o $Output
+    if ($LASTEXITCODE -ne 0) {
+        throw "Derleme basarisiz."
+    }
 }
 
 function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}) {

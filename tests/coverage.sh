@@ -14,7 +14,7 @@ echo "[coverage] Building with instrumentation..."
   -o "${OUTPUT}"
 
 echo "[coverage] Running test suite..."
-bash tests/run_tests.sh "${COMPILER}" "${OUTPUT}"
+ORHUN_SKIP_BUILD=1 bash tests/run_tests.sh "${COMPILER}" "${OUTPUT}"
 
 if command -v gcovr >/dev/null 2>&1; then
   echo "[coverage] Generating gcovr reports..."

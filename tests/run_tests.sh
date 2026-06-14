@@ -4,13 +4,22 @@ set -euo pipefail
 COMPILER="${1:-g++}"
 OUTPUT="${2:-build/orhun_test}"
 TEST_TIMEOUT_SECONDS="${ORHUN_TEST_TIMEOUT_SECONDS:-10}"
+SKIP_BUILD="${ORHUN_SKIP_BUILD:-0}"
 
 mkdir -p "$(dirname "${OUTPUT}")"
 
-echo "[1/3] Building..."
-"${COMPILER}" -std=c++17 -Wall -Wextra -pedantic \
-  main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp \
-  -o "${OUTPUT}"
+if [[ "${SKIP_BUILD}" == "1" ]]; then
+  echo "[1/3] Using existing binary..."
+  if [[ ! -f "${OUTPUT}" ]]; then
+    echo "Existing test binary not found: ${OUTPUT}" >&2
+    exit 2
+  fi
+else
+  echo "[1/3] Building..."
+  "${COMPILER}" -std=c++17 -Wall -Wextra -pedantic \
+    main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp \
+    -o "${OUTPUT}"
+fi
 
 uname_lc="$(uname -s | tr '[:upper:]' '[:lower:]')"
 cases=()

@@ -15,7 +15,9 @@ baslar. Orhun icin asil bagimsizlik hedefi sudur:
 
 ## Faz 0: C++ Cekirdegi Saglamlastirma
 
-Durum: aktif.
+Durum: aktif; ana Windows ve POSIX test kosuculari her vaka icin timeout
+uygular. Coverage kosuculari enstrumante binary'yi yeniden derlemeden ayni
+vaka paketini calistirir.
 
 Hedefler:
 
@@ -55,7 +57,7 @@ Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.3.0 ile `hata_sayisi`,
 `token_sayisi` ve `tokenlar` payload'i ureten `ozetle` giris noktasini sagliyor. Lexer parity
 7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
 seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutun
-parity saglandi. Parser prototipi 143 basarili AST
+parity saglandi. Parser prototipi 146 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 Recursive block summary parity ve recursive expression child parity basladi.
 `orhun/parser.oh` 0.6.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
@@ -139,11 +141,11 @@ okuma/yazma ve `ust` metod cagrilari parity kapsamindadir. Metod metadata'si
 baglam argumanlarini ve varsayilan parametre ofsetlerini C++ ile ayni uretir.
 `paralel yap` adimlari yapisal parser IR'indan gorev plan sozluklerine
 indirgenir ve parity kapsamindadir.
-Compiler prototype smoke su anda 96 programda C++ bytecode ozetini birebir
+Compiler prototype smoke su anda 97 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 131
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 134
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 3 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis
@@ -251,9 +253,9 @@ Basari olcutu:
 
 ## Yakin Donem Sirasi
 
-1. Test runner timeout ve takilan OOP/super vakalarini bitir.
-2. Repo hijyenini koru: build ve rapor dosyalari kaynak agacinda kalmasin.
-3. Saf Orhun stdlib cekirdegini genislet: metin, koleksiyon ve paket manifest
+1. Repo hijyenini ve hizli, guvenilir CI kapilarini koru.
+2. Saf Orhun stdlib cekirdegini genislet: metin, koleksiyon ve paket manifest
    yardimcilarini Orhun kaynaklarina tasi.
-4. Lexer prototipini Orhun ile C++ lexer parity hedefine dogru genislet.
-5. Parser prototipi icin AST/ara temsil formatini sabitle.
+3. Lexer ve parser ara temsil sozlesmelerini self-hosting icin sabitle.
+4. Kaynak-kodsuz derleyici bundle'ini surumlu release asset'ine donustur.
+5. AOT denemelerini VM ve guvenlik sozlesmesini bozmadan baslat.
