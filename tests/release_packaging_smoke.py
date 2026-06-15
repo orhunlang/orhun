@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -36,10 +37,13 @@ def digest(path: Path) -> str:
 
 
 def run_installer(
-    repo: Path, *args: str, expected: int = 0
+    repo: Path,
+    *args: str,
+    expected: int = 0,
+    script: str = "tools/install_release.py",
 ) -> subprocess.CompletedProcess[str]:
     proc = subprocess.run(
-        [sys.executable, "tools/install_compiler.py", *args],
+        [sys.executable, script, *args],
         cwd=repo,
         text=True,
         encoding="utf-8",
@@ -66,7 +70,7 @@ def main() -> int:
         "tests/roadmap_smoke.py",
         "tools/release_package.py create",
         "tools/release_package.py create-runtime",
-        "tools/install_compiler.py",
+        "tools/install_release.py",
         "actions/attest@v4",
         "id-token: write",
         "attestations: write",
@@ -101,6 +105,11 @@ def main() -> int:
         (runtime_bundle / "VERSION").write_text(version + "\n", encoding="utf-8")
         (runtime_bundle / "LICENSE").write_text("test license\n", encoding="utf-8")
         (runtime_bundle / "README.md").write_text("test readme\n", encoding="utf-8")
+        windows_runtime_bundle = temp / "windows-runtime-bundle"
+        shutil.copytree(runtime_bundle, windows_runtime_bundle)
+        (windows_runtime_bundle / "orhun").replace(
+            windows_runtime_bundle / "orhun.exe"
+        )
 
         outputs = []
         for attempt in ("first", "second"):
@@ -196,6 +205,23 @@ def main() -> int:
 
         if sys.platform == "win32":
             host_archive = windows_archive
+            host_runtime_output = temp / "windows-runtime-host"
+            run(
+                repo,
+                "create-runtime",
+                "--bundle",
+                str(windows_runtime_bundle),
+                "--output",
+                str(host_runtime_output),
+                "--platform",
+                "windows-x64",
+                "--tag",
+                f"v{version}",
+            )
+            host_runtime_archive = (
+                host_runtime_output
+                / f"orhun-runtime-{version}-windows-x64.zip"
+            )
         elif sys.platform == "darwin":
             macos_output = temp / "macos-host"
             run(
@@ -213,8 +239,24 @@ def main() -> int:
             host_archive = (
                 macos_output / f"orhun-compiler-{version}-macos-x64.tar.gz"
             )
+            run(
+                repo,
+                "create-runtime",
+                "--bundle",
+                str(runtime_bundle),
+                "--output",
+                str(macos_output),
+                "--platform",
+                "macos-x64",
+                "--tag",
+                f"v{version}",
+            )
+            host_runtime_archive = (
+                macos_output / f"orhun-runtime-{version}-macos-x64.tar.gz"
+            )
         else:
             host_archive = outputs[0]
+            host_runtime_archive = runtime_archives[0]
 
         combined = temp / "combined"
         combined.mkdir()
@@ -302,6 +344,68 @@ def main() -> int:
         require(
             shim.exists() or shim.is_symlink(),
             "Installer did not create the compiler command shim",
+        )
+
+        runtime_install_root = temp / "installed-runtime"
+        runtime_installed = run_installer(
+            repo,
+            str(runtime_archives[0]),
+            "--install-root",
+            str(runtime_install_root),
+            "--no-shim",
+            "--allow-cross-platform",
+            "--json",
+        )
+        runtime_payload = json.loads(
+            runtime_installed.stdout.strip().splitlines()[-1]
+        )
+        require(
+            runtime_payload["format"] == "orhun-runtime-install-v1",
+            "Runtime installer result format changed",
+        )
+        require(
+            (runtime_install_root / "orhun").read_bytes() == b"runtime-smoke",
+            "Installer did not publish the runtime executable",
+        )
+        run_installer(
+            repo,
+            str(runtime_archives[0]),
+            "--install-root",
+            str(runtime_install_root),
+            "--no-shim",
+            "--allow-cross-platform",
+            "--force",
+        )
+
+        runtime_shim_root = temp / "shim-installed-runtime"
+        runtime_bin_dir = temp / "runtime-bin"
+        runtime_shim_result = run_installer(
+            repo,
+            str(host_runtime_archive),
+            "--install-root",
+            str(runtime_shim_root),
+            "--bin-dir",
+            str(runtime_bin_dir),
+            "--json",
+        )
+        runtime_shim_payload = json.loads(
+            runtime_shim_result.stdout.strip().splitlines()[-1]
+        )
+        runtime_shim = Path(runtime_shim_payload["shim"])
+        require(
+            runtime_shim.exists() or runtime_shim.is_symlink(),
+            "Installer did not create the runtime command shim",
+        )
+
+        run_installer(
+            repo,
+            str(runtime_archives[0]),
+            "--install-root",
+            str(temp / "compiler-wrapper-runtime"),
+            "--no-shim",
+            "--allow-cross-platform",
+            expected=1,
+            script="tools/install_compiler.py",
         )
 
         unrelated = temp / "unrelated-directory"
@@ -397,8 +501,8 @@ def main() -> int:
 
     print(
         "Release packaging smoke passed "
-        "(deterministic compiler/runtime archives, checksums, secure installer, "
-        "tag gate, provenance workflow)."
+        "(deterministic compiler/runtime archives, checksums, secure shared "
+        "installer, tag gate, provenance workflow)."
     )
     return 0
 

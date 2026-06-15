@@ -97,7 +97,7 @@ These percentages are planning estimates, not promises.
   files, and a combined `SHA256SUMS` manifest as GitHub Release assets.
 - Runtime archives carry the platform `orhun` executable and source standard
   library; the executable discovers its sibling `StdLib` outside the repository.
-- Releases publish a cross-platform portable compiler installer that requires
+- Releases publish a cross-platform compiler/runtime installer that requires
   SHA-256 verification and rejects unsafe archive entries before installation.
 - Compiled OBC artifacts carry `orhun-obc-v2` metadata with size, CRC32, and
   SHA-256; `obc-dogrula`/`obc-verify` validates the artifact without executing
@@ -139,8 +139,8 @@ These percentages are planning estimates, not promises.
 - Grow compiler parity beyond the current test corpus and reduce the remaining
   C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
 - Add platform code-signing and installer signing to versioned releases.
-- Add a verified cross-platform installer for the published full runtime
-  archives; the portable compiler bundle already has one.
+- Add native platform installer formats and signing on top of the verified
+  cross-platform compiler/runtime archive installer.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.
 - Harden the existing representative-workload performance gates with retained

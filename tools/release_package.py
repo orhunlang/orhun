@@ -60,11 +60,12 @@ def bundle_files(bundle: Path) -> list[Path]:
     return paths
 
 
-def runtime_bundle_files(bundle: Path, version: str) -> list[Path]:
+def runtime_bundle_files(bundle: Path, version: str, platform_name: str) -> list[Path]:
     require(bundle.is_dir(), f"Runtime bundle directory not found: {bundle}")
+    executable_name = "orhun.exe" if platform_name.startswith("windows-") else "orhun"
     require(
-        (bundle / "orhun").is_file() or (bundle / "orhun.exe").is_file(),
-        "Runtime bundle is missing orhun executable",
+        (bundle / executable_name).is_file(),
+        f"Runtime bundle is missing {executable_name} executable",
     )
     require(
         (bundle / "StdLib" / "orhun" / "temel.oh").is_file(),
@@ -178,8 +179,11 @@ def create_release(args: argparse.Namespace) -> int:
 
 def create_runtime_release(args: argparse.Namespace) -> int:
     version = read_version(args.version_file)
+    platform_name = args.platform.lower()
     return create_archive(
-        args, "runtime", runtime_bundle_files(args.bundle.resolve(), version)
+        args,
+        "runtime",
+        runtime_bundle_files(args.bundle.resolve(), version, platform_name),
     )
 
 

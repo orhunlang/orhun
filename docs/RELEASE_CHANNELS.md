@@ -30,6 +30,8 @@
   üretir.
 - Her arşiv için ayrı `.sha256` dosyası ve tüm arşivleri kapsayan
   `SHA256SUMS` yayınlanır.
+- `install_release.py`, derleyici ve runtime arşivlerini SHA-256 doğrulamasından
+  sonra güvenli biçimde kurar ve uygun `orhun`/`orhun-derleyici` komutunu üretir.
 - Release asset'leri kısa ömürlü OIDC/Sigstore sertifikası kullanan
   GitHub artifact attestation ile imzalı build provenance kaydına bağlanır.
 - `0.x` ve ön sürüm etiketleri GitHub üzerinde prerelease olarak işaretlenir.

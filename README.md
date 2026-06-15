@@ -198,17 +198,26 @@ gh attestation verify orhun-compiler-0.8.0-linux-x64.tar.gz --repo orhunlanguage
 ```
 
 Install a downloaded portable compiler archive after downloading its matching
-`.sha256` sidecar and `install_compiler.py` release asset:
+`.sha256` sidecar and `install_release.py` release asset:
 
 ```bash
-python install_compiler.py orhun-compiler-0.8.0-linux-x64.tar.gz
+python install_release.py orhun-compiler-0.8.0-linux-x64.tar.gz
 orhun-derleyici program.oh
 ```
 
+The same verified installer installs runtime archives and creates the `orhun`
+command:
+
+```bash
+python install_release.py orhun-runtime-0.8.0-linux-x64.tar.gz
+orhun program.oh
+```
+
 The installer requires a valid SHA-256 sidecar, rejects unsafe archive entries,
-and installs only the portable compiler bundle. It does not yet install the
-complete Orhun runtime. Use `--install-root`, `--bin-dir`, `--no-shim`, or
-`--force` to control the installation.
+and refuses cross-platform archives unless explicitly allowed. Use
+`--install-root`, `--bin-dir`, `--no-shim`, or `--force` to control the
+installation. The repository's `tools/install_compiler.py` remains as a
+compiler-only compatibility entry point.
 
 Program arguments are available as `sistem.argumanlar`:
 
