@@ -1,0 +1,36 @@
+işlev topla(a, b):
+    döndür a + b
+
+sonuc olsun topla(
+    # İlk argüman.
+    2,
+
+    # İkinci argüman.
+    3,
+)
+
+sayilar olsun [
+    10,
+
+    # Koleksiyon içindeki yorum düzen öğesidir.
+    20,
+]
+
+hesap olsun (
+    1 +
+    # İşlem devamındaki yorum ifadeyi kesmez.
+    2
+)
+
+secili olsun (
+    sayilar
+    # Postfix zinciri yorumdan sonra sürebilir.
+    [
+        1
+    ]
+)
+
+yazdır sonuc
+yazdır sayilar[1]
+yazdır hesap
+yazdır secili

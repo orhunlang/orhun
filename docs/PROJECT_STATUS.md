@@ -118,6 +118,8 @@ These percentages are planning estimates, not promises.
   normal newline and block semantics.
 - Multiline postfix chains inside open delimiters, including calls, fields,
   safe fields, indexes, and slices.
+- Blank lines and comments are layout inside multiline delimiter expressions,
+  guarded across the interpreter, VM, and Orhun-written parser/compiler paths.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
 - Interpreter/VM parity covers modulo arithmetic and in-place
@@ -136,7 +138,8 @@ These percentages are planning estimates, not promises.
 - Make release binaries easier to install on Windows, Linux, and macOS.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.
-- Add performance gates for representative workloads.
+- Harden the existing representative-workload performance gates with retained
+  baselines and stricter release-candidate regression budgets.
 - Keep compatibility and deprecation rules credible before 1.0 and especially
   before 2.1.0.
 

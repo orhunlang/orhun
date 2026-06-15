@@ -349,6 +349,20 @@ deger olsun (
 )
 ```
 
+Blank lines and `#` comments are layout wherever multiline delimiter layout is
+allowed. They do not terminate calls, collection literals, continued
+expressions, or postfix chains.
+
+```orhun
+sonuc olsun topla(
+    # First value
+    2,
+
+    # Second value
+    3,
+)
+```
+
 List comprehensions are supported.
 
 ```orhun
