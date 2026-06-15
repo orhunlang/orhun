@@ -422,6 +422,22 @@ jobs:
         run: |
           python3 tests/lock_v3_smoke.py ./build/orhun_test
 
+      - name: Package removal smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/package_remove_smoke.py .\build\orhun_test.exe
+
+      - name: Package removal smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/package_remove_smoke.py ./build/orhun_test
+
+      - name: Package removal smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/package_remove_smoke.py ./build/orhun_test
+
       - name: Package --ref smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

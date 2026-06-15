@@ -2,7 +2,7 @@
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 
-surum olsun "0.4.0"
+surum olsun "0.5.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 
@@ -139,6 +139,8 @@ işlev surum_ayristir(paket_surumu):
 işlev ad_gecerli_mi(paket_adi):
     deneme:
         eğer uzunluk(paket_adi) eşit 0 ise:
+            döndür yanlış
+        eğer paket_adi eşit "." veya paket_adi eşit ".." ise:
             döndür yanlış
 
         i olsun 0

@@ -71,6 +71,20 @@ def main() -> int:
             f"paket dogrula should pass after lock update: {dogrula_tekrar.stdout}\n{dogrula_tekrar.stderr}",
         )
 
+        lock.write_text(
+            "# ad|kaynak|sha256|surum|commit_pin|icerik_sha256|source_ref\n"
+            "..|kaynak|gecersiz|v3|-|gecersiz|\n",
+            encoding="utf-8",
+        )
+        for command in ("dogrula", "lock-guncelle"):
+            rejected = run_cmd([str(binary), "paket", command], root)
+            rejected_text = (rejected.stdout + rejected.stderr).lower()
+            require(rejected.returncode != 0, f"unsafe lock name passed {command}")
+            require(
+                "paket adi gecersiz" in rejected_text,
+                f"unsafe lock rejection should explain package name ({command})",
+            )
+
     print("Lock v3 smoke passed.")
     return 0
 

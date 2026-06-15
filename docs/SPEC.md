@@ -486,7 +486,8 @@ match.
 `orhun/paket.oh` includes package manifest helpers such as `coz`,
 `coz_ve_dogrula`, `dogrula`, `bagimliliklar`, `bagimli_mi`, and
 `ad_gecerli_mi`. Manifest package names and dependency names should contain
-only letters, digits, `_`, `.`, and `-`. Manifest versions are validated as
+only letters, digits, `_`, `.`, and `-`; the special names `.` and `..` are
+invalid. Manifest versions are validated as
 Semantic Versioning 2.0 versions by the Orhun-written `surum_gecerli_mi`
 helper, including prerelease and build identifiers. `surum_ayristir` returns a
 result record whose value separates a valid version into numeric `ana`, `yan`,
@@ -495,6 +496,19 @@ return an error result.
 
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.
+
+`orhun paket kaldir <paket_adi>` and its Turkish-character alias
+`orhun paket kaldır <paket_adi>` remove only a validated direct
+`lib/<paket_adi>` directory. A successful removal also removes the matching
+`orhun.lock` record and the exact dependency entry from the `bagimliliklar`
+section of `orhun.yap`. Lock verification and lock updates reject invalid
+package names before resolving their corresponding `lib` paths. Removal
+preflights every existing lock record before deleting the package directory.
+
+On Windows, Orhun reads the native wide-character command line and converts
+every argument to UTF-8 before CLI dispatch or exposure through
+`sistem.argumanlar`. Turkish aliases, paths, and program arguments therefore do
+not depend on the active ANSI code page.
 
 ## Concurrency
 

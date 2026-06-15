@@ -128,10 +128,16 @@ These percentages are planning estimates, not promises.
   guarded across the interpreter, VM, and Orhun-written parser/compiler paths.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
+- Windows command-line arguments are decoded from the native wide-character
+  command line into UTF-8, preserving Turkish paths, aliases, and program args.
 - Interpreter/VM parity covers modulo arithmetic and in-place
   `listeye_ekle` list mutation.
 - The Orhun-written package manifest helper validates package/dependency names
   and Semantic Versioning 2.0 versions, including prerelease/build identifiers.
+- Package removal is path-contained to a direct `lib/<package>` directory and
+  updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
+  rejected by both the CLI and Orhun-written manifest helper, and malformed
+  lock records stop removal before directory deletion.
 
 ## Main Remaining Work
 

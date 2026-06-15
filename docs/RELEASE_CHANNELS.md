@@ -38,6 +38,6 @@
 
 SHA-256 dosyaları aktarım bütünlüğünü doğrular, ancak yayın sahibinin kimliğini
 kanıtlayan provenance doğrulamasının yerini tutmaz. Kullanıcılar indirdikleri
-asset'i `gh attestation verify <dosya> --repo orhunlanguage/orhun` ile
+asset'i `gh attestation verify <dosya> --repo orhunlang/orhun` ile
 doğrulayabilir. Platform code-signing ve kurulum paketi imzalama ayrı bir
 gelecek adımdır.

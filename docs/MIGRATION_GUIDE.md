@@ -35,6 +35,15 @@
   - lock satırında `source_ref` alanı saklanır.
   - `paket dogrula`, `source_ref -> commit_pin` tutarlılığını doğrular.
 - `orhun paket dogrula` artık lock v3 için commit + içerik hash doğrulaması yapar.
+- `orhun paket kaldir <paket_adi>` (`kaldır` takma adıyla birlikte), yalnızca
+  doğrulanmış doğrudan `lib/<paket>` klasörünü siler ve `orhun.lock` ile
+  `orhun.yap` kayıtlarını birlikte günceller.
+- Paket ve bağımlılık adı olarak `.` ve `..` artık reddedilir.
+- `paket dogrula` ve `paket lock-guncelle`, değiştirilmiş lock dosyalarındaki
+  geçersiz paket adlarını klasör erişiminden önce reddeder.
+- Windows CLI, komut satırını geniş karakterli sistem API'sinden okuyup UTF-8'e
+  dönüştürür; Türkçe komut takma adları, dosya yolları ve program argümanları
+  sistem ANSI kod sayfasından bağımsızdır.
 - Mevcut lock dosyasını yükseltmek için:
   - `orhun paket lock-guncelle`
 

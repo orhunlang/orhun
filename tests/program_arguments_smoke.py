@@ -5,8 +5,8 @@ import tempfile
 from pathlib import Path
 
 
-PROGRAM_ARGS = ("doctor", "iki kelime", "--turkce-kati")
-EXPECTED = "3\ndoctor\niki kelime\n--turkce-kati\n"
+PROGRAM_ARGS = ("doctor", "iki kelime", "--turkce-kati", "Türkçe-ı")
+EXPECTED = "4\ndoctor\niki kelime\n--turkce-kati\nTürkçe-ı\n"
 
 
 def require(condition: bool, message: str) -> None:
@@ -51,7 +51,8 @@ def main() -> int:
             "yazdır uzunluk(sistem.argumanlar)\n"
             "yazdır sistem.argumanlar[0]\n"
             "yazdır sistem.argumanlar[1]\n"
-            "yazdır sistem.argumanlar[2]\n",
+            "yazdır sistem.argumanlar[2]\n"
+            "yazdır sistem.argumanlar[3]\n",
             encoding="utf-8",
             newline="\n",
         )

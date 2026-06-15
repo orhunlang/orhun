@@ -1,6 +1,6 @@
 # Orhun
 
-[![Orhun CI](https://github.com/orhunlanguage/orhun/actions/workflows/ci.yml/badge.svg)](https://github.com/orhunlanguage/orhun/actions/workflows/ci.yml)
+[![Orhun CI](https://github.com/orhunlang/orhun/actions/workflows/ci.yml/badge.svg)](https://github.com/orhunlang/orhun/actions/workflows/ci.yml)
 
 Orhun is an actively developed, Turkish-first programming language runtime.
 It is experimental, but already has a working lexer, parser, interpreter,
@@ -11,7 +11,7 @@ The long-term goal is clear: Orhun starts with a C++ bootstrap core, then moves
 toward self-hosting so more of the compiler and tooling can be written in Orhun
 itself.
 
-Repository: https://github.com/orhunlanguage/orhun
+Repository: https://github.com/orhunlang/orhun
 
 ## Status
 
@@ -162,6 +162,7 @@ orhun bootstrap-calistir build/bootstrap dosya.oh
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 orhun paket dogrula
+orhun paket kaldir paket_adi
 ```
 
 Portable compiler bundles can emit JSON or complete artifacts:
@@ -187,14 +188,14 @@ runtime archives with SHA-256 verification files. Runtime archives include the
 programs outside the source repository.
 
 Release assets are published on
-[GitHub Releases](https://github.com/orhunlanguage/orhun/releases). Every asset
+[GitHub Releases](https://github.com/orhunlang/orhun/releases). Every asset
 gets a signed GitHub/Sigstore build-provenance attestation and SHA-256
 verification data. Archives are not platform code-signed yet.
 
 Verify a downloaded asset with GitHub CLI:
 
 ```bash
-gh attestation verify orhun-compiler-0.8.0-linux-x64.tar.gz --repo orhunlanguage/orhun
+gh attestation verify orhun-compiler-0.8.0-linux-x64.tar.gz --repo orhunlang/orhun
 ```
 
 Install a downloaded portable compiler archive after downloading its matching

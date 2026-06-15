@@ -134,6 +134,69 @@ void cliOrtamDegiskeniniAyarla(const std::string &ad,
 #endif
 }
 
+#ifdef _WIN32
+std::string cliWindowsUtf8Cevir(const wchar_t *metin) {
+  if (metin == nullptr || *metin == L'\0') {
+    return "";
+  }
+  const int uzunluk =
+      WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, metin, -1, nullptr, 0,
+                          nullptr, nullptr);
+  if (uzunluk <= 0) {
+    throw std::runtime_error(
+        "Hata: Windows komut satiri UTF-8'e donusturulemedi.");
+  }
+  std::string sonuc(static_cast<std::size_t>(uzunluk), '\0');
+  if (WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, metin, -1,
+                          sonuc.data(), uzunluk, nullptr, nullptr) <= 0) {
+    throw std::runtime_error(
+        "Hata: Windows komut satiri UTF-8'e donusturulemedi.");
+  }
+  sonuc.pop_back();
+  return sonuc;
+}
+
+std::vector<std::string> cliWindowsArgumanlariniOku() {
+  using CommandLineToArgvWFn = LPWSTR *(WINAPI *)(LPCWSTR, int *);
+  HMODULE shell32 = LoadLibraryW(L"shell32.dll");
+  if (shell32 == nullptr) {
+    throw std::runtime_error("Hata: Windows shell32.dll yuklenemedi.");
+  }
+  const FARPROC cozumleyiciAdresi =
+      GetProcAddress(shell32, "CommandLineToArgvW");
+  if (cozumleyiciAdresi == nullptr) {
+    FreeLibrary(shell32);
+    throw std::runtime_error("Hata: Windows komut satiri cozumleyicisi yok.");
+  }
+  static_assert(sizeof(CommandLineToArgvWFn) == sizeof(FARPROC));
+  CommandLineToArgvWFn commandLineToArgvW = nullptr;
+  std::memcpy(&commandLineToArgvW, &cozumleyiciAdresi,
+              sizeof(commandLineToArgvW));
+
+  int sayi = 0;
+  LPWSTR *genisArgumanlar = commandLineToArgvW(GetCommandLineW(), &sayi);
+  if (genisArgumanlar == nullptr || sayi <= 0) {
+    FreeLibrary(shell32);
+    throw std::runtime_error("Hata: Windows komut satiri okunamadi.");
+  }
+
+  std::vector<std::string> argumanlar;
+  argumanlar.reserve(static_cast<std::size_t>(sayi));
+  try {
+    for (int i = 0; i < sayi; ++i) {
+      argumanlar.push_back(cliWindowsUtf8Cevir(genisArgumanlar[i]));
+    }
+  } catch (...) {
+    LocalFree(genisArgumanlar);
+    FreeLibrary(shell32);
+    throw;
+  }
+  LocalFree(genisArgumanlar);
+  FreeLibrary(shell32);
+  return argumanlar;
+}
+#endif
+
 std::filesystem::path cliCalisanExeYolunuCoz(const std::string &argv0) {
   namespace fs = std::filesystem;
   auto normalDosyayiCoz = [](const fs::path &aday) -> std::optional<fs::path> {
@@ -2205,7 +2268,7 @@ bool uzakKaynakMi(const std::string &kaynak) {
 }
 
 bool paketAdiGecerliMi(const std::string &ad) {
-  if (ad.empty()) {
+  if (ad.empty() || ad == "." || ad == "..") {
     return false;
   }
   for (char c : ad) {
@@ -2738,6 +2801,12 @@ bool lockKaydiDogrula(const LockKaydi &kayit, std::string *hata) {
     }
     return false;
   }
+  if (!paketAdiGecerliMi(kayit.ad)) {
+    if (hata != nullptr) {
+      *hata = "paket adi gecersiz";
+    }
+    return false;
+  }
   if (kayit.surum == "v1") {
     const std::string beklenen = crc32Hex(kayit.kaynak + "|" + kayit.ad);
     if (asciiKucuk(kayit.ozet) != asciiKucuk(beklenen)) {
@@ -2889,6 +2958,11 @@ int komutPaketLockGuncelle() {
   std::vector<LockKaydi> guncel;
   guncel.reserve(kayitlar.size());
   for (const auto &kayit : kayitlar) {
+    std::string neden;
+    if (!lockKaydiDogrula(kayit, &neden)) {
+      throw std::runtime_error("Hata: lock guncelle kaydi gecersiz ('" +
+                               kayit.ad + "'): " + neden);
+    }
     const fs::path paketKlasoru = fs::current_path() / "lib" / kayit.ad;
     if (!fs::exists(paketKlasoru)) {
       throw std::runtime_error("Hata: lock guncelle icin lib/" + kayit.ad +
@@ -2927,6 +3001,131 @@ void orhunYapBagimlilikEkle(const std::string &paketAdi) {
   }
   icerik += "- " + paketAdi + "\n";
   dosyaYaz(yapDosyasi.string(), icerik);
+}
+
+bool orhunYapBagimlilikSil(const std::string &paketAdi) {
+  namespace fs = std::filesystem;
+  const fs::path yapDosyasi = fs::current_path() / "orhun.yap";
+  if (!fs::exists(yapDosyasi)) {
+    return false;
+  }
+
+  std::istringstream ak(dosyaOku(yapDosyasi.string()));
+  std::ostringstream yeni;
+  bool bagimlilikBolumu = false;
+  bool silindi = false;
+  bool ilkSatir = true;
+  for (std::string satir; std::getline(ak, satir);) {
+    const std::string trim = solaSagaKirp(satir);
+    if (trim == "bagimliliklar:") {
+      bagimlilikBolumu = true;
+    } else if (bagimlilikBolumu && !trim.empty() && trim[0] != '-' &&
+               trim.find(':') != std::string::npos) {
+      bagimlilikBolumu = false;
+    }
+    if (bagimlilikBolumu && trim == "- " + paketAdi) {
+      silindi = true;
+      continue;
+    }
+    if (!ilkSatir) {
+      yeni << '\n';
+    }
+    yeni << satir;
+    ilkSatir = false;
+  }
+
+  if (silindi) {
+    yeni << '\n';
+    dosyaYaz(yapDosyasi.string(), yeni.str());
+  }
+  return silindi;
+}
+
+bool orhunLockKaydiSil(const std::string &paketAdi) {
+  namespace fs = std::filesystem;
+  const fs::path lockDosyasi = fs::current_path() / "orhun.lock";
+  if (!fs::exists(lockDosyasi)) {
+    return false;
+  }
+
+  std::vector<LockKaydi> kayitlar = lockKayitlariniOku(lockDosyasi);
+  const std::size_t oncekiBoyut = kayitlar.size();
+  kayitlar.erase(
+      std::remove_if(kayitlar.begin(), kayitlar.end(),
+                     [&](const LockKaydi &kayit) { return kayit.ad == paketAdi; }),
+      kayitlar.end());
+  if (kayitlar.size() == oncekiBoyut) {
+    return false;
+  }
+
+  if (kayitlar.empty()) {
+    std::error_code ec;
+    if (!fs::remove(lockDosyasi, ec) || ec) {
+      throw std::runtime_error("Hata: bos orhun.lock silinemedi: " +
+                               ec.message());
+    }
+  } else {
+    lockKayitlariniYaz(lockDosyasi, kayitlar);
+  }
+  return true;
+}
+
+int komutPaketKaldir(const std::string &paketAdi) {
+  namespace fs = std::filesystem;
+  if (!paketAdiGecerliMi(paketAdi)) {
+    throw std::runtime_error(
+        "Hata: paket adi yalnizca harf/rakam/_/./- icerebilir ve '.' veya "
+        "'..' olamaz.");
+  }
+
+  const fs::path libKlasoru = fs::current_path() / "lib";
+  const fs::path hedefYol = libKlasoru / paketAdi;
+  std::error_code ec;
+  if (!fs::exists(hedefYol, ec) || ec) {
+    throw std::runtime_error("Hata: kurulu paket bulunamadi: lib/" + paketAdi);
+  }
+  const fs::file_status hedefDurumu = fs::symlink_status(hedefYol, ec);
+  if (ec || fs::is_symlink(hedefDurumu) || !fs::is_directory(hedefDurumu)) {
+    throw std::runtime_error(
+        "Hata: paket kaldirma yalnizca normal lib/<paket> klasorlerinde "
+        "calisir.");
+  }
+
+  const fs::path gercekLib = fs::weakly_canonical(libKlasoru, ec);
+  if (ec) {
+    throw std::runtime_error("Hata: lib klasoru cozumlenemedi: " + ec.message());
+  }
+  const fs::path gercekHedef = fs::weakly_canonical(hedefYol, ec);
+  if (ec || gercekHedef.parent_path() != gercekLib) {
+    throw std::runtime_error(
+        "Hata: guvenlik nedeniyle lib disindaki paket yolu kaldirilamaz.");
+  }
+
+  const fs::path lockDosyasi = fs::current_path() / "orhun.lock";
+  if (fs::exists(lockDosyasi)) {
+    for (const LockKaydi &kayit : lockKayitlariniOku(lockDosyasi)) {
+      std::string neden;
+      if (!lockKaydiDogrula(kayit, &neden)) {
+        throw std::runtime_error(
+            "Hata: paket kaldirmadan once orhun.lock duzeltilmeli ('" +
+            kayit.ad + "'): " + neden);
+      }
+    }
+  }
+
+  const std::uintmax_t silinen = fs::remove_all(hedefYol, ec);
+  if (ec || silinen == 0) {
+    throw std::runtime_error("Hata: paket klasoru kaldirilamadi: " +
+                             ec.message());
+  }
+  const bool lockSilindi = orhunLockKaydiSil(paketAdi);
+  const bool yapSilindi = orhunYapBagimlilikSil(paketAdi);
+  std::cout << "Paket kaldirildi: " << paketAdi << "\n";
+  std::cout << "orhun.lock kaydi: "
+            << (lockSilindi ? "kaldirildi" : "bulunamadi") << "\n";
+  std::cout << "orhun.yap bagimliligi: "
+            << (yapSilindi ? "kaldirildi" : "bulunamadi") << "\n";
+  return 0;
 }
 
 int komutPaketKur(const std::string &kaynak, const std::string &hedefAdi,
@@ -6177,9 +6376,21 @@ int main(int argc, char *argv[]) {
 #ifdef _WIN32
   SetConsoleOutputCP(CP_UTF8);
   SetConsoleCP(CP_UTF8);
+  std::vector<std::string> windowsArgumanlari;
+  std::vector<char *> windowsArgv;
 #endif
 
   try {
+#ifdef _WIN32
+    windowsArgumanlari = cliWindowsArgumanlariniOku();
+    windowsArgv.reserve(windowsArgumanlari.size() + 1);
+    for (std::string &arguman : windowsArgumanlari) {
+      windowsArgv.push_back(arguman.data());
+    }
+    windowsArgv.push_back(nullptr);
+    argc = static_cast<int>(windowsArgumanlari.size());
+    argv = windowsArgv.data();
+#endif
     const std::string calisanExeYolu = cliCalisanExeYolunuCoz(argv[0]).string();
     cliKomsuStdlibYolunuEkle(calisanExeYolu);
 
@@ -6352,8 +6563,8 @@ int main(int argc, char *argv[]) {
     if (komut == "paket") {
       if (argc < 3) {
         throw std::runtime_error(
-            "Hata: paket komutlari: yeni | kur | ekle | liste | dogrula | ara "
-            "| lock-guncelle | depo-baslat | depo-ekle");
+            "Hata: paket komutlari: yeni | kur | ekle | kaldir | liste | "
+            "dogrula | ara | lock-guncelle | depo-baslat | depo-ekle");
       }
 
       const std::string alt = argv[2];
@@ -6437,6 +6648,13 @@ int main(int argc, char *argv[]) {
               "[--no-lock] alir.");
         }
         return komutPaketKur(argv[3], hedefAdi, kaynakRef, noLock);
+      }
+
+      if (alt == "kaldir" || alt == "kaldır") {
+        if (argc != 4) {
+          throw std::runtime_error("Hata: paket kaldir <paket_adi> kullanin.");
+        }
+        return komutPaketKaldir(argv[3]);
       }
 
       if (alt == "liste") {
