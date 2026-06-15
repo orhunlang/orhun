@@ -42,6 +42,9 @@ def main() -> int:
         "build",
         "commit",
         "channel",
+        "layout",
+        "executable",
+        "sibling_stdlib_path",
         "fallback_default",
         "fallback_source",
         "ci_profiles",
@@ -55,7 +58,13 @@ def main() -> int:
     require(payload.get("version") == expected_version, "doctor version should match VERSION")
     require(payload.get("channel") == "stable", "doctor default channel should be stable")
     require(payload.get("fallback_default") is False, "stable fallback default should be false")
-    require(payload.get("status") in ("ready", "warning"), "doctor status should be ready or warning")
+    require(payload.get("layout") == "source_checkout", "repo doctor layout should be source_checkout")
+    require(payload.get("status") == "ready", "repo doctor status should be ready")
+    require(isinstance(payload.get("executable"), str), "doctor executable should be a string")
+    require(
+        isinstance(payload.get("sibling_stdlib_path"), str),
+        "doctor sibling_stdlib_path should be a string",
+    )
 
     profiles = payload.get("ci_profiles")
     require(isinstance(profiles, list), "ci_profiles must be a list")
@@ -77,6 +86,10 @@ def main() -> int:
     checks = payload.get("checks", {})
     require(isinstance(checks, dict), "checks must be an object")
     for key in (
+        "runtime_executable",
+        "source_checkout",
+        "runtime_bundle",
+        "sibling_stdlib",
         "compiler_files",
         "stdlib_core",
         "test_infra",
@@ -85,6 +98,8 @@ def main() -> int:
         "git_access",
     ):
         require(isinstance(checks.get(key), bool), f"checks.{key} should be bool")
+    require(checks.get("runtime_executable") is True, "doctor should find its executable")
+    require(checks.get("source_checkout") is True, "repo should be a source checkout")
 
     print("Doctor JSON smoke passed.")
     return 0

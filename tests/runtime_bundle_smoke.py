@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -73,6 +74,20 @@ def main() -> int:
                 f"{proc.stdout}\n{proc.stderr}",
             )
             require(proc.stdout.strip() == expected, "Sibling StdLib output changed")
+
+        proc = run([str(installed_binary), "doctor", "--json"], work)
+        require(proc.returncode == 0, f"Runtime bundle doctor failed:\n{proc.stdout}\n{proc.stderr}")
+        try:
+            doctor = json.loads(proc.stdout.strip())
+        except Exception as ex:
+            raise RuntimeError(f"Runtime bundle doctor did not emit valid JSON: {ex}") from ex
+        require(doctor.get("layout") == "runtime_bundle", "Runtime bundle layout was not detected")
+        require(doctor.get("status") == "ready", "Runtime bundle doctor should report ready")
+        checks = doctor.get("checks", {})
+        require(checks.get("runtime_executable") is True, "Runtime executable check failed")
+        require(checks.get("runtime_bundle") is True, "Runtime bundle check failed")
+        require(checks.get("sibling_stdlib") is True, "Sibling StdLib check failed")
+        require(checks.get("source_checkout") is False, "Bundle must not look like a source checkout")
 
         path_env = os.environ.copy()
         path_key = next(

@@ -4527,8 +4527,20 @@ std::string jsonDizi(const std::vector<std::string> &degerler) {
   return ss.str();
 }
 
-int komutDoctor(bool jsonCikti) {
+int komutDoctor(bool jsonCikti, const std::string &calisanExeYolu) {
   namespace fs = std::filesystem;
+  std::error_code yolHatasi;
+  const fs::path calisanExe =
+      fs::absolute(fs::path(calisanExeYolu), yolHatasi);
+  const fs::path raporlananExe =
+      yolHatasi ? fs::path(calisanExeYolu) : calisanExe;
+  const fs::path komsuStdlib = raporlananExe.parent_path() / "StdLib";
+  const bool runtimeExe = orhunNormalDosyaMi(raporlananExe);
+  const bool komsuKaynakStdlib =
+      orhunNormalDosyaMi(komsuStdlib / "orhun" / "temel.oh");
+  const bool komsuBootstrapStdlib =
+      orhunNormalDosyaMi(komsuStdlib / "bootstrap.manifest.json");
+  const bool komsuStdlibVar = komsuKaynakStdlib || komsuBootstrapStdlib;
   const bool hasTests =
       fs::exists("tests/run_tests.ps1") || fs::exists("tests/run_tests.sh");
   const bool hasCases = fs::exists("tests/cases");
@@ -4574,7 +4586,12 @@ int komutDoctor(bool jsonCikti) {
   if (fs::exists(".github/workflows/nightly.yml")) {
     ciProfilleri.push_back("nightly");
   }
-  const bool saglikli = hasCompiler && hasStdLib && hasTests;
+  const bool kaynakDeposu = hasCompiler && hasStdLib && hasTests && hasCases;
+  const bool runtimePaketi = runtimeExe && komsuStdlibVar;
+  const bool saglikli = kaynakDeposu || runtimePaketi;
+  const std::string yerlesim =
+      kaynakDeposu ? "source_checkout"
+                   : (runtimePaketi ? "runtime_bundle" : "standalone");
 
   if (jsonCikti) {
     std::cout << "{"
@@ -4582,6 +4599,11 @@ int komutDoctor(bool jsonCikti) {
               << "\"build\":\"" << ORHUN_INSA_NO << "\","
               << "\"commit\":\"" << jsonKacis(doctorBuildCommit()) << "\","
               << "\"channel\":\"" << jsonKacis(releaseChannel) << "\","
+              << "\"layout\":\"" << yerlesim << "\","
+              << "\"executable\":\""
+              << jsonKacis(raporlananExe.generic_string()) << "\","
+              << "\"sibling_stdlib_path\":\""
+              << jsonKacis(komsuStdlib.generic_string()) << "\","
               << "\"fallback_default\":" << jsonBool(fallback) << ","
               << "\"fallback_source\":\"" << jsonKacis(fallbackKaynak) << "\","
               << "\"ci_profiles\":" << jsonDizi(ciProfilleri) << ","
@@ -4592,6 +4614,10 @@ int komutDoctor(bool jsonCikti) {
               << "\"package_source_allowlist\":true"
               << "},"
               << "\"checks\":{"
+              << "\"runtime_executable\":" << jsonBool(runtimeExe) << ","
+              << "\"source_checkout\":" << jsonBool(kaynakDeposu) << ","
+              << "\"runtime_bundle\":" << jsonBool(runtimePaketi) << ","
+              << "\"sibling_stdlib\":" << jsonBool(komsuStdlibVar) << ","
               << "\"compiler_files\":" << jsonBool(hasCompiler) << ","
               << "\"stdlib_core\":" << jsonBool(hasStdLib) << ","
               << "\"test_infra\":" << jsonBool(hasTests && hasCases) << ","
@@ -4607,13 +4633,18 @@ int komutDoctor(bool jsonCikti) {
                           GetConsoleCP() == CP_UTF8)
 #endif
               << "},"
-              << "\"status\":\"" << (saglikli ? "ready" : "missing") << "\""
+              << "\"status\":\"" << (saglikli ? "ready" : "warning") << "\""
               << "}\n";
     return saglikli ? 0 : 2;
   }
 
   std::cout << "Orhun Doctor Raporu\n";
   std::cout << "-------------------\n";
+  std::cout << "Calisan executable: " << raporlananExe.string() << "\n";
+  std::cout << "Yerlesim: " << yerlesim << "\n";
+  std::cout << "Kaynak deposu: " << evetHayir(kaynakDeposu) << "\n";
+  std::cout << "Runtime paketi: " << evetHayir(runtimePaketi) << "\n";
+  std::cout << "Komsu StdLib: " << evetHayir(komsuStdlibVar) << "\n";
   std::cout << "VM derleyici dosyalari: " << evetHayir(hasCompiler) << "\n";
   std::cout << "StdLib cekirdegi (Yerlesik.h): " << evetHayir(hasStdLib)
             << "\n";
@@ -6775,7 +6806,7 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error(
             "Hata: doctor secenekleri yalnizca '--json' olabilir.");
       }
-      return komutDoctor(jsonCikti);
+      return komutDoctor(jsonCikti, calisanExeYolu);
     }
 
     // Varsayilan motor VM'dir; desteklenmeyen ozellikte otomatik Interpreter

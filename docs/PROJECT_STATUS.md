@@ -97,6 +97,8 @@ These percentages are planning estimates, not promises.
   files, and a combined `SHA256SUMS` manifest as GitHub Release assets.
 - Runtime archives carry the platform `orhun` executable and source standard
   library; the executable discovers its sibling `StdLib` outside the repository.
+- `orhun doctor` distinguishes healthy source checkouts from installed portable
+  runtime bundles and reports the resolved executable/sibling-StdLib layout.
 - Releases publish a cross-platform compiler/runtime installer that requires
   SHA-256 verification and rejects unsafe archive entries before installation.
 - Compiled OBC artifacts carry `orhun-obc-v2` metadata with size, CRC32, and

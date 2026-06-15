@@ -109,9 +109,15 @@
   - `version`
   - `commit`
   - `channel`
+  - `layout`
+  - `executable`
+  - `sibling_stdlib_path`
   - `fallback_default`
   - `ci_profiles`
   - `security_mode`
+- `layout`, sağlıklı kaynak depoları için `source_checkout`, kardeş `StdLib`
+  içeren taşınabilir runtime kurulumları için `runtime_bundle`, eksik tekil
+  çalıştırılabilirler için `standalone` değerini verir.
 
 ## 9. DX: `fmt` ve `lint`
 - `orhun fmt` yeni seçenekler:
