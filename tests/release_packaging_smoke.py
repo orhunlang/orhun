@@ -65,6 +65,7 @@ def main() -> int:
         'tags: ["v*.*.*"]',
         "tests/roadmap_smoke.py",
         "tools/release_package.py create",
+        "tools/release_package.py create-runtime",
         "tools/install_compiler.py",
         "actions/attest@v4",
         "id-token: write",
@@ -88,6 +89,18 @@ def main() -> int:
         executable = bundle / "orhun-derleyici"
         executable.write_bytes(b"release-smoke")
         executable.chmod(0o755)
+
+        runtime_bundle = temp / "runtime-bundle"
+        (runtime_bundle / "StdLib" / "orhun").mkdir(parents=True)
+        runtime_executable = runtime_bundle / "orhun"
+        runtime_executable.write_bytes(b"runtime-smoke")
+        runtime_executable.chmod(0o755)
+        (runtime_bundle / "StdLib" / "orhun" / "temel.oh").write_text(
+            'surum olsun "smoke"\n', encoding="utf-8"
+        )
+        (runtime_bundle / "VERSION").write_text(version + "\n", encoding="utf-8")
+        (runtime_bundle / "LICENSE").write_text("test license\n", encoding="utf-8")
+        (runtime_bundle / "README.md").write_text("test readme\n", encoding="utf-8")
 
         outputs = []
         for attempt in ("first", "second"):
@@ -116,6 +129,38 @@ def main() -> int:
         require(
             all(name.startswith(f"orhun-compiler-{version}-linux-x86_64/") for name in members),
             "tar.gz members must share the versioned release root",
+        )
+
+        runtime_archives = []
+        for attempt in ("runtime-first", "runtime-second"):
+            runtime_output = temp / attempt
+            run(
+                repo,
+                "create-runtime",
+                "--bundle",
+                str(runtime_bundle),
+                "--output",
+                str(runtime_output),
+                "--platform",
+                "linux-x86_64",
+                "--tag",
+                f"v{version}",
+            )
+            runtime_archives.append(
+                runtime_output / f"orhun-runtime-{version}-linux-x86_64.tar.gz"
+            )
+        require(
+            runtime_archives[0].read_bytes() == runtime_archives[1].read_bytes(),
+            "Repeated runtime release archives must be byte-identical",
+        )
+        with tarfile.open(runtime_archives[0], "r:gz") as archive:
+            runtime_members = archive.getnames()
+        require(
+            all(
+                name.startswith(f"orhun-runtime-{version}-linux-x86_64/")
+                for name in runtime_members
+            ),
+            "Runtime archive members must share the versioned release root",
         )
 
         windows_archives = []
@@ -173,7 +218,7 @@ def main() -> int:
 
         combined = temp / "combined"
         combined.mkdir()
-        for archive in (outputs[0], windows_archive):
+        for archive in (outputs[0], windows_archive, runtime_archives[0]):
             (combined / archive.name).write_bytes(archive.read_bytes())
         checksum_manifest = combined / "SHA256SUMS"
         run(
@@ -192,6 +237,11 @@ def main() -> int:
         require(
             f"{digest(windows_archive)}  {windows_archive.name}" in checksum_text,
             "Combined checksums missing zip archive",
+        )
+        require(
+            f"{digest(runtime_archives[0])}  {runtime_archives[0].name}"
+            in checksum_text,
+            "Combined checksums missing runtime archive",
         )
 
         install_root = temp / "installed-compiler"
@@ -347,7 +397,8 @@ def main() -> int:
 
     print(
         "Release packaging smoke passed "
-        "(deterministic archives, checksums, secure installer, tag gate, provenance workflow)."
+        "(deterministic compiler/runtime archives, checksums, secure installer, "
+        "tag gate, provenance workflow)."
     )
     return 0
 

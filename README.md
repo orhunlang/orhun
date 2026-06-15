@@ -181,8 +181,10 @@ destination, and publishes the complete set only after all writes succeed.
 
 Version tags must exactly match `VERSION`, for example `v0.8.0`. Pushing a
 matching tag runs the full release gate on Windows, Linux, and macOS, rebuilds
-the source-free compiler toolchain, and publishes deterministic compiler
-archives with SHA-256 verification files.
+the source-free compiler toolchain, and publishes deterministic compiler and
+runtime archives with SHA-256 verification files. Runtime archives include the
+`orhun` executable and sibling source `StdLib`, so they can run standard-library
+programs outside the source repository.
 
 Release assets are published on
 [GitHub Releases](https://github.com/orhunlanguage/orhun/releases). Every asset

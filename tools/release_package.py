@@ -60,6 +60,33 @@ def bundle_files(bundle: Path) -> list[Path]:
     return paths
 
 
+def runtime_bundle_files(bundle: Path, version: str) -> list[Path]:
+    require(bundle.is_dir(), f"Runtime bundle directory not found: {bundle}")
+    require(
+        (bundle / "orhun").is_file() or (bundle / "orhun.exe").is_file(),
+        "Runtime bundle is missing orhun executable",
+    )
+    require(
+        (bundle / "StdLib" / "orhun" / "temel.oh").is_file(),
+        "Runtime bundle is missing StdLib/orhun/temel.oh",
+    )
+    require((bundle / "VERSION").is_file(), "Runtime bundle is missing VERSION")
+    require((bundle / "LICENSE").is_file(), "Runtime bundle is missing LICENSE")
+    require((bundle / "README.md").is_file(), "Runtime bundle is missing README.md")
+    require(
+        (bundle / "VERSION").read_text(encoding="utf-8").strip() == version,
+        "Runtime bundle VERSION does not match release version",
+    )
+
+    paths = sorted(path for path in bundle.rglob("*") if path.is_file())
+    require(paths, f"Runtime bundle is empty: {bundle}")
+    require(
+        not any(path.is_symlink() for path in bundle.rglob("*")),
+        "Runtime release bundles must not contain symbolic links",
+    )
+    return paths
+
+
 def archive_mode(path: Path) -> int:
     source_mode = stat.S_IMODE(path.stat().st_mode)
     return 0o755 if source_mode & 0o111 else 0o644
@@ -118,17 +145,18 @@ def write_sidecar(path: Path) -> Path:
     return sidecar
 
 
-def create_release(args: argparse.Namespace) -> int:
+def create_archive(
+    args: argparse.Namespace, artifact_name: str, paths: list[Path]
+) -> int:
     version = read_version(args.version_file)
     verify_tag(args.tag, version)
     platform_name = args.platform.lower()
     require(PLATFORM_RE.fullmatch(platform_name) is not None, "Invalid platform name")
 
     bundle = args.bundle.resolve()
-    paths = bundle_files(bundle)
     args.output.mkdir(parents=True, exist_ok=True)
 
-    root_name = f"orhun-compiler-{version}-{platform_name}"
+    root_name = f"orhun-{artifact_name}-{version}-{platform_name}"
     extension = ".zip" if platform_name.startswith("windows-") else ".tar.gz"
     destination = args.output.resolve() / f"{root_name}{extension}"
     require(not destination.exists(), f"Release archive already exists: {destination}")
@@ -142,6 +170,17 @@ def create_release(args: argparse.Namespace) -> int:
     print(f"Release archive: {destination}")
     print(f"SHA-256: {sidecar}")
     return 0
+
+
+def create_release(args: argparse.Namespace) -> int:
+    return create_archive(args, "compiler", bundle_files(args.bundle.resolve()))
+
+
+def create_runtime_release(args: argparse.Namespace) -> int:
+    version = read_version(args.version_file)
+    return create_archive(
+        args, "runtime", runtime_bundle_files(args.bundle.resolve(), version)
+    )
 
 
 def write_checksums(args: argparse.Namespace) -> int:
@@ -175,6 +214,16 @@ def parse_args() -> argparse.Namespace:
     create.add_argument("--tag", required=True)
     create.add_argument("--version-file", type=Path, default=Path("VERSION"))
     create.set_defaults(handler=create_release)
+
+    runtime = subparsers.add_parser(
+        "create-runtime", help="Create one platform runtime release archive"
+    )
+    runtime.add_argument("--bundle", type=Path, required=True)
+    runtime.add_argument("--output", type=Path, required=True)
+    runtime.add_argument("--platform", required=True)
+    runtime.add_argument("--tag", required=True)
+    runtime.add_argument("--version-file", type=Path, default=Path("VERSION"))
+    runtime.set_defaults(handler=create_runtime_release)
 
     checksums = subparsers.add_parser(
         "checksums", help="Create a combined SHA256SUMS manifest"

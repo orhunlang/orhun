@@ -454,7 +454,8 @@ Lookup order:
 
 1. The requested path exactly as written.
 2. Each root in `ORHUN_STDLIB_PATH`.
-3. The local development standard library roots `StdLib/` and `stdlib/`.
+3. A sibling `StdLib/` directory beside the running `orhun` executable.
+4. The local development standard library roots `StdLib/` and `stdlib/`.
 
 Official Orhun-source standard modules live under `StdLib/orhun/` and are
 included by their library-relative path:

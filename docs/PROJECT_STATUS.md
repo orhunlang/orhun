@@ -93,8 +93,10 @@ These percentages are planning estimates, not promises.
 - Main CI builds and uploads validated source-free portable compiler bundles
   for Windows, Linux, and macOS after the self-rebuild gate passes.
 - Matching version tags run the full gate on all three platforms and publish
-  deterministic versioned compiler archives, per-archive SHA-256 files, and a
-  combined `SHA256SUMS` manifest as GitHub Release assets.
+  deterministic versioned compiler and runtime archives, per-archive SHA-256
+  files, and a combined `SHA256SUMS` manifest as GitHub Release assets.
+- Runtime archives carry the platform `orhun` executable and source standard
+  library; the executable discovers its sibling `StdLib` outside the repository.
 - Releases publish a cross-platform portable compiler installer that requires
   SHA-256 verification and rejects unsafe archive entries before installation.
 - Compiled OBC artifacts carry `orhun-obc-v2` metadata with size, CRC32, and
@@ -137,8 +139,8 @@ These percentages are planning estimates, not promises.
 - Grow compiler parity beyond the current test corpus and reduce the remaining
   C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
 - Add platform code-signing and installer signing to versioned releases.
-- Publish easy-to-install full runtime binaries for Windows, Linux, and macOS;
-  the portable compiler bundle already has a verified cross-platform installer.
+- Add a verified cross-platform installer for the published full runtime
+  archives; the portable compiler bundle already has one.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.
 - Harden the existing representative-workload performance gates with retained

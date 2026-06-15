@@ -70,6 +70,27 @@ jobs:
           ./build/orhun_release bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
           ./build/orhun_release bootstrap-derleyici-dogrula artifacts/compiler-bundle
 
+      - name: Build runtime bundle (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/runtime-bundle/StdLib | Out-Null
+          Copy-Item build/orhun_release.exe artifacts/runtime-bundle/orhun.exe
+          Copy-Item StdLib/orhun artifacts/runtime-bundle/StdLib/orhun -Recurse
+          Copy-Item StdLib/README.md artifacts/runtime-bundle/StdLib/README.md
+          Copy-Item VERSION artifacts/runtime-bundle/VERSION
+          Copy-Item LICENSE artifacts/runtime-bundle/LICENSE
+          Copy-Item README.md artifacts/runtime-bundle/README.md
+
+      - name: Build runtime bundle (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p artifacts/runtime-bundle/StdLib
+          cp build/orhun_release artifacts/runtime-bundle/orhun
+          cp -R StdLib/orhun artifacts/runtime-bundle/StdLib/orhun
+          cp StdLib/README.md artifacts/runtime-bundle/StdLib/README.md
+          cp VERSION LICENSE README.md artifacts/runtime-bundle/
+
       - name: Create release archive (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -79,12 +100,22 @@ jobs:
             --output artifacts/release `
             --platform "${{ runner.os }}-${{ runner.arch }}" `
             --tag "${{ github.ref_name }}"
+          py -3 tools/release_package.py create-runtime `
+            --bundle artifacts/runtime-bundle `
+            --output artifacts/release `
+            --platform "${{ runner.os }}-${{ runner.arch }}" `
+            --tag "${{ github.ref_name }}"
 
       - name: Create release archive (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
           python3 tools/release_package.py create \
             --bundle artifacts/compiler-bundle \
+            --output artifacts/release \
+            --platform "${{ runner.os }}-${{ runner.arch }}" \
+            --tag "${{ github.ref_name }}"
+          python3 tools/release_package.py create-runtime \
+            --bundle artifacts/runtime-bundle \
             --output artifacts/release \
             --platform "${{ runner.os }}-${{ runner.arch }}" \
             --tag "${{ github.ref_name }}"

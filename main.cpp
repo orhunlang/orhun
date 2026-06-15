@@ -37,6 +37,9 @@
 #include <process.h>
 #include <windows.h>
 #else
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -129,6 +132,128 @@ void cliOrtamDegiskeniniAyarla(const std::string &ad,
     throw std::runtime_error("Hata: " + ad + " ayarlanamadi.");
   }
 #endif
+}
+
+std::filesystem::path cliCalisanExeYolunuCoz(const std::string &argv0) {
+  namespace fs = std::filesystem;
+  auto normalDosyayiCoz = [](const fs::path &aday) -> std::optional<fs::path> {
+    if (!orhunNormalDosyaMi(aday)) {
+      return std::nullopt;
+    }
+    std::error_code ec;
+    fs::path cozulmus = fs::canonical(aday, ec);
+    if (!ec) {
+      return cozulmus;
+    }
+    ec.clear();
+    cozulmus = fs::absolute(aday, ec);
+    return ec ? std::optional<fs::path>{} : std::optional<fs::path>{cozulmus};
+  };
+
+#ifdef _WIN32
+  std::vector<wchar_t> modulYolu(32768, L'\0');
+  const DWORD modulUzunlugu = GetModuleFileNameW(
+      nullptr, modulYolu.data(), static_cast<DWORD>(modulYolu.size()));
+  if (modulUzunlugu > 0 && modulUzunlugu < modulYolu.size()) {
+    if (const auto cozulmus =
+            normalDosyayiCoz(fs::path(modulYolu.data(), modulYolu.data() +
+                                                           modulUzunlugu));
+        cozulmus.has_value()) {
+      return *cozulmus;
+    }
+  }
+#elif defined(__APPLE__)
+  std::uint32_t modulYoluBoyutu = 0;
+  static_cast<void>(_NSGetExecutablePath(nullptr, &modulYoluBoyutu));
+  std::vector<char> modulYolu(modulYoluBoyutu + 1, '\0');
+  if (_NSGetExecutablePath(modulYolu.data(), &modulYoluBoyutu) == 0) {
+    if (const auto cozulmus = normalDosyayiCoz(fs::path(modulYolu.data()));
+        cozulmus.has_value()) {
+      return *cozulmus;
+    }
+  }
+#elif defined(__linux__)
+  std::vector<char> modulYolu(4096, '\0');
+  const ssize_t modulUzunlugu =
+      readlink("/proc/self/exe", modulYolu.data(), modulYolu.size() - 1);
+  if (modulUzunlugu > 0) {
+    modulYolu[static_cast<std::size_t>(modulUzunlugu)] = '\0';
+    if (const auto cozulmus = normalDosyayiCoz(fs::path(modulYolu.data()));
+        cozulmus.has_value()) {
+      return *cozulmus;
+    }
+  }
+#endif
+
+  const fs::path ilk(argv0);
+  if (ilk.is_absolute() || ilk.has_parent_path()) {
+    if (const auto cozulmus = normalDosyayiCoz(ilk); cozulmus.has_value()) {
+      return *cozulmus;
+    }
+  }
+
+  const char *pathEnv = std::getenv("PATH");
+#ifdef _WIN32
+  if (pathEnv == nullptr) {
+    pathEnv = std::getenv("Path");
+  }
+#endif
+  if (pathEnv != nullptr) {
+#ifdef _WIN32
+    constexpr char ayirici = ';';
+#else
+    constexpr char ayirici = ':';
+#endif
+    std::stringstream ss(pathEnv);
+    std::string parca;
+    while (std::getline(ss, parca, ayirici)) {
+      const fs::path kok = parca.empty() ? fs::path(".") : fs::path(parca);
+      if (const auto cozulmus = normalDosyayiCoz(kok / ilk);
+          cozulmus.has_value()) {
+        return *cozulmus;
+      }
+#ifdef _WIN32
+      if (ilk.extension().empty()) {
+        fs::path exeAday = kok / ilk;
+        exeAday += ".exe";
+        if (const auto cozulmus = normalDosyayiCoz(exeAday);
+            cozulmus.has_value()) {
+          return *cozulmus;
+        }
+      }
+#endif
+    }
+  }
+
+  std::error_code ec;
+  const fs::path mutlak = fs::absolute(ilk, ec);
+  return ec ? ilk : mutlak;
+}
+
+void cliKomsuStdlibYolunuEkle(const std::string &calisanExeYolu) {
+  namespace fs = std::filesystem;
+  const fs::path komsuStdlib = fs::path(calisanExeYolu).parent_path() / "StdLib";
+  const bool kaynakStdlib =
+      orhunNormalDosyaMi(komsuStdlib / "orhun" / "temel.oh");
+  const bool bootstrapStdlib =
+      orhunNormalDosyaMi(komsuStdlib / "bootstrap.manifest.json");
+  if (!kaynakStdlib && !bootstrapStdlib) {
+    return;
+  }
+
+#ifdef _WIN32
+  constexpr char ayirici = ';';
+#else
+  constexpr char ayirici = ':';
+#endif
+  std::string yeniDeger;
+  if (const char *mevcut = std::getenv("ORHUN_STDLIB_PATH");
+      mevcut != nullptr && *mevcut != '\0') {
+    yeniDeger = mevcut;
+    yeniDeger.push_back(ayirici);
+  }
+  yeniDeger += komsuStdlib.string();
+  cliOrtamDegiskeniniAyarla("ORHUN_STDLIB_PATH", yeniDeger);
 }
 
 void cliModulModunuAyarla(const std::optional<std::string> &mod) {
@@ -6024,9 +6149,13 @@ int main(int argc, char *argv[]) {
 #endif
 
   try {
+    const std::string calisanExeYolu = cliCalisanExeYolunuCoz(argv[0]).string();
+    cliKomsuStdlibYolunuEkle(calisanExeYolu);
+
     // Paketli uygulama kendi komut satirinin sahibidir. Orhun'un global CLI
     // secenekleri dahil tum argumanlar degistirilmeden gomulu programa gider.
-    if (gomuluPaketiCalistir(argv[0], cliProgramArgumanlari(argc, argv, 1))) {
+    if (gomuluPaketiCalistir(calisanExeYolu,
+                             cliProgramArgumanlari(argc, argv, 1))) {
       return 0;
     }
 
@@ -6408,7 +6537,7 @@ int main(int argc, char *argv[]) {
             "Hata: derle komutu icin kaynak .oh bekleniyor.");
       }
       const std::string ciktiTemel = argc >= 4 ? argv[3] : "";
-      return komutDerle(argv[2], argv[0], ciktiTemel);
+      return komutDerle(argv[2], calisanExeYolu, ciktiTemel);
     }
 
     if (komut == "orhun-derle" || komut == "bootstrap-compile") {
@@ -6441,7 +6570,7 @@ int main(int argc, char *argv[]) {
         ciktiTemel = secenek;
       }
       cliModulModunuAyarla(modulModu);
-      return komutOrhunDerle(argv[2], argv[0], ciktiTemel);
+      return komutOrhunDerle(argv[2], calisanExeYolu, ciktiTemel);
     }
 
     if (komut == "bootstrap-hazirla" || komut == "bootstrap-prepare") {
@@ -6458,7 +6587,7 @@ int main(int argc, char *argv[]) {
             "kullanin.");
       }
       const std::string ciktiTemel = argc == 5 ? argv[4] : "";
-      return komutBootstrapDerle(argv[2], argv[3], argv[0], ciktiTemel);
+      return komutBootstrapDerle(argv[2], argv[3], calisanExeYolu, ciktiTemel);
     }
 
     if (komut == "bootstrap-calistir" || komut == "bootstrap-run") {
@@ -6486,7 +6615,7 @@ int main(int argc, char *argv[]) {
             "Hata: bootstrap-derleyici-paketle <toolchain-dizini> "
             "<cikti-dizini> kullanin.");
       }
-      return komutBootstrapDerleyiciPaketle(argv[2], argv[3], argv[0]);
+      return komutBootstrapDerleyiciPaketle(argv[2], argv[3], calisanExeYolu);
     }
 
     if (komut == "bootstrap-derleyici-dogrula" ||

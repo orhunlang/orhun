@@ -26,7 +26,8 @@
   etiket yalnız `v0.8.0` olabilir.
 - Etiket push'u `.github/workflows/release.yml` hattını başlatır.
 - Hat üç platformda testleri çalıştırır, bootstrap toolchain'i yeniden üretir,
-  taşınabilir derleyici bundle'ını doğrular ve sürümlü arşiv üretir.
+  taşınabilir derleyici bundle'ını doğrular ve derleyici/runtime arşivleri
+  üretir.
 - Her arşiv için ayrı `.sha256` dosyası ve tüm arşivleri kapsayan
   `SHA256SUMS` yayınlanır.
 - Release asset'leri kısa ömürlü OIDC/Sigstore sertifikası kullanan

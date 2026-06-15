@@ -91,6 +91,7 @@ def main() -> int:
         ("OBC metadata", [py, "tests/obc_metadata_smoke.py", str(binary)]),
         ("packaged integrity", [py, "tests/packaged_integrity_smoke.py", str(binary)]),
         ("program arguments", [py, "tests/program_arguments_smoke.py", str(binary)]),
+        ("runtime bundle", [py, "tests/runtime_bundle_smoke.py", str(binary)]),
         ("beginner docs", [py, "tests/beginner_docs_smoke.py"]),
         ("examples", [py, "tests/examples_smoke.py", str(binary)]),
         ("package new scaffold", [py, "tests/package_new_smoke.py", str(binary)]),

@@ -35,5 +35,6 @@ yazdır sonuc.tokenlar[0].tur
 ```
 
 Module lookup checks the requested path first, then searches the standard
-library roots. `ORHUN_STDLIB_PATH` can be used to add custom roots; otherwise
-the local `StdLib/` directory is used during development.
+library roots. `ORHUN_STDLIB_PATH` can add custom roots. A runtime release also
+discovers the sibling `StdLib/` directory beside its `orhun` executable, while
+the local `StdLib/` directory remains available during development.
