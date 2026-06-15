@@ -122,6 +122,9 @@ jobs:
             --directory artifacts/release \
             --output artifacts/release/SHA256SUMS
 
+      - name: Add verified compiler installer
+        run: cp tools/install_compiler.py artifacts/release/install_compiler.py
+
       - name: Attest release assets
         uses: actions/attest@v4
         with:

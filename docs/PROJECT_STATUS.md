@@ -95,6 +95,8 @@ These percentages are planning estimates, not promises.
 - Matching version tags run the full gate on all three platforms and publish
   deterministic versioned compiler archives, per-archive SHA-256 files, and a
   combined `SHA256SUMS` manifest as GitHub Release assets.
+- Releases publish a cross-platform portable compiler installer that requires
+  SHA-256 verification and rejects unsafe archive entries before installation.
 - Compiled OBC artifacts carry `orhun-obc-v2` metadata with size, CRC32, and
   SHA-256; `obc-dogrula`/`obc-verify` validates the artifact without executing
   it while retaining `orhun-obc-v1` compatibility.
@@ -135,7 +137,8 @@ These percentages are planning estimates, not promises.
 - Grow compiler parity beyond the current test corpus and reduce the remaining
   C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
 - Add platform code-signing and installer signing to versioned releases.
-- Make release binaries easier to install on Windows, Linux, and macOS.
+- Publish easy-to-install full runtime binaries for Windows, Linux, and macOS;
+  the portable compiler bundle already has a verified cross-platform installer.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.
 - Harden the existing representative-workload performance gates with retained

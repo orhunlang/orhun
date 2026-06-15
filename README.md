@@ -195,6 +195,19 @@ Verify a downloaded asset with GitHub CLI:
 gh attestation verify orhun-compiler-0.8.0-linux-x64.tar.gz --repo orhunlanguage/orhun
 ```
 
+Install a downloaded portable compiler archive after downloading its matching
+`.sha256` sidecar and `install_compiler.py` release asset:
+
+```bash
+python install_compiler.py orhun-compiler-0.8.0-linux-x64.tar.gz
+orhun-derleyici program.oh
+```
+
+The installer requires a valid SHA-256 sidecar, rejects unsafe archive entries,
+and installs only the portable compiler bundle. It does not yet install the
+complete Orhun runtime. Use `--install-root`, `--bin-dir`, `--no-shim`, or
+`--force` to control the installation.
+
 Program arguments are available as `sistem.argumanlar`:
 
 ```bash

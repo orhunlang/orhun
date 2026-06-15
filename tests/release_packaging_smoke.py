@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import hashlib
+import json
 import subprocess
 import sys
 import tarfile
@@ -34,6 +35,26 @@ def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def run_installer(
+    repo: Path, *args: str, expected: int = 0
+) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.run(
+        [sys.executable, "tools/install_compiler.py", *args],
+        cwd=repo,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    require(
+        proc.returncode == expected,
+        f"Installer returned {proc.returncode}, expected {expected}:\n"
+        f"{proc.stdout}\n{proc.stderr}",
+    )
+    return proc
+
+
 def main() -> int:
     repo = Path(__file__).resolve().parents[1]
     version = (repo / "VERSION").read_text(encoding="utf-8").strip()
@@ -44,6 +65,7 @@ def main() -> int:
         'tags: ["v*.*.*"]',
         "tests/roadmap_smoke.py",
         "tools/release_package.py create",
+        "tools/install_compiler.py",
         "actions/attest@v4",
         "id-token: write",
         "attestations: write",
@@ -127,6 +149,28 @@ def main() -> int:
             "zip members must share the versioned release root",
         )
 
+        if sys.platform == "win32":
+            host_archive = windows_archive
+        elif sys.platform == "darwin":
+            macos_output = temp / "macos-host"
+            run(
+                repo,
+                "create",
+                "--bundle",
+                str(bundle),
+                "--output",
+                str(macos_output),
+                "--platform",
+                "macos-x64",
+                "--tag",
+                f"v{version}",
+            )
+            host_archive = (
+                macos_output / f"orhun-compiler-{version}-macos-x64.tar.gz"
+            )
+        else:
+            host_archive = outputs[0]
+
         combined = temp / "combined"
         combined.mkdir()
         for archive in (outputs[0], windows_archive):
@@ -149,6 +193,133 @@ def main() -> int:
             f"{digest(windows_archive)}  {windows_archive.name}" in checksum_text,
             "Combined checksums missing zip archive",
         )
+
+        install_root = temp / "installed-compiler"
+        installed = run_installer(
+            repo,
+            str(outputs[0]),
+            "--install-root",
+            str(install_root),
+            "--no-shim",
+            "--allow-cross-platform",
+            "--json",
+        )
+        install_payload = json.loads(installed.stdout.strip().splitlines()[-1])
+        require(
+            install_payload["format"] == "orhun-compiler-install-v1",
+            "Installer result format changed",
+        )
+        require(
+            install_payload["version"] == version,
+            "Installer result version changed",
+        )
+        require(
+            (install_root / "orhun-derleyici").read_bytes() == b"release-smoke",
+            "Installer did not publish the compiler executable",
+        )
+        run_installer(
+            repo,
+            str(outputs[0]),
+            "--install-root",
+            str(install_root),
+            "--no-shim",
+            "--allow-cross-platform",
+            expected=1,
+        )
+        run_installer(
+            repo,
+            str(outputs[0]),
+            "--install-root",
+            str(install_root),
+            "--no-shim",
+            "--allow-cross-platform",
+            "--force",
+        )
+
+        shim_install_root = temp / "shim-installed-compiler"
+        bin_dir = temp / "bin"
+        shim_result = run_installer(
+            repo,
+            str(host_archive),
+            "--install-root",
+            str(shim_install_root),
+            "--bin-dir",
+            str(bin_dir),
+            "--json",
+        )
+        shim_payload = json.loads(shim_result.stdout.strip().splitlines()[-1])
+        shim = Path(shim_payload["shim"])
+        require(
+            shim.exists() or shim.is_symlink(),
+            "Installer did not create the compiler command shim",
+        )
+
+        unrelated = temp / "unrelated-directory"
+        unrelated.mkdir()
+        (unrelated / "keep.txt").write_text("keep", encoding="utf-8")
+        run_installer(
+            repo,
+            str(outputs[0]),
+            "--install-root",
+            str(unrelated),
+            "--no-shim",
+            "--allow-cross-platform",
+            "--force",
+            expected=1,
+        )
+        require(
+            (unrelated / "keep.txt").read_text(encoding="utf-8") == "keep",
+            "Installer replaced an unrelated directory",
+        )
+
+        foreign_archive = outputs[0] if sys.platform == "win32" else windows_archive
+        foreign_install = temp / "foreign-install"
+        run_installer(
+            repo,
+            str(foreign_archive),
+            "--install-root",
+            str(foreign_install),
+            "--no-shim",
+            expected=1,
+        )
+        require(
+            not foreign_install.exists(),
+            "Foreign-platform archive must require explicit opt-in",
+        )
+
+        corrupt = temp / outputs[0].name
+        corrupt.write_bytes(outputs[0].read_bytes() + b"tampered")
+        corrupt.with_name(corrupt.name + ".sha256").write_text(
+            f"{digest(outputs[0])}  {corrupt.name}\n",
+            encoding="ascii",
+        )
+        corrupt_install = temp / "corrupt-install"
+        run_installer(
+            repo,
+            str(corrupt),
+            "--install-root",
+            str(corrupt_install),
+            "--no-shim",
+            expected=1,
+        )
+        require(not corrupt_install.exists(), "Tampered archive must not be installed")
+
+        malicious = temp / "malicious.zip"
+        with zipfile.ZipFile(malicious, "w") as archive:
+            archive.writestr("../escaped.txt", b"unsafe")
+        malicious.with_name(malicious.name + ".sha256").write_text(
+            f"{digest(malicious)}  {malicious.name}\n",
+            encoding="ascii",
+        )
+        run_installer(
+            repo,
+            str(malicious),
+            "--install-root",
+            str(temp / "malicious-install"),
+            "--no-shim",
+            expected=1,
+        )
+        require(not (temp / "escaped.txt").exists(), "Installer allowed archive traversal")
 
         wrong_tag = subprocess.run(
             [
@@ -176,7 +347,7 @@ def main() -> int:
 
     print(
         "Release packaging smoke passed "
-        "(deterministic archives, checksums, tag gate, provenance workflow)."
+        "(deterministic archives, checksums, secure installer, tag gate, provenance workflow)."
     )
     return 0
 
