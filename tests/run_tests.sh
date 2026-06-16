@@ -5,8 +5,29 @@ COMPILER="${1:-g++}"
 OUTPUT="${2:-build/orhun_test}"
 TEST_TIMEOUT_SECONDS="${ORHUN_TEST_TIMEOUT_SECONDS:-10}"
 SKIP_BUILD="${ORHUN_SKIP_BUILD:-0}"
+REPO_ROOT="$(pwd -P)"
+case "${OUTPUT}" in
+  /*) ABS_OUTPUT="${OUTPUT}" ;;
+  *) ABS_OUTPUT="${REPO_ROOT}/${OUTPUT}" ;;
+esac
+
+path_for_orhun() {
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -w "$1"
+  else
+    printf '%s' "$1"
+  fi
+}
+
+if command -v cygpath >/dev/null 2>&1; then
+  STD_LIB_PATH="$(path_for_orhun "${REPO_ROOT}/StdLib");$(path_for_orhun "${REPO_ROOT}")"
+else
+  STD_LIB_PATH="${REPO_ROOT}/StdLib:${REPO_ROOT}"
+fi
+WORK_ROOT="${REPO_ROOT}/build/test-work/run-tests-$$"
 
 mkdir -p "$(dirname "${OUTPUT}")"
+mkdir -p "${WORK_ROOT}"
 
 if [[ "${SKIP_BUILD}" == "1" ]]; then
   echo "[1/3] Using existing binary..."
@@ -44,11 +65,12 @@ strict_turkce_case="tests/cases/turkce_kati_alias"
 
 run_orhun() {
   local src="$1"
+  local workdir="$2"
   local actual=""
   local status=0
   if command -v timeout >/dev/null 2>&1; then
     set +e
-    actual="$(timeout "${TEST_TIMEOUT_SECONDS}s" "./${OUTPUT}" "${src}" 2>&1)"
+    actual="$(cd "${workdir}" && ORHUN_STDLIB_PATH="${STD_LIB_PATH}" timeout "${TEST_TIMEOUT_SECONDS}s" "${ABS_OUTPUT}" "${src}" 2>&1)"
     status=$?
     set -e
     if [[ "${status}" -eq 124 || "${status}" -eq 137 ]]; then
@@ -57,7 +79,7 @@ run_orhun() {
     fi
   else
     set +e
-    actual="$("./${OUTPUT}" "${src}" 2>&1)"
+    actual="$(cd "${workdir}" && ORHUN_STDLIB_PATH="${STD_LIB_PATH}" "${ABS_OUTPUT}" "${src}" 2>&1)"
     status=$?
     set -e
   fi
@@ -79,8 +101,11 @@ for case in "${cases[@]}"; do
   fi
   src="${case}.oh"
   expected_path="${case}.expected.txt"
+  abs_src="$(path_for_orhun "${REPO_ROOT}/${src}")"
+  case_workdir="${WORK_ROOT}/$(basename "${case}")"
+  mkdir -p "${case_workdir}"
 
-  actual="$(run_orhun "${src}")"
+  actual="$(run_orhun "${abs_src}" "${case_workdir}")"
   expected="$(cat "${expected_path}")"
 
   actual="${actual//$'\r\n'/$'\n'}"
@@ -108,7 +133,10 @@ done
 if [[ -f "${strict_turkce_case}.oh" && -f "${strict_turkce_case}.expected.txt" ]]; then
   src="${strict_turkce_case}.oh"
   expected_path="${strict_turkce_case}.expected.txt"
-  actual="$(ORHUN_TURKCE_KATI=1 run_orhun "${src}")"
+  abs_src="$(path_for_orhun "${REPO_ROOT}/${src}")"
+  case_workdir="${WORK_ROOT}/$(basename "${strict_turkce_case}")"
+  mkdir -p "${case_workdir}"
+  actual="$(ORHUN_TURKCE_KATI=1 run_orhun "${abs_src}" "${case_workdir}")"
   expected="$(cat "${expected_path}")"
   actual="${actual//$'\r\n'/$'\n'}"
   actual="${actual//$'\r'/}"

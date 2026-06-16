@@ -29,15 +29,35 @@ else {
     }
 }
 
-function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}) {
+$RepoRoot = (Resolve-Path ".").Path
+$ResolvedOutput = (Resolve-Path $Output).Path
+$StdLibPath = (Resolve-Path "StdLib").Path
+$StdLibSearchPath = "$StdLibPath;$RepoRoot"
+$WorkRoot = Join-Path $RepoRoot "build/test-work/run-tests-$PID"
+if (!(Test-Path $WorkRoot)) {
+    New-Item -ItemType Directory -Path $WorkRoot -Force | Out-Null
+}
+
+function Case-WorkDir($case) {
+    $name = Split-Path -Leaf $case
+    $path = Join-Path $WorkRoot $name
+    if (!(Test-Path $path)) {
+        New-Item -ItemType Directory -Path $path -Force | Out-Null
+    }
+    return $path
+}
+
+function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}, [string]$WorkDir = $RepoRoot) {
     $pinfo = New-Object System.Diagnostics.ProcessStartInfo
     $pinfo.FileName = $exe
     $pinfo.Arguments = $argsList
+    $pinfo.WorkingDirectory = $WorkDir
     $pinfo.RedirectStandardOutput = $true
     $pinfo.RedirectStandardError = $true
     $pinfo.UseShellExecute = $false
     $pinfo.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $pinfo.StandardErrorEncoding = [System.Text.Encoding]::UTF8
+    $pinfo.Environment["ORHUN_STDLIB_PATH"] = $StdLibSearchPath
     foreach ($entry in $EnvVars.GetEnumerator()) {
         $pinfo.Environment[$entry.Key] = [string]$entry.Value
     }
@@ -100,8 +120,10 @@ Write-Host "[2/3] Testler calisiyor..."
 foreach ($case in $cases) {
     $src = "$case.oh"
     $expectedPath = "$case.expected.txt"
+    $srcPath = (Resolve-Path $src).Path
+    $caseWorkDir = Case-WorkDir $case
 
-    $actual = Run-Orhun ".\$Output" $src
+    $actual = Run-Orhun $ResolvedOutput "`"$srcPath`"" @{} $caseWorkDir
     $actual = $actual -replace "`r`n", "`n"
     $actual = $actual.TrimEnd("`n")
 
@@ -126,8 +148,10 @@ foreach ($case in $cases) {
 if ((Test-Path "$strictCase.oh") -and (Test-Path "$strictCase.expected.txt")) {
     $src = "$strictCase.oh"
     $expectedPath = "$strictCase.expected.txt"
+    $srcPath = (Resolve-Path $src).Path
+    $caseWorkDir = Case-WorkDir $strictCase
 
-    $actual = Run-Orhun ".\$Output" $src @{ ORHUN_TURKCE_KATI = "1" }
+    $actual = Run-Orhun $ResolvedOutput "`"$srcPath`"" @{ ORHUN_TURKCE_KATI = "1" } $caseWorkDir
     $actual = $actual -replace "`r`n", "`n"
     $actual = $actual.TrimEnd("`n")
 
