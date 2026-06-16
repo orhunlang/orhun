@@ -1,0 +1,128 @@
+# Orhun ile yazilmis genel dil gelistirme yardimcilari.
+#
+# Bu modul Orhun kullanarak kucuk diller, DSL'ler ve compiler prototipleri
+# yazmak icin ortak token, imlec, tani ve AST sozlesmeleri saglar.
+
+sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+
+surum olsun "0.1.0"
+
+işlev token(tur, deger, satir, sutun):
+    döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
+
+işlev dosya_sonu(satir, sutun):
+    döndür token("DOSYA_SONU", "", satir, sutun)
+
+işlev hata_token(mesaj, satir, sutun):
+    döndür token("HATA", mesaj, satir, sutun)
+
+işlev token_mi(deger):
+    deneme:
+        deger.tur
+        deger.deger
+        deger.satir
+        deger.sutun
+        döndür doğru
+    yakala hata:
+        döndür yanlış
+
+işlev tani(kod, mesaj, satir, sutun):
+    döndür {"kod": kod, "mesaj": mesaj, "satir": satir, "sutun": sutun}
+
+işlev tani_ekle(imlec, kod, mesaj, token_degeri):
+    kayit olsun tani(kod, mesaj, token_degeri.satir, token_degeri.sutun)
+    imlec.hatalar.ekle(kayit)
+    döndür kayit
+
+işlev dugum(tur, deger, cocuklar, satir, sutun):
+    döndür {"tur": tur, "deger": deger, "cocuklar": cocuklar, "satir": satir, "sutun": sutun}
+
+işlev yaprak(tur, deger, token_degeri):
+    döndür dugum(tur, deger, [], token_degeri.satir, token_degeri.sutun)
+
+işlev program(cocuklar):
+    döndür dugum("Program", "", cocuklar, 1, 1)
+
+işlev dugum_sayisi(kok):
+    sayi olsun 1
+    i olsun 0
+    sürece i küçük uzunluk(kok.cocuklar):
+        sayi olsun sayi + dugum_sayisi(kok.cocuklar[i])
+        i olsun i + 1
+    döndür sayi
+
+işlev dugum_turleri(cocuklar):
+    turler olsun []
+    i olsun 0
+    sürece i küçük uzunluk(cocuklar):
+        turler.ekle(cocuklar[i].tur)
+        i olsun i + 1
+    döndür turler
+
+işlev token_turleri(tokenlar):
+    turler olsun []
+    i olsun 0
+    sürece i küçük uzunluk(tokenlar):
+        turler.ekle(tokenlar[i].tur)
+        i olsun i + 1
+    döndür turler
+
+işlev imlec(tokenlar):
+    döndür {"tokenlar": tokenlar, "konum": 0, "hatalar": []}
+
+işlev bos_token():
+    döndür dosya_sonu(0, 0)
+
+işlev bak(imlec_degeri, ofset):
+    hedef olsun imlec_degeri.konum + ofset
+    eğer hedef küçük 0 ise:
+        döndür bos_token()
+    eğer hedef büyük uzunluk(imlec_degeri.tokenlar) - 1 ise:
+        döndür bos_token()
+    döndür imlec_degeri.tokenlar[hedef]
+
+işlev simdiki(imlec_degeri):
+    döndür bak(imlec_degeri, 0)
+
+işlev onceki(imlec_degeri):
+    döndür bak(imlec_degeri, -1)
+
+işlev bitti_mi(imlec_degeri):
+    eğer imlec_degeri.konum büyük uzunluk(imlec_degeri.tokenlar) - 1 ise:
+        döndür doğru
+    döndür simdiki(imlec_degeri).tur eşit "DOSYA_SONU"
+
+işlev ilerle(imlec_degeri):
+    eğer değil bitti_mi(imlec_degeri) ise:
+        imlec_degeri["konum"] = imlec_degeri.konum + 1
+    döndür onceki(imlec_degeri)
+
+işlev tur_mu(imlec_degeri, tur):
+    döndür simdiki(imlec_degeri).tur eşit tur
+
+işlev deger_mu(imlec_degeri, deger):
+    döndür simdiki(imlec_degeri).deger eşit deger
+
+işlev esles(imlec_degeri, tur, deger):
+    eğer değil tur_mu(imlec_degeri, tur) ise:
+        döndür yanlış
+    eğer uzunluk(deger) büyük 0 ve değil deger_mu(imlec_degeri, deger) ise:
+        döndür yanlış
+    ilerle(imlec_degeri)
+    döndür doğru
+
+işlev bekle(imlec_degeri, tur, deger, mesaj):
+    eğer esles(imlec_degeri, tur, deger) ise:
+        döndür sonuc_yardimci.ok(onceki(imlec_degeri))
+    tani_ekle(imlec_degeri, "beklenen_token", mesaj, simdiki(imlec_degeri))
+    döndür sonuc_yardimci.hata(mesaj)
+
+işlev hata_sayisi(imlec_degeri):
+    döndür uzunluk(imlec_degeri.hatalar)
+
+işlev ozet(imlec_degeri):
+    döndür {
+        "konum": imlec_degeri.konum,
+        "hata_sayisi": hata_sayisi(imlec_degeri),
+        "bitti": bitti_mi(imlec_degeri)
+    }

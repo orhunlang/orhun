@@ -178,6 +178,14 @@
 - Açık ayraç içindeki alan erişimi, güvenli alan erişimi, çağrı, indeks ve
   dilim zincirleri alt satırdan devam edebilir.
 
+## 12.1. Orhun-source language toolkit: `orhun/dil.oh`
+- `orhun/dil.oh`, Orhun ile yeni küçük diller, DSL'ler ve compiler
+  prototipleri yazmak için ortak kayıt biçimleri sağlar.
+- İlk yüzey; token oluşturma, dosya-sonu/hata token'ı, token imleci,
+  `bekle`/`esles` tüketimi, tanı listesi ve AST düğümü kurucularını içerir.
+- Bu modül runtime davranışını değiştirmez; yeni kod için ek bir standart
+  kütüphane yardımcısıdır.
+
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri
   canlı tutar.

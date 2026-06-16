@@ -32,6 +32,12 @@ yazdır paket_yardimci.surum_gecerli_mi("1.2.3-beta.1+build.5")
 lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")
 yazdır sonuc.tokenlar[0].tur
+
+dil olsun dahil_et "orhun/dil.oh"
+tokenlar olsun [dil.token("AD", "merhaba", 1, 1), dil.dosya_sonu(1, 8)]
+imlec olsun dil.imlec(tokenlar)
+ad olsun dil.bekle(imlec, "AD", "", "ad bekleniyor")
+yazdır dil.program([dil.yaprak("Selam", ad.deger.deger, ad.deger)]).tur
 ```
 
 Module lookup checks the requested path first, then searches the standard

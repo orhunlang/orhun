@@ -138,6 +138,9 @@ These percentages are planning estimates, not promises.
   updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
   rejected by both the CLI and Orhun-written manifest helper, and malformed
   lock records stop removal before directory deletion.
+- `orhun/dil.oh` provides reusable Orhun-source language-development helpers:
+  token records, token cursors, expected-token diagnostics, AST node builders,
+  and small summaries for compiler/DSL prototypes written in Orhun.
 
 ## Main Remaining Work
 
@@ -150,6 +153,8 @@ These percentages are planning estimates, not promises.
 - Add native platform installer formats and signing on top of the verified
   cross-platform compiler/runtime archive installer.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
+- Grow the Orhun-source language toolkit into shared lexer/parser/compiler
+  building blocks for Orhun itself and for new small languages written in Orhun.
 - Add beginner learning material and larger example projects.
 - Harden the existing representative-workload performance gates with retained
   baselines and stricter release-candidate regression budgets.

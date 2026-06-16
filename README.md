@@ -44,6 +44,8 @@ For a more concrete progress snapshot and the current estimate toward `1.0` /
 - Async/task primitives and `paralel yap`
 - Standard modules for files, JSON, regex, date/time, simple database helpers,
   server helpers, FFI, and system policy controls
+- Orhun-source helper modules for language tooling, including token cursors,
+  diagnostics, and AST records for small compilers and DSLs
 - Package install and lock verification flows
 - Formatter, linter, LSP, and VS Code language tooling
 - Cross-platform CI for Windows, Linux, and macOS
@@ -251,7 +253,9 @@ Near-term priorities:
 2. Stabilize language semantics before adding large new syntax.
 3. Improve documentation and first-run developer experience.
 4. Move safe parts of the standard library into Orhun source.
-5. Build toward an Orhun-written lexer, parser, and compiler.
+5. Grow Orhun-source language tooling so Orhun can be used to prototype other
+   languages and DSLs.
+6. Build toward an Orhun-written lexer, parser, and compiler.
 
 See [docs/SELF_HOSTING_ROADMAP.md](docs/SELF_HOSTING_ROADMAP.md) for the
 self-hosting plan.
@@ -263,7 +267,7 @@ self-hosting plan.
 - Bytecode compiler: `Compiler.cpp`
 - Standard library helpers: `Yerlesik.h`, `StdLib/`, `StdLib/orhun/`
   (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `metin.oh`, `paket.oh`,
-  `lexer.oh`, `parser.oh`, `derleyici.oh`)
+  `dil.oh`, `lexer.oh`, `parser.oh`, `derleyici.oh`)
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
 - Lexer parity fixtures: `tests/lexer_parity/`

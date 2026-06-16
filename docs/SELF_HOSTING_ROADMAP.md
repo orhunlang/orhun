@@ -42,7 +42,7 @@ Hedefler:
 
 - Saf Orhun ile yazilmis `StdLib/orhun/` modulleri baslar.
 - `sonuc`, metin yardimcilari, koleksiyon yardimcilari, paket manifest okuma
-  gibi guvenli alanlar Orhun koduna tasinir.
+  ve dil gelistirme yardimcilari gibi guvenli alanlar Orhun koduna tasinir.
 - C++ yerlesikleri sadece sistem siniri, dosya, FFI, ag ve VM primitive'leri
   gibi zorunlu noktalarda kalir.
 
@@ -60,6 +60,8 @@ Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.3.0 ile `hata_sayisi`,
 seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutun
 parity saglandi. Parser prototipi 153 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
+`orhun/dil.oh` 0.1.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
+Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
 Recursive block summary parity ve recursive expression child parity basladi.
 `orhun/parser.oh` 0.12.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini

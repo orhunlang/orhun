@@ -1,0 +1,13 @@
+dil olsun dahil_et "orhun/dil.oh"
+
+tokenlar olsun [
+    dil.token("AD", "merhaba", 1, 1),
+    dil.dosya_sonu(1, 8),
+]
+
+imlec olsun dil.imlec(tokenlar)
+ad olsun dil.bekle(imlec, "AD", "", "ad bekleniyor")
+ast olsun dil.program([dil.yaprak("SelamKomutu", ad.deger.deger, ad.deger)])
+
+yazdır ast.tur
+yazdır ast.cocuklar[0].tur + ":" + ast.cocuklar[0].deger

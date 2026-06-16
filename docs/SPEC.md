@@ -466,6 +466,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 paket_yardimci olsun dahil_et "orhun/paket.oh"
+dil_yardimci olsun dahil_et "orhun/dil.oh"
 lexer olsun dahil_et "orhun/lexer.oh"
 ```
 
@@ -493,6 +494,14 @@ helper, including prerelease and build identifiers. `surum_ayristir` returns a
 result record whose value separates a valid version into numeric `ana`, `yan`,
 and `duzeltme` fields plus `on_surum` and `yapi` strings. Invalid versions
 return an error result.
+
+`orhun/dil.oh` includes language-development helpers for Orhun-source
+compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
+`hata_token`, `token_mi`), token-stream cursors (`imlec`, `simdiki`, `onceki`,
+`ilerle`, `bitti_mi`, `esles`, `bekle`), diagnostics (`tani`, `tani_ekle`),
+and AST builders (`dugum`, `yaprak`, `program`, `dugum_sayisi`,
+`dugum_turleri`). `bekle` returns the standard `sonuc` result shape, so callers
+can keep parser errors explicit without throwing.
 
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.
@@ -549,6 +558,7 @@ Current built-in module surfaces include:
 - `orhun/koleksiyon.oh`
 - `orhun/metin.oh`
 - `orhun/paket.oh`
+- `orhun/dil.oh`
 - `orhun/lexer.oh`
 - `orhun/parser.oh`
 - `orhun/derleyici.oh`
@@ -563,6 +573,26 @@ when they appear before the command/source, so the same text can still be a
 program argument after it. Direct source execution, `vm`, `vm-kati`, `yorumla`,
 `obc`, packaged executables, `orhun-vm -- <arguments>`, and
 `bootstrap-calistir` expose the same argument list.
+
+## Orhun-Source Language Toolkit
+
+`orhun/dil.oh` is the shared Orhun-source language-development toolkit. It is
+intended for small compilers, educational DSLs, and future self-hosting pieces
+that need common token, cursor, diagnostic, and AST conventions.
+
+Example:
+
+```orhun
+dil olsun dahil_et "orhun/dil.oh"
+tokenlar olsun [dil.token("AD", "merhaba", 1, 1), dil.dosya_sonu(1, 8)]
+imlec olsun dil.imlec(tokenlar)
+ad olsun dil.bekle(imlec, "AD", "", "ad bekleniyor")
+ast olsun dil.program([dil.yaprak("SelamKomutu", ad.deger.deger, ad.deger)])
+```
+
+The module is intentionally small and pure Orhun. Its helpers do not replace
+the production lexer or parser; they give Orhun programs a stable starting
+point for building language tools with explicit diagnostics.
 
 ## Orhun-Source Lexer Prototype
 

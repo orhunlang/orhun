@@ -1,0 +1,41 @@
+dil olsun dahil_et "orhun/dil.oh"
+
+işlev sayi_oku(imlec):
+    sonuc olsun dil.bekle(imlec, "SAYI", "", "sayi bekleniyor")
+    eğer sonuc.ok ise:
+        döndür dil.yaprak("Sayi", sonuc.deger.deger, sonuc.deger)
+    döndür dil.dugum("Hata", sonuc.hata, [], 0, 0)
+
+tokenlar olsun [
+    dil.token("SAYI", "2", 1, 1),
+    dil.token("ARTI", "+", 1, 3),
+    dil.token("SAYI", "3", 1, 5),
+    dil.dosya_sonu(1, 6),
+]
+
+imlec olsun dil.imlec(tokenlar)
+sol olsun sayi_oku(imlec)
+arti olsun dil.bekle(imlec, "ARTI", "+", "arti bekleniyor")
+sag olsun sayi_oku(imlec)
+ast olsun dil.program([dil.dugum("Topla", arti.deger.deger, [sol, sag], 1, 3)])
+
+yazdır dil.surum
+yazdır dil.token_mi(tokenlar[0])
+yazdır metin.birlestir(dil.token_turleri(tokenlar), "|")
+yazdır imlec.konum
+yazdır dil.simdiki(imlec).tur
+yazdır dil.bitti_mi(imlec)
+yazdır dil.dugum_sayisi(ast)
+yazdır metin.birlestir(dil.dugum_turleri(ast.cocuklar), "|")
+yazdır ast.cocuklar[0].deger
+yazdır ast.cocuklar[0].cocuklar[0].deger
+yazdır ast.cocuklar[0].cocuklar[1].deger
+yazdır dil.hata_sayisi(imlec)
+yazdır json.yaz(dil.ozet(imlec))
+
+hatalar olsun dil.imlec([dil.token("ARTI", "+", 1, 1), dil.dosya_sonu(1, 2)])
+eksik olsun dil.bekle(hatalar, "SAYI", "", "sayi bekleniyor")
+yazdır eksik.ok
+yazdır dil.hata_sayisi(hatalar)
+yazdır hatalar.hatalar[0].kod
+yazdır hatalar.hatalar[0].mesaj
