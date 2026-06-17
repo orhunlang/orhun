@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.12.0"
+surum olsun "0.13.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -158,6 +158,18 @@ işlev sinif_ebeveyni(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev her_degiskeni(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum + 1)
+    eğer token.tur eşit "KIMLIK" ise:
+        döndür token.deger
+    döndür ""
+
+işlev her_kaynak_baslangici(tokenlar, konum):
+    icinde_konum olsun deger_konumu(tokenlar, konum + 1, "içinde")
+    eğer icinde_konum küçük 0 ise:
+        döndür -1
+    döndür icinde_konum + 1
+
 işlev baslik_kutuphanesi(tokenlar, konum):
     i olsun konum + 1
     sürece i küçük uzunluk(tokenlar):
@@ -285,10 +297,13 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
         sonuc["kosul_ozeti"] = ifade_ozeti
     eğer tur eşit "Tekrarla" ise:
         sonuc["kac_kez_ozeti"] = ifade_ozeti
+    eğer tur eşit "HerDongu" ise:
+        sonuc["degisken"] = her_degiskeni(tokenlar, konum)
+        sonuc["kaynak_ozeti"] = ifade_ozeti
     döndür sonuc
 
 işlev blok_tasiyan_komut_mu(tur):
-    döndür tur eşit "Eger" veya tur eşit "Tekrarla" veya tur eşit "Surece" veya tur eşit "IslevTanim" veya tur eşit "SinifTanim" veya tur eşit "DenemeYakala"
+    döndür tur eşit "Eger" veya tur eşit "Tekrarla" veya tur eşit "Surece" veya tur eşit "HerDongu" veya tur eşit "IslevTanim" veya tur eşit "SinifTanim" veya tur eşit "DenemeYakala"
 
 işlev komut_dugumu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
@@ -413,6 +428,8 @@ işlev anahtar_komut_turu(deger):
         döndür "Eger"
     eğer deger eşit "tekrarla" ise:
         döndür "Tekrarla"
+    eğer deger eşit "her" ise:
+        döndür "HerDongu"
     eğer deger eşit "sürece" ise:
         döndür "Surece"
     eğer deger eşit "işlev" ise:
@@ -1341,6 +1358,13 @@ işlev komut_ifade_turu(tokenlar, konum):
         eğer son küçük 0 ise:
             son olsun satir_sonu
         döndür ifade_turu(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "her" ise:
+        baslangic olsun her_kaynak_baslangici(tokenlar, konum)
+        son olsun deger_konumu(tokenlar, konum + 1, ":")
+        eğer baslangic büyük 0 veya baslangic eşit 0 ise:
+            eğer son küçük 0 ise:
+                son olsun satir_sonu
+            döndür ifade_turu(tokenlar, baslangic, son)
     eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "benim" veya token.deger eşit "ust") ve satirda_atama_mi(tokenlar, konum) ise:
         baslangic olsun atama_ifade_baslangici(tokenlar, konum)
         eğer baslangic büyük 0 veya baslangic eşit 0 ise:
@@ -1385,6 +1409,13 @@ işlev komut_ifade_ozeti(tokenlar, konum):
         eğer son küçük 0 ise:
             son olsun satir_sonu
         döndür ifade_ozeti(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "her" ise:
+        baslangic olsun her_kaynak_baslangici(tokenlar, konum)
+        son olsun deger_konumu(tokenlar, konum + 1, ":")
+        eğer baslangic büyük 0 veya baslangic eşit 0 ise:
+            eğer son küçük 0 ise:
+                son olsun satir_sonu
+            döndür ifade_ozeti(tokenlar, baslangic, son)
     eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "benim" veya token.deger eşit "ust") ve satirda_atama_mi(tokenlar, konum) ise:
         baslangic olsun atama_ifade_baslangici(tokenlar, konum)
         eğer baslangic büyük 0 veya baslangic eşit 0 ise:
@@ -1804,6 +1835,14 @@ işlev baslik_hatasi(tokenlar, konum):
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ise:
         eğer değil satirda_anahtar_mi(tokenlar, konum, "kez") ise:
             döndür "'tekrarla' komutunda tekrar sayısından sonra 'kez' bekleniyor"
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "her" ise:
+        degisken_token olsun guvenli_token(tokenlar, konum + 1)
+        eğer degisken_token.tur eşit_değil "KIMLIK" ise:
+            döndür "'her' komutundan sonra değişken adı bekleniyor."
+        eğer değil satirda_anahtar_mi(tokenlar, konum, "içinde") ise:
+            döndür "'her' değişkeninden sonra 'içinde' bekleniyor."
+        eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
+            döndür "'her' kaynak ifadesinden sonra ':' bekleniyor."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "işlev" ise:
         ad_token olsun guvenli_token(tokenlar, konum + 1)
         eğer ad_token.tur eşit_değil "KIMLIK" ise:
@@ -1898,7 +1937,7 @@ işlev satir_ici_blok_konumu(tokenlar, konum):
         baslangic olsun deger_konumu(tokenlar, konum + 1, "ise")
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ise:
         baslangic olsun deger_konumu(tokenlar, konum + 1, "kez")
-    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "sürece" veya token.deger eşit "işlev" veya token.deger eşit "tip" veya token.deger eşit "deneme" veya token.deger eşit "yakala") ise:
+    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "sürece" veya token.deger eşit "her" veya token.deger eşit "işlev" veya token.deger eşit "tip" veya token.deger eşit "deneme" veya token.deger eşit "yakala") ise:
         baslangic olsun deger_konumu(tokenlar, konum + 1, ":")
 
     eğer baslangic küçük 0 ise:

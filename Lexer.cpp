@@ -446,7 +446,8 @@ bool Lexer::anahtarKelimeMi(const std::u32string &metin) const {
       U"sürece", U"eşit",      U"eşit_değil", U"büyük",  U"küçük",
       U"ve",     U"veya",      U"değil",      U"tip",    U"yeni",
       U"benim",  U"deneme",    U"yakala",     U"kır",    U"devam",
-      U"ust",    U"için",      U"içinde",     U"paralel", U"yap"};
+      U"ust",    U"her",       U"için",       U"içinde", U"paralel",
+      U"yap"};
   static const std::unordered_set<std::u32string> aliasAnahtarKelimeler = {
       U"dis_islev"};
 

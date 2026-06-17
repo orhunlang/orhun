@@ -4,7 +4,7 @@
 # ifade etmeye baslar. Kaynak konumlari bayt indeksleriyle, sutunlar ise
 # UTF-8 kod noktasi sayilariyla izlenir.
 
-surum olsun "0.3.0"
+surum olsun "0.4.0"
 satir_donusu olsun json.coz("\"\\r\"")
 
 anahtarlar olsun []
@@ -39,6 +39,7 @@ anahtarlar.ekle("yakala")
 anahtarlar.ekle("kır")
 anahtarlar.ekle("devam")
 anahtarlar.ekle("ust")
+anahtarlar.ekle("her")
 anahtarlar.ekle("için")
 anahtarlar.ekle("içinde")
 anahtarlar.ekle("paralel")

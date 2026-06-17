@@ -1009,6 +1009,7 @@ std::string opCodeAdi(OpCode op) {
   case OpCode::OP_DON: return "OP_DON";
   case OpCode::OP_NOP: return "OP_NOP";
   case OpCode::OP_GUVENLI_ALAN_AL: return "OP_GUVENLI_ALAN_AL";
+  case OpCode::OP_LISTE_DOGRULA: return "OP_LISTE_DOGRULA";
   }
   return "OP_BILINMEYEN";
 }
@@ -1252,7 +1253,7 @@ std::uint16_t jsonU16Bekle(const yerlesik::JsonDeger &deger,
 
 OpCode opCodeAdindanCoz(const std::string &ad) {
   for (int i = static_cast<int>(OpCode::OP_SABIT);
-       i <= static_cast<int>(OpCode::OP_GUVENLI_ALAN_AL); ++i) {
+       i <= static_cast<int>(OpCode::OP_LISTE_DOGRULA); ++i) {
     const OpCode op = static_cast<OpCode>(i);
     if (opCodeAdi(op) == ad) {
       return op;
@@ -1651,6 +1652,13 @@ std::string astDugumJson(const ASTNode *dugum) {
     astJsonBaslat(ss, dugum, "Surece");
     ss << ",\"kosul\":" << astDugumJson(surece->kosul())
        << ",\"govde\":" << astDugumJson(surece->govde()) << "}";
+    return ss.str();
+  }
+  if (const auto *her = dynamic_cast<const HerDonguNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "HerDongu");
+    ss << ",\"degisken\":\"" << jsonKacis(her->degiskenAdi())
+       << "\",\"kaynak\":" << astDugumJson(her->kaynak())
+       << ",\"govde\":" << astDugumJson(her->govde()) << "}";
     return ss.str();
   }
   if (const auto *islev = dynamic_cast<const IslevTanimNode *>(dugum)) {

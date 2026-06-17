@@ -44,9 +44,9 @@ const std::vector<std::string> &orhunAnahtarKelimeleri() {
       "dış_işlev", "dis_islev", "dahil_et", "sürece", "eşit",    "eşit_değil",
       "büyük",     "küçük",     "ve",       "veya",   "değil",   "tip",
       "yeni",      "benim",     "deneme",   "yakala", "kır",     "devam",
-      "ust",       "için",      "içinde",   "paralel", "yap",    "aralik",
-      "aralık",    "ilk",       "son",      "bos_mu", "boş_mu",  "dolu_mu",
-      "uzunluk"};
+      "ust",       "her",       "için",     "içinde", "paralel", "yap",
+      "aralik",    "aralık",    "ilk",      "son",    "bos_mu",  "boş_mu",
+      "dolu_mu",   "uzunluk"};
   return anahtarlar;
 }
 
@@ -196,6 +196,9 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
   if (kontrol(TokenTuru::ANAHTAR_KELIME, "tekrarla")) {
     return parseTekrarla();
   }
+  if (kontrol(TokenTuru::ANAHTAR_KELIME, "her")) {
+    return parseHerDongu();
+  }
   if (kontrol(TokenTuru::ANAHTAR_KELIME, "sürece")) {
     const OrhunToken token = tuket(TokenTuru::ANAHTAR_KELIME, "sürece",
                                    "'sürece' komutu bekleniyor.");
@@ -327,6 +330,25 @@ std::unique_ptr<ASTNode> Parser::parseTekrarla() {
 
   return std::make_unique<TekrarlaNode>(
       std::move(kacKez), parseBlokVeyaTekKomut("tekrarla", false), token.satir);
+}
+
+std::unique_ptr<ASTNode> Parser::parseHerDongu() {
+  const OrhunToken token =
+      tuket(TokenTuru::ANAHTAR_KELIME, "her", "'her' komutu bekleniyor.");
+  const OrhunToken degisken =
+      tuket(TokenTuru::KIMLIK, "'her' komutundan sonra değişken adı bekleniyor.");
+  tuket(TokenTuru::ANAHTAR_KELIME, "içinde",
+        "'her' değişkeninden sonra 'içinde' bekleniyor.");
+  if (kontrol(TokenTuru::YENI_SATIR) || kontrol(TokenTuru::DOSYA_SONU)) {
+    syntaxError(bak(), "'içinde' ifadesinden sonra liste ifadesi bekleniyor.");
+  }
+
+  std::unique_ptr<ASTNode> kaynak = parseIfade();
+  tuket(TokenTuru::ISLEM, ":", "'her' kaynak ifadesinden sonra ':' bekleniyor.");
+
+  return std::make_unique<HerDonguNode>(
+      degisken.deger, std::move(kaynak), parseBlokVeyaTekKomut("her", false),
+      token.satir);
 }
 
 std::unique_ptr<ASTNode> Parser::parseIslevTanim() {

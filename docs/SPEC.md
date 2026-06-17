@@ -40,7 +40,7 @@ yazdır ad
 Current Turkish keywords:
 
 ```text
-yazdır olsun eğer ise değilse doğru yanlış tekrarla kez sor
+yazdır olsun eğer ise değilse doğru yanlış tekrarla kez sor her
 işlev dış_işlev döndür dahil_et sürece eşit eşit_değil büyük küçük
 ve veya değil tip yeni benim deneme yakala kır devam ust için içinde
 paralel yap
@@ -222,6 +222,18 @@ sürece i küçük 3:
     yazdır i
     i olsun i + 1
 ```
+
+### For Each
+
+```orhun
+meyveler olsun ["elma", "armut", "kiraz"]
+her meyve içinde meyveler:
+    yaz meyve
+```
+
+`her <ad> içinde <liste>:` iterates over list values. The iterable expression is
+evaluated once before the loop starts. The loop variable is bound for each
+iteration, and `kır` / `devam` work against the nearest loop.
 
 ### Loop Control
 
@@ -643,13 +655,14 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 153 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 156 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,
 parameter/default counts, external-function type counts, includes,
 and try/catch error variables. Control-flow metadata covers `eğer`/`sürece`
-condition summaries and `tekrarla` count summaries. Expression metadata covers
+condition summaries, `tekrarla` count summaries, and `her ... içinde ...`
+loop variable/source summaries. Expression metadata covers
 anonymous function parameter/default counts, parameters/defaults,
 inline anonymous function body summaries,
 list-comprehension variables and condition presence, list/dictionary item
@@ -673,8 +686,9 @@ bytecode shape exposed by C++ `baytkod --json`.
 The initial supported subset contains number, string, and boolean constants,
 global identifier reads and assignments, basic binary and unary operations,
 list and dictionary literals, simple global function calls, index access,
-field and safe-field reads, `eğer/değilse`, basic `sürece` loops, and `yazdır`.
-Counted `tekrarla ... kez` loops are also covered by compiler parity.
+field and safe-field reads, `eğer/değilse`, basic `sürece` loops, `her ... içinde ...`
+loops, and `yazdır`. Counted `tekrarla ... kez` loops are also covered by
+compiler parity.
 Functions with required/default parameters and local assignments, explicit/implicit
 returns, and function-creation/local-name metadata are covered by the initial
 function subset. Nested named functions and returned functions are also covered.

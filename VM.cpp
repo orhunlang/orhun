@@ -2443,7 +2443,8 @@ void VM::calistir(const BytecodeChunk &chunk) {
                                    &&CASE_OP_TRY_BITIR,
                                    &&CASE_OP_DON,
                                    &&CASE_OP_NOP,
-                                   &&CASE_OP_GUVENLI_ALAN_AL};
+                                   &&CASE_OP_GUVENLI_ALAN_AL,
+                                   &&CASE_OP_LISTE_DOGRULA};
 #define CASE(name) CASE_##name:
 #define BREAK DISPATCH()
 #define DISPATCH()                                                             \
@@ -2715,6 +2716,14 @@ void VM::calistir(const BytecodeChunk &chunk) {
         static_cast<ObjList *>(hedef.as.nesne)
             ->ogeler.reserve(static_cast<std::size_t>(kapasiteD));
         yiginPush(Value::bos());
+        BREAK;
+      }
+      CASE(OP_LISTE_DOGRULA) {
+        const Value hedef = yiginPop();
+        if (!objTipiMi(hedef, ObjType::LIST)) {
+          calismaHatasi(
+              "'her' dongusunde 'icinde' kaynagi liste olmalidir.");
+        }
         BREAK;
       }
       CASE(OP_SOZLUK_OLUSTUR) {

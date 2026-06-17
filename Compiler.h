@@ -30,6 +30,7 @@ private:
   void egerDerle(const EgerNode *dugum);
   void sureceDerle(const SureceNode *dugum);
   void tekrarlaDerle(const TekrarlaNode *dugum);
+  void herDonguDerle(const HerDonguNode *dugum);
   void kirDerle(const KirNode *dugum);
   void devamDerle(const DevamNode *dugum);
   void denemeYakalaDerle(const DenemeYakalaNode *dugum);

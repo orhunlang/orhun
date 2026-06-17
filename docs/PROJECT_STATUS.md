@@ -112,6 +112,9 @@ These percentages are planning estimates, not promises.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.
+- Beginner-friendly `her ... içinde ...` list loops with interpreter, VM,
+  parser, Orhun-parser, and Orhun-compiler parity, including `kır` / `devam`
+  loop control.
 - Multiline list and dictionary literals with optional trailing commas,
   including matching Orhun-written parser/compiler parity.
 - Multiline function, method, and constructor calls with optional trailing

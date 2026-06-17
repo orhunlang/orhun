@@ -182,6 +182,8 @@ std::string dugumTipiAdi(const ASTNode *dugum) {
     return "SureceNode";
   if (dynamic_cast<const TekrarlaNode *>(dugum) != nullptr)
     return "TekrarlaNode";
+  if (dynamic_cast<const HerDonguNode *>(dugum) != nullptr)
+    return "HerDonguNode";
   if (dynamic_cast<const IslevTanimNode *>(dugum) != nullptr)
     return "IslevTanimNode";
   if (dynamic_cast<const SinifTanimNode *>(dugum) != nullptr)
@@ -274,6 +276,10 @@ void Compiler::komutDerle(const ASTNode *dugum) {
   }
   if (const auto *tekrarla = dynamic_cast<const TekrarlaNode *>(dugum)) {
     tekrarlaDerle(tekrarla);
+    return;
+  }
+  if (const auto *her = dynamic_cast<const HerDonguNode *>(dugum)) {
+    herDonguDerle(her);
     return;
   }
   if (const auto *kir = dynamic_cast<const KirNode *>(dugum)) {
@@ -1145,6 +1151,68 @@ void Compiler::tekrarlaDerle(const TekrarlaNode *dugum) {
   }
   opcodeYaz(OpCode::OP_POP, dugum->satir()); // sayac
   (void)breakHedefi;
+  loopStack_.pop_back();
+}
+
+void Compiler::herDonguDerle(const HerDonguNode *dugum) {
+  const std::string kaynakAd = geciciAdUret("__vm_her_kaynak");
+  const std::string indeksAd = geciciAdUret("__vm_her_indeks");
+  const std::size_t satir = dugum->satir();
+
+  ifadeDerle(dugum->kaynak());
+  atamaHedefiYaz(kaynakAd, satir, true);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  degiskenYukle(kaynakAd, satir);
+  opcodeYaz(OpCode::OP_LISTE_DOGRULA, satir);
+
+  sabitYaz(SabitDeger(0.0), satir);
+  atamaHedefiYaz(indeksAd, satir, true);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  const std::size_t loopKontrol = chunk_.kod.size();
+  Loop loop;
+  loop.loopStart = loopKontrol;
+  loop.continueDest = 0;
+  loop.continueHazir = false;
+  loopStack_.push_back(loop);
+
+  degiskenYukle(indeksAd, satir);
+  degiskenYukle(kaynakAd, satir);
+  opcodeYaz(OpCode::OP_UZUNLUK, satir);
+  opcodeYaz(OpCode::OP_KUCUK, satir);
+  const std::size_t cikisAtlamasi = atlaYaz(OpCode::OP_ATLA_EGER_YANLIS, satir);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  degiskenYukle(kaynakAd, satir);
+  degiskenYukle(indeksAd, satir);
+  opcodeYaz(OpCode::OP_INDEKS_AL, satir);
+  atamaHedefiYaz(dugum->degiskenAdi(), satir, true);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  blokDerle(dugum->govde());
+
+  Loop &aktifLoop = loopStack_.back();
+  aktifLoop.continueDest = chunk_.kod.size();
+  aktifLoop.continueHazir = true;
+  for (const std::size_t devamAtlamasi : aktifLoop.continueJumps) {
+    atlaYamala(devamAtlamasi);
+  }
+  aktifLoop.continueJumps.clear();
+
+  degiskenYukle(indeksAd, satir);
+  sabitYaz(SabitDeger(1.0), satir);
+  opcodeYaz(OpCode::OP_TOPLA, satir);
+  atamaHedefiYaz(indeksAd, satir, false);
+  opcodeYaz(OpCode::OP_POP, satir);
+  donguYaz(loopKontrol, satir);
+
+  atlaYamala(cikisAtlamasi);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  for (const std::size_t kirAtlamasi : aktifLoop.breakJumps) {
+    atlaYamala(kirAtlamasi);
+  }
   loopStack_.pop_back();
 }
 

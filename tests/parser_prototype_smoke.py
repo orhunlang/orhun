@@ -241,6 +241,15 @@ def add_control_metadata(summary: dict, command: dict, source_name: str) -> None
     if summary.get("tur") == "Tekrarla":
         expression = command.get("kac_kez") or command.get("kac_kez_ozeti")
         summary["kac_kez_ozeti"] = expression_metadata_summary(expression, source_name)
+    if summary.get("tur") == "HerDongu":
+        variable = command.get("degisken")
+        require(
+            isinstance(variable, str) and variable,
+            f"{source_name} for-each loop missing variable: {command}",
+        )
+        expression = command.get("kaynak") or command.get("kaynak_ozeti")
+        summary["degisken"] = variable
+        summary["kaynak_ozeti"] = expression_metadata_summary(expression, source_name)
 
 
 def add_definition_metadata(summary: dict, command: dict, source_name: str) -> None:
@@ -413,7 +422,7 @@ def metadata_bool(
 
 
 def cxx_command_expression_summary(command: dict) -> dict:
-    for key in ("ifade", "kosul", "kac_kez"):
+    for key in ("ifade", "kosul", "kac_kez", "kaynak"):
         expression = command.get(key)
         if isinstance(expression, dict):
             return cxx_expression_summary(expression)

@@ -50,5 +50,6 @@ enum class OpCode : std::uint8_t {
   OP_TRY_BITIR,
   OP_DON,
   OP_NOP,
-  OP_GUVENLI_ALAN_AL
+  OP_GUVENLI_ALAN_AL,
+  OP_LISTE_DOGRULA
 };

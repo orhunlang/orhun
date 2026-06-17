@@ -1,14 +1,19 @@
 # For-in dongusu testi (yeni satirda bloklama)
 meyveler olsun ["elma", "armut", "kiraz"]
-sayac olsun 0
-sürece sayac küçük uzunluk(meyveler):
-    yazdır meyveler[sayac]
-    sayac = sayac + 1
+her meyve içinde meyveler:
+    yazdır meyve
 
 toplam olsun 0
 sayilar olsun [10, 20, 30]
-i olsun 0
-sürece i küçük uzunluk(sayilar):
-    toplam = toplam + sayilar[i]
-    i = i + 1
+her sayi içinde sayilar:
+    eğer sayi eşit 20 ise:
+        devam
+    toplam = toplam + sayi
 yazdır toplam
+
+sayac olsun 0
+her sayi içinde sayilar:
+    sayac = sayac + 1
+    eğer sayac eşit 2 ise:
+        kır
+yazdır sayac

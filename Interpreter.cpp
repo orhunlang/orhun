@@ -3577,6 +3577,11 @@ void Interpreter::calistir(const ASTNode *dugum) {
     return;
   }
 
+  if (const auto *her = dynamic_cast<const HerDonguNode *>(dugum)) {
+    calistirHerDongu(her);
+    return;
+  }
+
   if (const auto *islev = dynamic_cast<const IslevTanimNode *>(dugum)) {
     calistirIslevTanim(islev);
     return;
@@ -3724,6 +3729,45 @@ void Interpreter::calistirSurece(const SureceNode *dugum) {
   try {
     while (dogruMu(ifadeHesapla(dugum->kosul()))) {
       yerelKapsamYigini_.push_back(std::make_shared<DegiskenTablosu>());
+      try {
+        calistirBlock(dugum->govde());
+      } catch (const DevamSinyali &) {
+        yerelKapsamYigini_.pop_back();
+        continue;
+      } catch (const KirSinyali &) {
+        yerelKapsamYigini_.pop_back();
+        break;
+      } catch (...) {
+        yerelKapsamYigini_.pop_back();
+        throw;
+      }
+      yerelKapsamYigini_.pop_back();
+    }
+  } catch (...) {
+    --donguDerinligi_;
+    throw;
+  }
+  --donguDerinligi_;
+}
+
+void Interpreter::calistirHerDongu(const HerDonguNode *dugum) {
+  const OrhunDegeri kaynak = ifadeHesapla(dugum->kaynak());
+  if (!std::holds_alternative<OrhunDegeri::ListeTipi>(kaynak.veri)) {
+    hataFirlat(dugum->satir(),
+               "'her' döngüsünde 'içinde' kaynağı liste olmalıdır.");
+  }
+
+  const auto &listePtr = std::get<OrhunDegeri::ListeTipi>(kaynak.veri);
+  if (!listePtr) {
+    hataFirlat(dugum->satir(),
+               "'her' döngüsünde boş liste referansı kullanılamaz.");
+  }
+
+  ++donguDerinligi_;
+  try {
+    for (const OrhunDegeri &oge : *listePtr) {
+      yerelKapsamYigini_.push_back(std::make_shared<DegiskenTablosu>());
+      aktifKapsam()[dugum->degiskenAdi()] = oge;
       try {
         calistirBlock(dugum->govde());
       } catch (const DevamSinyali &) {

@@ -33,6 +33,10 @@ PARITY_CASES = {
         "    yazdır x\n    x olsun x + 1\n"
     ),
     "repeat": 'tekrarla 2 kez:\n    yazdır "a"\n',
+    "for_each": (
+        "sayilar olsun [1, 2, 3]\nher sayi içinde sayilar:\n"
+        "    yazdır sayi\n"
+    ),
     "nested_if": (
         "x olsun doğru\neğer x ise:\n"
         "    eğer x ise:\n        yazdır \"ic\"\n"

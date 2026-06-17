@@ -39,6 +39,7 @@ For a more concrete progress snapshot and the current estimate toward `1.0` /
 - Bytecode compiler and strict VM mode
 - Functions, default arguments, lambdas, lists, dictionaries, classes, and
   inheritance
+- Beginner-friendly loops including `tekrarla`, `sürece`, and `her ... içinde`
 - Error handling with `deneme` / `yakala`
 - Safe access with `?.`
 - Async/task primitives and `paralel yap`
@@ -117,6 +118,14 @@ yaz aralik(5)
 yaz aralık(5, 1, -2)
 yaz ilk([3, 4])
 yaz son([3, 4])
+```
+
+Loop over a list:
+
+```orhun
+meyveler olsun ["elma", "armut", "kiraz"]
+her meyve içinde meyveler:
+    yaz meyve
 ```
 
 Strict VM mode:

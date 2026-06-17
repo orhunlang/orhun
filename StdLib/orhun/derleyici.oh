@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.26.0"
+surum olsun "0.27.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -810,6 +810,58 @@ işlev sinif_derle(durum, komut):
         i olsun i + 1
     döndür 0
 
+işlev her_dongu_derle(durum, komut):
+    kaynak_ad olsun gecici_ad_uret(durum, "__vm_her_kaynak")
+    indeks_ad olsun gecici_ad_uret(durum, "__vm_her_indeks")
+
+    ifade_derle(durum, komut.kaynak_ozeti)
+    ad_zorunlu_set_komutu_yaz(durum, kaynak_ad, komut.satir)
+    komut_ekle(durum, "OP_POP", komut.satir)
+
+    cagrilan_ad_yukle(durum, kaynak_ad, komut.satir)
+    komut_ekle(durum, "OP_LISTE_DOGRULA", komut.satir)
+
+    sabit_deger_yaz(durum, "sayi", 0, komut.satir)
+    ad_zorunlu_set_komutu_yaz(durum, indeks_ad, komut.satir)
+    komut_ekle(durum, "OP_POP", komut.satir)
+
+    dongu_baslangici olsun durum.ip
+    durum.donguler.ekle({"kir_atlamalari": [], "devam_atlamalari": [], "devam_hedefi": 0, "devam_hazir": yanlış})
+
+    cagrilan_ad_yukle(durum, indeks_ad, komut.satir)
+    cagrilan_ad_yukle(durum, kaynak_ad, komut.satir)
+    komut_ekle(durum, "OP_UZUNLUK", komut.satir)
+    komut_ekle(durum, "OP_KUCUK", komut.satir)
+    cikis_atlama olsun atlama_ekle(durum, "OP_ATLA_EGER_YANLIS", komut.satir)
+    komut_ekle(durum, "OP_POP", komut.satir)
+
+    cagrilan_ad_yukle(durum, kaynak_ad, komut.satir)
+    cagrilan_ad_yukle(durum, indeks_ad, komut.satir)
+    komut_ekle(durum, "OP_INDEKS_AL", komut.satir)
+    ad_zorunlu_set_komutu_yaz(durum, komut.degisken, komut.satir)
+    komut_ekle(durum, "OP_POP", komut.satir)
+
+    eğer uzunluk(komut.bloklar) büyük 0 ise:
+        blok_derle(durum, komut.bloklar[0])
+
+    aktif_dongu olsun son_dongu(durum)
+    aktif_dongu["devam_hedefi"] = durum.ip
+    aktif_dongu["devam_hazir"] = doğru
+    atlamalari_yamala(durum, aktif_dongu.devam_atlamalari)
+
+    cagrilan_ad_yukle(durum, indeks_ad, komut.satir)
+    sabit_deger_yaz(durum, "sayi", 1, komut.satir)
+    komut_ekle(durum, "OP_TOPLA", komut.satir)
+    ad_zorunlu_set_komutu_yaz(durum, indeks_ad, komut.satir)
+    komut_ekle(durum, "OP_POP", komut.satir)
+    geri_atla_ekle(durum, komut.satir, dongu_baslangici)
+
+    atlama_yamala(durum, cikis_atlama)
+    komut_ekle(durum, "OP_POP", komut.satir)
+    atlamalari_yamala(durum, aktif_dongu.kir_atlamalari)
+    dongu_cikar(durum)
+    döndür 0
+
 işlev komut_derle(durum, komut):
     eğer komut.tur eşit "Yazdir" ise:
         ifade_derle(durum, komut.ifade_ozeti)
@@ -1012,6 +1064,10 @@ işlev komut_derle(durum, komut):
         atlamalari_yamala(durum, aktif_dongu.kir_atlamalari)
         komut_ekle(durum, "OP_POP", komut.satir)
         dongu_cikar(durum)
+        döndür 0
+
+    eğer komut.tur eşit "HerDongu" ise:
+        her_dongu_derle(durum, komut)
         döndür 0
 
     eğer komut.tur eşit "Kir" ise:

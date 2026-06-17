@@ -1,0 +1,4 @@
+'her' dongusunde 'icinde' kaynagi liste olmalidir.
+
+Stack Trace:
+  [satir 1] <program>

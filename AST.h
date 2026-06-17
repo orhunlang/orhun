@@ -668,6 +668,38 @@ private:
   std::unique_ptr<BlockNode> govde_;
 };
 
+// her degisken icinde kaynak: ...
+class HerDonguNode final : public ASTNode {
+public:
+  HerDonguNode(std::string degiskenAdi, std::unique_ptr<ASTNode> kaynak,
+               std::unique_ptr<BlockNode> govde, std::size_t satir)
+      : ASTNode(satir), degiskenAdi_(std::move(degiskenAdi)),
+        kaynak_(std::move(kaynak)), govde_(std::move(govde)) {}
+
+  const std::string &degiskenAdi() const { return degiskenAdi_; }
+
+  const ASTNode *kaynak() const { return kaynak_.get(); }
+
+  const BlockNode *govde() const { return govde_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "HerDonguNode(" << degiskenAdi_ << ") [satır " << satir()
+          << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Kaynak:\n";
+    kaynak_->yazdir_agac(cikti, girinti + 4);
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Govde:\n";
+    govde_->yazdir_agac(cikti, girinti + 4);
+  }
+
+private:
+  std::string degiskenAdi_;
+  std::unique_ptr<ASTNode> kaynak_;
+  std::unique_ptr<BlockNode> govde_;
+};
+
 class IslevTanimNode final : public ASTNode {
 public:
   IslevTanimNode(std::string ad, std::vector<std::string> parametreler,

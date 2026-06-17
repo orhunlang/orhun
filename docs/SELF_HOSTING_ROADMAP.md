@@ -54,16 +54,17 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
-Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.3.0 ile `hata_sayisi`,
+Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.4.0 ile `hata_sayisi`,
 `token_sayisi` ve `tokenlar` payload'i ureten `ozetle` giris noktasini sagliyor. Lexer parity
 7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
 seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutun
-parity saglandi. Parser prototipi 153 basarili AST
+parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
+eklendi. Parser prototipi 156 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 `orhun/dil.oh` 0.1.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.12.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.13.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -71,7 +72,8 @@ sayilarini ve varsayilan arguman ozetlerini, islev/sinif/dis
 islev/dahil_et/deneme-yakala baslik metadatasini, dis islev tip sayisini,
 eger/surece kosul
 ozetlerini, sinif ebeveyn varligini, blok sayisini, blok satirlarini ve blok
-komut sayilarini, tekrarla sayi ozetlerini,
+komut sayilarini, tekrarla sayi ozetlerini, `her ... icinde ...` degisken ve
+kaynak ozetlerini,
 anonim islev parametre ve varsayilan arguman ozetlerini, inline anonim islev
 govde ifadesini, liste uretec degiskenini ve kosul varligini, sozluk
 anahtarlarini, liste/sozluk oge sayilarini, dilim erisim sinir varligini,
@@ -108,12 +110,12 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.26.0; sabitler, bicimlendirilmis metinler,
+hazirlandi. `orhun/derleyici.oh` 0.27.0; sabitler, bicimlendirilmis metinler,
 global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
 cagrilari, kisa devreli `ve`/`veya`, indeks/alan/guvenli alan okumalari,
 `eger/degilse`, basit `surece`
-ve `tekrarla` donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
+ve `tekrarla` donguleri, `her ... icinde ...` liste donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
 sabit havuzu parity'si uretiyor.
 Zorunlu/varsayilan parametreli islev tanimlari, yerel tanim/okuma/yazma, acik/ortuk donus ve
 `OP_ISLEV_OLUSTUR` local-ad metadata'si de ilk parity kapsaminda.
@@ -144,11 +146,11 @@ okuma/yazma ve `ust` metod cagrilari parity kapsamindadir. Metod metadata'si
 baglam argumanlarini ve varsayilan parametre ofsetlerini C++ ile ayni uretir.
 `paralel yap` adimlari yapisal parser IR'indan gorev plan sozluklerine
 indirgenir ve parity kapsamindadir.
-Compiler prototype smoke su anda 97 programda C++ bytecode ozetini birebir
+Compiler prototype smoke su anda 98 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 141
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 144
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis

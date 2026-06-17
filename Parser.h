@@ -30,6 +30,7 @@ private:
   std::unique_ptr<ASTNode> parseYazdir();
   std::unique_ptr<ASTNode> parseEger();
   std::unique_ptr<ASTNode> parseTekrarla();
+  std::unique_ptr<ASTNode> parseHerDongu();
   std::unique_ptr<ASTNode> parseIslevTanim();
   std::unique_ptr<ASTNode> parseDisIslevTanim();
   std::unique_ptr<ASTNode> parseSinifTanim();

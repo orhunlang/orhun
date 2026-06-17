@@ -1,4 +1,5 @@
 elma
 armut
 kiraz
-60
+40
+2

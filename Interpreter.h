@@ -187,6 +187,7 @@ private:
   void calistirEger(const EgerNode *dugum);
   void calistirTekrarla(const TekrarlaNode *dugum);
   void calistirSurece(const SureceNode *dugum);
+  void calistirHerDongu(const HerDonguNode *dugum);
   void calistirIslevTanim(const IslevTanimNode *dugum);
   void calistirDisIslevTanim(const DisIslevTanimNode *dugum);
   void calistirSinifTanim(const SinifTanimNode *dugum);
