@@ -59,7 +59,7 @@ Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.4.0 ile `hata_sayisi`,
 7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
 seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutun
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
-eklendi. Parser prototipi 157 basarili AST
+eklendi. Parser prototipi 158 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 `orhun/dil.oh` 0.1.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
@@ -150,7 +150,7 @@ Compiler prototype smoke su anda 98 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 145
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 146
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis
