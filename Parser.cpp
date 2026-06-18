@@ -50,6 +50,38 @@ const std::vector<std::string> &orhunAnahtarKelimeleri() {
   return anahtarlar;
 }
 
+bool satirdaUstSeviyeAtamaOperatoruVar(
+    const std::vector<OrhunToken> &tokenlar, std::size_t konum) {
+  int derinlik = 0;
+  for (std::size_t i = konum; i < tokenlar.size(); ++i) {
+    const OrhunToken &token = tokenlar[i];
+    if (token.tur == TokenTuru::YENI_SATIR ||
+        token.tur == TokenTuru::DOSYA_SONU) {
+      return false;
+    }
+
+    if (token.tur == TokenTuru::ISLEM) {
+      if (token.deger == "(" || token.deger == "[" || token.deger == "{") {
+        ++derinlik;
+      } else if (token.deger == ")" || token.deger == "]" ||
+                 token.deger == "}") {
+        if (derinlik > 0) {
+          --derinlik;
+        }
+      } else if (derinlik == 0 && token.deger == "=") {
+        return true;
+      }
+      continue;
+    }
+
+    if (derinlik == 0 && token.tur == TokenTuru::ANAHTAR_KELIME &&
+        token.deger == "olsun") {
+      return true;
+    }
+  }
+  return false;
+}
+
 std::vector<std::string>
 olasiOneriAdaylariniTopla(const std::vector<OrhunToken> &tokenlar) {
   std::vector<std::string> adaylar = orhunAnahtarKelimeleri();
@@ -148,8 +180,9 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
 
   // Genel atama: hedef olsun ifade
   // Hedef; kimlik, benim.alan, alan erişimi veya indeks erişimi olabilir.
-  if (kontrol(TokenTuru::KIMLIK) ||
-      kontrol(TokenTuru::ANAHTAR_KELIME, "benim")) {
+  if ((kontrol(TokenTuru::KIMLIK) ||
+       kontrol(TokenTuru::ANAHTAR_KELIME, "benim")) &&
+      satirdaUstSeviyeAtamaOperatoruVar(tokenlar_, konum_)) {
     const std::size_t kayit = konum_;
     std::unique_ptr<ASTNode> hedef = parsePostfix();
     bool bildirimMi = false;

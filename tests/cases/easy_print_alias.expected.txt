@@ -1,3 +1,4 @@
 Merhaba
 Dünya
+[1, 2, 3]
 değişken

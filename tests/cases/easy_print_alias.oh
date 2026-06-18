@@ -1,4 +1,5 @@
 yaz "Merhaba"
 yaz("Dünya")
+yaz [x için x içinde [1, 2, 3]]
 yaz olsun "değişken"
 yazdır yaz
