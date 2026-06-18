@@ -1,0 +1,10 @@
+# Tek satirli her dongusu testi
+sayilar olsun [1, 2, 3]
+her sayi içinde sayilar: yazdır sayi
+
+toplam olsun 0
+her sayi içinde sayilar: toplam = toplam + sayi
+yazdır toplam
+
+her harf içinde ["a", "b"]: yazdır harf
+her bos içinde []: yazdır "olmamalı"
