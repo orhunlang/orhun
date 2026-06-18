@@ -265,6 +265,7 @@ def main() -> int:
         "oku",
         "aralik",
         "aralık",
+        "her",
         "ilk",
         "son",
         "dolu_mu",

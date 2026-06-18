@@ -43,6 +43,14 @@
     ],
     "description": "Aralık listesiyle basit döngü oluştur"
   },
+  "Her Döngüsü": {
+    "prefix": "her",
+    "body": [
+      "her ${1:oge} içinde ${2:liste}:",
+      "    yaz ${1:oge}"
+    ],
+    "description": "Liste üzerinde her öğe için döngü oluştur"
+  },
   "Numaralandır": {
     "prefix": "numaralandir",
     "body": [

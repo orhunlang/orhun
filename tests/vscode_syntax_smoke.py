@@ -59,6 +59,7 @@ def main() -> int:
         "Eğer": "eger",
         "İşlev": "islev",
         "Aralık Döngüsü": "aralik",
+        "Her Döngüsü": "her",
         "Numaralandır": "numaralandir",
         "Eşleştir": "eslestir",
     }
@@ -72,6 +73,8 @@ def main() -> int:
     require("oku(" in "\n".join(snippets["Oku"]["body"]), "Oku snippet should call oku")
     require("aralik(" in "\n".join(snippets["Aralık Döngüsü"]["body"]),
             "Aralik snippet should call aralik")
+    require("her " in "\n".join(snippets["Her Döngüsü"]["body"]),
+            "Her snippet should use her loop syntax")
     require("koleksiyon.numaralandir(" in "\n".join(snippets["Numaralandır"]["body"]),
             "Numaralandir snippet should call koleksiyon.numaralandir")
     require("koleksiyon.eslestir(" in "\n".join(snippets["Eşleştir"]["body"]),

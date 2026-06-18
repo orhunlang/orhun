@@ -53,7 +53,7 @@
       "patterns": [
         {
           "name": "keyword.control.orhun",
-          "match": "\\b(eğer|ise|değilse|sürece|tekrarla|kez|deneme|yakala|kır|devam)\\b"
+          "match": "\\b(eğer|ise|değilse|sürece|tekrarla|kez|her|deneme|yakala|kır|devam)\\b"
         },
         {
           "name": "keyword.declaration.orhun",

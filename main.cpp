@@ -5004,6 +5004,7 @@ std::string lspTamamlamaSonucuJson() {
       {"tekrarla", 14, "Orhun anahtar kelimesi"},
       {"kez", 14, "Orhun anahtar kelimesi"},
       {"sürece", 14, "Orhun anahtar kelimesi"},
+      {"her", 14, "Orhun anahtar kelimesi"},
       {"işlev", 14, "Orhun anahtar kelimesi"},
       {"döndür", 14, "Orhun anahtar kelimesi"},
       {"tip", 14, "Orhun anahtar kelimesi"},
