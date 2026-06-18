@@ -8,7 +8,7 @@ Bu klasor Orhun dili icin temel VS Code entegrasyon taslagini icerir.
 - Temel sozdizimi renklendirme (anahtar kelime, yorum, metin, sayi)
 - Girinti tabanli dil icin temel editor ayarlari
 - Baslangic dostu snippet'lar (`yaz`, `oku`, `eger`, `islev`, `aralik`,
-  `numaralandir`, `eslestir`)
+  `her`, `numaralandir`, `eslestir`)
 
 ## Snippet'lar
 
@@ -19,6 +19,7 @@ Editor icinde bu kisaltmalar kullanilabilir:
 - `eger`: kosul blogu
 - `islev`: islev tanimi
 - `aralik`: basit aralik dongusu
+- `her`: liste uzerinde her oge icin dongu
 - `numaralandir`: koleksiyon yardimcisiyla sirali ciftler
 - `eslestir`: iki listeyi ciftler halinde eslestirme
 

@@ -9,7 +9,8 @@ def generate_random_orhun_code(length):
     # Orhun keywords and operators to increase chance of hitting parser logic
     keywords = ["yazdır", "olsun", "eğer", "ise", "değilse", "doğru", "yanlış", 
                 "tekrarla", "kez", "sor", "işlev", "döndür", "sürece", "tip", 
-                "yeni", "benim", "deneme", "yakala"]
+                "yeni", "benim", "deneme", "yakala", "kır", "devam", "ust",
+                "her", "için", "içinde", "paralel", "yap"]
     operators = ["+", "-", "*", "/", "=", "==", "!=", "<", ">", "(", ")", "{", "}", "[", "]", ",", ".", ":"]
     
     # Mix of random chars and keywords
@@ -32,21 +33,22 @@ def generate_random_orhun_code(length):
 def generate_nested_code(depth):
     # Generates deeply nested structures to test stack overflow
     code = ""
-    openers = ["(", "[", "{", "eğer ", "işlev f", "sürece "]
+    openers = ["(", "[", "{", "eğer ", "işlev f", "sürece ", "her x içinde [1, 2, 3]"]
     closers = {
         "(": ")", 
         "[": "]", 
         "{": "}", 
         "eğer ": ":\n    ", # if requires indentation or block
         "işlev f": "():\n    ", 
-        "sürece ": " 1:\n    "
+        "sürece ": " 1:\n    ",
+        "her x içinde [1, 2, 3]": ":\n    "
     }
     
     structure = []
     
     for _ in range(depth):
         op = random.choice(openers)
-        if op in ["eğer ", "işlev f", "sürece "]:
+        if op in ["eğer ", "işlev f", "sürece ", "her x içinde [1, 2, 3]"]:
             code += op + closers[op]
         else:
             code += op

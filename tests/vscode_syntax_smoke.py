@@ -36,6 +36,11 @@ def main() -> int:
     builtins = grammar.get("repository", {}).get("builtins", {}).get("patterns", [])
     require(builtins, "VS Code grammar missing builtins patterns")
 
+    keyword_patterns = grammar.get("repository", {}).get("keywords", {}).get("patterns", [])
+    keyword_combined = "\n".join(str(pattern.get("match", "")) for pattern in keyword_patterns)
+    require(re.search(r"(?<![A-Za-z_])her(?![A-Za-z_])", keyword_combined),
+            "VS Code keyword pattern missing her")
+
     combined = "\n".join(str(pattern.get("match", "")) for pattern in builtins)
     for word in (
         "yaz",

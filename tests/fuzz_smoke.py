@@ -52,8 +52,10 @@ def rand_basic_line() -> str:
         return f"yazdır {rand_expr()}"
     if r < 0.80:
         return f"eğer {rand_expr()} eşit {rand_expr()} ise: yazdır {rand_expr()}"
-    if r < 0.90:
+    if r < 0.88:
         return f"tekrarla {random.randint(0, 5)} kez yazdır {rand_expr()}"
+    if r < 0.96:
+        return f"her {random.choice(IDS)} içinde [1, 2, 3]: yazdır {rand_expr()}"
     # Bilinçli bozuk satır: çökme olmamalı, hata mesajı üretmeli.
     return f"{random.choice(IDS)} olsun"
 
@@ -78,13 +80,18 @@ def rand_advanced_line() -> str:
         return f"deneme: yazdır {rand_expr()} yakala e: yazdır e"
     if r < 0.80:
         return f"yazdır json.yaz({rand_expr()})"
-    if r < 0.90:
+    if r < 0.88:
+        item = random.choice(IDS)
+        return f"yazdır [{item} * {item} için {item} içinde [1, 2, 3]]"
+    if r < 0.96:
+        return f"her {random.choice(IDS)} içinde [1, 2, 3]: yazdır {rand_expr()}"
+    if r < 0.98:
         return f"yazdır regex.eslesir(\"abc123\", \"[a-z]+\")"
     return rand_basic_line()
 
 
 def rand_template_program() -> str:
-    secim = random.randint(0, 5)
+    secim = random.randint(0, 6)
     if secim == 0:
         return (
             "tip Kutu:\n"
@@ -123,6 +130,15 @@ def rand_template_program() -> str:
             "v olsun {\"ad\": \"orhun\", \"sayi\": 7}\n"
             "yazdır json.guzel_yaz(v)\n"
             "yazdır metin.uzunluk(\"abc\")\n"
+        )
+    if secim == 5:
+        return (
+            "sayilar olsun [1, 2, 3, 4]\n"
+            "toplam olsun 0\n"
+            "her sayi içinde sayilar:\n"
+            "    toplam olsun toplam + sayi\n"
+            "yazdır toplam\n"
+            "yazdır [x * x için x içinde sayilar eğer x büyük 2]\n"
         )
     return (
         "işlev dene(k olsun 3):\n"
