@@ -3,62 +3,46 @@
 surum olsun "0.4.0"
 
 işlev icerir(liste, aranan):
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        eğer liste[i] eşit aranan ise:
+    her oge içinde liste:
+        eğer oge eşit aranan ise:
             döndür doğru
-        i olsun i + 1
     döndür yanlış
 
 işlev say(liste, aranan):
     adet olsun 0
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        eğer liste[i] eşit aranan ise:
+    her oge içinde liste:
+        eğer oge eşit aranan ise:
             adet olsun adet + 1
-        i olsun i + 1
     döndür adet
 
 işlev bul(liste, kosul, yedek):
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        oge olsun liste[i]
+    her oge içinde liste:
         eğer kosul(oge) ise:
             döndür oge
-        i olsun i + 1
     döndür yedek
 
 işlev hepsi(liste, kosul):
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        eğer kosul(liste[i]) ise:
-            i olsun i + 1
-        değilse:
+    her oge içinde liste:
+        eğer değil kosul(oge) ise:
             döndür yanlış
     döndür doğru
 
 işlev herhangi(liste, kosul):
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        eğer kosul(liste[i]) ise:
+    her oge içinde liste:
+        eğer kosul(oge) ise:
             döndür doğru
-        i olsun i + 1
     döndür yanlış
 
 işlev katla(liste, baslangic, birlestirici):
     sonuc olsun baslangic
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        sonuc olsun birlestirici(sonuc, liste[i])
-        i olsun i + 1
+    her oge içinde liste:
+        sonuc olsun birlestirici(sonuc, oge)
     döndür sonuc
 
 işlev toplam(liste, baslangic olsun 0):
     sonuc olsun baslangic
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        sonuc olsun sonuc + liste[i]
-        i olsun i + 1
+    her oge içinde liste:
+        sonuc olsun sonuc + oge
     döndür sonuc
 
 işlev en_kucuk(liste, yedek):
@@ -91,20 +75,15 @@ işlev en_büyük(liste, yedek):
 
 işlev haritala(liste, donusturucu):
     sonuc olsun []
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        sonuc.ekle(donusturucu(liste[i]))
-        i olsun i + 1
+    her oge içinde liste:
+        sonuc.ekle(donusturucu(oge))
     döndür sonuc
 
 işlev filtrele(liste, kosul):
     sonuc olsun []
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        oge olsun liste[i]
+    her oge içinde liste:
         eğer kosul(oge) ise:
             sonuc.ekle(oge)
-        i olsun i + 1
     döndür sonuc
 
 işlev ters(liste):
@@ -117,24 +96,17 @@ işlev ters(liste):
 
 işlev benzersiz(liste):
     sonuc olsun []
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        oge olsun liste[i]
-        eğer icerir(sonuc, oge) ise:
-            i olsun i + 1
-        değilse:
+    her oge içinde liste:
+        eğer değil icerir(sonuc, oge) ise:
             sonuc.ekle(oge)
-            i olsun i + 1
     döndür sonuc
 
 işlev numaralandir(liste, baslangic olsun 0):
     sonuc olsun []
-    i olsun 0
     sira olsun baslangic
-    sürece i küçük uzunluk(liste):
-        sonuc.ekle([sira, liste[i]])
+    her oge içinde liste:
+        sonuc.ekle([sira, oge])
         sira olsun sira + 1
-        i olsun i + 1
     döndür sonuc
 
 işlev eslestir(sol, sag):
