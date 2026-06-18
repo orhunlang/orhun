@@ -2721,8 +2721,7 @@ void VM::calistir(const BytecodeChunk &chunk) {
       CASE(OP_LISTE_DOGRULA) {
         const Value hedef = yiginPop();
         if (!objTipiMi(hedef, ObjType::LIST)) {
-          calismaHatasi(
-              "'her' dongusunde 'icinde' kaynagi liste olmalidir.");
+          calismaHatasi("Liste kaynagi liste olmalidir.");
         }
         BREAK;
       }

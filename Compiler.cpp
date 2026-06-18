@@ -871,6 +871,9 @@ void Compiler::listeUretecDerle(const ListeUretecNode *dugum) {
   degiskenYaz(kaynakAd, satir);
   opcodeYaz(OpCode::OP_POP, satir);
 
+  degiskenYukle(kaynakAd, satir);
+  opcodeYaz(OpCode::OP_LISTE_DOGRULA, satir);
+
   if (dugum->kosul() == nullptr) {
     // Hot-path: filtre yoksa sonuc listesini kaynak uzunluğuna göre reserve et.
     degiskenYukle(sonucAd, satir);

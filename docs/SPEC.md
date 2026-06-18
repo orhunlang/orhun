@@ -381,6 +381,9 @@ List comprehensions are supported.
 sonuç olsun [x * 2 için x içinde [1, 2, 3]]
 ```
 
+The source after `içinde` must evaluate to a list. Interpreter and VM paths
+reject non-list sources with the same runtime contract.
+
 Collection helpers:
 
 - `ilk(liste, [yedek])` returns the first item. Empty lists require `yedek`.
@@ -655,7 +658,7 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 156 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 157 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,

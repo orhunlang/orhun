@@ -414,6 +414,9 @@ işlev liste_uretec_derle(durum, ifade):
     ad_zorunlu_set_komutu_yaz(durum, kaynak_ad, ifade.satir)
     komut_ekle(durum, "OP_POP", ifade.satir)
 
+    cagrilan_ad_yukle(durum, kaynak_ad, ifade.satir)
+    komut_ekle(durum, "OP_LISTE_DOGRULA", ifade.satir)
+
     eğer değil ifade.kosul_var ise:
         cagrilan_ad_yukle(durum, sonuc_ad, ifade.satir)
         cagrilan_ad_yukle(durum, kaynak_ad, ifade.satir)
