@@ -5,3 +5,8 @@ yaz sayilar
 yaz ilk(sayilar)
 yaz son(sayilar)
 yaz dolu_mu(sayilar)
+
+her sayi içinde sayilar:
+    yaz sayi
+
+yaz [x * x için x içinde sayilar]

@@ -59,7 +59,31 @@ yaz dolu_mu(sayilar)
 
 `aralik(1, 6)` sonucu `[1, 2, 3, 4, 5]` olur.
 
-## 6. Islev Yaz
+## 6. Listeyi Gez
+
+```orhun
+meyveler olsun ["elma", "armut", "kiraz"]
+
+her meyve içinde meyveler:
+    yaz meyve
+```
+
+`her ... içinde ...`, listedeki her oge icin govdeyi calistirir.
+
+## 7. Liste Uret
+
+```orhun
+sayilar olsun [1, 2, 3]
+kareler olsun [x * x için x içinde sayilar]
+
+yaz kareler
+yaz [x için x içinde sayilar]
+```
+
+Liste ureticileri kisa donusumlar icin kullanilir. `içinde` sonrasindaki
+kaynak liste olmalidir.
+
+## 8. Islev Yaz
 
 ```orhun
 işlev selam(ad olsun "dünya"):
@@ -71,7 +95,7 @@ yaz selam("Orhun")
 
 Varsayilan argumanlar desteklenir.
 
-## 7. Koleksiyon Yardimcilari
+## 9. Koleksiyon Yardimcilari
 
 ```orhun
 koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
@@ -83,7 +107,7 @@ yaz koleksiyon.eslestir([1, 2], [7, 8, 9])
 `numaralandir`, Python'daki `enumerate` fikrine benzer. `eslestir`, iki listeyi
 kisa olan liste bitene kadar ciftler.
 
-## 8. Dosyayi Calistir
+## 10. Dosyayi Calistir
 
 Bir dosya olustur:
 
@@ -103,7 +127,7 @@ Gelisim sirasinda kati VM yolunu da deneyebilirsin:
 orhun vm-kati ilk.oh
 ```
 
-## 9. Program Argumanlarini Oku
+## 11. Program Argumanlarini Oku
 
 ```orhun
 yaz sistem.argumanlar

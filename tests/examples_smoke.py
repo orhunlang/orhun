@@ -49,7 +49,14 @@ def main() -> int:
     kolay = (repo / "examples" / "kolay_baslangic.oh").read_text(
         encoding="utf-8"
     )
-    for snippet in ("aralik(1, 6)", "ilk(sayilar)", "son(sayilar)", "dolu_mu"):
+    for snippet in (
+        "aralik(1, 6)",
+        "ilk(sayilar)",
+        "son(sayilar)",
+        "dolu_mu",
+        "her sayi içinde sayilar:",
+        "[x * x için x içinde sayilar]",
+    ):
         require(snippet in kolay, f"kolay_baslangic should include {snippet}")
 
     print(f"Examples smoke passed ({len(examples)} examples).")
