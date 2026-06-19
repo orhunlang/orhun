@@ -32,11 +32,9 @@ işlev bagimliliklar(manifest):
 
 işlev bagimli_mi(manifest, paket_adi):
     liste olsun bagimliliklar(manifest)
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        eğer liste[i] eşit paket_adi ise:
+    her bagimlilik içinde liste:
+        eğer bagimlilik eşit paket_adi ise:
             döndür doğru
-        i olsun i + 1
     döndür yanlış
 
 işlev ozet(manifest):
@@ -154,12 +152,9 @@ işlev ad_gecerli_mi(paket_adi):
         döndür yanlış
 
 işlev ilk_gecersiz_bagimlilik(bagimlilik_listesi):
-    i olsun 0
-    sürece i küçük uzunluk(bagimlilik_listesi):
-        eğer ad_gecerli_mi(bagimlilik_listesi[i]) ise:
-            i olsun i + 1
-        değilse:
-            döndür metne_cevir(bagimlilik_listesi[i])
+    her bagimlilik içinde bagimlilik_listesi:
+        eğer değil ad_gecerli_mi(bagimlilik) ise:
+            döndür metne_cevir(bagimlilik)
     döndür ""
 
 işlev dogrula(manifest):
