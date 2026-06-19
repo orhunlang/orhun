@@ -183,6 +183,8 @@
   prototipleri yazmak için ortak kayıt biçimleri sağlar.
 - İlk yüzey; token oluşturma, dosya-sonu/hata token'ı, token imleci,
   `bekle`/`esles` tüketimi, tanı listesi ve AST düğümü kurucularını içerir.
+- `0.2.0`, token değer özeti, imleçte hata var/yok kontrolü ve tanı mesajı
+  listesi yardımlarını ekler.
 - Bu modül runtime davranışını değiştirmez; yeni kod için ek bir standart
   kütüphane yardımcısıdır.
 

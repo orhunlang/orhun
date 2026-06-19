@@ -11,3 +11,10 @@ ast olsun dil.program([dil.yaprak("SelamKomutu", ad.deger.deger, ad.deger)])
 
 yazdır ast.tur
 yazdır ast.cocuklar[0].tur + ":" + ast.cocuklar[0].deger
+yazdır dil.token_degerleri(tokenlar)
+yazdır dil.hata_var_mi(imlec)
+
+hatalar olsun dil.imlec([dil.token("ARTI", "+", 1, 1), dil.dosya_sonu(1, 2)])
+dil.bekle(hatalar, "AD", "", "ad bekleniyor")
+yazdır dil.hata_var_mi(hatalar)
+yazdır dil.tani_mesajlari(hatalar)

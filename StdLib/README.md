@@ -38,6 +38,8 @@ tokenlar olsun [dil.token("AD", "merhaba", 1, 1), dil.dosya_sonu(1, 8)]
 imlec olsun dil.imlec(tokenlar)
 ad olsun dil.bekle(imlec, "AD", "", "ad bekleniyor")
 yazdır dil.program([dil.yaprak("Selam", ad.deger.deger, ad.deger)]).tur
+yazdır dil.token_degerleri(tokenlar)
+yazdır dil.hata_var_mi(imlec)
 ```
 
 Module lookup checks the requested path first, then searches the standard

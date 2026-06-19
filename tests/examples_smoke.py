@@ -59,6 +59,16 @@ def main() -> int:
     ):
         require(snippet in kolay, f"kolay_baslangic should include {snippet}")
 
+    stdlib_dil = (repo / "examples" / "stdlib_dil.oh").read_text(
+        encoding="utf-8"
+    )
+    for snippet in (
+        "dil.token_degerleri(tokenlar)",
+        "dil.hata_var_mi(imlec)",
+        "dil.tani_mesajlari(hatalar)",
+    ):
+        require(snippet in stdlib_dil, f"stdlib_dil should include {snippet}")
+
     print(f"Examples smoke passed ({len(examples)} examples).")
     return 0
 

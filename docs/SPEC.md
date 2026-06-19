@@ -603,6 +603,8 @@ tokenlar olsun [dil.token("AD", "merhaba", 1, 1), dil.dosya_sonu(1, 8)]
 imlec olsun dil.imlec(tokenlar)
 ad olsun dil.bekle(imlec, "AD", "", "ad bekleniyor")
 ast olsun dil.program([dil.yaprak("SelamKomutu", ad.deger.deger, ad.deger)])
+yazdır dil.token_degerleri(tokenlar)
+yazdır dil.hata_var_mi(imlec)
 ```
 
 The module is intentionally small and pure Orhun. Its helpers do not replace
