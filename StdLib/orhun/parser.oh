@@ -6,17 +6,15 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.13.0"
+surum olsun "0.14.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
-    i olsun 0
-    sürece i küçük uzunluk(bloklar):
-        sayilar.ekle(uzunluk(bloklar[i].komutlar))
-        i olsun i + 1
+    her blok içinde bloklar:
+        sayilar.ekle(uzunluk(blok.komutlar))
     döndür sayilar
 
 işlev atama_bildirim_mi(tokenlar, konum):
@@ -138,11 +136,9 @@ işlev baslik_varsayilanlari(tokenlar, konum):
 
 işlev varsayilan_deger_sayisi(varsayilanlar):
     sayi olsun 0
-    i olsun 0
-    sürece i küçük uzunluk(varsayilanlar):
-        eğer varsayilanlar[i].tur eşit_değil "" ise:
+    her varsayilan içinde varsayilanlar:
+        eğer varsayilan.tur eşit_değil "" ise:
             sayi olsun sayi + 1
-        i olsun i + 1
     döndür sayi
 
 işlev sinif_ebeveyni(tokenlar, konum):
@@ -315,10 +311,8 @@ işlev komut_dugumu(tokenlar, konum):
 
 işlev komut_turleri_uret(komutlar):
     liste olsun []
-    i olsun 0
-    sürece i küçük uzunluk(komutlar):
-        liste.ekle(komutlar[i].tur)
-        i olsun i + 1
+    her komut içinde komutlar:
+        liste.ekle(komut.tur)
     döndür liste
 
 işlev sonuc_ok(komutlar, token_sayisi, satir):
@@ -1986,6 +1980,14 @@ işlev bloklari(tokenlar, konum):
 
 işlev turleri(sonuc):
     döndür sonuc.komut_turleri
+
+işlev hata_var_mi(sonuc):
+    döndür sonuc.hata_sayisi büyük 0
+
+işlev hata_mesaji(sonuc):
+    eğer hata_var_mi(sonuc) ise:
+        döndür sonuc.hata.mesaj
+    döndür ""
 
 işlev ozetle_tokenlar(tokenlar):
     token_sayisi olsun uzunluk(tokenlar)

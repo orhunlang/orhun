@@ -1,4 +1,4 @@
-0.13.0
+0.14.0
 1
 0
 Program
@@ -94,6 +94,8 @@ IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 1
 3
 0
+1
+Tanimsiz karakter: @
 1
 0
 1

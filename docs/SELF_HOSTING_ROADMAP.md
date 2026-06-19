@@ -64,7 +64,7 @@ fixture ve 63 hata fixture seviyesine tasindi.
 `orhun/dil.oh` 0.2.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.13.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.14.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -79,7 +79,7 @@ govde ifadesini, liste uretec degiskenini ve kosul varligini, sozluk
 anahtarlarini, liste/sozluk oge sayilarini, dilim erisim sinir varligini,
 paralel yap govde komut sayisini ve yapisal komutlarini, liste/sozluk literal postfix ozetlerini,
 alan/ust erisim adlarini, islev cagri adlarini, yeni nesne sinif adlarini ve
-arguman sayilarini C++ AST ile
+arguman sayilarini, parse sonuc hata var/yok ve hata mesaji yardimcilarini C++ AST ile
 karsilastiriyor.
 
 Hedefler:

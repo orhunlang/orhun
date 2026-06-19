@@ -143,6 +143,8 @@ yazdır hata.ok
 yazdır hata.hata_sayisi
 yazdır hata.token_sayisi
 yazdır hata.komut_sayisi
+yazdır parser.hata_var_mi(hata)
+yazdır parser.hata_mesaji(hata)
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")
 
 yazim_hata olsun parser.ozetle("yzdır 1\n")
