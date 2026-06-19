@@ -9,6 +9,7 @@ yazdır sonuc.hata_sayisi
 yazdır sonuc.token_sayisi
 yazdır uzunluk(tokenlar)
 yazdır metin.birlestir(lexer.turleri(tokenlar), "|")
+yazdır json.yaz(lexer.degerleri(tokenlar))
 yazdır tokenlar[0].tur + ":" + tokenlar[0].deger
 yazdır tokenlar[7].tur + ":" + tokenlar[7].deger
 yazdır tokenlar[9].tur + ":" + tokenlar[9].deger
@@ -31,9 +32,11 @@ girinti_hata olsun lexer.tokenlestir("eğer doğru ise:\n  yazdır 1\n yazdır 2
 yazdır lexer.hata_var_mi(girinti_hata)
 yazdır lexer.hata_sayisi(girinti_hata)
 yazdır metin.icerir(lexer.ilk_hata(girinti_hata).deger, "girinti")
+yazdır json.yaz(lexer.hata_degerleri(girinti_hata))
 
 metin_hata olsun lexer.ozetle("yazdır \"acik\n")
 yazdır metin_hata.hata_sayisi
 yazdır metin_hata.token_sayisi
 yazdır lexer.hata_var_mi(metin_hata.tokenlar)
 yazdır metin.icerir(lexer.ilk_hata(metin_hata.tokenlar).deger, "metin")
+yazdır json.yaz(lexer.hata_degerleri(metin_hata.tokenlar))
