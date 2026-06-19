@@ -1,6 +1,7 @@
-0.1.0
+0.2.0
 1
 SAYI|ARTI|SAYI|DOSYA_SONU
+["2","+","3",""]
 3
 DOSYA_SONU
 1
@@ -10,8 +11,11 @@ Topla
 2
 3
 0
+0
 {"bitti":true,"hata_sayisi":0,"konum":3}
 0
 1
+1
 beklenen_token
 sayi bekleniyor
+["sayi bekleniyor"]

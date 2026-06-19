@@ -143,7 +143,8 @@ These percentages are planning estimates, not promises.
   lock records stop removal before directory deletion.
 - `orhun/dil.oh` provides reusable Orhun-source language-development helpers:
   token records, token cursors, expected-token diagnostics, AST node builders,
-  and small summaries for compiler/DSL prototypes written in Orhun.
+  token/value summaries, diagnostic-message summaries, and small AST summaries
+  for compiler/DSL prototypes written in Orhun.
 
 ## Main Remaining Work
 

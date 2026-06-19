@@ -61,7 +61,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Parser prototipi 158 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
-`orhun/dil.oh` 0.1.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
+`orhun/dil.oh` 0.2.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
 Recursive block summary parity ve recursive expression child parity basladi.
 `orhun/parser.oh` 0.13.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc

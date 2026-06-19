@@ -5,7 +5,7 @@
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 
-surum olsun "0.1.0"
+surum olsun "0.2.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -45,27 +45,27 @@ işlev program(cocuklar):
 
 işlev dugum_sayisi(kok):
     sayi olsun 1
-    i olsun 0
-    sürece i küçük uzunluk(kok.cocuklar):
-        sayi olsun sayi + dugum_sayisi(kok.cocuklar[i])
-        i olsun i + 1
+    her cocuk içinde kok.cocuklar:
+        sayi olsun sayi + dugum_sayisi(cocuk)
     döndür sayi
 
 işlev dugum_turleri(cocuklar):
     turler olsun []
-    i olsun 0
-    sürece i küçük uzunluk(cocuklar):
-        turler.ekle(cocuklar[i].tur)
-        i olsun i + 1
+    her cocuk içinde cocuklar:
+        turler.ekle(cocuk.tur)
     döndür turler
 
 işlev token_turleri(tokenlar):
     turler olsun []
-    i olsun 0
-    sürece i küçük uzunluk(tokenlar):
-        turler.ekle(tokenlar[i].tur)
-        i olsun i + 1
+    her tok içinde tokenlar:
+        turler.ekle(tok.tur)
     döndür turler
+
+işlev token_degerleri(tokenlar):
+    degerler olsun []
+    her tok içinde tokenlar:
+        degerler.ekle(tok.deger)
+    döndür degerler
 
 işlev imlec(tokenlar):
     döndür {"tokenlar": tokenlar, "konum": 0, "hatalar": []}
@@ -119,6 +119,15 @@ işlev bekle(imlec_degeri, tur, deger, mesaj):
 
 işlev hata_sayisi(imlec_degeri):
     döndür uzunluk(imlec_degeri.hatalar)
+
+işlev hata_var_mi(imlec_degeri):
+    döndür hata_sayisi(imlec_degeri) büyük 0
+
+işlev tani_mesajlari(imlec_degeri):
+    mesajlar olsun []
+    her kayit içinde imlec_degeri.hatalar:
+        mesajlar.ekle(kayit.mesaj)
+    döndür mesajlar
 
 işlev ozet(imlec_degeri):
     döndür {
