@@ -188,6 +188,13 @@
 - Bu modül runtime davranışını değiştirmez; yeni kod için ek bir standart
   kütüphane yardımcısıdır.
 
+## 12.2. Orhun-source lexer/parser helpers
+- `orhun/lexer.oh` `0.5.0`, token değerleri ve hata token değerleri için
+  yardımcı özet fonksiyonları ekler.
+- `orhun/parser.oh` `0.14.0`, parse sonucunda hata var/yok ve hata mesajı
+  okuma yardımcıları ekler.
+- Bu yardımcılar mevcut lexer/parser çıktı sözleşmesini değiştirmez.
+
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri
   canlı tutar.

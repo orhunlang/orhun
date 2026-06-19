@@ -620,11 +620,14 @@ entry point is:
 lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")
 tokenlar olsun sonuc.tokenlar
+yazdır lexer.degerleri(tokenlar)
 ```
 
 Each token is a dictionary with `tur`, `deger`, `satir`, and `sutun` fields.
 `ozetle(kaynak)` returns a dictionary with `hata_sayisi`, `token_sayisi`, and `tokenlar`,
-matching the C++ `lex --json` health shape used by parity tests.
+matching the C++ `lex --json` health shape used by parity tests. Helper
+functions expose token types, token values, first error token, error presence,
+error count, and error-token values.
 The current prototype recognizes keywords, identifiers, numbers, decimals,
 strings, one-character operators, indentation, LF newlines, end-of-file, and
 error tokens. It is a parity target for the C++ lexer, not yet the production
@@ -651,6 +654,7 @@ entry point is:
 ```orhun
 parser olsun dahil_et "orhun/parser.oh"
 sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
+yazdır parser.hata_var_mi(sonuc)
 ```
 
 The current prototype exposes a `Program` root and `Block` structural nodes,
@@ -660,7 +664,7 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 157 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 158 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,
@@ -680,7 +684,8 @@ postfix, safe-access, collection/list-comprehension, and `paralel yap`
 expressions, unknown command typos such as `yzdır 1`, and non-trailing required
 parameters after default values. Those error fixtures also compare the reported line, expected-token
 hint, unknown command name, and typo suggestion against the C++ parser. It is
-not yet the production parser.
+not yet the production parser. Parser result helpers expose command kinds,
+error presence, and the current error message.
 
 ## Orhun-Source Compiler Prototype
 
