@@ -40,18 +40,13 @@ işlev aralik(baslangic, bitis, adim olsun 1):
 
 işlev haritala(liste, donusturucu):
     sonuc olsun []
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        sonuc.ekle(donusturucu(liste[i]))
-        i olsun i + 1
+    her oge içinde liste:
+        sonuc.ekle(donusturucu(oge))
     döndür sonuc
 
 işlev suz(liste, kosul):
     sonuc olsun []
-    i olsun 0
-    sürece i küçük uzunluk(liste):
-        oge olsun liste[i]
+    her oge içinde liste:
         eğer kosul(oge) ise:
             sonuc.ekle(oge)
-        i olsun i + 1
     döndür sonuc
