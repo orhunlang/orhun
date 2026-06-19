@@ -67,6 +67,9 @@ def main() -> int:
         "Her Döngüsü": "her",
         "Numaralandır": "numaralandir",
         "Eşleştir": "eslestir",
+        "Dil Yardımcısı": "dil",
+        "Lexer Özeti": "lexer",
+        "Parser Özeti": "parser",
     }
     for name, prefix in required_snippets.items():
         require(name in snippets, f"VS Code snippet missing {name}")
@@ -84,6 +87,12 @@ def main() -> int:
             "Numaralandir snippet should call koleksiyon.numaralandir")
     require("koleksiyon.eslestir(" in "\n".join(snippets["Eşleştir"]["body"]),
             "Eslestir snippet should call koleksiyon.eslestir")
+    require("dil.token_degerleri(" in "\n".join(snippets["Dil Yardımcısı"]["body"]),
+            "Dil snippet should expose token summaries")
+    require("lexer.hata_degerleri(" in "\n".join(snippets["Lexer Özeti"]["body"]),
+            "Lexer snippet should expose error summaries")
+    require("parser.hata_var_mi(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose parser error helpers")
 
     print("VS Code tooling smoke passed.")
     return 0

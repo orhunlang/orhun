@@ -69,5 +69,37 @@
       "yaz koleksiyon.eslestir(${1:sol}, ${4:sag})"
     ],
     "description": "İki listeyi çiftler halinde eşleştir"
+  },
+  "Dil Yardımcısı": {
+    "prefix": "dil",
+    "body": [
+      "dil olsun dahil_et \"orhun/dil.oh\"",
+      "tokenlar olsun [dil.token(\"${1:AD}\", \"${2:merhaba}\", 1, 1), dil.dosya_sonu(1, ${3:8})]",
+      "imlec olsun dil.imlec(tokenlar)",
+      "ad olsun dil.bekle(imlec, \"${1:AD}\", \"\", \"${4:ad bekleniyor}\")",
+      "yaz dil.hata_var_mi(imlec)",
+      "yaz dil.token_degerleri(tokenlar)"
+    ],
+    "description": "Orhun dil geliştirme yardımcılarıyla imleç oluştur"
+  },
+  "Lexer Özeti": {
+    "prefix": "lexer",
+    "body": [
+      "lexer olsun dahil_et \"orhun/lexer.oh\"",
+      "sonuc olsun lexer.ozetle(\"${1:yazdır \\\"Merhaba\\\"\\\\n}\")",
+      "yaz lexer.turleri(sonuc.tokenlar)",
+      "yaz lexer.hata_degerleri(sonuc.tokenlar)"
+    ],
+    "description": "Orhun lexer prototipiyle kaynak özeti al"
+  },
+  "Parser Özeti": {
+    "prefix": "parser",
+    "body": [
+      "parser olsun dahil_et \"orhun/parser.oh\"",
+      "sonuc olsun parser.ozetle(\"${1:yazdır \\\"Merhaba\\\"\\\\n}\")",
+      "yaz parser.turleri(sonuc)",
+      "yaz parser.hata_var_mi(sonuc)"
+    ],
+    "description": "Orhun parser prototipiyle komut özeti al"
   }
 }
