@@ -28,6 +28,8 @@ yazdır metin_yardimci.kirp("  Orhun  ")
 paket_yardimci olsun dahil_et "orhun/paket.oh"
 yazdır paket_yardimci.coz_ve_dogrula("{\"ad\":\"ornek\",\"surum\":\"0.1.0\"}").ok
 yazdır paket_yardimci.surum_gecerli_mi("1.2.3-beta.1+build.5")
+yazdır paket_yardimci.surum_karsilastir("1.2.3-beta.1", "1.2.3").deger
+yazdır paket_yardimci.surum_uyumlu_mu("1.4.0", "^1.2.3").deger
 
 lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")

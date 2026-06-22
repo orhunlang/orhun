@@ -2,9 +2,10 @@
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 
-surum olsun "0.5.0"
+surum olsun "0.7.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
+surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 işlev coz(kaynak):
     deneme:
@@ -133,6 +134,158 @@ işlev surum_ayristir(paket_surumu):
 
     cekirdek_parcalari olsun parcala(cekirdek, ".")
     döndür sonuc_yardimci.ok({"ana": sayiya_cevir(cekirdek_parcalari[0]), "yan": sayiya_cevir(cekirdek_parcalari[1]), "duzeltme": sayiya_cevir(cekirdek_parcalari[2]), "on_surum": on_surum, "yapi": yapi})
+
+işlev sayisal_karsilastir(sol, sag):
+    eğer sol küçük sag ise:
+        döndür -1
+    eğer sol büyük sag ise:
+        döndür 1
+    döndür 0
+
+işlev karakter_sirasi(karakter):
+    i olsun 0
+    sürece i küçük uzunluk(surum_karsilastirma_karakterleri):
+        eğer surum_karsilastirma_karakterleri[i] eşit karakter ise:
+            döndür i
+        i olsun i + 1
+    döndür -1
+
+işlev metinsel_karsilastir(sol, sag):
+    i olsun 0
+    sürece i küçük uzunluk(sol) ve i küçük uzunluk(sag):
+        eğer sol[i] eşit_değil sag[i] ise:
+            sol_sira olsun karakter_sirasi(sol[i])
+            sag_sira olsun karakter_sirasi(sag[i])
+            döndür sayisal_karsilastir(sol_sira, sag_sira)
+        i olsun i + 1
+    döndür sayisal_karsilastir(uzunluk(sol), uzunluk(sag))
+
+işlev on_surum_karsilastir(sol, sag):
+    eğer sol eşit sag ise:
+        döndür 0
+    eğer uzunluk(sol) eşit 0 ise:
+        döndür 1
+    eğer uzunluk(sag) eşit 0 ise:
+        döndür -1
+
+    sol_kimlikler olsun parcala(sol, ".")
+    sag_kimlikler olsun parcala(sag, ".")
+    i olsun 0
+    sürece i küçük uzunluk(sol_kimlikler) ve i küçük uzunluk(sag_kimlikler):
+        sol_kimlik olsun sol_kimlikler[i]
+        sag_kimlik olsun sag_kimlikler[i]
+        sol_sayisal_mi olsun sayisal_mi(sol_kimlik)
+        sag_sayisal_mi olsun sayisal_mi(sag_kimlik)
+
+        eğer sol_sayisal_mi ve sag_sayisal_mi ise:
+            karsilastirma olsun sayisal_karsilastir(sayiya_cevir(sol_kimlik), sayiya_cevir(sag_kimlik))
+        değilse eğer sol_sayisal_mi ise:
+            karsilastirma = -1
+        değilse eğer sag_sayisal_mi ise:
+            karsilastirma = 1
+        değilse:
+            karsilastirma = metinsel_karsilastir(sol_kimlik, sag_kimlik)
+
+        eğer karsilastirma eşit_değil 0 ise:
+            döndür karsilastirma
+        i olsun i + 1
+
+    döndür sayisal_karsilastir(uzunluk(sol_kimlikler), uzunluk(sag_kimlikler))
+
+işlev surum_karsilastir(sol_surumu, sag_surumu):
+    sol olsun surum_ayristir(sol_surumu)
+    eğer değil sol.ok ise:
+        döndür sol
+    sag olsun surum_ayristir(sag_surumu)
+    eğer değil sag.ok ise:
+        döndür sag
+
+    karsilastirma olsun sayisal_karsilastir(sol.deger.ana, sag.deger.ana)
+    eğer karsilastirma eşit_değil 0 ise:
+        döndür sonuc_yardimci.ok(karsilastirma)
+    karsilastirma = sayisal_karsilastir(sol.deger.yan, sag.deger.yan)
+    eğer karsilastirma eşit_değil 0 ise:
+        döndür sonuc_yardimci.ok(karsilastirma)
+    karsilastirma = sayisal_karsilastir(sol.deger.duzeltme, sag.deger.duzeltme)
+    eğer karsilastirma eşit_değil 0 ise:
+        döndür sonuc_yardimci.ok(karsilastirma)
+
+    döndür sonuc_yardimci.ok(on_surum_karsilastir(sol.deger.on_surum, sag.deger.on_surum))
+
+işlev baslar_mi(metin_degeri, on_ek):
+    eğer uzunluk(metin_degeri) küçük uzunluk(on_ek) ise:
+        döndür yanlış
+    döndür metin_degeri[:uzunluk(on_ek)] eşit on_ek
+
+işlev surum_metni(ana, yan, duzeltme):
+    döndür metne_cevir(ana) + "." + metne_cevir(yan) + "." + metne_cevir(duzeltme)
+
+işlev karsilastirma_uygun_mu(karsilastirma, isaret):
+    eğer isaret eşit "" veya isaret eşit "=" ise:
+        döndür karsilastirma eşit 0
+    eğer isaret eşit ">" ise:
+        döndür karsilastirma büyük 0
+    eğer isaret eşit ">=" ise:
+        döndür karsilastirma büyük 0 veya karsilastirma eşit 0
+    eğer isaret eşit "<" ise:
+        döndür karsilastirma küçük 0
+    eğer isaret eşit "<=" ise:
+        döndür karsilastirma küçük 0 veya karsilastirma eşit 0
+    döndür yanlış
+
+işlev sinir_uyumlu_mu(paket_surumu, isaret, sinir):
+    karsilastirma olsun surum_karsilastir(paket_surumu, sinir)
+    eğer değil karsilastirma.ok ise:
+        döndür karsilastirma
+    döndür sonuc_yardimci.ok(karsilastirma_uygun_mu(karsilastirma.deger, isaret))
+
+işlev caret_uyumlu_mu(paket_surumu, taban):
+    ayrilmis olsun surum_ayristir(taban)
+    eğer değil ayrilmis.ok ise:
+        döndür ayrilmis
+
+    alt_sinir olsun sinir_uyumlu_mu(paket_surumu, ">=", taban)
+    eğer değil alt_sinir.ok veya değil alt_sinir.deger ise:
+        döndür alt_sinir
+
+    eğer ayrilmis.deger.ana büyük 0 ise:
+        ust_sinir olsun surum_metni(ayrilmis.deger.ana + 1, 0, 0)
+    değilse eğer ayrilmis.deger.yan büyük 0 ise:
+        ust_sinir = surum_metni(0, ayrilmis.deger.yan + 1, 0)
+    değilse:
+        ust_sinir = surum_metni(0, 0, ayrilmis.deger.duzeltme + 1)
+
+    döndür sinir_uyumlu_mu(paket_surumu, "<", ust_sinir)
+
+işlev tilde_uyumlu_mu(paket_surumu, taban):
+    ayrilmis olsun surum_ayristir(taban)
+    eğer değil ayrilmis.ok ise:
+        döndür ayrilmis
+
+    alt_sinir olsun sinir_uyumlu_mu(paket_surumu, ">=", taban)
+    eğer değil alt_sinir.ok veya değil alt_sinir.deger ise:
+        döndür alt_sinir
+
+    ust_sinir olsun surum_metni(ayrilmis.deger.ana, ayrilmis.deger.yan + 1, 0)
+    döndür sinir_uyumlu_mu(paket_surumu, "<", ust_sinir)
+
+işlev surum_uyumlu_mu(paket_surumu, kural):
+    deneme:
+        eğer değil surum_gecerli_mi(paket_surumu) ise:
+            döndür sonuc_yardimci.hata("semantik surum gecersiz")
+        eğer kural eşit "" veya kural eşit "*" ise:
+            döndür sonuc_yardimci.ok(doğru)
+        eğer baslar_mi(kural, "^") ise:
+            döndür caret_uyumlu_mu(paket_surumu, kural[1:])
+        eğer baslar_mi(kural, "~") ise:
+            döndür tilde_uyumlu_mu(paket_surumu, kural[1:])
+        eğer baslar_mi(kural, ">=") veya baslar_mi(kural, "<=") ise:
+            döndür sinir_uyumlu_mu(paket_surumu, kural[:2], kural[2:])
+        eğer baslar_mi(kural, ">") veya baslar_mi(kural, "<") veya baslar_mi(kural, "=") ise:
+            döndür sinir_uyumlu_mu(paket_surumu, kural[:1], kural[1:])
+        döndür sinir_uyumlu_mu(paket_surumu, "", kural)
+    yakala hata:
+        döndür sonuc_yardimci.hata("surum araligi gecersiz")
 
 işlev ad_gecerli_mi(paket_adi):
     deneme:

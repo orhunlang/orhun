@@ -42,7 +42,8 @@ Hedefler:
 
 - Saf Orhun ile yazilmis `StdLib/orhun/` modulleri baslar.
 - `sonuc`, metin yardimcilari, koleksiyon yardimcilari, paket manifest okuma
-  ve dil gelistirme yardimcilari gibi guvenli alanlar Orhun koduna tasinir.
+  ve surum karsilastirma, dil gelistirme yardimcilari gibi guvenli alanlar
+  Orhun koduna tasinir.
 - C++ yerlesikleri sadece sistem siniri, dosya, FFI, ag ve VM primitive'leri
   gibi zorunlu noktalarda kalir.
 

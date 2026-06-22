@@ -136,7 +136,10 @@ These percentages are planning estimates, not promises.
 - Interpreter/VM parity covers modulo arithmetic and in-place
   `listeye_ekle` list mutation.
 - The Orhun-written package manifest helper validates package/dependency names
-  and Semantic Versioning 2.0 versions, including prerelease/build identifiers.
+  and Semantic Versioning 2.0 versions, including prerelease/build identifiers,
+  compares valid versions with Semantic Versioning precedence, and evaluates
+  exact, comparison, caret, and tilde version rules for future dependency
+  resolution.
 - Package removal is path-contained to a direct `lib/<package>` directory and
   updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
   rejected by both the CLI and Orhun-written manifest helper, and malformed

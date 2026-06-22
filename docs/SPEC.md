@@ -507,8 +507,15 @@ invalid. Manifest versions are validated as
 Semantic Versioning 2.0 versions by the Orhun-written `surum_gecerli_mi`
 helper, including prerelease and build identifiers. `surum_ayristir` returns a
 result record whose value separates a valid version into numeric `ana`, `yan`,
-and `duzeltme` fields plus `on_surum` and `yapi` strings. Invalid versions
-return an error result.
+and `duzeltme` fields plus `on_surum` and `yapi` strings. `surum_karsilastir`
+returns an error result for an invalid input, otherwise its result value is
+`-1`, `0`, or `1` according to Semantic Versioning precedence. Build metadata
+does not affect precedence; a release has higher precedence than its matching
+prerelease. `surum_uyumlu_mu(surum, kural)` accepts exact versions plus `*`,
+`=`, `>`, `>=`, `<`, `<=`, `^`, and `~` rules, and returns a result record
+whose value is a boolean. Range operands must be complete valid Semantic
+Versioning versions; combined ranges are intentionally not yet part of this
+small manifest-helper contract.
 
 `orhun/dil.oh` includes language-development helpers for Orhun-source
 compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
