@@ -44,6 +44,9 @@ Hedefler:
 - `sonuc`, metin yardimcilari, koleksiyon yardimcilari, paket manifest okuma
   ve surum karsilastirma, dil gelistirme yardimcilari gibi guvenli alanlar
   Orhun koduna tasinir.
+- Orhun paket yardimcisi lock v1/v2/v3 satirlarini yapisal olarak cozer;
+  SHA-256 ve dosya butunlugu denetimi sistem sinirinda kalirken gelecekteki
+  Orhun kaynakli cozumleyici guvenli paket yolu kararlarini kendi verir.
 - C++ yerlesikleri sadece sistem siniri, dosya, FFI, ag ve VM primitive'leri
   gibi zorunlu noktalarda kalir.
 

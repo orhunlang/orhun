@@ -1,8 +1,9 @@
 # Orhun ile yazilmis paket manifest yardimcilari.
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.7.0"
+surum olsun "0.8.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -286,6 +287,97 @@ işlev surum_uyumlu_mu(paket_surumu, kural):
         döndür sinir_uyumlu_mu(paket_surumu, "", kural)
     yakala hata:
         döndür sonuc_yardimci.hata("surum araligi gecersiz")
+
+işlev kaynak_ref_gecerli_mi(kaynak_ref):
+    deneme:
+        i olsun 0
+        sürece i küçük uzunluk(kaynak_ref):
+            eğer metin_yardimci.bosluk_mu(kaynak_ref[i]) veya kaynak_ref[i] eşit "|" ise:
+                döndür yanlış
+            i olsun i + 1
+        döndür doğru
+    yakala hata:
+        döndür yanlış
+
+işlev kilit_kaydi(ad, kaynak, ozet, kilit_surumu, commit_pin, icerik_hash, kaynak_ref):
+    döndür {"ad": ad, "kaynak": kaynak, "ozet": ozet, "surum": kilit_surumu, "commit_pin": commit_pin, "icerik_hash": icerik_hash, "kaynak_ref": kaynak_ref}
+
+işlev kilit_kaydi_dogrula(kayit):
+    deneme:
+        eğer değil ad_gecerli_mi(kayit.ad) ise:
+            döndür sonuc_yardimci.hata("kilit paket adi gecersiz")
+        eğer uzunluk(kayit.kaynak) eşit 0 ise:
+            döndür sonuc_yardimci.hata("kilit kaynak alani bos")
+        eğer uzunluk(kayit.ozet) eşit 0 ise:
+            döndür sonuc_yardimci.hata("kilit ozet alani bos")
+        eğer kayit.surum eşit "v1" veya kayit.surum eşit "v2" ise:
+            döndür sonuc_yardimci.ok(kayit)
+        eğer kayit.surum eşit_değil "v3" ise:
+            döndür sonuc_yardimci.hata("desteklenmeyen kilit surumu: " + kayit.surum)
+        eğer uzunluk(kayit.commit_pin) eşit 0 veya uzunluk(kayit.icerik_hash) eşit 0 ise:
+            döndür sonuc_yardimci.hata("v3 kilit kaydinda commit pin veya icerik hash bos")
+        eğer değil kaynak_ref_gecerli_mi(kayit.kaynak_ref) ise:
+            döndür sonuc_yardimci.hata("v3 source_ref alani gecersiz")
+        döndür sonuc_yardimci.ok(kayit)
+    yakala hata:
+        döndür sonuc_yardimci.hata("kilit kaydi gecersiz")
+
+işlev kilit_satirini_coz(satir):
+    temiz olsun metin_yardimci.kirp(satir)
+    eğer uzunluk(temiz) eşit 0 veya metin_yardimci.baslar_mi(temiz, "#") ise:
+        döndür sonuc_yardimci.ok({"atla": doğru})
+
+    parcalar olsun parcala(temiz, "|")
+    eğer uzunluk(parcalar) eşit 3 ise:
+        kayit olsun kilit_kaydi(parcalar[0], parcalar[1], parcalar[2], "v1", "", "", "")
+    değilse eğer uzunluk(parcalar) eşit 4 ise:
+        eğer parcalar[3] eşit "v3" ise:
+            döndür sonuc_yardimci.hata("v3 kilit kaydi commit/hash alanlari olmadan geldi")
+        kayit = kilit_kaydi(parcalar[0], parcalar[1], parcalar[2], parcalar[3], "", "", "")
+    değilse eğer uzunluk(parcalar) eşit 6 ise:
+        kayit = kilit_kaydi(parcalar[0], parcalar[1], parcalar[2], parcalar[3], parcalar[4], parcalar[5], "")
+    değilse eğer uzunluk(parcalar) eşit 7 ise:
+        kayit = kilit_kaydi(parcalar[0], parcalar[1], parcalar[2], parcalar[3], parcalar[4], parcalar[5], parcalar[6])
+    değilse:
+        döndür sonuc_yardimci.hata("kilit satiri gecersiz")
+
+    dogrulama olsun kilit_kaydi_dogrula(kayit)
+    eğer değil dogrulama.ok ise:
+        döndür dogrulama
+    döndür sonuc_yardimci.ok({"atla": yanlış, "kayit": dogrulama.deger})
+
+işlev kilit_dosyasini_coz(kaynak):
+    kayitlar olsun []
+    satirlar olsun parcala(kaynak, "\n")
+    her satir içinde satirlar:
+        cozum olsun kilit_satirini_coz(satir)
+        eğer değil cozum.ok ise:
+            döndür cozum
+        eğer değil cozum.deger.atla ise:
+            listeye_ekle(kayitlar, cozum.deger.kayit)
+    döndür sonuc_yardimci.ok(kayitlar)
+
+işlev kilit_kaydi_metni(kayit):
+    dogrulama olsun kilit_kaydi_dogrula(kayit)
+    eğer değil dogrulama.ok ise:
+        döndür dogrulama
+    eğer kayit.surum eşit "v1" ise:
+        döndür sonuc_yardimci.ok(kayit.ad + "|" + kayit.kaynak + "|" + kayit.ozet)
+    eğer kayit.surum eşit "v2" ise:
+        döndür sonuc_yardimci.ok(kayit.ad + "|" + kayit.kaynak + "|" + kayit.ozet + "|" + kayit.surum)
+    döndür sonuc_yardimci.ok(kayit.ad + "|" + kayit.kaynak + "|" + kayit.ozet + "|v3|" + kayit.commit_pin + "|" + kayit.icerik_hash + "|" + kayit.kaynak_ref)
+
+işlev kilit_dosyasi_metni(kayitlar):
+    satirlar olsun []
+    her kayit içinde kayitlar:
+        metin_sonucu olsun kilit_kaydi_metni(kayit)
+        eğer değil metin_sonucu.ok ise:
+            döndür metin_sonucu
+        listeye_ekle(satirlar, metin_sonucu.deger)
+    baslik olsun "# ad|kaynak|sha256|surum|commit_pin|icerik_sha256|source_ref"
+    eğer uzunluk(satirlar) eşit 0 ise:
+        döndür sonuc_yardimci.ok(baslik + "\n")
+    döndür sonuc_yardimci.ok(baslik + "\n" + metin.birlestir(satirlar, "\n"))
 
 işlev ad_gecerli_mi(paket_adi):
     deneme:

@@ -30,6 +30,7 @@ yazdır paket_yardimci.coz_ve_dogrula("{\"ad\":\"ornek\",\"surum\":\"0.1.0\"}").
 yazdır paket_yardimci.surum_gecerli_mi("1.2.3-beta.1+build.5")
 yazdır paket_yardimci.surum_karsilastir("1.2.3-beta.1", "1.2.3").deger
 yazdır paket_yardimci.surum_uyumlu_mu("1.4.0", "^1.2.3").deger
+yazdır paket_yardimci.kilit_dosyasini_coz("ornek|yerel|hash|v2").deger[0].ad
 
 lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")

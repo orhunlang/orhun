@@ -517,6 +517,14 @@ whose value is a boolean. Range operands must be complete valid Semantic
 Versioning versions; combined ranges are intentionally not yet part of this
 small manifest-helper contract.
 
+The same module includes a self-hosted structural parser for `orhun.lock`
+records: `kilit_satirini_coz`, `kilit_dosyasini_coz`, `kilit_kaydi_metni`, and
+`kilit_dosyasi_metni`. It accepts compatible v1, v2, and v3 records and rejects
+unsafe package names, incomplete v3 commit/content fields, and invalid source
+refs before a future Orhun-written resolver touches a package path. Cryptographic
+digest calculation and filesystem-content verification remain native runtime
+responsibilities for now.
+
 `orhun/dil.oh` includes language-development helpers for Orhun-source
 compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
 `hata_token`, `token_mi`), token-stream cursors (`imlec`, `simdiki`, `onceki`,
