@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.9 seconds
+Output:
 # Orhun Language Specification
 
 This document is the living language contract for Orhun. It describes the
@@ -537,7 +540,10 @@ compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
 `ilerle`, `bitti_mi`, `esles`, `bekle`), diagnostics (`tani`, `tani_ekle`),
 and AST builders (`dugum`, `yaprak`, `program`, `dugum_sayisi`,
 `dugum_turleri`). `bekle` returns the standard `sonuc` result shape, so callers
-can keep parser errors explicit without throwing.
+can keep parser errors explicit without throwing. Diagnostics can be rendered
+consistently with `tani_konumu`, `tani_bicimlendir`, and
+`tanilari_bicimlendir`; callers can also inspect `tani_kodlari` or query an
+expected code through `tani_kodu_var_mi`.
 
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.
@@ -966,3 +972,4 @@ This specification is the baseline for future Orhun-written components:
 
 When implementation behavior and this document diverge, either the implementation
 or the specification must be updated in the same development cycle.
+

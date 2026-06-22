@@ -1,4 +1,7 @@
-0.2.0
+Exit code: 0
+Wall time: 1 seconds
+Output:
+0.3.0
 1
 SAYI|ARTI|SAYI|DOSYA_SONU
 ["2","+","3",""]
@@ -19,3 +22,9 @@ Topla
 beklenen_token
 sayi bekleniyor
 ["sayi bekleniyor"]
+[beklenen_token] Satir 1, sutun 1: sayi bekleniyor
+beklenen_token
+1
+0
+[beklenen_token] Satir 1, sutun 1: sayi bekleniyor
+

@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 1 seconds
+Output:
 # Orhun Self-Hosting Roadmap
 
 Orhun'un uzun vadeli hedefi, C++ ile baslayan derleyici/runtime cekirdegini
@@ -67,8 +70,10 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Parser prototipi 158 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
-`orhun/dil.oh` 0.2.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
+`orhun/dil.oh` 0.3.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
+Tani kayitlari ortak kod/konum bicimleyicileriyle yeni baslayanlara acik
+mesajlar olarak sunulabilir.
 Recursive block summary parity ve recursive expression child parity basladi.
 `orhun/parser.oh` 0.14.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
@@ -270,3 +275,4 @@ Basari olcutu:
 3. Lexer ve parser ara temsil sozlesmelerini self-hosting icin sabitle.
 4. Kaynak-kodsuz derleyici bundle'ini surumlu release asset'ine donustur.
 5. AOT denemelerini VM ve guvenlik sozlesmesini bozmadan baslat.
+

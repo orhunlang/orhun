@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.8 seconds
+Output:
 # Orhun Standard Library
 
 `StdLib/` contains standard library pieces that ship with the Orhun runtime.
@@ -45,6 +48,7 @@ ad olsun dil.bekle(imlec, "AD", "", "ad bekleniyor")
 yazdır dil.program([dil.yaprak("Selam", ad.deger.deger, ad.deger)]).tur
 yazdır dil.token_degerleri(tokenlar)
 yazdır dil.hata_var_mi(imlec)
+yazdır dil.tanilari_bicimlendir(imlec)
 
 parser olsun dahil_et "orhun/parser.oh"
 parse_sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
@@ -55,3 +59,4 @@ Module lookup checks the requested path first, then searches the standard
 library roots. `ORHUN_STDLIB_PATH` can add custom roots. A runtime release also
 discovers the sibling `StdLib/` directory beside its `orhun` executable, while
 the local `StdLib/` directory remains available during development.
+
