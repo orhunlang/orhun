@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 0.9 seconds
+Wall time: 1.1 seconds
 Output:
 # Orhun Language Specification
 
@@ -543,7 +543,9 @@ and AST builders (`dugum`, `yaprak`, `program`, `dugum_sayisi`,
 can keep parser errors explicit without throwing. Diagnostics can be rendered
 consistently with `tani_konumu`, `tani_bicimlendir`, and
 `tanilari_bicimlendir`; callers can also inspect `tani_kodlari` or query an
-expected code through `tani_kodu_var_mi`.
+expected code through `tani_kodu_var_mi`. `tani_kaynak_bicimlendir` adds the
+matching source line and a column marker for teaching-oriented command-line
+and DSL diagnostics.
 
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.

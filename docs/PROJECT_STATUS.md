@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 0.9 seconds
+Wall time: 1.3 seconds
 Output:
 # Orhun Project Status
 
@@ -155,7 +155,7 @@ These percentages are planning estimates, not promises.
   token/value summaries, diagnostic-message summaries, and small AST summaries
   for compiler/DSL prototypes written in Orhun. Its diagnostic records can be
   rendered as consistent code and source-location messages for beginner-facing
-  DSLs and editor tooling.
+  DSLs and editor tooling, with optional source-line and column-marker output.
 
 ## Main Remaining Work
 

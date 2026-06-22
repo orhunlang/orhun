@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 0.8 seconds
+Wall time: 1.3 seconds
 Output:
 # Orhun Standard Library
 
@@ -49,6 +49,7 @@ yazdır dil.program([dil.yaprak("Selam", ad.deger.deger, ad.deger)]).tur
 yazdır dil.token_degerleri(tokenlar)
 yazdır dil.hata_var_mi(imlec)
 yazdır dil.tanilari_bicimlendir(imlec)
+yazdır dil.tani_kaynak_bicimlendir(dil.tani("ornek", "mesaj", 1, 2), "ab")
 
 parser olsun dahil_et "orhun/parser.oh"
 parse_sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")

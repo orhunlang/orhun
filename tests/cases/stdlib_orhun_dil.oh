@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 0.9 seconds
+Wall time: 1.2 seconds
 Output:
 dil olsun dahil_et "orhun/dil.oh"
 
@@ -51,4 +51,7 @@ yazdır metin.birlestir(dil.tani_kodlari(hatalar), "|")
 yazdır dil.tani_kodu_var_mi(hatalar, "beklenen_token")
 yazdır dil.tani_kodu_var_mi(hatalar, "yok")
 yazdır dil.tanilari_bicimlendir(hatalar)
+yazdır dil.kaynak_satiri("bir\niki\nuc", 2)
+yazdır dil.tani_isareti(3)
+yazdır dil.tani_kaynak_bicimlendir(hatalar.hatalar[0], "bir\niki\nuc")
 

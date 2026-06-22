@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 1 seconds
+Wall time: 1.2 seconds
 Output:
 # Orhun Self-Hosting Roadmap
 
@@ -70,10 +70,10 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Parser prototipi 158 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
-`orhun/dil.oh` 0.3.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
+`orhun/dil.oh` 0.4.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
 Tani kayitlari ortak kod/konum bicimleyicileriyle yeni baslayanlara acik
-mesajlar olarak sunulabilir.
+mesajlar olarak sunulabilir; kaynak satiri ve sutun isareti de eklenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
 `orhun/parser.oh` 0.14.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini

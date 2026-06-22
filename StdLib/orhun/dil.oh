@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 1 seconds
+Wall time: 1.2 seconds
 Output:
 # Orhun ile yazilmis genel dil gelistirme yardimcilari.
 #
@@ -7,8 +7,9 @@ Output:
 # yazmak icin ortak token, imlec, tani ve AST sozlesmeleri saglar.
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.3.0"
+surum olsun "0.4.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -42,6 +43,25 @@ işlev tani_konumu(kayit):
 
 işlev tani_bicimlendir(kayit):
     döndür "[" + kayit.kod + "] " + tani_konumu(kayit) + ": " + kayit.mesaj
+
+işlev kaynak_satiri(kaynak, satir):
+    satirlar olsun parcala(kaynak, "\n")
+    indeks olsun satir - 1
+    eğer indeks küçük 0 veya indeks büyük uzunluk(satirlar) - 1 ise:
+        döndür ""
+    döndür metin_yardimci.sag_kirp(satirlar[indeks])
+
+işlev tani_isareti(sutun):
+    bosluk_sayisi olsun sutun - 1
+    eğer bosluk_sayisi küçük 0 ise:
+        bosluk_sayisi = 0
+    döndür metin_yardimci.tekrar(" ", bosluk_sayisi) + "^"
+
+işlev tani_kaynak_bicimlendir(kayit, kaynak):
+    satir_metni olsun kaynak_satiri(kaynak, kayit.satir)
+    eğer uzunluk(satir_metni) eşit 0 ise:
+        döndür tani_bicimlendir(kayit)
+    döndür tani_bicimlendir(kayit) + "\n" + satir_metni + "\n" + tani_isareti(kayit.sutun)
 
 işlev dugum(tur, deger, cocuklar, satir, sutun):
     döndür {"tur": tur, "deger": deger, "cocuklar": cocuklar, "satir": satir, "sutun": sutun}
