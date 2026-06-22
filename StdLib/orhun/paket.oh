@@ -2,8 +2,9 @@
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
+koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.8.0"
+surum olsun "0.9.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -378,6 +379,73 @@ işlev kilit_dosyasi_metni(kayitlar):
     eğer uzunluk(satirlar) eşit 0 ise:
         döndür sonuc_yardimci.ok(baslik + "\n")
     döndür sonuc_yardimci.ok(baslik + "\n" + metin.birlestir(satirlar, "\n"))
+
+işlev manifest_var_mi(manifestler, paket_adi):
+    her manifest içinde manifestler:
+        eğer ad(manifest) eşit paket_adi ise:
+            döndür doğru
+    döndür yanlış
+
+işlev tekrar_eden_manifest_adi(manifestler):
+    i olsun 0
+    sürece i küçük uzunluk(manifestler):
+        j olsun i + 1
+        sürece j küçük uzunluk(manifestler):
+            eğer ad(manifestler[i]) eşit ad(manifestler[j]) ise:
+                döndür ad(manifestler[i])
+            j olsun j + 1
+        i olsun i + 1
+    döndür ""
+
+işlev ilk_eksik_manifest_bagimliligi(manifestler):
+    her manifest içinde manifestler:
+        her bagimlilik içinde bagimliliklar(manifest):
+            eğer değil manifest_var_mi(manifestler, bagimlilik) ise:
+                döndür ad(manifest) + " -> " + bagimlilik
+    döndür ""
+
+işlev bagimliliklari_tamamlandi_mi(manifest, tamamlanan):
+    her bagimlilik içinde bagimliliklar(manifest):
+        eğer değil koleksiyon_yardimci.icerir(tamamlanan, bagimlilik) ise:
+            döndür yanlış
+    döndür doğru
+
+işlev bagimlilik_plani(manifestler):
+    deneme:
+        her manifest içinde manifestler:
+            dogrulama olsun dogrula(manifest)
+            eğer değil dogrulama.ok ise:
+                döndür dogrulama
+
+        tekrar_adi olsun tekrar_eden_manifest_adi(manifestler)
+        eğer uzunluk(tekrar_adi) büyük 0 ise:
+            döndür sonuc_yardimci.hata("tekrar eden paket manifesti: " + tekrar_adi)
+
+        eksik olsun ilk_eksik_manifest_bagimliligi(manifestler)
+        eğer uzunluk(eksik) büyük 0 ise:
+            döndür sonuc_yardimci.hata("bagimlilik bulunamadi: " + eksik)
+
+        kalan olsun []
+        her manifest içinde manifestler:
+            kalan.ekle(manifest)
+        plan olsun []
+
+        sürece uzunluk(kalan) büyük 0:
+            ilerleme olsun yanlış
+            sonraki_kalan olsun []
+            her manifest içinde kalan:
+                eğer bagimliliklari_tamamlandi_mi(manifest, plan) ise:
+                    plan.ekle(ad(manifest))
+                    ilerleme = doğru
+                değilse:
+                    sonraki_kalan.ekle(manifest)
+            eğer değil ilerleme ise:
+                döndür sonuc_yardimci.hata("bagimlilik dongusu algilandi")
+            kalan = sonraki_kalan
+
+        döndür sonuc_yardimci.ok(plan)
+    yakala hata:
+        döndür sonuc_yardimci.hata("bagimlilik plani gecersiz")
 
 işlev ad_gecerli_mi(paket_adi):
     deneme:

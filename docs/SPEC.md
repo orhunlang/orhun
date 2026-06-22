@@ -525,6 +525,12 @@ refs before a future Orhun-written resolver touches a package path. Cryptographi
 digest calculation and filesystem-content verification remain native runtime
 responsibilities for now.
 
+`bagimlilik_plani(manifestler)` validates each manifest, rejects duplicate
+package definitions, missing direct dependencies, and cycles, then returns a
+stable dependency-first package-name order. This keeps graph planning in
+Orhun source while package download, hashing, and filesystem mutation remain
+behind explicit runtime commands.
+
 `orhun/dil.oh` includes language-development helpers for Orhun-source
 compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
 `hata_token`, `token_mi`), token-stream cursors (`imlec`, `simdiki`, `onceki`,

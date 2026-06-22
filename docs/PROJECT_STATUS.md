@@ -140,7 +140,9 @@ These percentages are planning estimates, not promises.
   compares valid versions with Semantic Versioning precedence, and evaluates
   exact, comparison, caret, and tilde version rules for future dependency
   resolution. It also parses and structurally validates compatible v1/v2/v3
-  lock records in Orhun before a future resolver accesses package paths.
+  lock records in Orhun before a future resolver accesses package paths, and
+  produces dependency-first plans while rejecting missing, duplicate, and
+  cyclic manifest graphs.
 - Package removal is path-contained to a direct `lib/<package>` directory and
   updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
   rejected by both the CLI and Orhun-written manifest helper, and malformed

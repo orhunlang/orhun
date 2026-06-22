@@ -83,6 +83,31 @@ yazdır paket_yardimci.kilit_dosyasi_metni(kilit_listesi.deger).ok
 yazdır metin.icerir(paket_yardimci.kilit_dosyasi_metni(kilit_listesi.deger).deger, "source_ref")
 yazdır metin.icerir(paket_yardimci.kilit_dosyasi_metni(kilit_listesi.deger).deger, v3_satiri)
 
+manifestler olsun [
+    {"ad":"uygulama","surum":"1.0.0","bagimliliklar":["ag","veri"]},
+    {"ad":"ag","surum":"1.0.0","bagimliliklar":["temel"]},
+    {"ad":"veri","surum":"1.0.0","bagimliliklar":["temel"]},
+    {"ad":"temel","surum":"1.0.0"}
+]
+plan olsun paket_yardimci.bagimlilik_plani(manifestler)
+yazdır plan.ok
+yazdır plan.deger[0]
+yazdır plan.deger[1]
+yazdır plan.deger[2]
+yazdır plan.deger[3]
+
+eksik_plan olsun paket_yardimci.bagimlilik_plani([{"ad":"a","surum":"1.0.0","bagimliliklar":["yok"]}])
+yazdır eksik_plan.ok
+yazdır metin.icerir(eksik_plan.hata, "bulunamadi")
+
+dongu_plan olsun paket_yardimci.bagimlilik_plani([{"ad":"a","surum":"1.0.0","bagimliliklar":["b"]}, {"ad":"b","surum":"1.0.0","bagimliliklar":["a"]}])
+yazdır dongu_plan.ok
+yazdır metin.icerir(dongu_plan.hata, "dongu")
+
+tekrar_plan olsun paket_yardimci.bagimlilik_plani([{"ad":"a","surum":"1.0.0"}, {"ad":"a","surum":"1.0.0"}])
+yazdır tekrar_plan.ok
+yazdır metin.icerir(tekrar_plan.hata, "tekrar")
+
 varsayilanli olsun json.coz("{\"ad\":\"yalin\",\"surum\":\"1.0.0\"}")
 yazdır paket_yardimci.giris(varsayilanli)
 yazdır uzunluk(paket_yardimci.bagimliliklar(varsayilanli))

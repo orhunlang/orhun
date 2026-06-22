@@ -47,6 +47,8 @@ Hedefler:
 - Orhun paket yardimcisi lock v1/v2/v3 satirlarini yapisal olarak cozer;
   SHA-256 ve dosya butunlugu denetimi sistem sinirinda kalirken gelecekteki
   Orhun kaynakli cozumleyici guvenli paket yolu kararlarini kendi verir.
+- Paket bagimlilik grafi planlamasi saf Orhun kodunda eksik, tekrarli ve
+  dongusel manifestleri reddederek bagimlilik-oncelikli karar verir.
 - C++ yerlesikleri sadece sistem siniri, dosya, FFI, ag ve VM primitive'leri
   gibi zorunlu noktalarda kalir.
 
