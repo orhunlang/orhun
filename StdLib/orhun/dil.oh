@@ -51,6 +51,10 @@ işlev kaynak_satiri(kaynak, satir):
         döndür ""
     döndür metin_yardimci.sag_kirp(satirlar[indeks])
 
+işlev kaynak_satiri_var_mi(kaynak, satir):
+    indeks olsun satir - 1
+    döndür indeks büyük -1 ve indeks küçük uzunluk(parcala(kaynak, "\n"))
+
 işlev tani_isareti(sutun):
     bosluk_sayisi olsun sutun - 1
     eğer bosluk_sayisi küçük 0 ise:
@@ -59,7 +63,7 @@ işlev tani_isareti(sutun):
 
 işlev tani_kaynak_bicimlendir(kayit, kaynak):
     satir_metni olsun kaynak_satiri(kaynak, kayit.satir)
-    eğer uzunluk(satir_metni) eşit 0 ise:
+    eğer değil kaynak_satiri_var_mi(kaynak, kayit.satir) ise:
         döndür tani_bicimlendir(kayit)
     döndür tani_bicimlendir(kayit) + "\n" + satir_metni + "\n" + tani_isareti(kayit.sutun)
 

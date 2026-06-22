@@ -32,4 +32,8 @@ iki
 [beklenen_token] Satir 1, sutun 1: sayi bekleniyor
 bir
 ^
+1
+[bos_satir] Satir 2, sutun 1: burada ifade bekleniyor
+
+^
 
