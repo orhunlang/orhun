@@ -189,8 +189,8 @@
   kütüphane yardımcısıdır.
 
 ## 12.2. Orhun-source lexer/parser helpers
-- `orhun/lexer.oh` `0.5.0`, token değerleri ve hata token değerleri için
-  yardımcı özet fonksiyonları ekler.
+- `orhun/lexer.oh` `0.6.0`, token değerleri, hata token değerleri ve
+  UTF-8-aware token aralıkları için yardımcı özet fonksiyonları ekler.
 - `orhun/parser.oh` `0.14.0`, parse sonucunda hata var/yok ve hata mesajı
   okuma yardımcıları ekler.
 - Bu yardımcılar mevcut lexer/parser çıktı sözleşmesini değiştirmez.

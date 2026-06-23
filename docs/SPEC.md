@@ -680,8 +680,9 @@ yazdır lexer.degerleri(tokenlar)
 Each token is a dictionary with `tur`, `deger`, `satir`, and `sutun` fields.
 `ozetle(kaynak)` returns a dictionary with `hata_sayisi`, `token_sayisi`, and `tokenlar`,
 matching the C++ `lex --json` health shape used by parity tests. Helper
-functions expose token types, token values, first error token, error presence,
-error count, and error-token values.
+functions expose token types, token values, UTF-8-aware token lengths, inclusive
+source ranges (`satir`, `baslangic_sutun`, `bitis_sutun`, `uzunluk`), first
+error token, error presence, error count, and error-token values.
 The current prototype recognizes keywords, identifiers, numbers, decimals,
 strings, one-character operators, indentation, LF newlines, end-of-file, and
 error tokens. It is a parity target for the C++ lexer, not yet the production

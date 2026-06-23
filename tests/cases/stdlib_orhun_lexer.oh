@@ -40,3 +40,16 @@ yazdır metin_hata.token_sayisi
 yazdır lexer.hata_var_mi(metin_hata.tokenlar)
 yazdır metin.icerir(lexer.ilk_hata(metin_hata.tokenlar).deger, "metin")
 yazdır json.yaz(lexer.hata_degerleri(metin_hata.tokenlar))
+
+turkce_token olsun lexer.tokenlestir("çığ olsun 1\n")[0]
+turkce_aralik olsun lexer.token_araligi(turkce_token)
+yazdır lexer.token_uzunlugu(turkce_token)
+yazdır turkce_aralik.satir
+yazdır turkce_aralik.baslangic_sutun
+yazdır turkce_aralik.bitis_sutun
+yazdır turkce_aralik.uzunluk
+
+araliklar olsun lexer.token_araliklari(lexer.tokenlestir("a olsun 1\n"))
+yazdır uzunluk(araliklar)
+yazdır araliklar[1].baslangic_sutun
+yazdır araliklar[1].bitis_sutun

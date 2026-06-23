@@ -70,8 +70,9 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
-Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.5.0 ile `hata_sayisi`,
-`token_sayisi`, `tokenlar`, token degeri ve hata degeri ozetlerini sagliyor. Lexer parity
+Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.6.0 ile `hata_sayisi`,
+`token_sayisi`, `tokenlar`, token degeri, hata degeri ve UTF-8-aware token
+araligi ozetlerini sagliyor. Lexer parity
 7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
 seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutun
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine

@@ -40,6 +40,8 @@ These percentages are planning estimates, not promises.
   expressions, collections, control flow, functions, closures, lambdas,
   list comprehensions, parallel task plans, external declarations, class
   fields/methods/inheritance, locals, and optimizations with parity smoke tests.
+- The Orhun-written lexer exposes UTF-8-aware token length and inclusive source
+  range helpers for diagnostics, LSP, and future self-hosted language tooling.
 - Exact Orhun/C++ compiler bytecode parity across all current C++-compileable
   runtime cases, guarded by a full-case sweep.
 - Strict decoded-bytecode execution bridge from the Orhun-written compiler to

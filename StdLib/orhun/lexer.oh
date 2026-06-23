@@ -4,7 +4,7 @@
 # ifade etmeye baslar. Kaynak konumlari bayt indeksleriyle, sutunlar ise
 # UTF-8 kod noktasi sayilariyla izlenir.
 
-surum olsun "0.5.0"
+surum olsun "0.6.0"
 satir_donusu olsun json.coz("\"\\r\"")
 
 anahtarlar olsun []
@@ -311,6 +311,26 @@ işlev degerleri(tokenlar):
     sonuc olsun []
     her tok içinde tokenlar:
         sonuc.ekle(tok.deger)
+    döndür sonuc
+
+işlev token_uzunlugu(token_degeri):
+    eğer uzunluk(token_degeri.deger) eşit 0 ise:
+        döndür 1
+    döndür metin.utf8_uzunluk(token_degeri.deger)
+
+işlev token_araligi(token_degeri):
+    isaret_uzunlugu olsun token_uzunlugu(token_degeri)
+    döndür {
+        "satir": token_degeri.satir,
+        "baslangic_sutun": token_degeri.sutun,
+        "bitis_sutun": token_degeri.sutun + isaret_uzunlugu - 1,
+        "uzunluk": isaret_uzunlugu
+    }
+
+işlev token_araliklari(tokenlar):
+    sonuc olsun []
+    her tok içinde tokenlar:
+        sonuc.ekle(token_araligi(tok))
     döndür sonuc
 
 işlev ilk_hata(tokenlar):
