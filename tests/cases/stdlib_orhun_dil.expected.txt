@@ -1,4 +1,4 @@
-0.4.0
+0.5.0
 1
 SAYI|ARTI|SAYI|DOSYA_SONU
 ["2","+","3",""]
@@ -33,3 +33,9 @@ bir
 [bos_satir] Satir 2, sutun 1: burada ifade bekleniyor
 
 ^
+   ^~~
+[gecersiz_ifade] Satir 1, sutun 4: ifade bu bolumde kullanilamaz
+bir hatali ifade
+   ^~~
+[uyari: eski_kullanim] Satir 2, sutun 1: bu kullanim gelecekte kaldirilacak
+Ipucu: yerine yeni_yontem kullan

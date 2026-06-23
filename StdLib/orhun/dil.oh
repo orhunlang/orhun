@@ -6,7 +6,7 @@
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.4.0"
+surum olsun "0.5.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -28,7 +28,23 @@ işlev token_mi(deger):
         döndür yanlış
 
 işlev tani(kod, mesaj, satir, sutun):
-    döndür {"kod": kod, "mesaj": mesaj, "satir": satir, "sutun": sutun}
+    döndür {"kod": kod, "mesaj": mesaj, "satir": satir, "sutun": sutun, "uzunluk": 1, "seviye": "hata", "ipucu": ""}
+
+işlev tani_araligi(kod, mesaj, satir, sutun, isaret_uzunlugu):
+    kayit olsun tani(kod, mesaj, satir, sutun)
+    eğer isaret_uzunlugu küçük 1 ise:
+        isaret_uzunlugu = 1
+    kayit["uzunluk"] = isaret_uzunlugu
+    döndür kayit
+
+işlev tani_uyarisi(kod, mesaj, satir, sutun):
+    kayit olsun tani(kod, mesaj, satir, sutun)
+    kayit["seviye"] = "uyari"
+    döndür kayit
+
+işlev tani_ipucu_ekle(kayit, ipucu):
+    kayit["ipucu"] = ipucu
+    döndür kayit
 
 işlev tani_ekle(imlec, kod, mesaj, token_degeri):
     kayit olsun tani(kod, mesaj, token_degeri.satir, token_degeri.sutun)
@@ -38,8 +54,16 @@ işlev tani_ekle(imlec, kod, mesaj, token_degeri):
 işlev tani_konumu(kayit):
     döndür "Satir " + metne_cevir(kayit.satir) + ", sutun " + metne_cevir(kayit.sutun)
 
+işlev tani_basligi(kayit):
+    eğer kayit.seviye eşit "hata" ise:
+        döndür "[" + kayit.kod + "]"
+    döndür "[" + kayit.seviye + ": " + kayit.kod + "]"
+
 işlev tani_bicimlendir(kayit):
-    döndür "[" + kayit.kod + "] " + tani_konumu(kayit) + ": " + kayit.mesaj
+    metin olsun tani_basligi(kayit) + " " + tani_konumu(kayit) + ": " + kayit.mesaj
+    eğer uzunluk(kayit.ipucu) büyük 0 ise:
+        metin = metin + "\nIpucu: " + kayit.ipucu
+    döndür metin
 
 işlev kaynak_satiri(kaynak, satir):
     satirlar olsun parcala(kaynak, "\n")
@@ -53,16 +77,21 @@ işlev kaynak_satiri_var_mi(kaynak, satir):
     döndür indeks büyük -1 ve indeks küçük uzunluk(parcala(kaynak, "\n"))
 
 işlev tani_isareti(sutun):
+    döndür tani_aralik_isareti(sutun, 1)
+
+işlev tani_aralik_isareti(sutun, isaret_uzunlugu):
     bosluk_sayisi olsun sutun - 1
     eğer bosluk_sayisi küçük 0 ise:
         bosluk_sayisi = 0
-    döndür metin_yardimci.tekrar(" ", bosluk_sayisi) + "^"
+    eğer isaret_uzunlugu küçük 1 ise:
+        isaret_uzunlugu = 1
+    döndür metin_yardimci.tekrar(" ", bosluk_sayisi) + "^" + metin_yardimci.tekrar("~", isaret_uzunlugu - 1)
 
 işlev tani_kaynak_bicimlendir(kayit, kaynak):
     satir_metni olsun kaynak_satiri(kaynak, kayit.satir)
     eğer değil kaynak_satiri_var_mi(kaynak, kayit.satir) ise:
         döndür tani_bicimlendir(kayit)
-    döndür tani_bicimlendir(kayit) + "\n" + satir_metni + "\n" + tani_isareti(kayit.sutun)
+    döndür tani_bicimlendir(kayit) + "\n" + satir_metni + "\n" + tani_aralik_isareti(kayit.sutun, kayit.uzunluk)
 
 işlev dugum(tur, deger, cocuklar, satir, sutun):
     döndür {"tur": tur, "deger": deger, "cocuklar": cocuklar, "satir": satir, "sutun": sutun}
