@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.7 seconds
-Output:
 # Orhun Standard Library
 
 `StdLib/` contains standard library pieces that ship with the Orhun runtime.
@@ -61,4 +58,3 @@ Module lookup checks the requested path first, then searches the standard
 library roots. `ORHUN_STDLIB_PATH` can add custom roots. A runtime release also
 discovers the sibling `StdLib/` directory beside its `orhun` executable, while
 the local `StdLib/` directory remains available during development.
-

@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.7 seconds
-Output:
 # Orhun Project Status
 
 This document gives a human-readable snapshot of where Orhun is today and what
@@ -182,4 +179,3 @@ These percentages are planning estimates, not promises.
 Do not call Orhun `2.1.0` just because the number looks mature. `2.1.0` should
 mean users can start real projects with reasonable confidence. The gates in
 `docs/VERSIONING.md` must be met first.
-

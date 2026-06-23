@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.6 seconds
-Output:
 # Orhun Language Specification
 
 This document is the living language contract for Orhun. It describes the
@@ -979,4 +976,3 @@ This specification is the baseline for future Orhun-written components:
 
 When implementation behavior and this document diverge, either the implementation
 or the specification must be updated in the same development cycle.
-

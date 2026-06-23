@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.6 seconds
-Output:
 # Orhun Self-Hosting Roadmap
 
 Orhun'un uzun vadeli hedefi, C++ ile baslayan derleyici/runtime cekirdegini
@@ -277,4 +274,3 @@ Basari olcutu:
 3. Lexer ve parser ara temsil sozlesmelerini self-hosting icin sabitle.
 4. Kaynak-kodsuz derleyici bundle'ini surumlu release asset'ine donustur.
 5. AOT denemelerini VM ve guvenlik sozlesmesini bozmadan baslat.
-
