@@ -34,6 +34,7 @@ yazdır paket_yardimci.kilit_dosyasini_coz("ornek|yerel|hash|v2").deger[0].ad
 yazdır paket_yardimci.bagimlilik_plani([{"ad":"ana","surum":"1.0.0"}]).deger
 yazdır paket_yardimci.en_uygun_bagimlilik({"ad":"ag","kural":"^1.0.0"}, [{"ad":"ag","surum":"1.2.0"}]).deger.surum
 yazdır paket_yardimci.dogrula({"ad":"ana","surum":"1.0.0","bagimliliklar":["ag"],"bagimlilik_istekleri":[{"ad":"ag","kural":"^1.0.0"}]}).ok
+yazdır paket_yardimci.manifest_bagimliliklarini_sec({"ad":"ana","surum":"1.0.0","bagimliliklar":["ag"]}, [{"ad":"ag","surum":"1.2.0"}]).deger[0].surum
 
 lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")

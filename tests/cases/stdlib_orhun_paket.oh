@@ -86,6 +86,13 @@ gecersiz_istek_manifest olsun json.coz("{\"ad\":\"uygulama\",\"surum\":\"1.0.0\"
 yazdır paket_yardimci.dogrula(gecersiz_istek_manifest).ok
 yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_istek_manifest).hata, "istegi")
 
+cozum_manifesti olsun json.coz("{\"ad\":\"uygulama\",\"surum\":\"1.0.0\",\"bagimliliklar\":[\"ag\",\"veri\"],\"bagimlilik_istekleri\":[{\"ad\":\"ag\",\"kural\":\"^1.2.0\"}]}")
+manifest_secimi olsun paket_yardimci.manifest_bagimliliklarini_sec(cozum_manifesti, adaylar)
+yazdır manifest_secimi.ok
+yazdır manifest_secimi.deger[0].surum
+yazdır manifest_secimi.deger[1].surum
+yazdır paket_yardimci.manifest_bagimlilik_istekleri(cozum_manifesti)[1].kural
+
 v3_satiri olsun "deneme|https://github.com/orhunlang/deneme.git|ozet|v3|abc1234|icerik|v1.0.0"
 kilit_cozumu olsun paket_yardimci.kilit_satirini_coz(v3_satiri)
 yazdır kilit_cozumu.ok

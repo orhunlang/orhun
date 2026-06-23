@@ -4,7 +4,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.11.0"
+surum olsun "0.12.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -382,6 +382,28 @@ işlev bagimlilikleri_sec(istekler, adaylar):
             döndür secim
         secilenler.ekle(secim.deger)
     döndür sonuc_yardimci.ok(secilenler)
+
+işlev bagimlilik_istegi_bul(istekler, paket_adi):
+    her istek içinde istekler:
+        eğer istek.ad eşit paket_adi ise:
+            döndür {"bulundu": doğru, "istek": istek}
+    döndür {"bulundu": yanlış}
+
+işlev manifest_bagimlilik_istekleri(manifest):
+    istekler olsun []
+    her paket_adi içinde bagimliliklar(manifest):
+        bulunan olsun bagimlilik_istegi_bul(bagimlilik_istekleri(manifest), paket_adi)
+        eğer bulunan.bulundu ise:
+            istekler.ekle(bulunan.istek)
+        değilse:
+            istekler.ekle(bagimlilik_istegi(paket_adi, "*"))
+    döndür istekler
+
+işlev manifest_bagimliliklarini_sec(manifest, adaylar):
+    dogrulama olsun dogrula(manifest)
+    eğer değil dogrulama.ok ise:
+        döndür dogrulama
+    döndür bagimlilikleri_sec(manifest_bagimlilik_istekleri(manifest), adaylar)
 
 işlev kaynak_ref_gecerli_mi(kaynak_ref):
     deneme:

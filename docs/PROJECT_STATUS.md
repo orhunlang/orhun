@@ -144,7 +144,7 @@ These percentages are planning estimates, not promises.
   produces dependency-first plans while rejecting missing, duplicate, and
   cyclic manifest graphs. It can also select the highest SemVer-compatible
   candidate for each versioned dependency request, including optional manifest
-  `bagimlilik_istekleri` validation.
+  `bagimlilik_istekleri` validation and direct manifest dependency selection.
 - Package removal is path-contained to a direct `lib/<package>` directory and
   updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
   rejected by both the CLI and Orhun-written manifest helper, and malformed

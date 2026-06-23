@@ -51,6 +51,7 @@ Hedefler:
   dongusel manifestleri reddederek bagimlilik-oncelikli karar verir.
 - Surumlu bagimlilik istekleri saf Orhun kodunda en yuksek uyumlu adayla
   eslenir ve manifestteki dogrudan bagimliliklar ile tutarliligi denetlenir;
+  manifest secimi acik kurali olmayan bagimliliklari da `*` ile kapsar;
   indirme ve dosya degisimi sistem sinirinda kalir.
 - C++ yerlesikleri sadece sistem siniri, dosya, FFI, ag ve VM primitive'leri
   gibi zorunlu noktalarda kalir.
