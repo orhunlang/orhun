@@ -6,7 +6,7 @@
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.5.0"
+surum olsun "0.6.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -46,8 +46,16 @@ işlev tani_ipucu_ekle(kayit, ipucu):
     kayit["ipucu"] = ipucu
     döndür kayit
 
+işlev token_uzunlugu(token_degeri):
+    eğer uzunluk(token_degeri.deger) eşit 0 ise:
+        döndür 1
+    döndür metin.utf8_uzunluk(token_degeri.deger)
+
+işlev token_tanisi(kod, mesaj, token_degeri):
+    döndür tani_araligi(kod, mesaj, token_degeri.satir, token_degeri.sutun, token_uzunlugu(token_degeri))
+
 işlev tani_ekle(imlec, kod, mesaj, token_degeri):
-    kayit olsun tani(kod, mesaj, token_degeri.satir, token_degeri.sutun)
+    kayit olsun token_tanisi(kod, mesaj, token_degeri)
     imlec.hatalar.ekle(kayit)
     döndür kayit
 

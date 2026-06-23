@@ -556,6 +556,8 @@ and DSL diagnostics, including valid blank source lines. `tani_araligi` marks
 a multi-character source range with `^~~`, while `tani_uyarisi` produces a
 non-fatal warning record. `tani_ipucu_ekle` attaches an actionable Turkish
 hint without changing the diagnostic code or source location.
+`token_uzunlugu` and `token_tanisi` derive an UTF-8-aware source range from a
+token, so lexer and parser prototypes do not need to repeat column arithmetic.
 
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.

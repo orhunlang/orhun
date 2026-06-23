@@ -52,6 +52,8 @@ yazdır dil.tanilari_bicimlendir(imlec)
 yazdır dil.tani_kaynak_bicimlendir(dil.tani("ornek", "mesaj", 1, 2), "ab")
 aralikli olsun dil.tani_araligi("ornek", "gecersiz bolum", 1, 2, 2)
 yazdır dil.tani_kaynak_bicimlendir(aralikli, "abc")
+kimlik_tanisi olsun dil.token_tanisi("tanimsiz_ad", "ad tanimli degil", dil.token("AD", "deger", 1, 1))
+yazdır dil.tani_bicimlendir(kimlik_tanisi)
 
 parser olsun dahil_et "orhun/parser.oh"
 parse_sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")

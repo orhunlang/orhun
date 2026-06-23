@@ -1,4 +1,4 @@
-0.5.0
+0.6.0
 1
 SAYI|ARTI|SAYI|DOSYA_SONU
 ["2","+","3",""]
@@ -39,3 +39,7 @@ bir hatali ifade
    ^~~
 [uyari: eski_kullanim] Satir 2, sutun 1: bu kullanim gelecekte kaldirilacak
 Ipucu: yerine yeni_yontem kullan
+3
+[tanimsiz_ad] Satir 1, sutun 2: bu ad tanimli degil
+açığ b
+ ^~~
