@@ -535,6 +535,9 @@ behind explicit runtime commands.
 `en_uygun_bagimlilik` chooses the highest valid candidate matching that
 Semantic Versioning rule, while `bagimlilikleri_sec` resolves a unique request
 set and rejects duplicate requests or missing compatible candidates.
+Manifests can carry an optional `bagimlilik_istekleri` list of `{ad, kural}`
+records. Every request must name a direct `bagimliliklar` entry, have a valid
+rule, and occur only once.
 
 `orhun/dil.oh` includes language-development helpers for Orhun-source
 compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,

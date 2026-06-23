@@ -143,7 +143,8 @@ These percentages are planning estimates, not promises.
   lock records in Orhun before a future resolver accesses package paths, and
   produces dependency-first plans while rejecting missing, duplicate, and
   cyclic manifest graphs. It can also select the highest SemVer-compatible
-  candidate for each versioned dependency request.
+  candidate for each versioned dependency request, including optional manifest
+  `bagimlilik_istekleri` validation.
 - Package removal is path-contained to a direct `lib/<package>` directory and
   updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
   rejected by both the CLI and Orhun-written manifest helper, and malformed

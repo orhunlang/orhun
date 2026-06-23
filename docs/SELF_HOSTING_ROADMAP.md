@@ -50,7 +50,8 @@ Hedefler:
 - Paket bagimlilik grafi planlamasi saf Orhun kodunda eksik, tekrarli ve
   dongusel manifestleri reddederek bagimlilik-oncelikli karar verir.
 - Surumlu bagimlilik istekleri saf Orhun kodunda en yuksek uyumlu adayla
-  eslenir; indirme ve dosya degisimi sistem sinirinda kalir.
+  eslenir ve manifestteki dogrudan bagimliliklar ile tutarliligi denetlenir;
+  indirme ve dosya degisimi sistem sinirinda kalir.
 - C++ yerlesikleri sadece sistem siniri, dosya, FFI, ag ve VM primitive'leri
   gibi zorunlu noktalarda kalir.
 

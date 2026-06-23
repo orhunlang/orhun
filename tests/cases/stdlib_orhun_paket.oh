@@ -76,6 +76,16 @@ yazdır secilenler.deger[0].surum
 yazdır secilenler.deger[1].surum
 yazdır paket_yardimci.bagimlilikleri_sec([istek, istek], adaylar).ok
 
+surumlu_manifest olsun json.coz("{\"ad\":\"uygulama\",\"surum\":\"1.0.0\",\"bagimliliklar\":[\"ag\"],\"bagimlilik_istekleri\":[{\"ad\":\"ag\",\"kural\":\"^1.2.0\"}]}")
+yazdır paket_yardimci.dogrula(surumlu_manifest).ok
+yazdır paket_yardimci.bagimlilik_istekleri(surumlu_manifest)[0].kural
+uyusmayan_istek_manifest olsun json.coz("{\"ad\":\"uygulama\",\"surum\":\"1.0.0\",\"bagimlilik_istekleri\":[{\"ad\":\"ag\",\"kural\":\"^1.2.0\"}]}")
+yazdır paket_yardimci.dogrula(uyusmayan_istek_manifest).ok
+yazdır metin.icerir(paket_yardimci.dogrula(uyusmayan_istek_manifest).hata, "listede")
+gecersiz_istek_manifest olsun json.coz("{\"ad\":\"uygulama\",\"surum\":\"1.0.0\",\"bagimliliklar\":[\"ag\"],\"bagimlilik_istekleri\":[{\"ad\":\"ag\",\"kural\":\"^1.2\"}]}")
+yazdır paket_yardimci.dogrula(gecersiz_istek_manifest).ok
+yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_istek_manifest).hata, "istegi")
+
 v3_satiri olsun "deneme|https://github.com/orhunlang/deneme.git|ozet|v3|abc1234|icerik|v1.0.0"
 kilit_cozumu olsun paket_yardimci.kilit_satirini_coz(v3_satiri)
 yazdır kilit_cozumu.ok

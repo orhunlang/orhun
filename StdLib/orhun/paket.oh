@@ -4,7 +4,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.10.0"
+surum olsun "0.11.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -33,12 +33,28 @@ işlev giris(manifest):
 işlev bagimliliklar(manifest):
     döndür alan(manifest, "bagimliliklar", [])
 
+işlev bagimlilik_istekleri(manifest):
+    döndür alan(manifest, "bagimlilik_istekleri", [])
+
 işlev bagimli_mi(manifest, paket_adi):
     liste olsun bagimliliklar(manifest)
     her bagimlilik içinde liste:
         eğer bagimlilik eşit paket_adi ise:
             döndür doğru
     döndür yanlış
+
+işlev ilk_gecersiz_bagimlilik_istegi(istekler):
+    her istek içinde istekler:
+        dogrulama olsun bagimlilik_istegi_dogrula(istek)
+        eğer değil dogrulama.ok ise:
+            döndür dogrulama.hata
+    döndür ""
+
+işlev ilk_uyusmayan_bagimlilik_istegi(manifest):
+    her istek içinde bagimlilik_istekleri(manifest):
+        eğer değil bagimli_mi(manifest, istek.ad) ise:
+            döndür istek.ad
+    döndür ""
 
 işlev ozet(manifest):
     döndür ad(manifest) + "@" + surum_al(manifest)
@@ -578,6 +594,22 @@ işlev dogrula(manifest):
         gecersiz_bagimlilik olsun ilk_gecersiz_bagimlilik(bagimliliklar(manifest))
         eğer uzunluk(gecersiz_bagimlilik) büyük 0 ise:
             döndür sonuc_yardimci.hata("manifest bagimlilik adi gecersiz: " + gecersiz_bagimlilik)
+
+        istek_json olsun json.yaz(bagimlilik_istekleri(manifest))
+        eğer istek_json[0] eşit "[" ise:
+            uzunluk(bagimlilik_istekleri(manifest))
+        değilse:
+            döndür sonuc_yardimci.hata("manifest bagimlilik_istekleri alani liste olmali")
+
+        gecersiz_istek olsun ilk_gecersiz_bagimlilik_istegi(bagimlilik_istekleri(manifest))
+        eğer uzunluk(gecersiz_istek) büyük 0 ise:
+            döndür sonuc_yardimci.hata("manifest bagimlilik istegi gecersiz: " + gecersiz_istek)
+        tekrar_istek olsun tekrar_eden_istek_adi(bagimlilik_istekleri(manifest))
+        eğer uzunluk(tekrar_istek) büyük 0 ise:
+            döndür sonuc_yardimci.hata("manifest tekrar eden bagimlilik istegi: " + tekrar_istek)
+        uyusmayan_istek olsun ilk_uyusmayan_bagimlilik_istegi(manifest)
+        eğer uzunluk(uyusmayan_istek) büyük 0 ise:
+            döndür sonuc_yardimci.hata("manifest bagimlilik istegi listede degil: " + uyusmayan_istek)
 
         döndür sonuc_yardimci.ok(manifest)
     yakala hata:
