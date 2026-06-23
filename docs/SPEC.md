@@ -544,6 +544,8 @@ installed, validated, updated, or removed.
 `manifest_kilit_bagimliliklarini_dogrula(manifest, kilit_kayitlari)` verifies
 that every direct manifest dependency has a valid, unique lock record before a
 future Orhun-written resolver downloads or changes package files.
+The native `orhun paket dogrula` command applies the same direct-dependency
+coverage check to the current `orhun.yap` and `orhun.lock` files.
 Manifests can carry an optional `bagimlilik_istekleri` list of `{ad, kural}`
 records. Every request must name a direct `bagimliliklar` entry, have a valid
 rule, and occur only once.

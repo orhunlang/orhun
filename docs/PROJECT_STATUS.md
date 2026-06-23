@@ -151,6 +151,8 @@ These percentages are planning estimates, not promises.
   Orhun toolchain.
 - Orhun-source manifest/lock validation can reject a project before resolution
   when a direct dependency is absent from the validated lock record set.
+- `orhun paket dogrula` also rejects an `orhun.yap` direct dependency without
+  a corresponding lock record, before package execution or filesystem changes.
 - Package removal is path-contained to a direct `lib/<package>` directory and
   updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
   rejected by both the CLI and Orhun-written manifest helper, and malformed

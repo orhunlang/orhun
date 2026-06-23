@@ -2859,6 +2859,46 @@ bool lockKaydiDogrula(const LockKaydi &kayit, std::string *hata) {
   return true;
 }
 
+std::vector<std::string>
+orhunYapBagimliliklariniOku(const std::filesystem::path &yapDosyasi) {
+  namespace fs = std::filesystem;
+  std::vector<std::string> bagimliliklar;
+  if (!fs::exists(yapDosyasi)) {
+    return bagimliliklar;
+  }
+
+  std::unordered_set<std::string> gorulenAdlar;
+  bool bagimlilikBolumu = false;
+  std::istringstream ak(dosyaOku(yapDosyasi.string()));
+  for (std::string satir; std::getline(ak, satir);) {
+    const std::string trim = solaSagaKirp(satir);
+    if (trim == "bagimliliklar:") {
+      bagimlilikBolumu = true;
+      continue;
+    }
+    if (!bagimlilikBolumu || trim.empty() || trim[0] == '#') {
+      continue;
+    }
+    if (trim.rfind("- ", 0) == 0) {
+      const std::string paketAdi = solaSagaKirp(trim.substr(2));
+      if (!paketAdiGecerliMi(paketAdi)) {
+        throw std::runtime_error("Hata: orhun.yap bagimlilik adi gecersiz: '" +
+                                 paketAdi + "'");
+      }
+      if (!gorulenAdlar.insert(paketAdi).second) {
+        throw std::runtime_error("Hata: orhun.yap tekrar eden bagimlilik: '" +
+                                 paketAdi + "'");
+      }
+      bagimliliklar.push_back(paketAdi);
+      continue;
+    }
+    if (trim.find(':') != std::string::npos) {
+      bagimlilikBolumu = false;
+    }
+  }
+  return bagimliliklar;
+}
+
 int komutPaketDogrula() {
   namespace fs = std::filesystem;
   const fs::path lockDosyasi = fs::current_path() / "orhun.lock";
@@ -2874,6 +2914,19 @@ int komutPaketDogrula() {
   }
 
   bool basarisiz = false;
+  std::unordered_set<std::string> kilitAdlari;
+  for (const auto &kayit : kayitlar) {
+    kilitAdlari.insert(kayit.ad);
+  }
+  const std::vector<std::string> yapBagimliliklari =
+      orhunYapBagimliliklariniOku(fs::current_path() / "orhun.yap");
+  for (const auto &paketAdi : yapBagimliliklari) {
+    if (kilitAdlari.find(paketAdi) == kilitAdlari.end()) {
+      std::cout << "[HATA] " << paketAdi
+                << ": orhun.yap bagimliligi icin lock kaydi bulunamadi.\n";
+      basarisiz = true;
+    }
+  }
   for (const auto &kayit : kayitlar) {
     std::string neden;
     if (!lockKaydiDogrula(kayit, &neden)) {

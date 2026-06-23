@@ -73,6 +73,16 @@ def main() -> int:
             f"Remaining package should verify:\n{verified.stdout}\n{verified.stderr}",
         )
 
+        (project / "orhun.yap").write_text(config_text + "- yok\n", encoding="utf-8")
+        eksik_kilit = run_cmd([str(binary), "paket", "dogrula"], project)
+        eksik_kilit_text = (eksik_kilit.stdout + eksik_kilit.stderr).lower()
+        require(eksik_kilit.returncode != 0, "Unpinned manifest dependency should fail validation")
+        require(
+            "lock kaydi bulunamadi" in eksik_kilit_text,
+            "Unpinned dependency failure should mention the missing lock record",
+        )
+        (project / "orhun.yap").write_text(config_text, encoding="utf-8")
+
         for unsafe in (".", ".."):
             rejected = run_cmd([str(binary), "paket", "kaldir", unsafe], project)
             require(rejected.returncode != 0, f"Unsafe package name was accepted: {unsafe}")

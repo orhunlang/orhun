@@ -50,6 +50,8 @@ Hedefler:
   Tekrar eden paket adli lock kayitlari iki katmanda da reddedilir.
 - Saf Orhun manifest/lock tutarlilik denetimi, her dogrudan bagimliligin
   benzersiz ve yapisal olarak gecerli bir lock kaydiyla sabitlenmesini ister.
+  Sistem sinirindaki `paket dogrula` komutu da `orhun.yap` dogrudan
+  bagimliliklarini ayni lock kapsamiyla karsilastirir.
 - Paket bagimlilik grafi planlamasi saf Orhun kodunda eksik, tekrarli ve
   dongusel manifestleri reddederek bagimlilik-oncelikli karar verir.
 - Surumlu bagimlilik istekleri saf Orhun kodunda en yuksek uyumlu adayla
