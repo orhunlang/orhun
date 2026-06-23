@@ -538,6 +538,8 @@ set and rejects duplicate requests or missing compatible candidates.
 `bagimlilik_aday_surimleri` exposes the valid candidate versions for a request;
 an unsuccessful selection distinguishes a missing package name from an
 incompatible version rule and lists the available versions in the latter case.
+Manifest validation rejects duplicate direct dependency names before version
+selection or lock coverage is evaluated.
 Both the C++ package boundary and `kilit_dosyasini_coz` reject duplicate
 package names in `orhun.lock`, preventing an ambiguous lock record from being
 installed, validated, updated, or removed.

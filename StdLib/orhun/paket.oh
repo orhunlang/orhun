@@ -4,7 +4,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.15.0"
+surum olsun "0.16.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -643,6 +643,17 @@ işlev ilk_gecersiz_bagimlilik(bagimlilik_listesi):
             döndür metne_cevir(bagimlilik)
     döndür ""
 
+işlev tekrar_eden_bagimlilik_adi(bagimlilik_listesi):
+    i olsun 0
+    sürece i küçük uzunluk(bagimlilik_listesi):
+        j olsun i + 1
+        sürece j küçük uzunluk(bagimlilik_listesi):
+            eğer bagimlilik_listesi[i] eşit bagimlilik_listesi[j] ise:
+                döndür bagimlilik_listesi[i]
+            j olsun j + 1
+        i olsun i + 1
+    döndür ""
+
 işlev dogrula(manifest):
     deneme:
         manifest_adi olsun ad(manifest)
@@ -673,6 +684,9 @@ işlev dogrula(manifest):
         gecersiz_bagimlilik olsun ilk_gecersiz_bagimlilik(bagimliliklar(manifest))
         eğer uzunluk(gecersiz_bagimlilik) büyük 0 ise:
             döndür sonuc_yardimci.hata("manifest bagimlilik adi gecersiz: " + gecersiz_bagimlilik)
+        tekrar_bagimlilik olsun tekrar_eden_bagimlilik_adi(bagimliliklar(manifest))
+        eğer uzunluk(tekrar_bagimlilik) büyük 0 ise:
+            döndür sonuc_yardimci.hata("manifest tekrar eden bagimlilik: " + tekrar_bagimlilik)
 
         istek_json olsun json.yaz(bagimlilik_istekleri(manifest))
         eğer istek_json[0] eşit "[" ise:
