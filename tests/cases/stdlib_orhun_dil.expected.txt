@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 1.2 seconds
+Wall time: 0.6 seconds
 Output:
 0.4.0
 1

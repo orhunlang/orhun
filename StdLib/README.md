@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 1.3 seconds
+Wall time: 0.7 seconds
 Output:
 # Orhun Standard Library
 
@@ -35,6 +35,7 @@ yazdır paket_yardimci.surum_karsilastir("1.2.3-beta.1", "1.2.3").deger
 yazdır paket_yardimci.surum_uyumlu_mu("1.4.0", "^1.2.3").deger
 yazdır paket_yardimci.kilit_dosyasini_coz("ornek|yerel|hash|v2").deger[0].ad
 yazdır paket_yardimci.bagimlilik_plani([{"ad":"ana","surum":"1.0.0"}]).deger
+yazdır paket_yardimci.en_uygun_bagimlilik({"ad":"ag","kural":"^1.0.0"}, [{"ad":"ag","surum":"1.2.0"}]).deger.surum
 
 lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")

@@ -1,10 +1,13 @@
+Exit code: 0
+Wall time: 0.6 seconds
+Output:
 # Orhun ile yazilmis paket manifest yardimcilari.
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.9.0"
+surum olsun "0.10.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -289,6 +292,84 @@ işlev surum_uyumlu_mu(paket_surumu, kural):
     yakala hata:
         döndür sonuc_yardimci.hata("surum araligi gecersiz")
 
+işlev bagimlilik_istegi(paket_adi, kural):
+    döndür {"ad": paket_adi, "kural": kural}
+
+işlev bagimlilik_istegi_dogrula(istek):
+    deneme:
+        eğer değil ad_gecerli_mi(istek.ad) ise:
+            döndür sonuc_yardimci.hata("bagimlilik istek adi gecersiz")
+        kural_dogrulamasi olsun surum_uyumlu_mu("0.0.0", istek.kural)
+        eğer değil kural_dogrulamasi.ok ise:
+            döndür sonuc_yardimci.hata("bagimlilik surum kurali gecersiz")
+        döndür sonuc_yardimci.ok(istek)
+    yakala hata:
+        döndür sonuc_yardimci.hata("bagimlilik istegi gecersiz")
+
+işlev bagimlilik_adayini_dogrula(aday):
+    deneme:
+        eğer değil ad_gecerli_mi(aday.ad) ise:
+            döndür sonuc_yardimci.hata("bagimlilik aday adi gecersiz")
+        eğer değil surum_gecerli_mi(aday.surum) ise:
+            döndür sonuc_yardimci.hata("bagimlilik aday surumu gecersiz")
+        döndür sonuc_yardimci.ok(aday)
+    yakala hata:
+        döndür sonuc_yardimci.hata("bagimlilik adayi gecersiz")
+
+işlev tekrar_eden_istek_adi(istekler):
+    i olsun 0
+    sürece i küçük uzunluk(istekler):
+        j olsun i + 1
+        sürece j küçük uzunluk(istekler):
+            eğer istekler[i].ad eşit istekler[j].ad ise:
+                döndür istekler[i].ad
+            j olsun j + 1
+        i olsun i + 1
+    döndür ""
+
+işlev en_uygun_bagimlilik(istek, adaylar):
+    istek_dogrulamasi olsun bagimlilik_istegi_dogrula(istek)
+    eğer değil istek_dogrulamasi.ok ise:
+        döndür istek_dogrulamasi
+
+    secilen_var olsun yanlış
+    secilen olsun {}
+    her aday içinde adaylar:
+        eğer aday.ad eşit istek.ad ise:
+            aday_dogrulamasi olsun bagimlilik_adayini_dogrula(aday)
+            eğer değil aday_dogrulamasi.ok ise:
+                döndür aday_dogrulamasi
+            uyumluluk olsun surum_uyumlu_mu(aday.surum, istek.kural)
+            eğer değil uyumluluk.ok ise:
+                döndür uyumluluk
+            eğer uyumluluk.deger ise:
+                eğer değil secilen_var ise:
+                    secilen = aday
+                    secilen_var = doğru
+                değilse:
+                    karsilastirma olsun surum_karsilastir(aday.surum, secilen.surum)
+                    eğer değil karsilastirma.ok ise:
+                        döndür karsilastirma
+                    eğer karsilastirma.deger büyük 0 ise:
+                        secilen = aday
+
+    eğer değil secilen_var ise:
+        döndür sonuc_yardimci.hata("uygun paket surumu bulunamadi: " + istek.ad + " " + istek.kural)
+    döndür sonuc_yardimci.ok(secilen)
+
+işlev bagimlilikleri_sec(istekler, adaylar):
+    tekrar_adi olsun tekrar_eden_istek_adi(istekler)
+    eğer uzunluk(tekrar_adi) büyük 0 ise:
+        döndür sonuc_yardimci.hata("tekrar eden bagimlilik istegi: " + tekrar_adi)
+
+    secilenler olsun []
+    her istek içinde istekler:
+        secim olsun en_uygun_bagimlilik(istek, adaylar)
+        eğer değil secim.ok ise:
+            döndür secim
+        secilenler.ekle(secim.deger)
+    döndür sonuc_yardimci.ok(secilenler)
+
 işlev kaynak_ref_gecerli_mi(kaynak_ref):
     deneme:
         i olsun 0
@@ -511,3 +592,4 @@ işlev coz_ve_dogrula(kaynak):
         döndür dogrula(cozum.deger)
     değilse:
         döndür cozum
+

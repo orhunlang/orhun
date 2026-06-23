@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 1.2 seconds
+Wall time: 0.6 seconds
 Output:
 # Orhun Self-Hosting Roadmap
 
@@ -52,6 +52,8 @@ Hedefler:
   Orhun kaynakli cozumleyici guvenli paket yolu kararlarini kendi verir.
 - Paket bagimlilik grafi planlamasi saf Orhun kodunda eksik, tekrarli ve
   dongusel manifestleri reddederek bagimlilik-oncelikli karar verir.
+- Surumlu bagimlilik istekleri saf Orhun kodunda en yuksek uyumlu adayla
+  eslenir; indirme ve dosya degisimi sistem sinirinda kalir.
 - C++ yerlesikleri sadece sistem siniri, dosya, FFI, ag ve VM primitive'leri
   gibi zorunlu noktalarda kalir.
 

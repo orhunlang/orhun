@@ -1,5 +1,5 @@
 Exit code: 0
-Wall time: 1.2 seconds
+Wall time: 0.6 seconds
 Output:
 # Orhun Language Specification
 
@@ -533,6 +533,11 @@ package definitions, missing direct dependencies, and cycles, then returns a
 stable dependency-first package-name order. This keeps graph planning in
 Orhun source while package download, hashing, and filesystem mutation remain
 behind explicit runtime commands.
+
+`bagimlilik_istegi(ad, kural)` represents a versioned package request.
+`en_uygun_bagimlilik` chooses the highest valid candidate matching that
+Semantic Versioning rule, while `bagimlilikleri_sec` resolves a unique request
+set and rejects duplicate requests or missing compatible candidates.
 
 `orhun/dil.oh` includes language-development helpers for Orhun-source
 compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
