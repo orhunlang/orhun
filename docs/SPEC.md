@@ -538,6 +538,9 @@ set and rejects duplicate requests or missing compatible candidates.
 `bagimlilik_aday_surimleri` exposes the valid candidate versions for a request;
 an unsuccessful selection distinguishes a missing package name from an
 incompatible version rule and lists the available versions in the latter case.
+Both the C++ package boundary and `kilit_dosyasini_coz` reject duplicate
+package names in `orhun.lock`, preventing an ambiguous lock record from being
+installed, validated, updated, or removed.
 Manifests can carry an optional `bagimlilik_istekleri` list of `{ad, kural}`
 records. Every request must name a direct `bagimliliklar` entry, have a valid
 rule, and occur only once.

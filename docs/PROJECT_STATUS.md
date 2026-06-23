@@ -142,7 +142,8 @@ These percentages are planning estimates, not promises.
   resolution. It also parses and structurally validates compatible v1/v2/v3
   lock records in Orhun before a future resolver accesses package paths, and
   produces dependency-first plans while rejecting missing, duplicate, and
-  cyclic manifest graphs. It can also select the highest SemVer-compatible
+  cyclic manifest graphs. Duplicate package names in `orhun.lock` are rejected
+  before package operations. It can also select the highest SemVer-compatible
   candidate for each versioned dependency request, including optional manifest
   `bagimlilik_istekleri` validation and direct manifest dependency selection.
   Resolution diagnostics distinguish a missing package name from incompatible

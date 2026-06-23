@@ -2743,6 +2743,7 @@ std::optional<LockKaydi> lockKaydiCoz(const std::string &satir) {
 std::vector<LockKaydi>
 lockKayitlariniOku(const std::filesystem::path &lockDosyasi) {
   std::vector<LockKaydi> kayitlar;
+  std::unordered_set<std::string> gorulenAdlar;
   if (!std::filesystem::exists(lockDosyasi)) {
     return kayitlar;
   }
@@ -2750,6 +2751,10 @@ lockKayitlariniOku(const std::filesystem::path &lockDosyasi) {
   for (std::string satir; std::getline(ak, satir);) {
     auto kayit = lockKaydiCoz(satir);
     if (kayit.has_value()) {
+      if (!gorulenAdlar.insert(kayit->ad).second) {
+        throw std::runtime_error("Hata: orhun.lock tekrar eden paket kaydi: '" +
+                                 kayit->ad + "'");
+      }
       kayitlar.push_back(std::move(*kayit));
     }
   }

@@ -114,13 +114,16 @@ yazdır paket_yardimci.kaynak_ref_gecerli_mi("refs/tags/v1.0.0")
 yazdır paket_yardimci.kaynak_ref_gecerli_mi("kotu ref")
 yazdır paket_yardimci.kaynak_ref_gecerli_mi("kotu|ref")
 
-kilit_dosyasi olsun "# kilit\n\ndeneme|yerel|hash|v2\n" + v3_satiri
+kilit_dosyasi olsun "# kilit\n\neski|yerel|hash|v2\n" + v3_satiri
 kilit_listesi olsun paket_yardimci.kilit_dosyasini_coz(kilit_dosyasi)
 yazdır kilit_listesi.ok
 yazdır uzunluk(kilit_listesi.deger)
 yazdır paket_yardimci.kilit_dosyasi_metni(kilit_listesi.deger).ok
 yazdır metin.icerir(paket_yardimci.kilit_dosyasi_metni(kilit_listesi.deger).deger, "source_ref")
 yazdır metin.icerir(paket_yardimci.kilit_dosyasi_metni(kilit_listesi.deger).deger, v3_satiri)
+tekrarli_kilit olsun paket_yardimci.kilit_dosyasini_coz("deneme|yerel|hash|v2\ndeneme|yerel|hash|v2")
+yazdır tekrarli_kilit.ok
+yazdır metin.icerir(tekrarli_kilit.hata, "tekrar")
 
 manifestler olsun [
     {"ad":"uygulama","surum":"1.0.0","bagimliliklar":["ag","veri"]},

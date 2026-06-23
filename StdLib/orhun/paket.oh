@@ -4,7 +4,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.13.0"
+surum olsun "0.14.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -480,6 +480,17 @@ işlev kilit_satirini_coz(satir):
         döndür dogrulama
     döndür sonuc_yardimci.ok({"atla": yanlış, "kayit": dogrulama.deger})
 
+işlev tekrar_eden_kilit_adi(kayitlar):
+    i olsun 0
+    sürece i küçük uzunluk(kayitlar):
+        j olsun i + 1
+        sürece j küçük uzunluk(kayitlar):
+            eğer kayitlar[i].ad eşit kayitlar[j].ad ise:
+                döndür kayitlar[i].ad
+            j olsun j + 1
+        i olsun i + 1
+    döndür ""
+
 işlev kilit_dosyasini_coz(kaynak):
     kayitlar olsun []
     satirlar olsun parcala(kaynak, "\n")
@@ -489,6 +500,9 @@ işlev kilit_dosyasini_coz(kaynak):
             döndür cozum
         eğer değil cozum.deger.atla ise:
             listeye_ekle(kayitlar, cozum.deger.kayit)
+    tekrar_adi olsun tekrar_eden_kilit_adi(kayitlar)
+    eğer uzunluk(tekrar_adi) büyük 0 ise:
+        döndür sonuc_yardimci.hata("tekrar eden kilit paketi: " + tekrar_adi)
     döndür sonuc_yardimci.ok(kayitlar)
 
 işlev kilit_kaydi_metni(kayit):

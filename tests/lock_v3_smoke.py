@@ -71,6 +71,17 @@ def main() -> int:
             f"paket dogrula should pass after lock update: {dogrula_tekrar.stdout}\n{dogrula_tekrar.stderr}",
         )
 
+        lock_text = lock.read_text(encoding="utf-8")
+        lock.write_text(lock_text + "\n" + lock_text, encoding="utf-8")
+        for command in ("dogrula", "lock-guncelle"):
+            tekrarli = run_cmd([str(binary), "paket", command], root)
+            tekrarli_text = (tekrarli.stdout + tekrarli.stderr).lower()
+            require(tekrarli.returncode != 0, f"duplicate lock entry passed {command}")
+            require(
+                "tekrar eden paket" in tekrarli_text,
+                f"duplicate lock rejection should explain the package ({command})",
+            )
+
         lock.write_text(
             "# ad|kaynak|sha256|surum|commit_pin|icerik_sha256|source_ref\n"
             "..|kaynak|gecersiz|v3|-|gecersiz|\n",
