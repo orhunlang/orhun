@@ -4,7 +4,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.12.0"
+surum olsun "0.13.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -340,18 +340,33 @@ işlev tekrar_eden_istek_adi(istekler):
         i olsun i + 1
     döndür ""
 
-işlev en_uygun_bagimlilik(istek, adaylar):
+işlev bagimlilik_aday_surimleri(istek, adaylar):
     istek_dogrulamasi olsun bagimlilik_istegi_dogrula(istek)
     eğer değil istek_dogrulamasi.ok ise:
         döndür istek_dogrulamasi
 
-    secilen_var olsun yanlış
-    secilen olsun {}
+    surumler olsun []
     her aday içinde adaylar:
         eğer aday.ad eşit istek.ad ise:
             aday_dogrulamasi olsun bagimlilik_adayini_dogrula(aday)
             eğer değil aday_dogrulamasi.ok ise:
                 döndür aday_dogrulamasi
+            surumler.ekle(aday.surum)
+    döndür sonuc_yardimci.ok(surumler)
+
+işlev en_uygun_bagimlilik(istek, adaylar):
+    istek_dogrulamasi olsun bagimlilik_istegi_dogrula(istek)
+    eğer değil istek_dogrulamasi.ok ise:
+        döndür istek_dogrulamasi
+
+    aday_surumleri olsun bagimlilik_aday_surimleri(istek, adaylar)
+    eğer değil aday_surumleri.ok ise:
+        döndür aday_surumleri
+
+    secilen_var olsun yanlış
+    secilen olsun {}
+    her aday içinde adaylar:
+        eğer aday.ad eşit istek.ad ise:
             uyumluluk olsun surum_uyumlu_mu(aday.surum, istek.kural)
             eğer değil uyumluluk.ok ise:
                 döndür uyumluluk
@@ -367,7 +382,9 @@ işlev en_uygun_bagimlilik(istek, adaylar):
                         secilen = aday
 
     eğer değil secilen_var ise:
-        döndür sonuc_yardimci.hata("uygun paket surumu bulunamadi: " + istek.ad + " " + istek.kural)
+        eğer uzunluk(aday_surumleri.deger) eşit 0 ise:
+            döndür sonuc_yardimci.hata("paket adayi bulunamadi: " + istek.ad + " " + istek.kural)
+        döndür sonuc_yardimci.hata("uygun paket surumu bulunamadi: " + istek.ad + " " + istek.kural + " (bulunan: " + metin.birlestir(aday_surumleri.deger, ", ") + ")")
     döndür sonuc_yardimci.ok(secilen)
 
 işlev bagimlilikleri_sec(istekler, adaylar):

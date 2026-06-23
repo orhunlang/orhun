@@ -67,8 +67,15 @@ secim olsun paket_yardimci.en_uygun_bagimlilik(istek, adaylar)
 yazdır secim.ok
 yazdır secim.deger.surum
 yazdır paket_yardimci.en_uygun_bagimlilik(paket_yardimci.bagimlilik_istegi("ag", "~1.2.0"), adaylar).deger.surum
-yazdır paket_yardimci.en_uygun_bagimlilik(paket_yardimci.bagimlilik_istegi("ag", "^3.0.0"), adaylar).ok
-yazdır metin.icerir(paket_yardimci.en_uygun_bagimlilik(paket_yardimci.bagimlilik_istegi("ag", "^3.0.0"), adaylar).hata, "uygun")
+uyumsuz_secim olsun paket_yardimci.en_uygun_bagimlilik(paket_yardimci.bagimlilik_istegi("ag", "^3.0.0"), adaylar)
+yazdır uyumsuz_secim.ok
+yazdır metin.icerir(uyumsuz_secim.hata, "uygun")
+yazdır metin.icerir(uyumsuz_secim.hata, "bulunan")
+yazdır metin.icerir(uyumsuz_secim.hata, "1.8.0")
+yazdır metin.birlestir(paket_yardimci.bagimlilik_aday_surimleri(istek, adaylar).deger, "|")
+eksik_secim olsun paket_yardimci.en_uygun_bagimlilik(paket_yardimci.bagimlilik_istegi("yok", "^1.0.0"), adaylar)
+yazdır eksik_secim.ok
+yazdır metin.icerir(eksik_secim.hata, "adayi")
 yazdır paket_yardimci.en_uygun_bagimlilik(paket_yardimci.bagimlilik_istegi("ag", "^1.2"), adaylar).ok
 secilenler olsun paket_yardimci.bagimlilikleri_sec([istek, paket_yardimci.bagimlilik_istegi("veri", "*")], adaylar)
 yazdır secilenler.ok
