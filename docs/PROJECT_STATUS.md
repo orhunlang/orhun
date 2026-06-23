@@ -149,6 +149,8 @@ These percentages are planning estimates, not promises.
   Resolution diagnostics distinguish a missing package name from incompatible
   available versions, helping users correct a version rule without leaving the
   Orhun toolchain.
+- Orhun-source manifest/lock validation can reject a project before resolution
+  when a direct dependency is absent from the validated lock record set.
 - Package removal is path-contained to a direct `lib/<package>` directory and
   updates both `orhun.lock` and `orhun.yap`; `.` and `..` package names are
   rejected by both the CLI and Orhun-written manifest helper, and malformed

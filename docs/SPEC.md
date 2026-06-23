@@ -541,6 +541,9 @@ incompatible version rule and lists the available versions in the latter case.
 Both the C++ package boundary and `kilit_dosyasini_coz` reject duplicate
 package names in `orhun.lock`, preventing an ambiguous lock record from being
 installed, validated, updated, or removed.
+`manifest_kilit_bagimliliklarini_dogrula(manifest, kilit_kayitlari)` verifies
+that every direct manifest dependency has a valid, unique lock record before a
+future Orhun-written resolver downloads or changes package files.
 Manifests can carry an optional `bagimlilik_istekleri` list of `{ad, kural}`
 records. Every request must name a direct `bagimliliklar` entry, have a valid
 rule, and occur only once.

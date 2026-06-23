@@ -124,6 +124,12 @@ yazdır metin.icerir(paket_yardimci.kilit_dosyasi_metni(kilit_listesi.deger).deg
 tekrarli_kilit olsun paket_yardimci.kilit_dosyasini_coz("deneme|yerel|hash|v2\ndeneme|yerel|hash|v2")
 yazdır tekrarli_kilit.ok
 yazdır metin.icerir(tekrarli_kilit.hata, "tekrar")
+kilit_manifesti olsun {"ad":"uygulama","surum":"1.0.0","giris":"ana.oh","bagimliliklar":["eski","deneme"]}
+yazdır paket_yardimci.manifest_kilit_bagimliliklarini_dogrula(kilit_manifesti, kilit_listesi.deger).ok
+eksik_kilit_manifesti olsun {"ad":"uygulama","surum":"1.0.0","giris":"ana.oh","bagimliliklar":["eski","yok"]}
+eksik_kilit_dogrulamasi olsun paket_yardimci.manifest_kilit_bagimliliklarini_dogrula(eksik_kilit_manifesti, kilit_listesi.deger)
+yazdır eksik_kilit_dogrulamasi.ok
+yazdır metin.icerir(eksik_kilit_dogrulamasi.hata, "yok")
 
 manifestler olsun [
     {"ad":"uygulama","surum":"1.0.0","bagimliliklar":["ag","veri"]},

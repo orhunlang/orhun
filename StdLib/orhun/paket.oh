@@ -4,7 +4,7 @@ sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
 
-surum olsun "0.14.0"
+surum olsun "0.15.0"
 izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 izinli_surum_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
 surum_karsilastirma_karakterleri olsun "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -504,6 +504,32 @@ işlev kilit_dosyasini_coz(kaynak):
     eğer uzunluk(tekrar_adi) büyük 0 ise:
         döndür sonuc_yardimci.hata("tekrar eden kilit paketi: " + tekrar_adi)
     döndür sonuc_yardimci.ok(kayitlar)
+
+işlev kilit_kaydi_bul(kayitlar, paket_adi):
+    her kayit içinde kayitlar:
+        eğer kayit.ad eşit paket_adi ise:
+            döndür {"bulundu": doğru, "kayit": kayit}
+    döndür {"bulundu": yanlış}
+
+işlev manifest_kilit_bagimliliklarini_dogrula(manifest, kilit_kayitlari):
+    manifest_dogrulamasi olsun dogrula(manifest)
+    eğer değil manifest_dogrulamasi.ok ise:
+        döndür manifest_dogrulamasi
+
+    tekrar_adi olsun tekrar_eden_kilit_adi(kilit_kayitlari)
+    eğer uzunluk(tekrar_adi) büyük 0 ise:
+        döndür sonuc_yardimci.hata("tekrar eden kilit paketi: " + tekrar_adi)
+
+    her kayit içinde kilit_kayitlari:
+        kilit_dogrulamasi olsun kilit_kaydi_dogrula(kayit)
+        eğer değil kilit_dogrulamasi.ok ise:
+            döndür kilit_dogrulamasi
+
+    her paket_adi içinde bagimliliklar(manifest):
+        bulunan olsun kilit_kaydi_bul(kilit_kayitlari, paket_adi)
+        eğer değil bulunan.bulundu ise:
+            döndür sonuc_yardimci.hata("manifest icin kilit paketi bulunamadi: " + paket_adi)
+    döndür sonuc_yardimci.ok(kilit_kayitlari)
 
 işlev kilit_kaydi_metni(kayit):
     dogrulama olsun kilit_kaydi_dogrula(kayit)

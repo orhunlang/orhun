@@ -48,6 +48,8 @@ Hedefler:
   SHA-256 ve dosya butunlugu denetimi sistem sinirinda kalirken gelecekteki
   Orhun kaynakli cozumleyici guvenli paket yolu kararlarini kendi verir.
   Tekrar eden paket adli lock kayitlari iki katmanda da reddedilir.
+- Saf Orhun manifest/lock tutarlilik denetimi, her dogrudan bagimliligin
+  benzersiz ve yapisal olarak gecerli bir lock kaydiyla sabitlenmesini ister.
 - Paket bagimlilik grafi planlamasi saf Orhun kodunda eksik, tekrarli ve
   dongusel manifestleri reddederek bagimlilik-oncelikli karar verir.
 - Surumlu bagimlilik istekleri saf Orhun kodunda en yuksek uyumlu adayla
