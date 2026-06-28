@@ -42,6 +42,8 @@ These percentages are planning estimates, not promises.
   fields/methods/inheritance, locals, and optimizations with parity smoke tests.
 - The Orhun-written lexer exposes UTF-8-aware token length and inclusive source
   range helpers for diagnostics, LSP, and future self-hosted language tooling.
+- The Orhun-written parser exposes command line range helpers on top of its
+  structural summary without changing the parity JSON contract.
 - Exact Orhun/C++ compiler bytecode parity across all current C++-compileable
   runtime cases, guarded by a full-case sweep.
 - Strict decoded-bytecode execution bridge from the Orhun-written compiler to

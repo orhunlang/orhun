@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.14.0"
+surum olsun "0.15.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -1988,6 +1988,47 @@ işlev hata_mesaji(sonuc):
     eğer hata_var_mi(sonuc) ise:
         döndür sonuc.hata.mesaj
     döndür ""
+
+işlev buyuk_satir(mevcut, aday):
+    eğer aday büyük mevcut ise:
+        döndür aday
+    döndür mevcut
+
+işlev ifade_son_satiri(ifade):
+    son olsun ifade.satir
+    her alt içinde ifade.altlar:
+        son olsun buyuk_satir(son, ifade_son_satiri(alt))
+    deneme:
+        her komut içinde ifade.paralel_komutlar:
+            son olsun buyuk_satir(son, komut_son_satiri(komut))
+    yakala hata:
+        son olsun son
+    döndür son
+
+işlev blok_son_satiri(blok):
+    son olsun blok.satir
+    her komut içinde blok.komutlar:
+        son olsun buyuk_satir(son, komut_son_satiri(komut))
+    döndür son
+
+işlev komut_son_satiri(komut):
+    son olsun komut.satir
+    son olsun buyuk_satir(son, ifade_son_satiri(komut.ifade_ozeti))
+    her blok içinde komut.bloklar:
+        son olsun buyuk_satir(son, blok_son_satiri(blok))
+    döndür son
+
+işlev komut_satir_araligi(komut):
+    bitis olsun komut_son_satiri(komut)
+    eğer bitis küçük komut.satir ise:
+        bitis olsun komut.satir
+    döndür {"baslangic_satir": komut.satir, "bitis_satir": bitis, "satir_sayisi": bitis - komut.satir + 1}
+
+işlev komut_satir_araliklari(sonuc):
+    araliklar olsun []
+    her komut içinde sonuc.komutlar:
+        araliklar.ekle(komut_satir_araligi(komut))
+    döndür araliklar
 
 işlev ozetle_tokenlar(tokenlar):
     token_sayisi olsun uzunluk(tokenlar)

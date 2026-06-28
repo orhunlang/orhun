@@ -710,6 +710,7 @@ entry point is:
 parser olsun dahil_et "orhun/parser.oh"
 sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 yazdır parser.hata_var_mi(sonuc)
+yazdır parser.komut_satir_araligi(sonuc.komutlar[0]).satir_sayisi
 ```
 
 The current prototype exposes a `Program` root and `Block` structural nodes,
@@ -717,8 +718,10 @@ then summarizes command node kinds, line numbers, primary
 expression summaries (`tur`, `satir`, `op`, `ayrinti`, `alt_sayisi`, `altlar`), recursive expression
 children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
-command/error and token counts, then compares them
-against the C++ parser AST through
+command/error and token counts. Helper functions can derive inclusive command
+line ranges (`baslangic_satir`, `bitis_satir`, `satir_sayisi`) from that
+structural summary without changing the parser JSON contract. The structural
+summary is compared against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. Current coverage includes 158 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,

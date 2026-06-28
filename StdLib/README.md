@@ -65,6 +65,7 @@ yazdır dil.tani_bicimlendir(kimlik_tanisi)
 parser olsun dahil_et "orhun/parser.oh"
 parse_sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 yazdır parser.hata_var_mi(parse_sonuc)
+yazdır parser.komut_satir_araligi(parse_sonuc.komutlar[0]).satir_sayisi
 ```
 
 Module lookup checks the requested path first, then searches the standard

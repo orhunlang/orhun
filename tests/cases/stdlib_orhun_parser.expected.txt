@@ -1,4 +1,4 @@
-0.14.0
+0.15.0
 1
 0
 Program
@@ -19,6 +19,12 @@ topla
 2
 1
 sonuc
+1
+2
+2
+3
+4
+4
 CokluAtama|Yazdir
 1
 ["a","b"]
