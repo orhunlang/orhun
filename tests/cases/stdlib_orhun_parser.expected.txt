@@ -1,4 +1,4 @@
-0.15.0
+0.16.0
 1
 0
 Program
@@ -103,6 +103,11 @@ IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 1
 Tanimsiz karakter: @
 1
+parser_hatasi
+1
+1
+[{"ipucu":"","kod":"parser_hatasi","mesaj":"Tanimsiz karakter: @","satir":1,"seviye":"hata","sutun":1,"uzunluk":1}]
+0
 0
 1
 0

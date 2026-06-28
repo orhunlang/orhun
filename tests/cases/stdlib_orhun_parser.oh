@@ -164,6 +164,11 @@ yazdır hata.komut_sayisi
 yazdır parser.hata_var_mi(hata)
 yazdır parser.hata_mesaji(hata)
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")
+yazdır parser.hata_tanisi(hata).kod
+yazdır parser.hata_tanisi(hata).satir
+yazdır parser.hata_tanisi(hata).sutun
+yazdır json.yaz(parser.hata_tanilari(hata))
+yazdır uzunluk(parser.hata_tanilari(sonuc))
 
 yazim_hata olsun parser.ozetle("yzdır 1\n")
 yazdır yazim_hata.ok

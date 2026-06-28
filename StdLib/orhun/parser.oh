@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.15.0"
+surum olsun "0.16.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -1988,6 +1988,20 @@ işlev hata_mesaji(sonuc):
     eğer hata_var_mi(sonuc) ise:
         döndür sonuc.hata.mesaj
     döndür ""
+
+işlev bos_tani():
+    döndür {"kod": "", "mesaj": "", "satir": 0, "sutun": 0, "uzunluk": 1, "seviye": "hata", "ipucu": ""}
+
+işlev hata_tanisi(sonuc):
+    eğer değil hata_var_mi(sonuc) ise:
+        döndür bos_tani()
+    döndür {"kod": "parser_hatasi", "mesaj": sonuc.hata.mesaj, "satir": sonuc.hata.satir, "sutun": sonuc.hata.sutun, "uzunluk": 1, "seviye": "hata", "ipucu": ""}
+
+işlev hata_tanilari(sonuc):
+    tanilar olsun []
+    eğer hata_var_mi(sonuc) ise:
+        tanilar.ekle(hata_tanisi(sonuc))
+    döndür tanilar
 
 işlev buyuk_satir(mevcut, aday):
     eğer aday büyük mevcut ise:
