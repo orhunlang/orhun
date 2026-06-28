@@ -56,6 +56,7 @@ yazdır dil.program([dil.yaprak("Selam", ad.deger.deger, ad.deger)]).tur
 yazdır dil.token_degerleri(tokenlar)
 yazdır dil.hata_var_mi(imlec)
 yazdır dil.tanilari_bicimlendir(imlec)
+yazdır dil.tani_listesi_bicimlendir(imlec.hatalar)
 yazdır dil.tani_kaynak_bicimlendir(dil.tani("ornek", "mesaj", 1, 2), "ab")
 aralikli olsun dil.tani_araligi("ornek", "gecersiz bolum", 1, 2, 2)
 yazdır dil.tani_kaynak_bicimlendir(aralikli, "abc")

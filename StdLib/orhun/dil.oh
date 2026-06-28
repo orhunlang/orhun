@@ -6,7 +6,7 @@
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.6.0"
+surum olsun "0.7.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -209,9 +209,18 @@ işlev tani_kodu_var_mi(imlec_degeri, kod):
     döndür yanlış
 
 işlev tanilari_bicimlendir(imlec_degeri):
+    döndür tani_listesi_bicimlendir(imlec_degeri.hatalar)
+
+işlev tani_listesi_bicimlendir(tanilar):
     satirlar olsun []
-    her kayit içinde imlec_degeri.hatalar:
+    her kayit içinde tanilar:
         satirlar.ekle(tani_bicimlendir(kayit))
+    döndür metin.birlestir(satirlar, "\n")
+
+işlev tani_listesi_kaynak_bicimlendir(tanilar, kaynak):
+    satirlar olsun []
+    her kayit içinde tanilar:
+        satirlar.ekle(tani_kaynak_bicimlendir(kayit, kaynak))
     döndür metin.birlestir(satirlar, "\n")
 
 işlev ozet(imlec_degeri):

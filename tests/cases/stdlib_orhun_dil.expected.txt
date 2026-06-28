@@ -1,4 +1,4 @@
-0.6.0
+0.7.0
 1
 SAYI|ARTI|SAYI|DOSYA_SONU
 ["2","+","3",""]
@@ -24,6 +24,9 @@ beklenen_token
 1
 0
 [beklenen_token] Satir 1, sutun 1: sayi bekleniyor
+1
+1
+0
 iki
   ^
 [beklenen_token] Satir 1, sutun 1: sayi bekleniyor

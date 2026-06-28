@@ -562,8 +562,10 @@ and AST builders (`dugum`, `yaprak`, `program`, `dugum_sayisi`,
 `dugum_turleri`). `bekle` returns the standard `sonuc` result shape, so callers
 can keep parser errors explicit without throwing. Diagnostics can be rendered
 consistently with `tani_konumu`, `tani_bicimlendir`, and
-`tanilari_bicimlendir`; callers can also inspect `tani_kodlari` or query an
-expected code through `tani_kodu_var_mi`. `tani_kaynak_bicimlendir` adds the
+`tanilari_bicimlendir`; standalone diagnostic arrays can use
+`tani_listesi_bicimlendir` and `tani_listesi_kaynak_bicimlendir`. Callers can
+also inspect `tani_kodlari` or query an expected code through
+`tani_kodu_var_mi`. `tani_kaynak_bicimlendir` adds the
 matching source line and a column marker for teaching-oriented command-line
 and DSL diagnostics, including valid blank source lines. `tani_araligi` marks
 a multi-character source range with `^~~`, while `tani_uyarisi` produces a

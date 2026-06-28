@@ -185,6 +185,8 @@
   `bekle`/`esles` tüketimi, tanı listesi ve AST düğümü kurucularını içerir.
 - `0.2.0`, token değer özeti, imleçte hata var/yok kontrolü ve tanı mesajı
   listesi yardımlarını ekler.
+- `0.7.0`, imleç dışından gelen tanı listelerini ve kaynak satırıyla birlikte
+  tanı listelerini biçimlendirme yardımcılarını ekler.
 - Bu modül runtime davranışını değiştirmez; yeni kod için ek bir standart
   kütüphane yardımcısıdır.
 
