@@ -8,7 +8,7 @@ Bu klasor Orhun dili icin temel VS Code entegrasyon taslagini icerir.
 - Temel sozdizimi renklendirme (anahtar kelime, yorum, metin, sayi)
 - Girinti tabanli dil icin temel editor ayarlari
 - Baslangic dostu snippet'lar (`yaz`, `oku`, `eger`, `islev`, `aralik`,
-  `her`, `numaralandir`, `eslestir`, `dil`, `lexer`, `parser`)
+  `her`, `numaralandir`, `eslestir`, `dil`, `lexer`, `parser`, `tani`)
 
 ## Snippet'lar
 
@@ -24,7 +24,8 @@ Editor icinde bu kisaltmalar kullanilabilir:
 - `eslestir`: iki listeyi ciftler halinde eslestirme
 - `dil`: dil gelistirme yardimcilariyla token/imlec baslangici
 - `lexer`: Orhun kaynakli lexer prototipiyle kaynak ozeti
-- `parser`: Orhun kaynakli parser prototipiyle komut ozeti
+- `parser`: Orhun kaynakli parser prototipiyle komut/tani ozeti
+- `tani`: ortak tani listesi bicimlendirme
 
 ## LSP Baglantisi
 

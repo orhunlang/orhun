@@ -78,7 +78,8 @@
       "imlec olsun dil.imlec(tokenlar)",
       "ad olsun dil.bekle(imlec, \"${1:AD}\", \"\", \"${4:ad bekleniyor}\")",
       "yaz dil.hata_var_mi(imlec)",
-      "yaz dil.token_degerleri(tokenlar)"
+      "yaz dil.token_degerleri(tokenlar)",
+      "yaz dil.tani_listesi_bicimlendir(imlec.hatalar)"
     ],
     "description": "Orhun dil geliştirme yardımcılarıyla imleç oluştur"
   },
@@ -88,7 +89,8 @@
       "lexer olsun dahil_et \"orhun/lexer.oh\"",
       "sonuc olsun lexer.ozetle(\"${1:yazdır \\\"Merhaba\\\"\\\\n}\")",
       "yaz lexer.turleri(sonuc.tokenlar)",
-      "yaz lexer.hata_degerleri(sonuc.tokenlar)"
+      "yaz lexer.hata_degerleri(sonuc.tokenlar)",
+      "yaz lexer.token_araligi(sonuc.tokenlar[0])"
     ],
     "description": "Orhun lexer prototipiyle kaynak özeti al"
   },
@@ -98,8 +100,19 @@
       "parser olsun dahil_et \"orhun/parser.oh\"",
       "sonuc olsun parser.ozetle(\"${1:yazdır \\\"Merhaba\\\"\\\\n}\")",
       "yaz parser.turleri(sonuc)",
-      "yaz parser.hata_var_mi(sonuc)"
+      "yaz parser.hata_var_mi(sonuc)",
+      "yaz parser.komut_satir_araligi(sonuc.komutlar[0])",
+      "yaz parser.hata_tanilari(sonuc)"
     ],
     "description": "Orhun parser prototipiyle komut özeti al"
+  },
+  "Tanı Listesi": {
+    "prefix": "tani",
+    "body": [
+      "dil olsun dahil_et \"orhun/dil.oh\"",
+      "tanilar olsun [dil.tani(\"${1:kod}\", \"${2:mesaj}\", ${3:1}, ${4:1})]",
+      "yaz dil.tani_listesi_bicimlendir(tanilar)"
+    ],
+    "description": "Tanı listesini ortak biçimde yazdır"
   }
 }

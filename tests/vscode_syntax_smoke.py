@@ -54,6 +54,10 @@ def main() -> int:
         "dolu_mu",
         "json",
         "dosya",
+        "token_araligi",
+        "komut_satir_araligi",
+        "hata_tanilari",
+        "tani_listesi_bicimlendir",
     ):
         require(re.search(rf"(?<![A-Za-z_]){re.escape(word)}(?![A-Za-z_])", combined),
                 f"VS Code builtins pattern missing {word}")
@@ -70,6 +74,7 @@ def main() -> int:
         "Dil Yardımcısı": "dil",
         "Lexer Özeti": "lexer",
         "Parser Özeti": "parser",
+        "Tanı Listesi": "tani",
     }
     for name, prefix in required_snippets.items():
         require(name in snippets, f"VS Code snippet missing {name}")
@@ -89,10 +94,20 @@ def main() -> int:
             "Eslestir snippet should call koleksiyon.eslestir")
     require("dil.token_degerleri(" in "\n".join(snippets["Dil Yardımcısı"]["body"]),
             "Dil snippet should expose token summaries")
+    require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Dil Yardımcısı"]["body"]),
+            "Dil snippet should expose diagnostic-list formatting")
     require("lexer.hata_degerleri(" in "\n".join(snippets["Lexer Özeti"]["body"]),
             "Lexer snippet should expose error summaries")
+    require("lexer.token_araligi(" in "\n".join(snippets["Lexer Özeti"]["body"]),
+            "Lexer snippet should expose token ranges")
     require("parser.hata_var_mi(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose parser error helpers")
+    require("parser.komut_satir_araligi(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose command ranges")
+    require("parser.hata_tanilari(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose parser diagnostics")
+    require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Tanı Listesi"]["body"]),
+            "Tani snippet should format diagnostic lists")
 
     print("VS Code tooling smoke passed.")
     return 0
