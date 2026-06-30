@@ -827,10 +827,13 @@ orhun lsp --stdio
 
 The LSP completion provider returns language keywords plus common built-in
 functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
-`dosya`, and Orhun-source helpers such as `numaralandir` and `eslestir`.
+`dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
+`token_araligi`, `komut_satir_araligi`, `hata_tanilari`, and
+`tani_listesi_bicimlendir`.
 Signature help also includes common built-in and Orhun-source helper
 signatures, including `aralik([baslangic], bitis, [adim])` and
-`numaralandir(liste, [baslangic])`.
+`numaralandir(liste, [baslangic])`, plus the lexer/parser/diagnostic helper
+signatures documented above.
 Workspace file URIs use UTF-8 percent encoding for reserved and non-ASCII path
 bytes. On Windows, indexed workspace files are reported with long paths rather
 than legacy 8.3 short paths, and UNC paths retain their file-URI authority.

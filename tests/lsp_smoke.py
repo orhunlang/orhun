@@ -61,6 +61,7 @@ def main() -> int:
             "z olsun x",
             "r olsun aralik(1, 5)",
             "n olsun numaralandir([5, 6], 1)",
+            "t olsun tani_listesi_bicimlendir([])",
             "",
         ]
     )
@@ -148,7 +149,18 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 6, "character": 0},
+                        "position": {"line": 7, "character": 0},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 11,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 6, "character": 35},
                     },
                 }
             ),
@@ -249,6 +261,24 @@ def main() -> int:
     if stdlib_signatures[0].get("label") != "numaralandir(liste, [baslangic])":
         raise SystemExit("LSP smoke failed: stdlib signature label mismatch")
 
+    diagnostic_helper_sig_resp = next(
+        (m for m in messages if m.get("id") == 11), None
+    )
+    if diagnostic_helper_sig_resp is None or "result" not in diagnostic_helper_sig_resp:
+        raise SystemExit(
+            "LSP smoke failed: diagnostic-helper signatureHelp response missing"
+        )
+    diagnostic_helper_signatures = diagnostic_helper_sig_resp["result"].get(
+        "signatures", []
+    )
+    if not diagnostic_helper_signatures:
+        raise SystemExit("LSP smoke failed: diagnostic-helper signatures empty")
+    if (
+        diagnostic_helper_signatures[0].get("label")
+        != "tani_listesi_bicimlendir(tanilar)"
+    ):
+        raise SystemExit("LSP smoke failed: diagnostic-helper signature label mismatch")
+
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
         raise SystemExit("LSP smoke failed: references response missing")
@@ -272,6 +302,10 @@ def main() -> int:
         "numaralandir",
         "eslestir",
         "eşleştir",
+        "token_araligi",
+        "komut_satir_araligi",
+        "hata_tanilari",
+        "tani_listesi_bicimlendir",
     ):
         if label not in labels:
             raise SystemExit(f"LSP smoke failed: completion missing {label}")
