@@ -195,8 +195,9 @@
 ## 12.2. Orhun-source lexer/parser helpers
 - `orhun/lexer.oh` `0.6.0`, token değerleri, hata token değerleri ve
   UTF-8-aware token aralıkları için yardımcı özet fonksiyonları ekler.
-- `orhun/parser.oh` `0.16.0`, parse sonucunda hata var/yok, hata mesajı,
-  ortak tanı listesi ve komut satır aralığı okuma yardımcıları ekler.
+- `orhun/parser.oh` `0.17.0`, parse sonucunda hata var/yok, hata mesajı,
+  ortak tanı listesi, komut satır aralığı ve ifade satır aralığı okuma
+  yardımcıları ekler.
 - Bu yardımcılar mevcut lexer/parser çıktı sözleşmesini değiştirmez.
 
 ## 13. Closure Capture

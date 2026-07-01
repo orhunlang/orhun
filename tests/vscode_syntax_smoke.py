@@ -55,6 +55,7 @@ def main() -> int:
         "json",
         "dosya",
         "token_araligi",
+        "ifade_satir_araligi",
         "komut_satir_araligi",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
@@ -106,6 +107,8 @@ def main() -> int:
             "Parser snippet should expose parser error helpers")
     require("parser.komut_satir_araligi(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose command ranges")
+    require("parser.ifade_satir_araligi(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose expression ranges")
     require("parser.hata_tanilari(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose parser diagnostics")
     require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Tanı Listesi"]["body"]),

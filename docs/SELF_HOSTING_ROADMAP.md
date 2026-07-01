@@ -88,7 +88,7 @@ sunulabilir. Token tabanli tanilar, UTF-8 kod noktasi uzunlugunu da otomatik
 kullanir. AST dugumleri on-sirali duz listeye cevrilebilir, tur listeleri
 toplanabilir ve belirli dugum turleri filtrelenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.16.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.17.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -103,8 +103,9 @@ govde ifadesini, liste uretec degiskenini ve kosul varligini, sozluk
 anahtarlarini, liste/sozluk oge sayilarini, dilim erisim sinir varligini,
 paralel yap govde komut sayisini ve yapisal komutlarini, liste/sozluk literal postfix ozetlerini,
 alan/ust erisim adlarini, islev cagri adlarini, yeni nesne sinif adlarini ve
-arguman sayilarini, parse sonuc hata var/yok, hata mesaji, ortak tani listesi
-ve komut satir araligi yardimcilarini C++ AST ile karsilastiriyor.
+arguman sayilarini, parse sonuc hata var/yok, hata mesaji, ortak tani listesi,
+ifade satir araligi ve komut satir araligi yardimcilarini C++ AST ile
+karsilastiriyor.
 
 Hedefler:
 

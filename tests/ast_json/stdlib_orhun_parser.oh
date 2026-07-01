@@ -18,6 +18,14 @@ yazdır sonuc.komutlar[0].parametre_sayisi
 yazdır sonuc.komutlar[0].varsayilan_sayisi
 yazdır sonuc.komutlar[1].bildirim
 yazdır sonuc.komutlar[1].hedef_ozeti.ayrinti
+atama_ifade_araligi olsun parser.ifade_satir_araligi(sonuc.komutlar[1].ifade_ozeti)
+yazdır atama_ifade_araligi.baslangic_satir
+yazdır atama_ifade_araligi.bitis_satir
+yazdır atama_ifade_araligi.satir_sayisi
+ifade_araliklari olsun parser.ifade_satir_araliklari(sonuc)
+yazdır uzunluk(ifade_araliklari)
+yazdır ifade_araliklari[1].baslangic_satir
+yazdır ifade_araliklari[1].bitis_satir
 
 coklu olsun parser.ozetle("a, b olsun [1, 2]\nyazdır a\n")
 yazdır metin.birlestir(parser.turleri(coklu), "|")

@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.16.0"
+surum olsun "0.17.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -2018,6 +2018,18 @@ işlev ifade_son_satiri(ifade):
     yakala hata:
         son olsun son
     döndür son
+
+işlev ifade_satir_araligi(ifade):
+    bitis olsun ifade_son_satiri(ifade)
+    eğer bitis küçük ifade.satir ise:
+        bitis olsun ifade.satir
+    döndür {"baslangic_satir": ifade.satir, "bitis_satir": bitis, "satir_sayisi": bitis - ifade.satir + 1}
+
+işlev ifade_satir_araliklari(sonuc):
+    araliklar olsun []
+    her komut içinde sonuc.komutlar:
+        araliklar.ekle(ifade_satir_araligi(komut.ifade_ozeti))
+    döndür araliklar
 
 işlev blok_son_satiri(blok):
     son olsun blok.satir

@@ -44,9 +44,9 @@ These percentages are planning estimates, not promises.
   fields/methods/inheritance, locals, and optimizations with parity smoke tests.
 - The Orhun-written lexer exposes UTF-8-aware token length and inclusive source
   range helpers for diagnostics, LSP, and future self-hosted language tooling.
-- The Orhun-written parser exposes command line range and diagnostic-list
-  helpers on top of its structural summary without changing the parity JSON
-  contract.
+- The Orhun-written parser exposes expression/command line range and
+  diagnostic-list helpers on top of its structural summary without changing
+  the parity JSON contract.
 - The shared Orhun language-toolkit module can format standalone diagnostic
   lists with or without source-line context, and can flatten/filter AST records
   for parser, DSL, and LSP surfaces.

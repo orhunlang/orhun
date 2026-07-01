@@ -32,6 +32,14 @@ komut_araliklari olsun parser.komut_satir_araliklari(sonuc)
 yazdır uzunluk(komut_araliklari)
 yazdır komut_araliklari[1].baslangic_satir
 yazdır komut_araliklari[1].bitis_satir
+atama_ifade_araligi olsun parser.ifade_satir_araligi(sonuc.komutlar[1].ifade_ozeti)
+yazdır atama_ifade_araligi.baslangic_satir
+yazdır atama_ifade_araligi.bitis_satir
+yazdır atama_ifade_araligi.satir_sayisi
+ifade_araliklari olsun parser.ifade_satir_araliklari(sonuc)
+yazdır uzunluk(ifade_araliklari)
+yazdır ifade_araliklari[1].baslangic_satir
+yazdır ifade_araliklari[1].bitis_satir
 
 coklu olsun parser.ozetle("a, b olsun [1, 2]\nyazdır a\n")
 yazdır metin.birlestir(parser.turleri(coklu), "|")

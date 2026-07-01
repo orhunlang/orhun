@@ -63,6 +63,7 @@ def main() -> int:
             "n olsun numaralandir([5, 6], 1)",
             "t olsun tani_listesi_bicimlendir([])",
             'a olsun dugum_turu_var_mi(ast, "Topla")',
+            "p olsun ifade_satir_araligi(ifade)",
             "",
         ]
     )
@@ -150,7 +151,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 8, "character": 0},
+                        "position": {"line": 9, "character": 0},
                     },
                 }
             ),
@@ -184,6 +185,28 @@ def main() -> int:
                     "params": {
                         "textDocument": {"uri": uri},
                         "position": {"line": 7, "character": 12},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 15,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 8, "character": 31},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 16,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 8, "character": 12},
                     },
                 }
             ),
@@ -342,6 +365,22 @@ def main() -> int:
     if "dugum_turu_var_mi(kok, tur)" not in ast_hover_value:
         raise SystemExit("LSP smoke failed: AST-helper hover label mismatch")
 
+    parser_range_sig_resp = next((m for m in messages if m.get("id") == 15), None)
+    if parser_range_sig_resp is None or "result" not in parser_range_sig_resp:
+        raise SystemExit("LSP smoke failed: parser-range signatureHelp response missing")
+    parser_range_signatures = parser_range_sig_resp["result"].get("signatures", [])
+    if not parser_range_signatures:
+        raise SystemExit("LSP smoke failed: parser-range signatures empty")
+    if parser_range_signatures[0].get("label") != "ifade_satir_araligi(ifade)":
+        raise SystemExit("LSP smoke failed: parser-range signature label mismatch")
+
+    parser_range_hover_resp = next((m for m in messages if m.get("id") == 16), None)
+    if parser_range_hover_resp is None or "result" not in parser_range_hover_resp:
+        raise SystemExit("LSP smoke failed: parser-range hover response missing")
+    parser_range_hover = parser_range_hover_resp["result"].get("contents", {}).get("value", "")
+    if "ifade_satir_araligi(ifade)" not in parser_range_hover:
+        raise SystemExit("LSP smoke failed: parser-range hover label mismatch")
+
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
         raise SystemExit("LSP smoke failed: references response missing")
@@ -366,6 +405,7 @@ def main() -> int:
         "eslestir",
         "eşleştir",
         "token_araligi",
+        "ifade_satir_araligi",
         "komut_satir_araligi",
         "hata_tanilari",
         "tani_listesi_bicimlendir",

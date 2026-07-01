@@ -102,6 +102,7 @@
       "yaz parser.turleri(sonuc)",
       "yaz parser.hata_var_mi(sonuc)",
       "yaz parser.komut_satir_araligi(sonuc.komutlar[0])",
+      "yaz parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti)",
       "yaz parser.hata_tanilari(sonuc)"
     ],
     "description": "Orhun parser prototipiyle komut özeti al"
