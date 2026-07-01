@@ -5794,6 +5794,11 @@ std::string lspHoverJson(const std::string &metin, int satirNo, int karakterNo) 
                trim.rfind(konum->kelime + " = ", 0) == 0) {
       aciklama = "Degisken: `" + konum->kelime + "`";
     }
+  } else {
+    std::string yardimciEtiketi;
+    if (lspYerlesikImzasiCoz(konum->kelime, &yardimciEtiketi, nullptr)) {
+      aciklama = "Yardimci: `" + yardimciEtiketi + "`";
+    }
   }
 
   std::ostringstream ss;

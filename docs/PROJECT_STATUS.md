@@ -36,7 +36,7 @@ These percentages are planning estimates, not promises.
 - File, JSON, regex, date/time, database helper, server, task, FFI, and system
   policy surfaces.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.
-- LSP completion and signature help include the current Orhun-source
+- LSP completion, hover, and signature help include the current Orhun-source
   lexer/parser/diagnostic helper surface.
 - Orhun-written lexer/parser prototypes and a bytecode compiler subset covering
   expressions, collections, control flow, functions, closures, lambdas,

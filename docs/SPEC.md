@@ -834,6 +834,8 @@ Signature help also includes common built-in and Orhun-source helper
 signatures, including `aralik([baslangic], bitis, [adim])` and
 `numaralandir(liste, [baslangic])`, plus the lexer/parser/diagnostic helper
 signatures documented above.
+Hover uses the same signature table for known built-in and Orhun-source helper
+functions when the symbol is not a local definition.
 Workspace file URIs use UTF-8 percent encoding for reserved and non-ASCII path
 bytes. On Windows, indexed workspace files are reported with long paths rather
 than legacy 8.3 short paths, and UNC paths retain their file-URI authority.

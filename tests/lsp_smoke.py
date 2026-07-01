@@ -167,6 +167,17 @@ def main() -> int:
             encode_message(
                 {
                     "jsonrpc": "2.0",
+                    "id": 12,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 6, "character": 12},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
                     "id": 8,
                     "method": "textDocument/rename",
                     "params": {
@@ -278,6 +289,19 @@ def main() -> int:
         != "tani_listesi_bicimlendir(tanilar)"
     ):
         raise SystemExit("LSP smoke failed: diagnostic-helper signature label mismatch")
+
+    diagnostic_helper_hover_resp = next(
+        (m for m in messages if m.get("id") == 12), None
+    )
+    if diagnostic_helper_hover_resp is None or "result" not in diagnostic_helper_hover_resp:
+        raise SystemExit(
+            "LSP smoke failed: diagnostic-helper hover response missing"
+        )
+    hover_value = (
+        diagnostic_helper_hover_resp["result"].get("contents", {}).get("value", "")
+    )
+    if "tani_listesi_bicimlendir(tanilar)" not in hover_value:
+        raise SystemExit("LSP smoke failed: diagnostic-helper hover label mismatch")
 
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
