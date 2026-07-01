@@ -1,0 +1,10 @@
+parser olsun dahil_et "orhun/parser.oh"
+
+sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
+yazdır parser.turleri(sonuc)
+yazdır parser.komut_satir_araligi(sonuc.komutlar[0])
+yazdır parser.hata_tanilari(sonuc)
+
+hatali olsun parser.ozetle("@\n")
+yazdır parser.hata_var_mi(hatali)
+yazdır parser.hata_tanilari(hatali)

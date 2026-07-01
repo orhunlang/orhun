@@ -66,8 +66,26 @@ def main() -> int:
         "dil.token_degerleri(tokenlar)",
         "dil.hata_var_mi(imlec)",
         "dil.tani_mesajlari(hatalar)",
+        "dil.tani_listesi_bicimlendir(hatalar.hatalar)",
     ):
         require(snippet in stdlib_dil, f"stdlib_dil should include {snippet}")
+
+    stdlib_lexer = (repo / "examples" / "stdlib_lexer.oh").read_text(
+        encoding="utf-8"
+    )
+    require(
+        "lexer.token_araligi(tokenlar[0])" in stdlib_lexer,
+        "stdlib_lexer should expose token ranges",
+    )
+
+    stdlib_parser = (repo / "examples" / "stdlib_parser.oh").read_text(
+        encoding="utf-8"
+    )
+    for snippet in (
+        "parser.komut_satir_araligi(sonuc.komutlar[0])",
+        "parser.hata_tanilari(hatali)",
+    ):
+        require(snippet in stdlib_parser, f"stdlib_parser should include {snippet}")
 
     print(f"Examples smoke passed ({len(examples)} examples).")
     return 0

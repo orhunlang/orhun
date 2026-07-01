@@ -7,3 +7,5 @@ i olsun 0
 sürece i küçük uzunluk(tokenlar):
     yazdır tokenlar[i].tur + " " + tokenlar[i].deger
     i olsun i + 1
+
+yazdır lexer.token_araligi(tokenlar[0])
