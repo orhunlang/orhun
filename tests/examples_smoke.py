@@ -86,6 +86,7 @@ def main() -> int:
     for snippet in (
         "parser.komut_satir_araligi(sonuc.komutlar[0])",
         "parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti)",
+        "parser.tum_komut_satir_araliklari(sonuc)",
         "parser.hata_tanilari(hatali)",
     ):
         require(snippet in stdlib_parser, f"stdlib_parser should include {snippet}")

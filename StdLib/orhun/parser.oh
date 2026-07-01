@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.17.0"
+surum olsun "0.18.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -2054,6 +2054,19 @@ işlev komut_satir_araliklari(sonuc):
     araliklar olsun []
     her komut içinde sonuc.komutlar:
         araliklar.ekle(komut_satir_araligi(komut))
+    döndür araliklar
+
+işlev komut_satir_araliklarini_topla(komut, araliklar):
+    araliklar.ekle(komut_satir_araligi(komut))
+    her blok içinde komut.bloklar:
+        her alt_komut içinde blok.komutlar:
+            komut_satir_araliklarini_topla(alt_komut, araliklar)
+    döndür araliklar
+
+işlev tum_komut_satir_araliklari(sonuc):
+    araliklar olsun []
+    her komut içinde sonuc.komutlar:
+        komut_satir_araliklarini_topla(komut, araliklar)
     döndür araliklar
 
 işlev ozetle_tokenlar(tokenlar):

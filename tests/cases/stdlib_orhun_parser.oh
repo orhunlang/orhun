@@ -80,6 +80,11 @@ yazdır kontrol.komutlar[0].blok_sayisi
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)
 yazdır json.yaz(kontrol.komutlar[0].kosul_ozeti)
+tum_araliklar olsun parser.tum_komut_satir_araliklari(kontrol)
+yazdır uzunluk(tum_araliklar)
+yazdır tum_araliklar[0].satir_sayisi
+yazdır tum_araliklar[1].baslangic_satir
+yazdır tum_araliklar[2].baslangic_satir
 
 tekrar_kontrol olsun parser.ozetle("tekrarla 3 kez:\n    yazdır \"a\"\n")
 yazdır json.yaz(tekrar_kontrol.komutlar[0].kac_kez_ozeti)

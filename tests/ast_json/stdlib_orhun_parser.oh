@@ -65,6 +65,12 @@ kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\
 yazdır kontrol.komutlar[0].blok_sayisi
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)
+yazdır json.yaz(kontrol.komutlar[0].kosul_ozeti)
+tum_araliklar olsun parser.tum_komut_satir_araliklari(kontrol)
+yazdır uzunluk(tum_araliklar)
+yazdır tum_araliklar[0].satir_sayisi
+yazdır tum_araliklar[1].baslangic_satir
+yazdır tum_araliklar[2].baslangic_satir
 
 zincir_kontrol olsun parser.ozetle("eğer x büyük 20 ise:\n    yazdır \"buyuk\"\ndeğilse eğer x büyük 5 ise:\n    yazdır \"orta\"\ndeğilse:\n    yazdır \"kucuk\"\n")
 yazdır json.yaz(zincir_kontrol.komutlar[0].blok_sayilari)

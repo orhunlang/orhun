@@ -717,6 +717,7 @@ sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 yazdır parser.hata_var_mi(sonuc)
 yazdır parser.komut_satir_araligi(sonuc.komutlar[0]).satir_sayisi
 yazdır parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti).satir_sayisi
+yazdır uzunluk(parser.tum_komut_satir_araliklari(sonuc))
 yazdır parser.hata_tanilari(sonuc)
 ```
 
@@ -726,9 +727,10 @@ expression summaries (`tur`, `satir`, `op`, `ayrinti`, `alt_sayisi`, `altlar`), 
 children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts. Helper functions can derive inclusive command
-and expression line ranges (`baslangic_satir`, `bitis_satir`, `satir_sayisi`)
-from that structural summary without changing the parser JSON contract. Parse
-failures can also be exposed as diagnostic dictionaries through `hata_tanisi` and
+and expression line ranges (`baslangic_satir`, `bitis_satir`, `satir_sayisi`),
+including recursive command ranges for nested blocks, from that structural
+summary without changing the parser JSON contract. Parse failures can also be
+exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The
 structural summary is compared against the C++ parser AST through
@@ -833,7 +835,7 @@ The LSP completion provider returns language keywords plus common built-in
 functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `ifade_satir_araligi`, `komut_satir_araligi`,
-`hata_tanilari`, and
+`tum_komut_satir_araliklari`, `hata_tanilari`, and
 `tani_listesi_bicimlendir`, plus AST helpers such as
 `dugum_turu_var_mi`.
 Signature help also includes common built-in and Orhun-source helper

@@ -64,6 +64,7 @@ def main() -> int:
             "t olsun tani_listesi_bicimlendir([])",
             'a olsun dugum_turu_var_mi(ast, "Topla")',
             "p olsun ifade_satir_araligi(ifade)",
+            "u olsun tum_komut_satir_araliklari(sonuc)",
             "",
         ]
     )
@@ -151,7 +152,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 9, "character": 0},
+                        "position": {"line": 10, "character": 0},
                     },
                 }
             ),
@@ -407,6 +408,7 @@ def main() -> int:
         "token_araligi",
         "ifade_satir_araligi",
         "komut_satir_araligi",
+        "tum_komut_satir_araliklari",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "dugum_turu_var_mi",

@@ -57,6 +57,7 @@ def main() -> int:
         "token_araligi",
         "ifade_satir_araligi",
         "komut_satir_araligi",
+        "tum_komut_satir_araliklari",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "dugum_turu_var_mi",
@@ -109,6 +110,8 @@ def main() -> int:
             "Parser snippet should expose command ranges")
     require("parser.ifade_satir_araligi(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose expression ranges")
+    require("parser.tum_komut_satir_araliklari(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose recursive command ranges")
     require("parser.hata_tanilari(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose parser diagnostics")
     require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Tanı Listesi"]["body"]),

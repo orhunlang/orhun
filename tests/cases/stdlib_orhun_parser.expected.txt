@@ -1,4 +1,4 @@
-0.17.0
+0.18.0
 1
 0
 Program
@@ -55,6 +55,10 @@ hata
 [1,1]
 [{"komut_sayisi":1,"komutlar":[{"blok_sayilari":[],"blok_sayisi":0,"bloklar":[],"ifade_ozeti":{"alt_sayisi":0,"altlar":[],"ayrinti":"evet","op":"","satir":2,"tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}],"satir":1,"tur":"Block"},{"komut_sayisi":1,"komutlar":[{"blok_sayilari":[],"blok_sayisi":0,"bloklar":[],"ifade_ozeti":{"alt_sayisi":0,"altlar":[],"ayrinti":"hayır","op":"","satir":4,"tur":"Metin"},"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}],"satir":3,"tur":"Block"}]
 {"alt_sayisi":0,"altlar":[],"ayrinti":"doğru","op":"","satir":1,"tur":"Mantik"}
+3
+4
+2
+4
 {"alt_sayisi":0,"altlar":[],"ayrinti":"3","op":"","satir":1,"tur":"Sayi"}
 [1,1]
 [{"komut_sayisi":1,"komutlar":[{"blok_sayilari":[],"blok_sayisi":0,"bloklar":[],"ifade_ozeti":{"alt_sayisi":0,"altlar":[],"ayrinti":"buyuk","op":"","satir":2,"tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}],"satir":1,"tur":"Block"},{"komut_sayisi":1,"komutlar":[{"blok_sayilari":[1,1],"blok_sayisi":2,"bloklar":[{"komut_sayisi":1,"komutlar":[{"blok_sayilari":[],"blok_sayisi":0,"bloklar":[],"ifade_ozeti":{"alt_sayisi":0,"altlar":[],"ayrinti":"orta","op":"","satir":4,"tur":"Metin"},"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}],"satir":3,"tur":"Block"},{"komut_sayisi":1,"komutlar":[{"blok_sayilari":[],"blok_sayisi":0,"bloklar":[],"ifade_ozeti":{"alt_sayisi":0,"altlar":[],"ayrinti":"kucuk","op":"","satir":6,"tur":"Metin"},"ifade_turu":"Metin","satir":6,"tur":"Yazdir"}],"satir":5,"tur":"Block"}],"ifade_ozeti":{"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"x","op":"","satir":3,"tur":"Kimlik"},{"alt_sayisi":0,"altlar":[],"ayrinti":"5","op":"","satir":3,"tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","satir":3,"tur":"IkiliIslem"},"ifade_turu":"IkiliIslem","kosul_ozeti":{"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"x","op":"","satir":3,"tur":"Kimlik"},{"alt_sayisi":0,"altlar":[],"ayrinti":"5","op":"","satir":3,"tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","satir":3,"tur":"IkiliIslem"},"satir":3,"tur":"Eger"}],"satir":3,"tur":"Block"}]
