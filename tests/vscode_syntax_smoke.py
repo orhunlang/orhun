@@ -61,6 +61,8 @@ def main() -> int:
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "dugum_turu_var_mi",
+        "dugum_derinligi",
+        "dugum_ozeti",
     ):
         require(re.search(rf"(?<![A-Za-z_]){re.escape(word)}(?![A-Za-z_])", combined),
                 f"VS Code builtins pattern missing {word}")
@@ -120,6 +122,8 @@ def main() -> int:
             "AST snippet should flatten node types")
     require("dil.dugum_turu_var_mi(" in "\n".join(snippets["AST Gezgini"]["body"]),
             "AST snippet should query node types")
+    require("dil.dugum_ozeti(" in "\n".join(snippets["AST Gezgini"]["body"]),
+            "AST snippet should summarize node trees")
 
     print("VS Code tooling smoke passed.")
     return 0

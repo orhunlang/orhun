@@ -561,8 +561,9 @@ compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
 and AST builders (`dugum`, `yaprak`, `program`, `dugum_sayisi`,
 `dugum_turleri`). ASTs can also be traversed with
 `dugumleri_duzlestir`, `dugum_turlerini_duzlestir`,
-`dugumleri_filtrele`, and `dugum_turu_var_mi` for small compiler and DSL
-passes. `bekle` returns the standard `sonuc` result shape, so callers
+`dugumleri_filtrele`, `dugum_turu_var_mi`, `dugum_derinligi`,
+`dugum_turu_sayisi`, and `dugum_ozeti` for small compiler and DSL passes.
+`bekle` returns the standard `sonuc` result shape, so callers
 can keep parser errors explicit without throwing. Diagnostics can be rendered
 consistently with `tani_konumu`, `tani_bicimlendir`, and
 `tanilari_bicimlendir`; standalone diagnostic arrays can use
@@ -836,8 +837,8 @@ functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `ifade_satir_araligi`, `komut_satir_araligi`,
 `tum_komut_satir_araliklari`, `hata_tanilari`, and
-`tani_listesi_bicimlendir`, plus AST helpers such as
-`dugum_turu_var_mi`.
+`tani_listesi_bicimlendir`, plus AST helpers such as `dugum_turu_var_mi`
+and `dugum_ozeti`.
 Signature help also includes common built-in and Orhun-source helper
 signatures, including `aralik([baslangic], bitis, [adim])` and
 `numaralandir(liste, [baslangic])`, plus the lexer/parser/diagnostic helper

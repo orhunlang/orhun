@@ -189,6 +189,8 @@
   tanı listelerini biçimlendirme yardımcılarını ekler.
 - `0.8.0`, AST ağaçlarını düz listeye çevirme, düğüm türlerini toplama,
   türe göre filtreleme ve düğüm türü var/yok sorgulama yardımcılarını ekler.
+- `0.9.0`, AST derinliği, belirli düğüm türü sayısı ve ağaç özeti
+  yardımcılarını ekler.
 - Bu modül runtime davranışını değiştirmez; yeni kod için ek bir standart
   kütüphane yardımcısıdır.
 

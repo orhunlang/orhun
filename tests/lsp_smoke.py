@@ -65,6 +65,7 @@ def main() -> int:
             'a olsun dugum_turu_var_mi(ast, "Topla")',
             "p olsun ifade_satir_araligi(ifade)",
             "u olsun tum_komut_satir_araliklari(sonuc)",
+            "m olsun dugum_ozeti(ast)",
             "",
         ]
     )
@@ -152,7 +153,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 10, "character": 0},
+                        "position": {"line": 11, "character": 0},
                     },
                 }
             ),
@@ -412,6 +413,8 @@ def main() -> int:
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "dugum_turu_var_mi",
+        "dugum_derinligi",
+        "dugum_ozeti",
     ):
         if label not in labels:
             raise SystemExit(f"LSP smoke failed: completion missing {label}")

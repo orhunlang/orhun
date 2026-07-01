@@ -33,6 +33,13 @@ yazdır metin.birlestir(dil.dugum_turlerini_duzlestir(ast), "|")
 yazdır uzunluk(dil.dugumleri_filtrele(ast, "Sayi"))
 yazdır dil.dugum_turu_var_mi(ast, "Topla")
 yazdır dil.dugum_turu_var_mi(ast, "Eksik")
+ozet_ast olsun dil.dugum_ozeti(ast)
+yazdır dil.dugum_derinligi(ast)
+yazdır dil.dugum_turu_sayisi(ast, "Sayi")
+yazdır ozet_ast.kok_turu
+yazdır ozet_ast.dugum_sayisi
+yazdır ozet_ast.derinlik
+yazdır metin.birlestir(ozet_ast.turler, "|")
 yazdır ast.cocuklar[0].deger
 yazdır ast.cocuklar[0].cocuklar[0].deger
 yazdır ast.cocuklar[0].cocuklar[1].deger

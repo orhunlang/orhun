@@ -56,6 +56,7 @@ yazdır dil.program([dil.yaprak("Selam", ad.deger.deger, ad.deger)]).tur
 agac olsun dil.program([dil.dugum("Selam", ad.deger.deger, [], 1, 1)])
 yazdır dil.dugum_turlerini_duzlestir(agac)
 yazdır dil.dugum_turu_var_mi(agac, "Selam")
+yazdır dil.dugum_ozeti(agac)
 yazdır dil.token_degerleri(tokenlar)
 yazdır dil.hata_var_mi(imlec)
 yazdır dil.tanilari_bicimlendir(imlec)
