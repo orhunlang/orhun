@@ -86,6 +86,28 @@ jobs:
         if: runner.os == 'macOS'
         run: python3 tests/runtime_bundle_smoke.py ./build/orhun_test
 
+      - name: CLI UX smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/package_new_smoke.py .\build\orhun_test.exe
+          py -3 tests/program_arguments_smoke.py .\build\orhun_test.exe
+          py -3 tests/input_alias_smoke.py .\build\orhun_test.exe
+
+      - name: CLI UX smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/package_new_smoke.py ./build/orhun_test
+          python3 tests/program_arguments_smoke.py ./build/orhun_test
+          python3 tests/input_alias_smoke.py ./build/orhun_test
+
+      - name: CLI UX smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/package_new_smoke.py ./build/orhun_test
+          python3 tests/program_arguments_smoke.py ./build/orhun_test
+          python3 tests/input_alias_smoke.py ./build/orhun_test
+
       - name: Fallback matrix (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
