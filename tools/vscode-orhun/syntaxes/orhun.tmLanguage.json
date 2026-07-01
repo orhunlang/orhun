@@ -73,7 +73,7 @@
       "patterns": [
         {
           "name": "support.function.builtin.orhun",
-          "match": "\\b(yaz|yazdır|sor|oku|aralik|aralık|ilk|son|bos_mu|boş_mu|dolu_mu|uzunluk|metne_cevir|sayiya_cevir|bekle|token_araligi|token_araliklari|token_uzunlugu|komut_satir_araligi|komut_satir_araliklari|hata_tanisi|hata_tanilari|tani_listesi_bicimlendir|tani_listesi_kaynak_bicimlendir)\\b"
+          "match": "\\b(yaz|yazdır|sor|oku|aralik|aralık|ilk|son|bos_mu|boş_mu|dolu_mu|uzunluk|metne_cevir|sayiya_cevir|bekle|token_araligi|token_araliklari|token_uzunlugu|komut_satir_araligi|komut_satir_araliklari|hata_tanisi|hata_tanilari|tani_listesi_bicimlendir|tani_listesi_kaynak_bicimlendir|dugumleri_duzlestir|dugum_turlerini_duzlestir|dugumleri_filtrele|dugum_turu_var_mi)\\b"
         },
         {
           "name": "support.module.orhun",

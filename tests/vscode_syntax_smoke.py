@@ -58,6 +58,7 @@ def main() -> int:
         "komut_satir_araligi",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
+        "dugum_turu_var_mi",
     ):
         require(re.search(rf"(?<![A-Za-z_]){re.escape(word)}(?![A-Za-z_])", combined),
                 f"VS Code builtins pattern missing {word}")
@@ -75,6 +76,7 @@ def main() -> int:
         "Lexer Özeti": "lexer",
         "Parser Özeti": "parser",
         "Tanı Listesi": "tani",
+        "AST Gezgini": "ast",
     }
     for name, prefix in required_snippets.items():
         require(name in snippets, f"VS Code snippet missing {name}")
@@ -108,6 +110,10 @@ def main() -> int:
             "Parser snippet should expose parser diagnostics")
     require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Tanı Listesi"]["body"]),
             "Tani snippet should format diagnostic lists")
+    require("dil.dugum_turlerini_duzlestir(" in "\n".join(snippets["AST Gezgini"]["body"]),
+            "AST snippet should flatten node types")
+    require("dil.dugum_turu_var_mi(" in "\n".join(snippets["AST Gezgini"]["body"]),
+            "AST snippet should query node types")
 
     print("VS Code tooling smoke passed.")
     return 0

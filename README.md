@@ -46,7 +46,7 @@ For a more concrete progress snapshot and the current estimate toward `1.0` /
 - Standard modules for files, JSON, regex, date/time, simple database helpers,
   server helpers, FFI, and system policy controls
 - Orhun-source helper modules for language tooling, including token cursors,
-  diagnostics, and AST records for small compilers and DSLs
+  diagnostics, and AST records/traversal helpers for small compilers and DSLs
 - Package install and lock verification flows
 - Formatter, linter, LSP, and VS Code language tooling
 - Cross-platform CI for Windows, Linux, and macOS

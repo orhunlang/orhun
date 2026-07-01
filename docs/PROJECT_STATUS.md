@@ -48,7 +48,8 @@ These percentages are planning estimates, not promises.
   helpers on top of its structural summary without changing the parity JSON
   contract.
 - The shared Orhun language-toolkit module can format standalone diagnostic
-  lists with or without source-line context for parser, DSL, and LSP surfaces.
+  lists with or without source-line context, and can flatten/filter AST records
+  for parser, DSL, and LSP surfaces.
 - Exact Orhun/C++ compiler bytecode parity across all current C++-compileable
   runtime cases, guarded by a full-case sweep.
 - Strict decoded-bytecode execution bridge from the Orhun-written compiler to

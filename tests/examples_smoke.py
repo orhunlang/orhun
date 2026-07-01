@@ -67,6 +67,8 @@ def main() -> int:
         "dil.hata_var_mi(imlec)",
         "dil.tani_mesajlari(hatalar)",
         "dil.tani_listesi_bicimlendir(hatalar.hatalar)",
+        "dil.dugum_turlerini_duzlestir(ast)",
+        'dil.dugum_turu_var_mi(ast, "SelamKomutu")',
     ):
         require(snippet in stdlib_dil, f"stdlib_dil should include {snippet}")
 

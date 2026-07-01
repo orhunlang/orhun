@@ -559,7 +559,10 @@ compiler and DSL prototypes. It exposes token records (`token`, `dosya_sonu`,
 `hata_token`, `token_mi`), token-stream cursors (`imlec`, `simdiki`, `onceki`,
 `ilerle`, `bitti_mi`, `esles`, `bekle`), diagnostics (`tani`, `tani_ekle`),
 and AST builders (`dugum`, `yaprak`, `program`, `dugum_sayisi`,
-`dugum_turleri`). `bekle` returns the standard `sonuc` result shape, so callers
+`dugum_turleri`). ASTs can also be traversed with
+`dugumleri_duzlestir`, `dugum_turlerini_duzlestir`,
+`dugumleri_filtrele`, and `dugum_turu_var_mi` for small compiler and DSL
+passes. `bekle` returns the standard `sonuc` result shape, so callers
 can keep parser errors explicit without throwing. Diagnostics can be rendered
 consistently with `tani_konumu`, `tani_bicimlendir`, and
 `tanilari_bicimlendir`; standalone diagnostic arrays can use
@@ -829,7 +832,8 @@ The LSP completion provider returns language keywords plus common built-in
 functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `komut_satir_araligi`, `hata_tanilari`, and
-`tani_listesi_bicimlendir`.
+`tani_listesi_bicimlendir`, plus AST helpers such as
+`dugum_turu_var_mi`.
 Signature help also includes common built-in and Orhun-source helper
 signatures, including `aralik([baslangic], bitis, [adim])` and
 `numaralandir(liste, [baslangic])`, plus the lexer/parser/diagnostic helper

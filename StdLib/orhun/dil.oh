@@ -6,7 +6,7 @@
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.7.0"
+surum olsun "0.8.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -121,6 +121,33 @@ işlev dugum_turleri(cocuklar):
     her cocuk içinde cocuklar:
         turler.ekle(cocuk.tur)
     döndür turler
+
+işlev dugumleri_duzlestir(kok):
+    dugumler olsun [kok]
+    her cocuk içinde kok.cocuklar:
+        alt_dugumler olsun dugumleri_duzlestir(cocuk)
+        her alt_dugum içinde alt_dugumler:
+            dugumler.ekle(alt_dugum)
+    döndür dugumler
+
+işlev dugum_turlerini_duzlestir(kok):
+    turler olsun []
+    her kayit içinde dugumleri_duzlestir(kok):
+        turler.ekle(kayit.tur)
+    döndür turler
+
+işlev dugumleri_filtrele(kok, tur):
+    eslesenler olsun []
+    her kayit içinde dugumleri_duzlestir(kok):
+        eğer kayit.tur eşit tur ise:
+            eslesenler.ekle(kayit)
+    döndür eslesenler
+
+işlev dugum_turu_var_mi(kok, tur):
+    her kayit içinde dugumleri_duzlestir(kok):
+        eğer kayit.tur eşit tur ise:
+            döndür doğru
+    döndür yanlış
 
 işlev token_turleri(tokenlar):
     turler olsun []

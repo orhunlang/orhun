@@ -11,6 +11,8 @@ ast olsun dil.program([dil.yaprak("SelamKomutu", ad.deger.deger, ad.deger)])
 
 yazdır ast.tur
 yazdır ast.cocuklar[0].tur + ":" + ast.cocuklar[0].deger
+yazdır dil.dugum_turlerini_duzlestir(ast)
+yazdır dil.dugum_turu_var_mi(ast, "SelamKomutu")
 yazdır dil.token_degerleri(tokenlar)
 yazdır dil.hata_var_mi(imlec)
 

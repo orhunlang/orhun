@@ -114,5 +114,15 @@
       "yaz dil.tani_listesi_bicimlendir(tanilar)"
     ],
     "description": "Tanı listesini ortak biçimde yazdır"
+  },
+  "AST Gezgini": {
+    "prefix": "ast",
+    "body": [
+      "dil olsun dahil_et \"orhun/dil.oh\"",
+      "${1:kok} olsun dil.program([dil.dugum(\"${2:Topla}\", \"+\", [], 1, 1)])",
+      "yaz dil.dugum_turlerini_duzlestir(${1:kok})",
+      "yaz dil.dugum_turu_var_mi(${1:kok}, \"${2:Topla}\")"
+    ],
+    "description": "Orhun AST düğümlerini gez ve tür ara"
   }
 }

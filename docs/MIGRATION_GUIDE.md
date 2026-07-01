@@ -187,6 +187,8 @@
   listesi yardımlarını ekler.
 - `0.7.0`, imleç dışından gelen tanı listelerini ve kaynak satırıyla birlikte
   tanı listelerini biçimlendirme yardımcılarını ekler.
+- `0.8.0`, AST ağaçlarını düz listeye çevirme, düğüm türlerini toplama,
+  türe göre filtreleme ve düğüm türü var/yok sorgulama yardımcılarını ekler.
 - Bu modül runtime davranışını değiştirmez; yeni kod için ek bir standart
   kütüphane yardımcısıdır.
 

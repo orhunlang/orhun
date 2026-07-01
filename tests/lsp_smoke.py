@@ -62,6 +62,7 @@ def main() -> int:
             "r olsun aralik(1, 5)",
             "n olsun numaralandir([5, 6], 1)",
             "t olsun tani_listesi_bicimlendir([])",
+            'a olsun dugum_turu_var_mi(ast, "Topla")',
             "",
         ]
     )
@@ -149,7 +150,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 7, "character": 0},
+                        "position": {"line": 8, "character": 0},
                     },
                 }
             ),
@@ -161,6 +162,28 @@ def main() -> int:
                     "params": {
                         "textDocument": {"uri": uri},
                         "position": {"line": 6, "character": 35},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 13,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 7, "character": 32},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 14,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 7, "character": 12},
                     },
                 }
             ),
@@ -303,6 +326,22 @@ def main() -> int:
     if "tani_listesi_bicimlendir(tanilar)" not in hover_value:
         raise SystemExit("LSP smoke failed: diagnostic-helper hover label mismatch")
 
+    ast_helper_sig_resp = next((m for m in messages if m.get("id") == 13), None)
+    if ast_helper_sig_resp is None or "result" not in ast_helper_sig_resp:
+        raise SystemExit("LSP smoke failed: AST-helper signatureHelp response missing")
+    ast_helper_signatures = ast_helper_sig_resp["result"].get("signatures", [])
+    if not ast_helper_signatures:
+        raise SystemExit("LSP smoke failed: AST-helper signatures empty")
+    if ast_helper_signatures[0].get("label") != "dugum_turu_var_mi(kok, tur)":
+        raise SystemExit("LSP smoke failed: AST-helper signature label mismatch")
+
+    ast_helper_hover_resp = next((m for m in messages if m.get("id") == 14), None)
+    if ast_helper_hover_resp is None or "result" not in ast_helper_hover_resp:
+        raise SystemExit("LSP smoke failed: AST-helper hover response missing")
+    ast_hover_value = ast_helper_hover_resp["result"].get("contents", {}).get("value", "")
+    if "dugum_turu_var_mi(kok, tur)" not in ast_hover_value:
+        raise SystemExit("LSP smoke failed: AST-helper hover label mismatch")
+
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
         raise SystemExit("LSP smoke failed: references response missing")
@@ -330,6 +369,7 @@ def main() -> int:
         "komut_satir_araligi",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
+        "dugum_turu_var_mi",
     ):
         if label not in labels:
             raise SystemExit(f"LSP smoke failed: completion missing {label}")

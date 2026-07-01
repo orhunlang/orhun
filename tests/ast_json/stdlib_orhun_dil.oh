@@ -28,6 +28,11 @@ yazdır dil.simdiki(imlec).tur
 yazdır dil.bitti_mi(imlec)
 yazdır dil.dugum_sayisi(ast)
 yazdır metin.birlestir(dil.dugum_turleri(ast.cocuklar), "|")
+yazdır uzunluk(dil.dugumleri_duzlestir(ast))
+yazdır metin.birlestir(dil.dugum_turlerini_duzlestir(ast), "|")
+yazdır uzunluk(dil.dugumleri_filtrele(ast, "Sayi"))
+yazdır dil.dugum_turu_var_mi(ast, "Topla")
+yazdır dil.dugum_turu_var_mi(ast, "Eksik")
 yazdır ast.cocuklar[0].deger
 yazdır ast.cocuklar[0].cocuklar[0].deger
 yazdır ast.cocuklar[0].cocuklar[1].deger
