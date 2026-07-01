@@ -166,6 +166,31 @@ jobs:
         run: |
           python3 tests/case_manifest_smoke.py
 
+      - name: Docs, examples, and VS Code smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/project_status_smoke.py
+          py -3 tests/beginner_docs_smoke.py
+          py -3 tests/examples_smoke.py .\build\orhun_test.exe
+          py -3 tests/vscode_syntax_smoke.py
+
+      - name: Docs, examples, and VS Code smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/project_status_smoke.py
+          python3 tests/beginner_docs_smoke.py
+          python3 tests/examples_smoke.py ./build/orhun_test
+          python3 tests/vscode_syntax_smoke.py
+
+      - name: Docs, examples, and VS Code smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/project_status_smoke.py
+          python3 tests/beginner_docs_smoke.py
+          python3 tests/examples_smoke.py ./build/orhun_test
+          python3 tests/vscode_syntax_smoke.py
+
       - name: Fallback ORH-COMP smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
