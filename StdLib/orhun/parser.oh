@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.19.0"
+surum olsun "0.20.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -2010,6 +2010,9 @@ işlev buyuk_satir(mevcut, aday):
 
 işlev ifade_son_satiri(ifade):
     son olsun ifade.satir
+    eğer ifade.tur eşit "IsimsizIslev" ise:
+        her varsayilan içinde ifade.varsayilanlar:
+            son olsun buyuk_satir(son, ifade_son_satiri(varsayilan))
     her alt içinde ifade.altlar:
         son olsun buyuk_satir(son, ifade_son_satiri(alt))
     deneme:
@@ -2037,6 +2040,9 @@ işlev ifade_satir_araliklarini_topla(ifade, araliklar):
     aralik olsun ifade_satir_araligi(ifade)
     aralik["tur"] = ifade.tur
     araliklar.ekle(aralik)
+    eğer ifade.tur eşit "IsimsizIslev" ise:
+        her varsayilan içinde ifade.varsayilanlar:
+            ifade_satir_araliklarini_topla(varsayilan, araliklar)
     her alt içinde ifade.altlar:
         ifade_satir_araliklarini_topla(alt, araliklar)
     eğer ifade.tur eşit "ParalelYap" ise:
@@ -2045,6 +2051,11 @@ işlev ifade_satir_araliklarini_topla(ifade, araliklar):
     döndür araliklar
 
 işlev komut_ifade_satir_araliklarini_topla(komut, araliklar):
+    eğer komut.tur eşit "Atama" ise:
+        ifade_satir_araliklarini_topla(komut.hedef_ozeti, araliklar)
+    eğer komut.tur eşit "IslevTanim" ise:
+        her varsayilan içinde komut.varsayilanlar:
+            ifade_satir_araliklarini_topla(varsayilan, araliklar)
     ifade_satir_araliklarini_topla(komut.ifade_ozeti, araliklar)
     her blok içinde komut.bloklar:
         her alt_komut içinde blok.komutlar:

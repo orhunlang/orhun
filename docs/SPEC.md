@@ -734,11 +734,13 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts. Helper functions can derive inclusive command
 and expression line ranges (`baslangic_satir`, `bitis_satir`, `satir_sayisi`).
-`tum_ifade_satir_araliklari` walks expression children, nested command blocks,
-and `paralel yap` commands in preorder; its entries also carry the expression
-`tur`. Recursive command ranges remain available for nested blocks. These
-helpers operate on the structural summary without changing the parser JSON
-contract. Parse failures can also be
+`tum_ifade_satir_araliklari` walks assignment targets, named and anonymous
+function defaults, expression children, nested command blocks, and
+`paralel yap` commands; its entries also carry the expression `tur`. Assignment
+targets precede assigned values, named defaults precede body commands, and
+anonymous defaults precede body expressions. Recursive command ranges remain
+available for nested blocks. These helpers operate on the structural summary
+without changing the parser JSON contract. Parse failures can also be
 exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The

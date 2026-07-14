@@ -50,6 +50,10 @@ yazdır coklu.komutlar[0].hedef_sayisi
 esit_kontrol olsun parser.ozetle("sayi = 10\nyazdır sayi\n")
 yazdır esit_kontrol.komutlar[0].bildirim
 yazdır esit_kontrol.komutlar[0].hedef_ozeti.ayrinti
+hedef_aralik_kontrol olsun parser.ozetle("nesne.deger = a + 1\n")
+hedef_araliklari olsun parser.tum_ifade_satir_araliklari(hedef_aralik_kontrol)
+yazdır uzunluk(hedef_araliklari)
+yazdır hedef_araliklari[0].tur + "|" + hedef_araliklari[1].tur + "|" + hedef_araliklari[2].tur + "|" + hedef_araliklari[3].tur + "|" + hedef_araliklari[4].tur
 
 sinif_kontrol olsun parser.ozetle("tip Kedi(Hayvan):\n    yazdır \"miyav\"\n")
 yazdır sinif_kontrol.komutlar[0].ad
@@ -148,6 +152,14 @@ yazdır json.yaz(cagri_kontrol.komutlar[1].ifade_ozeti)
 
 lambda_param_kontrol olsun parser.ozetle("f olsun işlev(a, b olsun 2): a + b\n")
 yazdır json.yaz(lambda_param_kontrol.komutlar[0].ifade_ozeti)
+lambda_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(lambda_param_kontrol)
+yazdır uzunluk(lambda_ifade_araliklari)
+yazdır lambda_ifade_araliklari[0].tur + "|" + lambda_ifade_araliklari[1].tur + "|" + lambda_ifade_araliklari[2].tur + "|" + lambda_ifade_araliklari[3].tur + "|" + lambda_ifade_araliklari[4].tur + "|" + lambda_ifade_araliklari[5].tur
+
+islev_aralik_kontrol olsun parser.ozetle("işlev topla(a, b olsun 2):\n    döndür a + b\n")
+islev_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(islev_aralik_kontrol)
+yazdır uzunluk(islev_ifade_araliklari)
+yazdır islev_ifade_araliklari[0].tur + "|" + islev_ifade_araliklari[1].tur + "|" + islev_ifade_araliklari[2].tur + "|" + islev_ifade_araliklari[3].tur
 
 tekli_kontrol olsun parser.ozetle("negatif olsun -5\nters olsun değil yanlış\n")
 yazdır json.yaz(tekli_kontrol.komutlar[0].ifade_ozeti)
@@ -157,7 +169,7 @@ paralel_kontrol olsun parser.ozetle("gorev olsun paralel yap: yazdır \"sur\"\n"
 yazdır json.yaz(paralel_kontrol.komutlar[0].ifade_ozeti)
 paralel_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(paralel_kontrol)
 yazdır uzunluk(paralel_ifade_araliklari)
-yazdır paralel_ifade_araliklari[0].tur + "|" + paralel_ifade_araliklari[1].tur
+yazdır paralel_ifade_araliklari[0].tur + "|" + paralel_ifade_araliklari[1].tur + "|" + paralel_ifade_araliklari[2].tur
 
 ozel_ifade_kontrol olsun parser.ozetle("yanit olsun sor \"Ad?\"\ntemel olsun dahil_et \"orhun/temel.oh\"\n")
 yazdır json.yaz(ozel_ifade_kontrol.komutlar[0].ifade_ozeti)

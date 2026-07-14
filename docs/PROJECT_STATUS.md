@@ -46,7 +46,9 @@ These percentages are planning estimates, not promises.
   range helpers for diagnostics, LSP, and future self-hosted language tooling.
 - The Orhun-written parser exposes expression/command line ranges, recursive
   expression and command ranges, and diagnostic-list helpers on top of its
-  structural summary without changing the parity JSON contract.
+  structural summary without changing the parity JSON contract. Recursive
+  expression ranges include assignment targets, named and anonymous function
+  defaults, nested blocks, and parallel command bodies.
 - The shared Orhun language-toolkit module can format standalone diagnostic
   lists with or without source-line context, and can flatten/filter AST records
   for parser, DSL, and LSP surfaces.
