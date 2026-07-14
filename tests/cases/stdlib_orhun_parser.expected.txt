@@ -1,4 +1,8 @@
-0.25.0
+0.26.0
+1
+1
+0
+1
 orhun-parser-ir-v1
 orhun-parser-ir-v1
 1

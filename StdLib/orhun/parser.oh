@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.25.0"
+surum olsun "0.26.0"
 ir_sozlesmesi olsun "orhun-parser-ir-v1"
 ir_azami_derinlik olsun 256
 
@@ -2515,5 +2515,21 @@ işlev ozetle_tokenlar(tokenlar):
 
     döndür sonuc_ok(komutlar, token_sayisi, guvenli_token(tokenlar, 0).satir)
 
+işlev lexer_ir_hata_sonucu(lexer_sonucu, dogrulama):
+    token_sayisi olsun 0
+    deneme:
+        token_sayisi olsun uzunluk(lexer_sonucu.tokenlar)
+    yakala hata:
+        token_sayisi olsun 0
+    mesaj olsun "Lexer IR gecersiz: " + dogrulama.hata
+    hata_tokeni olsun lexer.token("HATA", mesaj, 1, 1)
+    döndür sonuc_hata(mesaj, hata_tokeni, token_sayisi)
+
+işlev ozetle_lexer_sonucu(lexer_sonucu):
+    dogrulama olsun lexer.lexer_ir_dogrula(lexer_sonucu)
+    eğer değil dogrulama.ok ise:
+        döndür lexer_ir_hata_sonucu(lexer_sonucu, dogrulama)
+    döndür ozetle_tokenlar(lexer_sonucu.tokenlar)
+
 işlev ozetle(kaynak):
-    döndür ozetle_tokenlar(lexer.tokenlestir(kaynak))
+    döndür ozetle_lexer_sonucu(lexer.ozetle(kaynak))

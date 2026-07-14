@@ -106,7 +106,7 @@ def compare_file(
             'lexer olsun dahil_et "orhun/lexer.oh"\n'
             f'kaynak olsun dosya.oku("{orhun_string(source_path)}")\n'
             "sonuc olsun lexer.ozetle(kaynak)\n"
-            'sonuc["ir_dogrulamasi"] = lexer.ir_dogrula(sonuc)\n'
+            'sonuc["ir_dogrulamasi"] = lexer.lexer_ir_dogrula(sonuc)\n'
             "yazdır json.yaz(sonuc)\n",
             encoding="utf-8",
             newline="\n",

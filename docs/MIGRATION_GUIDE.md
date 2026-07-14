@@ -202,13 +202,14 @@
   kütüphane yardımcısıdır.
 
 ## 12.2. Orhun-source lexer/parser helpers
-- `orhun/lexer.oh` `0.7.0`, token değerleri, hata token değerleri ve
+- `orhun/lexer.oh` `0.8.0`, token değerleri, hata token değerleri ve
   UTF-8-aware token aralıkları için yardımcı özet fonksiyonları ekler.
 - 0.7.0 ile lexer özetleri `orhun-lexer-ir-v1` sözleşmesini taşır.
-  `ir_dogrula`, token alanlarını, konumları, sayaçları ve son `DOSYA_SONU`
-  kaydını denetler; `ir_uyumlu_mu`, `ir_gecerli_mi` ve `ir_ozeti` daha kısa
-  sözleşme sorguları sağlar.
-- `orhun/parser.oh` `0.25.0`, parse sonucunda hata var/yok, hata mesajı,
+  Token alanları, konumlar, sayaçlar ve son `DOSYA_SONU` kaydı doğrulanır.
+- 0.8.0, lexer sözleşme yardımcılarını parser yardımcılarıyla kapsam
+  çakışmasını önlemek için `lexer_ir_dogrula`, `lexer_ir_uyumlu_mu`,
+  `lexer_ir_gecerli_mi` ve `lexer_ir_ozeti` adlarına taşır.
+- `orhun/parser.oh` `0.26.0`, parse sonucunda hata var/yok, hata mesajı,
   ortak tanı listesi, komut satır aralığı, ifade satır aralığı, iç içe
   bloklardaki tüm komut satır aralıkları ve alt ifadeler ile `paralel yap`
   komutlarını kapsayan tüm ifade satır aralıklarını okuma yardımcıları ekler.
@@ -230,6 +231,9 @@
 - 0.25.0, ifade/komut tür sayılarını, türe göre recursive kaynak aralığı
   filtrelerini ve doğrulama + tür + aralık bilgilerini birleştiren
   `ir_indeksi` yardımcısını ekler.
+- 0.26.0, `ozetle` girişinde `orhun-lexer-ir-v1` sonucunu doğrular.
+  `ozetle_lexer_sonucu`, aynı sınırı bootstrap araçları ve testler için açar;
+  bozuk lexer IR normal bir Türkçe parser hata sonucuna dönüşür.
 - `orhun/derleyici.oh` 0.29.0, eksik, farklı veya yapısal olarak bozuk parser
   IR girdisini komut alanlarını derlemeden önce açıklayıcı bir hatayla reddeder.
 - Lexer sözleşme alanı mevcut sağlık alanlarına eklenmiştir; parser yardımcıları

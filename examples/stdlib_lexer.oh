@@ -10,4 +10,4 @@ sürece i küçük uzunluk(tokenlar):
     i olsun i + 1
 
 yazdır lexer.token_araligi(tokenlar[0])
-yazdır lexer.ir_dogrula(sonuc)
+yazdır lexer.lexer_ir_dogrula(sonuc)

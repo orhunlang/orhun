@@ -55,6 +55,11 @@ def main() -> int:
         "json",
         "dosya",
         "token_araligi",
+        "lexer_ir_uyumlu_mu",
+        "lexer_ir_dogrula",
+        "lexer_ir_gecerli_mi",
+        "lexer_ir_ozeti",
+        "ozetle_lexer_sonucu",
         "ifade_satir_araligi",
         "tum_ifade_satir_araliklari",
         "ifade_derinligi",
@@ -124,7 +129,7 @@ def main() -> int:
             "Lexer snippet should expose error summaries")
     require("lexer.token_araligi(" in "\n".join(snippets["Lexer Özeti"]["body"]),
             "Lexer snippet should expose token ranges")
-    require("lexer.ir_dogrula(" in "\n".join(snippets["Lexer Özeti"]["body"]),
+    require("lexer.lexer_ir_dogrula(" in "\n".join(snippets["Lexer Özeti"]["body"]),
             "Lexer snippet should expose IR validation")
     require("parser.hata_var_mi(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose parser error helpers")

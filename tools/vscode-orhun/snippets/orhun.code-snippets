@@ -92,7 +92,7 @@
       "yaz lexer.turleri(sonuc.tokenlar)",
       "yaz lexer.hata_degerleri(sonuc.tokenlar)",
       "yaz lexer.token_araligi(sonuc.tokenlar[0])",
-      "yaz lexer.ir_dogrula(sonuc)"
+      "yaz lexer.lexer_ir_dogrula(sonuc)"
     ],
     "description": "Orhun lexer prototipiyle kaynak özeti al"
   },

@@ -70,7 +70,7 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
-Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.7.0 ile `hata_sayisi`,
+Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.8.0 ile `hata_sayisi`,
 `token_sayisi`, `tokenlar`, token degeri, hata degeri ve UTF-8-aware token
 araligi ozetlerini sagliyor. Lexer parity
 7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
@@ -92,7 +92,8 @@ kullanir. AST dugumleri on-sirali duz listeye cevrilebilir, tur listeleri
 toplanabilir, belirli dugum turleri filtrelenebilir ve agac derinligi/tur
 sayilari ozetlenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.25.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.26.0, lexer ozetini `orhun-lexer-ir-v1` sinirinda
+dogruladiktan sonra token akisini tuketir; `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan

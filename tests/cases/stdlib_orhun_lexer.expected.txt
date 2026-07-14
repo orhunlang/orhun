@@ -1,4 +1,4 @@
-0.7.0
+0.8.0
 orhun-lexer-ir-v1
 orhun-lexer-ir-v1
 1

@@ -82,7 +82,7 @@ def main() -> int:
         "stdlib_lexer should expose token ranges",
     )
     require(
-        "lexer.ir_dogrula(sonuc)" in stdlib_lexer,
+        "lexer.lexer_ir_dogrula(sonuc)" in stdlib_lexer,
         "stdlib_lexer should expose lexer IR validation",
     )
 

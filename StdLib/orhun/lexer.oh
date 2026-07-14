@@ -4,8 +4,8 @@
 # ifade etmeye baslar. Kaynak konumlari bayt indeksleriyle, sutunlar ise
 # UTF-8 kod noktasi sayilariyla izlenir.
 
-surum olsun "0.7.0"
-ir_sozlesmesi olsun "orhun-lexer-ir-v1"
+surum olsun "0.8.0"
+lexer_ir_sozlesmesi olsun "orhun-lexer-ir-v1"
 satir_donusu olsun json.coz("\"\\r\"")
 
 anahtarlar olsun []
@@ -357,16 +357,16 @@ işlev hata_degerleri(tokenlar):
             sonuc.ekle(tok.deger)
     döndür sonuc
 
-işlev ir_uyumlu_mu(sonuc):
+işlev lexer_ir_uyumlu_mu(sonuc):
     deneme:
-        döndür sonuc.ir_sozlesmesi eşit ir_sozlesmesi
+        döndür sonuc.ir_sozlesmesi eşit lexer_ir_sozlesmesi
     yakala hata:
         döndür yanlış
 
-işlev ir_dogrulama_sonucu(ok, hata):
-    döndür {"ok": ok, "hata": hata, "sozlesme": ir_sozlesmesi}
+işlev lexer_ir_dogrulama_sonucu(ok, hata):
+    döndür {"ok": ok, "hata": hata, "sozlesme": lexer_ir_sozlesmesi}
 
-işlev token_ir_hatasi(tok):
+işlev lexer_token_ir_hatasi(tok):
     deneme:
         eğer uzunluk(tok.tur) eşit 0 ise:
             döndür "Token IR tur alani bos olamaz."
@@ -379,47 +379,47 @@ işlev token_ir_hatasi(tok):
         döndür "Token IR alanlari eksik veya gecersiz."
     döndür ""
 
-işlev ir_dogrula(sonuc):
-    eğer değil ir_uyumlu_mu(sonuc) ise:
-        döndür ir_dogrulama_sonucu(yanlış, "Desteklenmeyen lexer ara temsil sozlesmesi; beklenen: " + ir_sozlesmesi)
+işlev lexer_ir_dogrula(sonuc):
+    eğer değil lexer_ir_uyumlu_mu(sonuc) ise:
+        döndür lexer_ir_dogrulama_sonucu(yanlış, "Desteklenmeyen lexer ara temsil sozlesmesi; beklenen: " + lexer_ir_sozlesmesi)
 
     deneme:
         eğer sonuc.hata_sayisi küçük 0 ise:
-            döndür ir_dogrulama_sonucu(yanlış, "Lexer IR hata_sayisi negatif olamaz.")
+            döndür lexer_ir_dogrulama_sonucu(yanlış, "Lexer IR hata_sayisi negatif olamaz.")
         eğer sonuc.token_sayisi eşit_değil uzunluk(sonuc.tokenlar) ise:
-            döndür ir_dogrulama_sonucu(yanlış, "Lexer IR token_sayisi tokenlar uzunluguyla eslesmiyor.")
+            döndür lexer_ir_dogrulama_sonucu(yanlış, "Lexer IR token_sayisi tokenlar uzunluguyla eslesmiyor.")
         eğer sonuc.token_sayisi eşit 0 ise:
-            döndür ir_dogrulama_sonucu(yanlış, "Lexer IR en az DOSYA_SONU tokeni icermeli.")
+            döndür lexer_ir_dogrulama_sonucu(yanlış, "Lexer IR en az DOSYA_SONU tokeni icermeli.")
 
         sayilan_hata olsun 0
         i olsun 0
         her tok içinde sonuc.tokenlar:
-            token_hatasi olsun token_ir_hatasi(tok)
+            token_hatasi olsun lexer_token_ir_hatasi(tok)
             eğer uzunluk(token_hatasi) büyük 0 ise:
-                döndür ir_dogrulama_sonucu(yanlış, token_hatasi)
+                döndür lexer_ir_dogrulama_sonucu(yanlış, token_hatasi)
             eğer tok.tur eşit "HATA" ise:
                 sayilan_hata olsun sayilan_hata + 1
             eğer tok.tur eşit "DOSYA_SONU" ve i eşit_değil sonuc.token_sayisi - 1 ise:
-                döndür ir_dogrulama_sonucu(yanlış, "DOSYA_SONU yalniz token dizisinin sonunda bulunabilir.")
+                döndür lexer_ir_dogrulama_sonucu(yanlış, "DOSYA_SONU yalniz token dizisinin sonunda bulunabilir.")
             i olsun i + 1
 
         eğer sonuc.tokenlar[sonuc.token_sayisi - 1].tur eşit_değil "DOSYA_SONU" ise:
-            döndür ir_dogrulama_sonucu(yanlış, "Lexer IR DOSYA_SONU tokeniyle bitmeli.")
+            döndür lexer_ir_dogrulama_sonucu(yanlış, "Lexer IR DOSYA_SONU tokeniyle bitmeli.")
         eğer sayilan_hata eşit_değil sonuc.hata_sayisi ise:
-            döndür ir_dogrulama_sonucu(yanlış, "Lexer IR hata_sayisi HATA tokenlariyla eslesmiyor.")
+            döndür lexer_ir_dogrulama_sonucu(yanlış, "Lexer IR hata_sayisi HATA tokenlariyla eslesmiyor.")
     yakala hata:
-        döndür ir_dogrulama_sonucu(yanlış, "Lexer IR alanlari eksik veya gecersiz.")
+        döndür lexer_ir_dogrulama_sonucu(yanlış, "Lexer IR alanlari eksik veya gecersiz.")
 
-    döndür ir_dogrulama_sonucu(doğru, "")
+    döndür lexer_ir_dogrulama_sonucu(doğru, "")
 
-işlev ir_gecerli_mi(sonuc):
-    döndür ir_dogrula(sonuc).ok
+işlev lexer_ir_gecerli_mi(sonuc):
+    döndür lexer_ir_dogrula(sonuc).ok
 
-işlev ir_ozeti(sonuc):
-    dogrulama olsun ir_dogrula(sonuc)
+işlev lexer_ir_ozeti(sonuc):
+    dogrulama olsun lexer_ir_dogrula(sonuc)
     döndür {
         "sozlesme": sonuc.ir_sozlesmesi,
-        "uyumlu": ir_uyumlu_mu(sonuc),
+        "uyumlu": lexer_ir_uyumlu_mu(sonuc),
         "gecerli": dogrulama.ok,
         "hata_sayisi": sonuc.hata_sayisi,
         "token_sayisi": sonuc.token_sayisi
@@ -427,4 +427,4 @@ işlev ir_ozeti(sonuc):
 
 işlev ozetle(kaynak):
     tokenlar olsun tokenlestir(kaynak)
-    döndür {"ir_sozlesmesi": ir_sozlesmesi, "hata_sayisi": hata_sayisi(tokenlar), "token_sayisi": uzunluk(tokenlar), "tokenlar": tokenlar}
+    döndür {"ir_sozlesmesi": lexer_ir_sozlesmesi, "hata_sayisi": hata_sayisi(tokenlar), "token_sayisi": uzunluk(tokenlar), "tokenlar": tokenlar}

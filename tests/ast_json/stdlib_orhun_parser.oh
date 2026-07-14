@@ -2,8 +2,17 @@ parser olsun dahil_et "orhun/parser.oh"
 
 kaynak olsun "işlev topla(a olsun 1, b olsun 2):\n    döndür a + b\n\nsonuc olsun topla(3)\nyazdır sonuc\n"
 sonuc olsun parser.ozetle(kaynak)
+lexer_sonucu olsun parser.lexer.ozetle(kaynak)
+lexer_gecisi olsun parser.ozetle_lexer_sonucu(lexer_sonucu)
+bozuk_lexer_sonucu olsun parser.lexer.ozetle("yazdır 1\n")
+bozuk_lexer_sonucu.ir_sozlesmesi = "orhun-lexer-ir-v0"
+bozuk_lexer_gecisi olsun parser.ozetle_lexer_sonucu(bozuk_lexer_sonucu)
 
 yazdır parser.surum
+yazdır lexer_gecisi.ok
+yazdır lexer_gecisi.token_sayisi eşit sonuc.token_sayisi
+yazdır bozuk_lexer_gecisi.ok
+yazdır metin.icerir(bozuk_lexer_gecisi.hata, "Lexer IR gecersiz")
 yazdır parser.ir_sozlesmesi
 yazdır sonuc.ir_sozlesmesi
 yazdır parser.ir_uyumlu_mu(sonuc)

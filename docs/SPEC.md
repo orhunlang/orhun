@@ -685,16 +685,18 @@ lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")
 tokenlar olsun sonuc.tokenlar
 yazdır lexer.degerleri(tokenlar)
-yazdır lexer.ir_dogrula(sonuc)
+yazdır lexer.lexer_ir_dogrula(sonuc)
 ```
 
 Each token is a dictionary with `tur`, `deger`, `satir`, and `sutun` fields.
 `ozetle(kaynak)` returns a dictionary with `ir_sozlesmesi`, `hata_sayisi`,
 `token_sayisi`, and `tokenlar`, matching the C++ `lex --json` health shape used
-by parity tests plus the additive `orhun-lexer-ir-v1` boundary. `ir_uyumlu_mu`
-checks that boundary, while `ir_dogrula` verifies token fields, positions,
-counts, error counts, and the final end-of-file token before other Orhun-written
-tools consume the stream. `ir_gecerli_mi` and `ir_ozeti` expose compact forms.
+by parity tests plus the additive `orhun-lexer-ir-v1` boundary.
+`lexer_ir_uyumlu_mu` checks that boundary, while `lexer_ir_dogrula` verifies
+token fields, positions, counts, error counts, and the final end-of-file token
+before other Orhun-written tools consume the stream. `lexer_ir_gecerli_mi` and
+`lexer_ir_ozeti` expose compact forms. Lexer-prefixed names keep this module's
+helpers distinct when it is included by the parser.
 Helper
 functions expose token types, token values, UTF-8-aware token lengths, inclusive
 source ranges (`satir`, `baslangic_sutun`, `bitis_sutun`, `uzunluk`), first
@@ -737,6 +739,11 @@ yazdır parser.ir_ozeti(sonuc)
 yazdır parser.ir_indeksi(sonuc)
 yazdır parser.hata_tanilari(sonuc)
 ```
+
+`ozetle(kaynak)` first builds and validates an `orhun-lexer-ir-v1` summary,
+then passes its token stream to the parser. `ozetle_lexer_sonucu(lexer_sonucu)`
+exposes that checked boundary for bootstrap tools and tests; incompatible or
+malformed lexer IR becomes a normal Turkish parser error result.
 
 The current prototype exposes a `Program` root and `Block` structural nodes,
 and every success or error result carries the versioned
