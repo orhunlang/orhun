@@ -79,7 +79,8 @@
       "ad olsun dil.bekle(imlec, \"${1:AD}\", \"\", \"${4:ad bekleniyor}\")",
       "yaz dil.hata_var_mi(imlec)",
       "yaz dil.token_degerleri(tokenlar)",
-      "yaz dil.tani_listesi_bicimlendir(imlec.hatalar)"
+      "yaz dil.tani_listesi_bicimlendir(imlec.hatalar)",
+      "yaz dil.tani_listesi_ozeti(imlec.hatalar)"
     ],
     "description": "Orhun dil geliştirme yardımcılarıyla imleç oluştur"
   },
@@ -112,8 +113,10 @@
     "prefix": "tani",
     "body": [
       "dil olsun dahil_et \"orhun/dil.oh\"",
-      "tanilar olsun [dil.tani(\"${1:kod}\", \"${2:mesaj}\", ${3:1}, ${4:1})]",
-      "yaz dil.tani_listesi_bicimlendir(tanilar)"
+      "tanilar olsun [dil.tani(\"${1:kod}\", \"${2:mesaj}\", ${3:1}, ${4:1}), dil.tani_uyarisi(\"${5:uyari}\", \"${6:uyari mesaji}\", ${3:1}, ${4:1})]",
+      "yaz dil.tani_listesi_bicimlendir(tanilar)",
+      "yaz dil.tani_listesi_ozeti(tanilar)",
+      "yaz dil.tani_listesi_seviyeye_gore_filtrele(tanilar, \"uyari\")"
     ],
     "description": "Tanı listesini ortak biçimde yazdır"
   },

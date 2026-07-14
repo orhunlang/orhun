@@ -567,9 +567,12 @@ and AST builders (`dugum`, `yaprak`, `program`, `dugum_sayisi`,
 can keep parser errors explicit without throwing. Diagnostics can be rendered
 consistently with `tani_konumu`, `tani_bicimlendir`, and
 `tanilari_bicimlendir`; standalone diagnostic arrays can use
-`tani_listesi_bicimlendir` and `tani_listesi_kaynak_bicimlendir`. Callers can
-also inspect `tani_kodlari` or query an expected code through
-`tani_kodu_var_mi`. `tani_kaynak_bicimlendir` adds the
+`tani_listesi_bicimlendir` and `tani_listesi_kaynak_bicimlendir`. Diagnostic
+arrays can also be inspected with `tani_listesi_seviyeleri`, counted with
+`tani_listesi_seviye_sayisi`, filtered with
+`tani_listesi_seviyeye_gore_filtrele`, and summarized with
+`tani_listesi_ozeti`. Callers can also inspect `tani_kodlari` or query an
+expected code through `tani_kodu_var_mi`. `tani_kaynak_bicimlendir` adds the
 matching source line and a column marker for teaching-oriented command-line
 and DSL diagnostics, including valid blank source lines. `tani_araligi` marks
 a multi-character source range with `^~~`, while `tani_uyarisi` produces a
@@ -665,6 +668,7 @@ ad olsun dil.bekle(imlec, "AD", "", "ad bekleniyor")
 ast olsun dil.program([dil.yaprak("SelamKomutu", ad.deger.deger, ad.deger)])
 yazdır dil.token_degerleri(tokenlar)
 yazdır dil.hata_var_mi(imlec)
+yazdır dil.tani_listesi_ozeti(imlec.hatalar)
 ```
 
 The module is intentionally small and pure Orhun. Its helpers do not replace
@@ -837,8 +841,8 @@ functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `ifade_satir_araligi`, `komut_satir_araligi`,
 `tum_komut_satir_araliklari`, `hata_tanilari`, and
-`tani_listesi_bicimlendir`, plus AST helpers such as `dugum_turu_var_mi`
-and `dugum_ozeti`.
+`tani_listesi_bicimlendir`, `tani_listesi_ozeti`, plus AST helpers such as
+`dugum_turu_var_mi` and `dugum_ozeti`.
 Signature help also includes common built-in and Orhun-source helper
 signatures, including `aralik([baslangic], bitis, [adim])` and
 `numaralandir(liste, [baslangic])`, plus the lexer/parser/diagnostic helper

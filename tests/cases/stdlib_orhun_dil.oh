@@ -78,6 +78,16 @@ yazdır dil.tani_kaynak_bicimlendir(aralikli_tani, "bir hatali ifade")
 uyari olsun dil.tani_uyarisi("eski_kullanim", "bu kullanim gelecekte kaldirilacak", 2, 1)
 dil.tani_ipucu_ekle(uyari, "yerine yeni_yontem kullan")
 yazdır dil.tani_bicimlendir(uyari)
+karisik_tanilar olsun [hatalar.hatalar[0], uyari]
+tani_ozeti olsun dil.tani_listesi_ozeti(karisik_tanilar)
+yazdır metin.birlestir(dil.tani_listesi_seviyeleri(karisik_tanilar), "|")
+yazdır dil.tani_listesi_seviye_sayisi(karisik_tanilar, "hata")
+yazdır dil.tani_listesi_seviye_sayisi(karisik_tanilar, "uyari")
+yazdır uzunluk(dil.tani_listesi_seviyeye_gore_filtrele(karisik_tanilar, "uyari"))
+yazdır tani_ozeti.toplam
+yazdır tani_ozeti.hata
+yazdır tani_ozeti.uyari
+yazdır metin.birlestir(tani_ozeti.seviyeler, "|")
 turkce_token olsun dil.token("AD", "çığ", 1, 2)
 yazdır dil.token_uzunlugu(turkce_token)
 token_tanisi olsun dil.token_tanisi("tanimsiz_ad", "bu ad tanimli degil", turkce_token)

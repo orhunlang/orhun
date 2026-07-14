@@ -66,6 +66,7 @@ def main() -> int:
             "p olsun ifade_satir_araligi(ifade)",
             "u olsun tum_komut_satir_araliklari(sonuc)",
             "m olsun dugum_ozeti(ast)",
+            "s olsun tani_listesi_ozeti([])",
             "",
         ]
     )
@@ -153,7 +154,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 11, "character": 0},
+                        "position": {"line": 12, "character": 0},
                     },
                 }
             ),
@@ -220,6 +221,28 @@ def main() -> int:
                     "params": {
                         "textDocument": {"uri": uri},
                         "position": {"line": 6, "character": 12},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 17,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 11, "character": 28},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 18,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 11, "character": 12},
                     },
                 }
             ),
@@ -351,6 +374,43 @@ def main() -> int:
     if "tani_listesi_bicimlendir(tanilar)" not in hover_value:
         raise SystemExit("LSP smoke failed: diagnostic-helper hover label mismatch")
 
+    diagnostic_summary_sig_resp = next(
+        (m for m in messages if m.get("id") == 17), None
+    )
+    if (
+        diagnostic_summary_sig_resp is None
+        or "result" not in diagnostic_summary_sig_resp
+    ):
+        raise SystemExit(
+            "LSP smoke failed: diagnostic-summary signatureHelp response missing"
+        )
+    diagnostic_summary_signatures = diagnostic_summary_sig_resp["result"].get(
+        "signatures", []
+    )
+    if not diagnostic_summary_signatures:
+        raise SystemExit("LSP smoke failed: diagnostic-summary signatures empty")
+    if (
+        diagnostic_summary_signatures[0].get("label")
+        != "tani_listesi_ozeti(tanilar)"
+    ):
+        raise SystemExit("LSP smoke failed: diagnostic-summary signature label mismatch")
+
+    diagnostic_summary_hover_resp = next(
+        (m for m in messages if m.get("id") == 18), None
+    )
+    if (
+        diagnostic_summary_hover_resp is None
+        or "result" not in diagnostic_summary_hover_resp
+    ):
+        raise SystemExit(
+            "LSP smoke failed: diagnostic-summary hover response missing"
+        )
+    summary_hover_value = (
+        diagnostic_summary_hover_resp["result"].get("contents", {}).get("value", "")
+    )
+    if "tani_listesi_ozeti(tanilar)" not in summary_hover_value:
+        raise SystemExit("LSP smoke failed: diagnostic-summary hover label mismatch")
+
     ast_helper_sig_resp = next((m for m in messages if m.get("id") == 13), None)
     if ast_helper_sig_resp is None or "result" not in ast_helper_sig_resp:
         raise SystemExit("LSP smoke failed: AST-helper signatureHelp response missing")
@@ -412,6 +472,10 @@ def main() -> int:
         "tum_komut_satir_araliklari",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
+        "tani_listesi_seviyeleri",
+        "tani_listesi_seviye_sayisi",
+        "tani_listesi_seviyeye_gore_filtrele",
+        "tani_listesi_ozeti",
         "dugum_turu_var_mi",
         "dugum_derinligi",
         "dugum_ozeti",

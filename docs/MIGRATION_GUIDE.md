@@ -1,5 +1,12 @@
 # Orhun Migration Guide (V2)
 
+## Orhun-Source Dil Yardımcıları (0.10.0)
+- `orhun/dil.oh`, tanı listeleri için `tani_listesi_seviyeleri`,
+  `tani_listesi_seviye_sayisi`, `tani_listesi_seviyeye_gore_filtrele` ve
+  `tani_listesi_ozeti` yardımcılarını ekler.
+- Mevcut tanı kayıt biçimi ve biçimlendirme işlevleri değişmediği için bu sürüm
+  önceki Orhun kaynaklarıyla geriye uyumludur.
+
 ## 1. VM Fallback Davranışı
 - Varsayılan davranış VM'dir.
 - Fallback varsayılanı artık kanal bazlıdır:

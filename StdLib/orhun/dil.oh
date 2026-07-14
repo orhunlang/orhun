@@ -6,7 +6,7 @@
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.9.0"
+surum olsun "0.10.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -253,6 +253,34 @@ işlev tani_kodu_var_mi(imlec_degeri, kod):
         eğer kayit.kod eşit kod ise:
             döndür doğru
     döndür yanlış
+
+işlev tani_listesi_seviyeleri(tanilar):
+    seviyeler olsun []
+    her kayit içinde tanilar:
+        seviyeler.ekle(kayit.seviye)
+    döndür seviyeler
+
+işlev tani_listesi_seviye_sayisi(tanilar, seviye):
+    sayi olsun 0
+    her kayit içinde tanilar:
+        eğer kayit.seviye eşit seviye ise:
+            sayi olsun sayi + 1
+    döndür sayi
+
+işlev tani_listesi_seviyeye_gore_filtrele(tanilar, seviye):
+    filtrelenmis olsun []
+    her kayit içinde tanilar:
+        eğer kayit.seviye eşit seviye ise:
+            filtrelenmis.ekle(kayit)
+    döndür filtrelenmis
+
+işlev tani_listesi_ozeti(tanilar):
+    döndür {
+        "toplam": uzunluk(tanilar),
+        "hata": tani_listesi_seviye_sayisi(tanilar, "hata"),
+        "uyari": tani_listesi_seviye_sayisi(tanilar, "uyari"),
+        "seviyeler": tani_listesi_seviyeleri(tanilar)
+    }
 
 işlev tanilari_bicimlendir(imlec_degeri):
     döndür tani_listesi_bicimlendir(imlec_degeri.hatalar)

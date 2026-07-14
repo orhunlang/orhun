@@ -60,6 +60,8 @@ def main() -> int:
         "tum_komut_satir_araliklari",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
+        "tani_listesi_ozeti",
+        "tani_listesi_seviyeye_gore_filtrele",
         "dugum_turu_var_mi",
         "dugum_derinligi",
         "dugum_ozeti",
@@ -102,6 +104,8 @@ def main() -> int:
             "Dil snippet should expose token summaries")
     require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Dil Yardımcısı"]["body"]),
             "Dil snippet should expose diagnostic-list formatting")
+    require("dil.tani_listesi_ozeti(" in "\n".join(snippets["Dil Yardımcısı"]["body"]),
+            "Dil snippet should expose diagnostic-list summaries")
     require("lexer.hata_degerleri(" in "\n".join(snippets["Lexer Özeti"]["body"]),
             "Lexer snippet should expose error summaries")
     require("lexer.token_araligi(" in "\n".join(snippets["Lexer Özeti"]["body"]),
@@ -118,6 +122,10 @@ def main() -> int:
             "Parser snippet should expose parser diagnostics")
     require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Tanı Listesi"]["body"]),
             "Tani snippet should format diagnostic lists")
+    require("dil.tani_listesi_ozeti(" in "\n".join(snippets["Tanı Listesi"]["body"]),
+            "Tani snippet should summarize diagnostic lists")
+    require("dil.tani_listesi_seviyeye_gore_filtrele(" in "\n".join(snippets["Tanı Listesi"]["body"]),
+            "Tani snippet should filter diagnostic lists")
     require("dil.dugum_turlerini_duzlestir(" in "\n".join(snippets["AST Gezgini"]["body"]),
             "AST snippet should flatten node types")
     require("dil.dugum_turu_var_mi(" in "\n".join(snippets["AST Gezgini"]["body"]),
