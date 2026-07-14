@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.18.0"
+surum olsun "0.19.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -2029,6 +2029,32 @@ işlev ifade_satir_araliklari(sonuc):
     araliklar olsun []
     her komut içinde sonuc.komutlar:
         araliklar.ekle(ifade_satir_araligi(komut.ifade_ozeti))
+    döndür araliklar
+
+işlev ifade_satir_araliklarini_topla(ifade, araliklar):
+    eğer uzunluk(ifade.tur) eşit 0 ise:
+        döndür araliklar
+    aralik olsun ifade_satir_araligi(ifade)
+    aralik["tur"] = ifade.tur
+    araliklar.ekle(aralik)
+    her alt içinde ifade.altlar:
+        ifade_satir_araliklarini_topla(alt, araliklar)
+    eğer ifade.tur eşit "ParalelYap" ise:
+        her komut içinde ifade.paralel_komutlar:
+            komut_ifade_satir_araliklarini_topla(komut, araliklar)
+    döndür araliklar
+
+işlev komut_ifade_satir_araliklarini_topla(komut, araliklar):
+    ifade_satir_araliklarini_topla(komut.ifade_ozeti, araliklar)
+    her blok içinde komut.bloklar:
+        her alt_komut içinde blok.komutlar:
+            komut_ifade_satir_araliklarini_topla(alt_komut, araliklar)
+    döndür araliklar
+
+işlev tum_ifade_satir_araliklari(sonuc):
+    araliklar olsun []
+    her komut içinde sonuc.komutlar:
+        komut_ifade_satir_araliklarini_topla(komut, araliklar)
     döndür araliklar
 
 işlev blok_son_satiri(blok):

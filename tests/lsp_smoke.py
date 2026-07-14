@@ -67,6 +67,7 @@ def main() -> int:
             "u olsun tum_komut_satir_araliklari(sonuc)",
             "m olsun dugum_ozeti(ast)",
             "s olsun tani_listesi_ozeti([])",
+            "v olsun tum_ifade_satir_araliklari(sonuc)",
             "",
         ]
     )
@@ -154,7 +155,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 12, "character": 0},
+                        "position": {"line": 13, "character": 0},
                     },
                 }
             ),
@@ -243,6 +244,28 @@ def main() -> int:
                     "params": {
                         "textDocument": {"uri": uri},
                         "position": {"line": 11, "character": 12},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 19,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 12, "character": 35},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 20,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 12, "character": 12},
                     },
                 }
             ),
@@ -443,6 +466,45 @@ def main() -> int:
     if "ifade_satir_araligi(ifade)" not in parser_range_hover:
         raise SystemExit("LSP smoke failed: parser-range hover label mismatch")
 
+    recursive_expression_sig_resp = next(
+        (m for m in messages if m.get("id") == 19), None
+    )
+    if (
+        recursive_expression_sig_resp is None
+        or "result" not in recursive_expression_sig_resp
+    ):
+        raise SystemExit(
+            "LSP smoke failed: recursive-expression signatureHelp response missing"
+        )
+    recursive_expression_signatures = recursive_expression_sig_resp["result"].get(
+        "signatures", []
+    )
+    if not recursive_expression_signatures:
+        raise SystemExit("LSP smoke failed: recursive-expression signatures empty")
+    if (
+        recursive_expression_signatures[0].get("label")
+        != "tum_ifade_satir_araliklari(sonuc)"
+    ):
+        raise SystemExit(
+            "LSP smoke failed: recursive-expression signature label mismatch"
+        )
+
+    recursive_expression_hover_resp = next(
+        (m for m in messages if m.get("id") == 20), None
+    )
+    if (
+        recursive_expression_hover_resp is None
+        or "result" not in recursive_expression_hover_resp
+    ):
+        raise SystemExit("LSP smoke failed: recursive-expression hover response missing")
+    recursive_expression_hover = (
+        recursive_expression_hover_resp["result"]
+        .get("contents", {})
+        .get("value", "")
+    )
+    if "tum_ifade_satir_araliklari(sonuc)" not in recursive_expression_hover:
+        raise SystemExit("LSP smoke failed: recursive-expression hover label mismatch")
+
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
         raise SystemExit("LSP smoke failed: references response missing")
@@ -468,6 +530,7 @@ def main() -> int:
         "eşleştir",
         "token_araligi",
         "ifade_satir_araligi",
+        "tum_ifade_satir_araliklari",
         "komut_satir_araligi",
         "tum_komut_satir_araliklari",
         "hata_tanilari",

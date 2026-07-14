@@ -71,6 +71,9 @@ yazdır uzunluk(tum_araliklar)
 yazdır tum_araliklar[0].satir_sayisi
 yazdır tum_araliklar[1].baslangic_satir
 yazdır tum_araliklar[2].baslangic_satir
+kontrol_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(kontrol)
+yazdır uzunluk(kontrol_ifade_araliklari)
+yazdır kontrol_ifade_araliklari[0].tur + "|" + kontrol_ifade_araliklari[1].tur + "|" + kontrol_ifade_araliklari[2].tur
 
 zincir_kontrol olsun parser.ozetle("eğer x büyük 20 ise:\n    yazdır \"buyuk\"\ndeğilse eğer x büyük 5 ise:\n    yazdır \"orta\"\ndeğilse:\n    yazdır \"kucuk\"\n")
 yazdır json.yaz(zincir_kontrol.komutlar[0].blok_sayilari)
@@ -78,6 +81,11 @@ yazdır json.yaz(zincir_kontrol.komutlar[0].bloklar)
 
 ifade_kontrol olsun parser.ozetle("yazdır a + b * 2\n")
 yazdır json.yaz(ifade_kontrol.komutlar[0].ifade_ozeti)
+tum_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(ifade_kontrol)
+yazdır uzunluk(tum_ifade_araliklari)
+yazdır tum_ifade_araliklari[0].tur + "|" + tum_ifade_araliklari[1].tur + "|" + tum_ifade_araliklari[2].tur + "|" + tum_ifade_araliklari[3].tur + "|" + tum_ifade_araliklari[4].tur
+yazdır tum_ifade_araliklari[0].baslangic_satir
+yazdır tum_ifade_araliklari[0].bitis_satir
 
 koleksiyon_kontrol olsun parser.ozetle("liste olsun [1, 2, 3]\nyazdır [x * 2 için x içinde liste eğer x büyük 1]\n")
 yazdır json.yaz(koleksiyon_kontrol.komutlar[0].ifade_ozeti.altlar)
@@ -130,6 +138,9 @@ yazdır json.yaz(tekli_kontrol.komutlar[1].ifade_ozeti)
 
 paralel_kontrol olsun parser.ozetle("gorev olsun paralel yap: yazdır \"sur\"\n")
 yazdır json.yaz(paralel_kontrol.komutlar[0].ifade_ozeti)
+paralel_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(paralel_kontrol)
+yazdır uzunluk(paralel_ifade_araliklari)
+yazdır paralel_ifade_araliklari[0].tur + "|" + paralel_ifade_araliklari[1].tur
 
 ozel_ifade_kontrol olsun parser.ozetle("yanit olsun sor \"Ad?\"\ntemel olsun dahil_et \"orhun/temel.oh\"\n")
 yazdır json.yaz(ozel_ifade_kontrol.komutlar[0].ifade_ozeti)

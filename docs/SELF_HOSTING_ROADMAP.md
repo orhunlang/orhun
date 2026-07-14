@@ -90,7 +90,7 @@ kullanir. AST dugumleri on-sirali duz listeye cevrilebilir, tur listeleri
 toplanabilir, belirli dugum turleri filtrelenebilir ve agac derinligi/tur
 sayilari ozetlenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.18.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.19.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -106,8 +106,9 @@ anahtarlarini, liste/sozluk oge sayilarini, dilim erisim sinir varligini,
 paralel yap govde komut sayisini ve yapisal komutlarini, liste/sozluk literal postfix ozetlerini,
 alan/ust erisim adlarini, islev cagri adlarini, yeni nesne sinif adlarini ve
 arguman sayilarini, parse sonuc hata var/yok, hata mesaji, ortak tani listesi,
-ifade satir araligi, komut satir araligi ve ic ice bloklardaki tum komut
-satir araliklari yardimcilarini C++ AST ile karsilastiriyor.
+ifade satir araligi, komut satir araligi, ic ice bloklardaki tum komut satir
+araliklari ve alt ifadeler/paralel komutlar dahil tum ifade satir araliklari
+yardimcilarini C++ AST ile karsilastiriyor.
 
 Hedefler:
 

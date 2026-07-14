@@ -4,6 +4,7 @@ sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 yazdır parser.turleri(sonuc)
 yazdır parser.komut_satir_araligi(sonuc.komutlar[0])
 yazdır parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti)
+yazdır parser.tum_ifade_satir_araliklari(sonuc)
 yazdır parser.tum_komut_satir_araliklari(sonuc)
 yazdır parser.hata_tanilari(sonuc)
 
