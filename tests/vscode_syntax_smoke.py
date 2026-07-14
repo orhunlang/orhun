@@ -57,6 +57,8 @@ def main() -> int:
         "token_araligi",
         "ifade_satir_araligi",
         "tum_ifade_satir_araliklari",
+        "ifade_derinligi",
+        "ifade_agaci_ozeti",
         "komut_satir_araligi",
         "tum_komut_satir_araliklari",
         "hata_tanilari",
@@ -119,6 +121,8 @@ def main() -> int:
             "Parser snippet should expose expression ranges")
     require("parser.tum_ifade_satir_araliklari(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose recursive expression ranges")
+    require("parser.ifade_agaci_ozeti(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose expression tree summaries")
     require("parser.tum_komut_satir_araliklari(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose recursive command ranges")
     require("parser.hata_tanilari(" in "\n".join(snippets["Parser Özeti"]["body"]),

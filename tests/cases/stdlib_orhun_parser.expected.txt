@@ -1,4 +1,4 @@
-0.20.0
+0.21.0
 1
 0
 Program
@@ -71,6 +71,15 @@ Mantik|Metin|Metin
 IkiliIslem|Kimlik|IkiliIslem|Kimlik|Sayi
 1
 1
+5
+2
+1
+0
+3
+3
+5
+3
+IkiliIslem|Kimlik|IkiliIslem|Kimlik|Sayi
 [{"alt_sayisi":0,"altlar":[],"ayrinti":"1","op":"","satir":1,"tur":"Sayi"},{"alt_sayisi":0,"altlar":[],"ayrinti":"2","op":"","satir":1,"tur":"Sayi"},{"alt_sayisi":0,"altlar":[],"ayrinti":"3","op":"","satir":1,"tur":"Sayi"}]
 3
 [{"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"x","op":"","satir":2,"tur":"Kimlik"},{"alt_sayisi":0,"altlar":[],"ayrinti":"2","op":"","satir":2,"tur":"Sayi"}],"ayrinti":"*","op":"*","satir":2,"tur":"IkiliIslem"},{"alt_sayisi":0,"altlar":[],"ayrinti":"liste","op":"","satir":2,"tur":"Kimlik"},{"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"x","op":"","satir":2,"tur":"Kimlik"},{"alt_sayisi":0,"altlar":[],"ayrinti":"1","op":"","satir":2,"tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","satir":2,"tur":"IkiliIslem"}]

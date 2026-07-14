@@ -68,6 +68,7 @@ def main() -> int:
             "m olsun dugum_ozeti(ast)",
             "s olsun tani_listesi_ozeti([])",
             "v olsun tum_ifade_satir_araliklari(sonuc)",
+            "w olsun ifade_agaci_ozeti(sonuc)",
             "",
         ]
     )
@@ -155,7 +156,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 13, "character": 0},
+                        "position": {"line": 14, "character": 0},
                     },
                 }
             ),
@@ -266,6 +267,28 @@ def main() -> int:
                     "params": {
                         "textDocument": {"uri": uri},
                         "position": {"line": 12, "character": 12},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 21,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 13, "character": 26},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 22,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 13, "character": 12},
                     },
                 }
             ),
@@ -505,6 +528,35 @@ def main() -> int:
     if "tum_ifade_satir_araliklari(sonuc)" not in recursive_expression_hover:
         raise SystemExit("LSP smoke failed: recursive-expression hover label mismatch")
 
+    expression_summary_sig_resp = next(
+        (m for m in messages if m.get("id") == 21), None
+    )
+    if expression_summary_sig_resp is None or "result" not in expression_summary_sig_resp:
+        raise SystemExit(
+            "LSP smoke failed: expression-summary signatureHelp response missing"
+        )
+    expression_summary_signatures = expression_summary_sig_resp["result"].get(
+        "signatures", []
+    )
+    if not expression_summary_signatures:
+        raise SystemExit("LSP smoke failed: expression-summary signatures empty")
+    if expression_summary_signatures[0].get("label") != "ifade_agaci_ozeti(sonuc)":
+        raise SystemExit("LSP smoke failed: expression-summary signature label mismatch")
+
+    expression_summary_hover_resp = next(
+        (m for m in messages if m.get("id") == 22), None
+    )
+    if (
+        expression_summary_hover_resp is None
+        or "result" not in expression_summary_hover_resp
+    ):
+        raise SystemExit("LSP smoke failed: expression-summary hover response missing")
+    expression_summary_hover = (
+        expression_summary_hover_resp["result"].get("contents", {}).get("value", "")
+    )
+    if "ifade_agaci_ozeti(sonuc)" not in expression_summary_hover:
+        raise SystemExit("LSP smoke failed: expression-summary hover label mismatch")
+
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
         raise SystemExit("LSP smoke failed: references response missing")
@@ -531,6 +583,13 @@ def main() -> int:
         "token_araligi",
         "ifade_satir_araligi",
         "tum_ifade_satir_araliklari",
+        "ifade_derinligi",
+        "tum_ifade_derinligi",
+        "ifade_turleri",
+        "ifade_sayisi",
+        "ifade_turu_sayisi",
+        "ifade_turu_var_mi",
+        "ifade_agaci_ozeti",
         "komut_satir_araligi",
         "tum_komut_satir_araliklari",
         "hata_tanilari",

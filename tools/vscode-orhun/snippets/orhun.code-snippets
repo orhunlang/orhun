@@ -105,6 +105,7 @@
       "yaz parser.komut_satir_araligi(sonuc.komutlar[0])",
       "yaz parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti)",
       "yaz parser.tum_ifade_satir_araliklari(sonuc)",
+      "yaz parser.ifade_agaci_ozeti(sonuc)",
       "yaz parser.tum_komut_satir_araliklari(sonuc)",
       "yaz parser.hata_tanilari(sonuc)"
     ],

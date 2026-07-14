@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.20.0"
+surum olsun "0.21.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -2067,6 +2067,80 @@ işlev tum_ifade_satir_araliklari(sonuc):
     her komut içinde sonuc.komutlar:
         komut_ifade_satir_araliklarini_topla(komut, araliklar)
     döndür araliklar
+
+işlev ifade_derinligi(ifade):
+    eğer uzunluk(ifade.tur) eşit 0 ise:
+        döndür 0
+    en_derin olsun 1
+    eğer ifade.tur eşit "IsimsizIslev" ise:
+        her varsayilan içinde ifade.varsayilanlar:
+            aday olsun 1 + ifade_derinligi(varsayilan)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    her alt içinde ifade.altlar:
+        aday olsun 1 + ifade_derinligi(alt)
+        eğer aday büyük en_derin ise:
+            en_derin olsun aday
+    eğer ifade.tur eşit "ParalelYap" ise:
+        her komut içinde ifade.paralel_komutlar:
+            aday olsun 1 + komut_ifade_derinligi(komut)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    döndür en_derin
+
+işlev komut_ifade_derinligi(komut):
+    en_derin olsun 0
+    eğer komut.tur eşit "Atama" ise:
+        en_derin olsun ifade_derinligi(komut.hedef_ozeti)
+    eğer komut.tur eşit "IslevTanim" ise:
+        her varsayilan içinde komut.varsayilanlar:
+            aday olsun ifade_derinligi(varsayilan)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    aday olsun ifade_derinligi(komut.ifade_ozeti)
+    eğer aday büyük en_derin ise:
+        en_derin olsun aday
+    her blok içinde komut.bloklar:
+        her alt_komut içinde blok.komutlar:
+            aday olsun komut_ifade_derinligi(alt_komut)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    döndür en_derin
+
+işlev tum_ifade_derinligi(sonuc):
+    en_derin olsun 0
+    her komut içinde sonuc.komutlar:
+        aday olsun komut_ifade_derinligi(komut)
+        eğer aday büyük en_derin ise:
+            en_derin olsun aday
+    döndür en_derin
+
+işlev ifade_turleri(sonuc):
+    turler olsun []
+    her aralik içinde tum_ifade_satir_araliklari(sonuc):
+        turler.ekle(aralik.tur)
+    döndür turler
+
+işlev ifade_sayisi(sonuc):
+    döndür uzunluk(tum_ifade_satir_araliklari(sonuc))
+
+işlev ifade_turu_sayisi(sonuc, tur):
+    sayi olsun 0
+    her ifade_turu içinde ifade_turleri(sonuc):
+        eğer ifade_turu eşit tur ise:
+            sayi olsun sayi + 1
+    döndür sayi
+
+işlev ifade_turu_var_mi(sonuc, tur):
+    döndür ifade_turu_sayisi(sonuc, tur) büyük 0
+
+işlev ifade_agaci_ozeti(sonuc):
+    turler olsun ifade_turleri(sonuc)
+    döndür {
+        "ifade_sayisi": uzunluk(turler),
+        "derinlik": tum_ifade_derinligi(sonuc),
+        "turler": turler
+    }
 
 işlev blok_son_satiri(blok):
     son olsun blok.satir

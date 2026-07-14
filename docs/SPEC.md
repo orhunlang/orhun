@@ -723,6 +723,7 @@ yazdır parser.hata_var_mi(sonuc)
 yazdır parser.komut_satir_araligi(sonuc.komutlar[0]).satir_sayisi
 yazdır parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti).satir_sayisi
 yazdır uzunluk(parser.tum_ifade_satir_araliklari(sonuc))
+yazdır parser.ifade_agaci_ozeti(sonuc)
 yazdır uzunluk(parser.tum_komut_satir_araliklari(sonuc))
 yazdır parser.hata_tanilari(sonuc)
 ```
@@ -740,7 +741,11 @@ function defaults, expression children, nested command blocks, and
 targets precede assigned values, named defaults precede body commands, and
 anonymous defaults precede body expressions. Recursive command ranges remain
 available for nested blocks. These helpers operate on the structural summary
-without changing the parser JSON contract. Parse failures can also be
+without changing the parser JSON contract. `ifade_sayisi`, `ifade_turleri`,
+`ifade_turu_sayisi`, and `ifade_turu_var_mi` expose query-friendly metrics.
+`ifade_derinligi` measures one expression tree, while
+`tum_ifade_derinligi` and `ifade_agaci_ozeti` report the maximum depth across
+the complete parse result. Parse failures can also be
 exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The
@@ -846,7 +851,7 @@ The LSP completion provider returns language keywords plus common built-in
 functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `ifade_satir_araligi`, `tum_ifade_satir_araliklari`,
-`komut_satir_araligi`,
+`ifade_agaci_ozeti`, `komut_satir_araligi`,
 `tum_komut_satir_araliklari`, `hata_tanilari`, and
 `tani_listesi_bicimlendir`, `tani_listesi_ozeti`, plus AST helpers such as
 `dugum_turu_var_mi` and `dugum_ozeti`.

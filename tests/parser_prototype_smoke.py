@@ -110,6 +110,11 @@ def validate_error_parity(
         proto_payload.get("tum_ifade_satir_araliklari") == [],
         f"prototype error expression ranges should be empty for {source_file}",
     )
+    require(
+        proto_payload.get("ifade_agaci_ozeti")
+        == {"ifade_sayisi": 0, "derinlik": 0, "turler": []},
+        f"prototype error expression summary should be empty for {source_file}",
+    )
     proto_error = proto_payload.get("hata")
     require(
         isinstance(proto_error, dict),
@@ -610,8 +615,10 @@ def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
             'sonuc["dogrulama_token_sayisi"] = uzunluk(lexer.tokenlestir(kaynak))\n'
             "eğer sonuc.ok ise:\n"
             '    sonuc["tum_ifade_satir_araliklari"] = parser.tum_ifade_satir_araliklari(sonuc)\n'
+            '    sonuc["ifade_agaci_ozeti"] = parser.ifade_agaci_ozeti(sonuc)\n'
             "değilse:\n"
             '    sonuc["tum_ifade_satir_araliklari"] = []\n'
+            '    sonuc["ifade_agaci_ozeti"] = {"ifade_sayisi": 0, "derinlik": 0, "turler": []}\n'
             "yazdır json.yaz(sonuc)\n",
             encoding="utf-8",
             newline="\n",
@@ -788,6 +795,86 @@ def prototype_command_expression_ranges(
     return ranges
 
 
+def prototype_expression_depth(expression: dict, source_file: Path) -> int:
+    kind = expression.get("tur")
+    require(
+        isinstance(kind, str),
+        f"prototype expression kind invalid for {source_file}: {expression}",
+    )
+    if not kind:
+        return 0
+    child_depths = []
+    if kind == "IsimsizIslev":
+        defaults = expression.get("varsayilanlar")
+        require(
+            isinstance(defaults, list),
+            f"prototype anonymous defaults invalid for {source_file}: {expression}",
+        )
+        child_depths.extend(
+            prototype_expression_depth(default, source_file) for default in defaults
+        )
+    children = expression.get("altlar")
+    require(
+        isinstance(children, list),
+        f"prototype expression children invalid for {source_file}: {expression}",
+    )
+    child_depths.extend(
+        prototype_expression_depth(child, source_file) for child in children
+    )
+    if kind == "ParalelYap":
+        commands = expression.get("paralel_komutlar")
+        require(
+            isinstance(commands, list),
+            f"prototype parallel commands invalid for {source_file}: {expression}",
+        )
+        child_depths.extend(
+            prototype_command_expression_depth(command, source_file)
+            for command in commands
+        )
+    return 1 + max(child_depths, default=0)
+
+
+def prototype_command_expression_depth(command: dict, source_file: Path) -> int:
+    depths = []
+    if command.get("tur") == "Atama":
+        target = command.get("hedef_ozeti")
+        require(
+            isinstance(target, dict),
+            f"prototype assignment target invalid for {source_file}: {command}",
+        )
+        depths.append(prototype_expression_depth(target, source_file))
+    if command.get("tur") == "IslevTanim":
+        defaults = command.get("varsayilanlar")
+        require(
+            isinstance(defaults, list),
+            f"prototype function defaults invalid for {source_file}: {command}",
+        )
+        depths.extend(
+            prototype_expression_depth(default, source_file) for default in defaults
+        )
+    expression = command.get("ifade_ozeti")
+    require(
+        isinstance(expression, dict),
+        f"prototype command expression invalid for {source_file}: {command}",
+    )
+    depths.append(prototype_expression_depth(expression, source_file))
+    blocks = command.get("bloklar")
+    require(
+        isinstance(blocks, list),
+        f"prototype command blocks invalid for {source_file}: {command}",
+    )
+    for block in blocks:
+        require(
+            isinstance(block, dict) and isinstance(block.get("komutlar"), list),
+            f"prototype block invalid for {source_file}: {block}",
+        )
+        depths.extend(
+            prototype_command_expression_depth(child_command, source_file)
+            for child_command in block["komutlar"]
+        )
+    return max(depths, default=0)
+
+
 def validate_recursive_expression_ranges(payload: dict, source_file: Path) -> None:
     commands = payload.get("komutlar")
     require(
@@ -806,6 +893,23 @@ def validate_recursive_expression_ranges(payload: dict, source_file: Path) -> No
         actual == expected,
         f"prototype recursive expression ranges mismatch for {source_file}\n"
         f"Expected: {expected}\nActual: {actual}",
+    )
+    expected_summary = {
+        "ifade_sayisi": len(expected),
+        "derinlik": max(
+            (
+                prototype_command_expression_depth(command, source_file)
+                for command in commands
+            ),
+            default=0,
+        ),
+        "turler": [entry["tur"] for entry in expected],
+    }
+    actual_summary = payload.get("ifade_agaci_ozeti")
+    require(
+        actual_summary == expected_summary,
+        f"prototype expression summary mismatch for {source_file}\n"
+        f"Expected: {expected_summary}\nActual: {actual_summary}",
     )
 
 

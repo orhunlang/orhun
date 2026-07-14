@@ -89,6 +89,7 @@ def main() -> int:
         "parser.komut_satir_araligi(sonuc.komutlar[0])",
         "parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti)",
         "parser.tum_ifade_satir_araliklari(sonuc)",
+        "parser.ifade_agaci_ozeti(sonuc)",
         "parser.tum_komut_satir_araliklari(sonuc)",
         "parser.hata_tanilari(hatali)",
     ):
