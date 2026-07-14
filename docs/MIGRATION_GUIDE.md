@@ -163,7 +163,7 @@
 - `orhun orhun-lex <dosya.oh>`, Orhun ile yazılmış lexerı çalıştırır ve
   doğrulanmış `orhun-lexer-ir-v1` JSON sonucu verir.
 - `orhun orhun-parse <dosya.oh>`, doğrulanmış lexer -> parser zincirini
-  çalıştırır ve `orhun-parser-ir-v1` JSON sonucu verir.
+  çalıştırır ve `orhun-parser-ir-v2` JSON sonucu verir.
 - Kaynak hataları JSON sözleşmesini bozmaz; komutlar hata için çıkış kodu 1
   döndürür. Her iki komut da `--source`, `--obc-first` ve `--obc-only`
   modül politikalarını destekler.
@@ -218,7 +218,7 @@
 - 0.8.0, lexer sözleşme yardımcılarını parser yardımcılarıyla kapsam
   çakışmasını önlemek için `lexer_ir_dogrula`, `lexer_ir_uyumlu_mu`,
   `lexer_ir_gecerli_mi` ve `lexer_ir_ozeti` adlarına taşır.
-- `orhun/parser.oh` `0.26.0`, parse sonucunda hata var/yok, hata mesajı,
+- `orhun/parser.oh` `0.27.0`, parse sonucunda hata var/yok, hata mesajı,
   ortak tanı listesi, komut satır aralığı, ifade satır aralığı, iç içe
   bloklardaki tüm komut satır aralıkları ve alt ifadeler ile `paralel yap`
   komutlarını kapsayan tüm ifade satır aralıklarını okuma yardımcıları ekler.
@@ -243,10 +243,15 @@
 - 0.26.0, `ozetle` girişinde `orhun-lexer-ir-v1` sonucunu doğrular.
   `ozetle_lexer_sonucu`, aynı sınırı bootstrap araçları ve testler için açar;
   bozuk lexer IR normal bir Türkçe parser hata sonucuna dönüşür.
-- `orhun/derleyici.oh` 0.29.0, eksik, farklı veya yapısal olarak bozuk parser
+- 0.27.0, parser sözleşmesini `orhun-parser-ir-v2` yapar. Her sonuç
+  `lexer_ir_sozlesmesi` ve `lexer_ir_gecerli` alanlarıyla doğrulanan lexer
+  kökenini taşır. Eski `orhun-parser-ir-v1` sonuçları yeni derleyiciye doğrudan
+  verilemez; kaynak yeniden parse edilmelidir. `ozetle_tokenlar` da aynı lexer
+  doğrulama sınırından geçer.
+- `orhun/derleyici.oh` 0.30.0, eksik, farklı veya yapısal olarak bozuk parser
   IR girdisini komut alanlarını derlemeden önce açıklayıcı bir hatayla reddeder.
-- Lexer sözleşme alanı mevcut sağlık alanlarına eklenmiştir; parser yardımcıları
-  mevcut parity JSON sözleşmesini değiştirmez.
+- Parser v2 lexer kökenini zorunlu kıldığı için elle üretilmiş parser IR
+  kayıtlarına bu iki alanın eklenmesi gerekir.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri

@@ -95,7 +95,7 @@ kullanir. AST dugumleri on-sirali duz listeye cevrilebilir, tur listeleri
 toplanabilir, belirli dugum turleri filtrelenebilir ve agac derinligi/tur
 sayilari ozetlenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.26.0, lexer ozetini `orhun-lexer-ir-v1` sinirinda
+`orhun/parser.oh` 0.27.0, lexer ozetini `orhun-lexer-ir-v1` sinirinda
 dogruladiktan sonra token akisini tuketir; `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
@@ -120,8 +120,10 @@ agaci toplam sayi, sirali turler, tur sorgulari ve en buyuk derinlik olarak
 ozetlenebiliyor. Komut agaci da ic ice bloklar ve ifade icindeki `paralel yap`
 govdeleri dahil toplam sayi, sirali turler, tur sorgulari, satir araliklari ve
 en buyuk derinlik olarak ozetlenebiliyor. Basarili ve hatali sonuclar
-`orhun-parser-ir-v1` sozlesme kimligini tasiyor; uyumluluk ve toplu IR ozeti saf
-Orhun yardimcilariyla sorgulanabiliyor. Program/komut/blok/ifade baglantilari,
+`orhun-parser-ir-v2` sozlesme kimligini ve dogrulanmis lexer IR kokenini
+tasiyor; uyumluluk ve toplu IR ozeti saf Orhun yardimcilariyla sorgulanabiliyor.
+Ham token girisi de ayni lexer dogrulama sinirindan geciyor.
+Program/komut/blok/ifade baglantilari,
 isimsiz varsayilanlar ve paralel govdeler 256 seviye sinirli recursive IR
 dogrulamasindan gecirilebiliyor. Ifade/komut tur sayilari ve ture gore kaynak
 araliklari, dogrulama durumuyla birlikte istege bagli IR kaynak indeksinde
@@ -155,8 +157,9 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.29.0; parser girdisinde
-`orhun-parser-ir-v1` sozlesmesini ve recursive yapi dogrulamasini zorunlu tutar;
+hazirlandi. `orhun/derleyici.oh` 0.30.0; parser girdisinde
+`orhun-parser-ir-v2` sozlesmesini, lexer kokenini ve recursive yapi
+dogrulamasini zorunlu tutar;
 sabitler, bicimlendirilmis metinler,
 global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev

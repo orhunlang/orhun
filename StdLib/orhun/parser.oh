@@ -6,8 +6,8 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.26.0"
-ir_sozlesmesi olsun "orhun-parser-ir-v1"
+surum olsun "0.27.0"
+ir_sozlesmesi olsun "orhun-parser-ir-v2"
 ir_azami_derinlik olsun 256
 
 işlev bos_ifade_ozeti():
@@ -318,10 +318,10 @@ işlev komut_turleri_uret(komutlar):
     döndür liste
 
 işlev sonuc_ok(komutlar, token_sayisi, satir):
-    döndür {"ir_sozlesmesi": ir_sozlesmesi, "ok": doğru, "hata": "", "hata_sayisi": 0, "tur": "Program", "satir": satir, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komut_turleri": komut_turleri_uret(komutlar), "komutlar": komutlar}
+    döndür {"ir_sozlesmesi": ir_sozlesmesi, "lexer_ir_sozlesmesi": lexer.lexer_ir_sozlesmesi, "lexer_ir_gecerli": doğru, "ok": doğru, "hata": "", "hata_sayisi": 0, "tur": "Program", "satir": satir, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komut_turleri": komut_turleri_uret(komutlar), "komutlar": komutlar}
 
 işlev sonuc_hata(mesaj, token, token_sayisi):
-    döndür {"ir_sozlesmesi": ir_sozlesmesi, "ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
+    döndür {"ir_sozlesmesi": ir_sozlesmesi, "lexer_ir_sozlesmesi": lexer.lexer_ir_sozlesmesi, "lexer_ir_gecerli": doğru, "ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
 
 işlev baslik_hata_tokeni(tokenlar, konum, mesaj):
     eğer mesaj eşit "Liste ifadesinin sonunda ']' bekleniyor." veya mesaj eşit "Liste üretecinin sonunda ']' bekleniyor." veya mesaj eşit "Sözlük ifadesinin sonunda '}' bekleniyor." veya mesaj eşit "Argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Kurucu argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Parantezli ifade kapanırken ')' bekleniyor." veya mesaj eşit "İndeks erişiminde ']' bekleniyor." veya mesaj eşit "Dilim erişiminde ']' bekleniyor." ise:
@@ -2411,8 +2411,16 @@ işlev ir_dogrula(sonuc):
     eğer değil ir_uyumlu_mu(sonuc) ise:
         döndür ir_dogrulama_sonucu(yanlış, "Desteklenmeyen parser ara temsil sozlesmesi; beklenen: " + ir_sozlesmesi)
     deneme:
+        eğer uzunluk(sonuc.lexer_ir_sozlesmesi) eşit 0 ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Program IR lexer_ir_sozlesmesi bos olamaz.")
+        eğer sonuc.lexer_ir_gecerli eşit_değil doğru ve sonuc.lexer_ir_gecerli eşit_değil yanlış ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Program IR lexer_ir_gecerli alani mantik olmali.")
+        eğer sonuc.lexer_ir_gecerli ve sonuc.lexer_ir_sozlesmesi eşit_değil lexer.lexer_ir_sozlesmesi ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Program IR lexer sozlesmesi desteklenmiyor; beklenen: " + lexer.lexer_ir_sozlesmesi)
         eğer sonuc.ok eşit_değil doğru ve sonuc.ok eşit_değil yanlış ise:
             döndür ir_dogrulama_sonucu(yanlış, "Program IR ok alani mantik olmali.")
+        eğer sonuc.ok ve değil sonuc.lexer_ir_gecerli ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Basarili parser IR gecerli lexer IR gerektirir.")
         eğer sonuc.token_sayisi küçük 0 ise:
             döndür ir_dogrulama_sonucu(yanlış, "Program IR token_sayisi negatif olamaz.")
         eğer sonuc.komut_sayisi eşit_değil uzunluk(sonuc.komutlar) ise:
@@ -2449,6 +2457,8 @@ işlev ir_indeksi(sonuc):
     dogrulama olsun ir_dogrula(sonuc)
     döndür {
         "sozlesme": sonuc.ir_sozlesmesi,
+        "lexer_sozlesmesi": sonuc.lexer_ir_sozlesmesi,
+        "lexer_gecerli": sonuc.lexer_ir_gecerli,
         "gecerli": dogrulama.ok,
         "ifade_tur_sayilari": ifade_tur_sayilari(sonuc),
         "komut_tur_sayilari": komut_tur_sayilari(sonuc),
@@ -2460,6 +2470,8 @@ işlev ir_ozeti(sonuc):
     dogrulama olsun ir_dogrula(sonuc)
     döndür {
         "sozlesme": sonuc.ir_sozlesmesi,
+        "lexer_sozlesmesi": sonuc.lexer_ir_sozlesmesi,
+        "lexer_gecerli": sonuc.lexer_ir_gecerli,
         "uyumlu": ir_uyumlu_mu(sonuc),
         "gecerli": dogrulama.ok,
         "ok": sonuc.ok,
@@ -2469,7 +2481,7 @@ işlev ir_ozeti(sonuc):
         "ifade_agaci": ifade_agaci_ozeti(sonuc)
     }
 
-işlev ozetle_tokenlar(tokenlar):
+işlev ozetle_dogrulanmis_tokenlar(tokenlar):
     token_sayisi olsun uzunluk(tokenlar)
     eğer lexer.hata_var_mi(tokenlar) ise:
         ilk_hata olsun lexer.ilk_hata(tokenlar)
@@ -2523,13 +2535,31 @@ işlev lexer_ir_hata_sonucu(lexer_sonucu, dogrulama):
         token_sayisi olsun 0
     mesaj olsun "Lexer IR gecersiz: " + dogrulama.hata
     hata_tokeni olsun lexer.token("HATA", mesaj, 1, 1)
-    döndür sonuc_hata(mesaj, hata_tokeni, token_sayisi)
+    sonuc olsun sonuc_hata(mesaj, hata_tokeni, token_sayisi)
+    sozlesme olsun "eksik"
+    deneme:
+        eğer uzunluk(lexer_sonucu.ir_sozlesmesi) büyük 0 ise:
+            sozlesme olsun lexer_sonucu.ir_sozlesmesi
+    yakala hata:
+        sozlesme olsun "eksik"
+    sonuc["lexer_ir_sozlesmesi"] = sozlesme
+    sonuc["lexer_ir_gecerli"] = yanlış
+    döndür sonuc
 
 işlev ozetle_lexer_sonucu(lexer_sonucu):
     dogrulama olsun lexer.lexer_ir_dogrula(lexer_sonucu)
     eğer değil dogrulama.ok ise:
         döndür lexer_ir_hata_sonucu(lexer_sonucu, dogrulama)
-    döndür ozetle_tokenlar(lexer_sonucu.tokenlar)
+    döndür ozetle_dogrulanmis_tokenlar(lexer_sonucu.tokenlar)
+
+işlev ozetle_tokenlar(tokenlar):
+    lexer_sonucu olsun {
+        "ir_sozlesmesi": lexer.lexer_ir_sozlesmesi,
+        "hata_sayisi": lexer.hata_sayisi(tokenlar),
+        "token_sayisi": uzunluk(tokenlar),
+        "tokenlar": tokenlar
+    }
+    döndür ozetle_lexer_sonucu(lexer_sonucu)
 
 işlev ozetle(kaynak):
     döndür ozetle_lexer_sonucu(lexer.ozetle(kaynak))

@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.29.0"
+surum olsun "0.30.0"
 desteklenen_ir_sozlesmesi olsun parser.ir_sozlesmesi
 
 işlev durum_yeni():

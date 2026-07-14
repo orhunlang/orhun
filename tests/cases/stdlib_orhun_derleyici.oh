@@ -16,7 +16,7 @@ yazdır desteklenmeyen.durum
 yazdır desteklenmeyen.hata_sayisi
 yazdır metin.icerir(desteklenmeyen.hata.mesaj, "Desteklenmeyen")
 
-eski_ir olsun {"ir_sozlesmesi": "orhun-parser-ir-v0", "ok": doğru}
+eski_ir olsun {"ir_sozlesmesi": "orhun-parser-ir-v1", "ok": doğru}
 eski_ir_sonucu olsun derleyici.ir_derle(eski_ir)
 yazdır eski_ir_sonucu.durum
 yazdır metin.icerir(eski_ir_sonucu.hata.mesaj, "sozlesmesi")
@@ -26,7 +26,13 @@ eksik_ir_sonucu olsun derleyici.ir_derle(eksik_ir)
 yazdır eksik_ir_sonucu.durum
 yazdır metin.icerir(eksik_ir_sonucu.hata.mesaj, "sozlesmesi")
 
-bozuk_ir olsun {"ir_sozlesmesi": "orhun-parser-ir-v1", "ok": doğru, "tur": "Program", "satir": 1, "token_sayisi": 0, "hata_sayisi": 0, "komut_sayisi": 1, "komut_turleri": [], "komutlar": []}
+bozuk_ir olsun {"ir_sozlesmesi": "orhun-parser-ir-v2", "lexer_ir_sozlesmesi": "orhun-lexer-ir-v1", "lexer_ir_gecerli": doğru, "ok": doğru, "tur": "Program", "satir": 1, "token_sayisi": 0, "hata_sayisi": 0, "komut_sayisi": 1, "komut_turleri": [], "komutlar": []}
 bozuk_ir_sonucu olsun derleyici.ir_derle(bozuk_ir)
 yazdır bozuk_ir_sonucu.durum
 yazdır metin.icerir(bozuk_ir_sonucu.hata.mesaj, "komut_sayisi")
+
+gecersiz_lexer_ir olsun derleyici.parser.ozetle("yazdır 1\n")
+gecersiz_lexer_ir["lexer_ir_gecerli"] = yanlış
+gecersiz_lexer_ir_sonucu olsun derleyici.ir_derle(gecersiz_lexer_ir)
+yazdır gecersiz_lexer_ir_sonucu.durum
+yazdır metin.icerir(gecersiz_lexer_ir_sonucu.hata.mesaj, "lexer")

@@ -13,16 +13,30 @@ yazdır lexer_gecisi.ok
 yazdır lexer_gecisi.token_sayisi eşit sonuc.token_sayisi
 yazdır bozuk_lexer_gecisi.ok
 yazdır metin.icerir(bozuk_lexer_gecisi.hata, "Lexer IR gecersiz")
+yazdır bozuk_lexer_gecisi.lexer_ir_sozlesmesi
+yazdır bozuk_lexer_gecisi.lexer_ir_gecerli
+yazdır parser.ir_dogrula(bozuk_lexer_gecisi).ok
 yazdır parser.ir_sozlesmesi
 yazdır sonuc.ir_sozlesmesi
+yazdır sonuc.lexer_ir_sozlesmesi
+yazdır sonuc.lexer_ir_gecerli
 yazdır parser.ir_uyumlu_mu(sonuc)
 yazdır parser.ir_uyumlu_mu({"ir_sozlesmesi": "orhun-parser-ir-v0"})
 ir_bilgisi olsun parser.ir_ozeti(sonuc)
 yazdır ir_bilgisi.sozlesme
+yazdır ir_bilgisi.lexer_sozlesmesi
+yazdır ir_bilgisi.lexer_gecerli
 yazdır ir_bilgisi.uyumlu
 yazdır ir_bilgisi.ust_komut_sayisi
 yazdır ir_bilgisi.gecerli
 yazdır parser.ir_gecerli_mi(sonuc)
+token_gecisi olsun parser.ozetle_tokenlar(parser.lexer.tokenlestir("yazdır 1\n"))
+yazdır token_gecisi.ok
+yazdır token_gecisi.lexer_ir_gecerli
+bozuk_token_gecisi olsun parser.ozetle_tokenlar([parser.lexer.token("KIMLIK", "x", 1, 1)])
+yazdır bozuk_token_gecisi.ok
+yazdır bozuk_token_gecisi.lexer_ir_gecerli
+yazdır parser.ir_dogrula(bozuk_token_gecisi).ok
 bozuk_sayi olsun parser.ozetle("yazdır 1\n")
 bozuk_sayi["komut_sayisi"] = 2
 bozuk_sayi_dogrulamasi olsun parser.ir_dogrula(bozuk_sayi)

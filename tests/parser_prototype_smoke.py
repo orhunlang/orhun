@@ -8,7 +8,8 @@ from pathlib import Path
 
 
 DEFAULT_FIXTURE_DIR = Path("tests/ast_json")
-PARSER_IR_CONTRACT = "orhun-parser-ir-v1"
+PARSER_IR_CONTRACT = "orhun-parser-ir-v2"
+LEXER_IR_CONTRACT = "orhun-lexer-ir-v1"
 
 
 def require(condition: bool, message: str) -> None:
@@ -110,6 +111,14 @@ def validate_error_parity(
     require(
         proto_payload.get("ir_sozlesmesi") == PARSER_IR_CONTRACT,
         f"prototype error IR contract mismatch for {source_file}",
+    )
+    require(
+        proto_payload.get("lexer_ir_sozlesmesi") == LEXER_IR_CONTRACT,
+        f"prototype error lexer provenance mismatch for {source_file}",
+    )
+    require(
+        proto_payload.get("lexer_ir_gecerli") is True,
+        f"prototype error lexer provenance is invalid for {source_file}",
     )
     require(
         proto_payload.get("ir_dogrulamasi")
@@ -628,10 +637,9 @@ def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
         source_path = source_file.resolve().as_posix()
         driver.write_text(
             'parser olsun dahil_et "orhun/parser.oh"\n'
-            'lexer olsun dahil_et "orhun/lexer.oh"\n'
             f'kaynak olsun dosya.oku("{orhun_string(source_path)}")\n'
             "sonuc olsun parser.ozetle(kaynak)\n"
-            'sonuc["dogrulama_token_sayisi"] = uzunluk(lexer.tokenlestir(kaynak))\n'
+            'sonuc["dogrulama_token_sayisi"] = uzunluk(parser.lexer.tokenlestir(kaynak))\n'
             'sonuc["ir_dogrulamasi"] = parser.ir_dogrula(sonuc)\n'
             "eğer sonuc.ok ise:\n"
             '    sonuc["tum_ifade_satir_araliklari"] = parser.tum_ifade_satir_araliklari(sonuc)\n'
@@ -1148,6 +1156,14 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(
         payload.get("ir_sozlesmesi") == PARSER_IR_CONTRACT,
         f"prototype success IR contract mismatch for {source_file}",
+    )
+    require(
+        payload.get("lexer_ir_sozlesmesi") == LEXER_IR_CONTRACT,
+        f"prototype success lexer provenance mismatch for {source_file}",
+    )
+    require(
+        payload.get("lexer_ir_gecerli") is True,
+        f"prototype success lexer provenance is invalid for {source_file}",
     )
     require(
         payload.get("ir_dogrulamasi")

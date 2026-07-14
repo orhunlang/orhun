@@ -63,9 +63,10 @@ These percentages are planning estimates, not promises.
   ranges and matching tree metrics also include commands nested under parallel
   expressions.
 - Successful and failed Orhun-parser results carry the versioned
-  `orhun-parser-ir-v1` contract. The Orhun-written compiler validates this
-  boundary and recursively checks program, command, block, expression,
-  anonymous-default, and parallel-body structure before compiling IR fields.
+  `orhun-parser-ir-v2` contract and validated `orhun-lexer-ir-v1` provenance.
+  The Orhun-written compiler validates this boundary and recursively checks
+  program, command, block, expression, anonymous-default, and parallel-body
+  structure before compiling IR fields.
 - The parser can build an opt-in IR source index with ordered expression and
   command ranges, type-count maps, type filters, and validation state for
   linters, editors, and future compiler passes.

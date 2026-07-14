@@ -557,7 +557,7 @@ def main() -> int:
 
         for frontend_command, contract in (
             ("orhun-lex", "orhun-lexer-ir-v1"),
-            ("orhun-parse", "orhun-parser-ir-v1"),
+            ("orhun-parse", "orhun-parser-ir-v2"),
         ):
             frontend = run_cmd(
                 [

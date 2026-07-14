@@ -747,9 +747,11 @@ malformed lexer IR becomes a normal Turkish parser error result.
 
 The current prototype exposes a `Program` root and `Block` structural nodes,
 and every success or error result carries the versioned
-`ir_sozlesmesi: "orhun-parser-ir-v1"` boundary. `ir_uyumlu_mu` checks this
-contract without throwing on missing fields. `ir_dogrula` recursively checks
-program counts, ordered command kinds, command/expression links, blocks,
+`ir_sozlesmesi: "orhun-parser-ir-v2"` boundary plus `lexer_ir_sozlesmesi` and
+`lexer_ir_gecerli` provenance. Successful results require validated
+`orhun-lexer-ir-v1` input. `ir_uyumlu_mu` checks the parser contract without
+throwing on missing fields. `ir_dogrula` recursively checks program counts,
+ordered command kinds, lexer provenance, command/expression links, blocks,
 anonymous defaults, and parallel bodies with a 256-level depth limit;
 `ir_gecerli_mi` is its boolean shorthand. `ir_ozeti` exposes the contract,
 validation state, parse status, top-level count, and expression/command tree
@@ -931,8 +933,9 @@ Stable channel defaults:
   `orhun-lexer-ir-v1` JSON summary. It exits with status 1 for source lexer
   errors while keeping the emitted IR structurally valid.
 - `orhun-parse <file.oh>` runs the checked Orhun-written lexer/parser chain and
-  emits a validated `orhun-parser-ir-v1` JSON summary. Parser or lexer errors
-  produce status 1 and a normal Turkish parser error result.
+  emits a validated `orhun-parser-ir-v2` JSON summary carrying lexer-contract
+  provenance. Parser or lexer errors produce status 1 and a normal Turkish
+  parser error result.
 - Both Orhun frontend commands accept `--source`, `--obc-first`, and
   `--obc-only` module-loading policies.
 - `baytkod --json` exposes the C++ compiler output as a decoded, machine-readable

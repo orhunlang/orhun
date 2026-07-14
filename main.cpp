@@ -3893,7 +3893,7 @@ int komutOrhunOnUc(const std::string &kaynakYolu, bool parserModu) {
         jsonAlanBekle(ozet, "ir_sozlesmesi", "orhun_on_uc"),
         "orhun_on_uc.ir_sozlesmesi");
     const std::string beklenen =
-        parserModu ? "orhun-parser-ir-v1" : "orhun-lexer-ir-v1";
+        parserModu ? "orhun-parser-ir-v2" : "orhun-lexer-ir-v1";
     if (sozlesme != beklenen) {
       throw std::runtime_error("beklenmeyen IR sozlesmesi: " + sozlesme);
     }

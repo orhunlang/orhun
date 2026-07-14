@@ -53,6 +53,14 @@ def validation_ok(value: dict, contract: str, context: str) -> None:
     require(validation.get("sozlesme") == contract, f"{context}: validation contract mismatch")
 
 
+def parser_provenance_ok(value: dict, context: str) -> None:
+    require(
+        value.get("lexer_ir_sozlesmesi") == "orhun-lexer-ir-v1",
+        f"{context}: lexer provenance contract mismatch",
+    )
+    require(value.get("lexer_ir_gecerli") is True, f"{context}: lexer provenance is invalid")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Orhun-written frontend CLI smoke")
     parser.add_argument("binary", help="Orhun executable path")
@@ -88,7 +96,8 @@ def main() -> int:
         pure_parse = run(binary, repo, "orhun-parse", str(valid), "--source")
         require(pure_parse.returncode == 0, f"orhun-parse failed: {pure_parse.stderr}")
         pure_parse_value = payload(pure_parse, "orhun-parse")
-        validation_ok(pure_parse_value, "orhun-parser-ir-v1", "orhun-parse")
+        validation_ok(pure_parse_value, "orhun-parser-ir-v2", "orhun-parse")
+        parser_provenance_ok(pure_parse_value, "orhun-parse")
         require(pure_parse_value.get("ok") is True, "orhun-parse should accept valid source")
         require(pure_parse_value.get("tur") == "Program", "orhun-parse root kind mismatch")
         require(pure_parse_value.get("komut_sayisi") == 2, "orhun-parse command count mismatch")
@@ -100,7 +109,7 @@ def main() -> int:
         )
         validation_ok(
             payload(obc_first_parse, "orhun-parse --obc-first"),
-            "orhun-parser-ir-v1",
+            "orhun-parser-ir-v2",
             "orhun-parse --obc-first",
         )
 
@@ -109,9 +118,10 @@ def main() -> int:
         parser_failure_value = payload(parser_failure, "orhun-parse parser error")
         validation_ok(
             parser_failure_value,
-            "orhun-parser-ir-v1",
+            "orhun-parser-ir-v2",
             "orhun-parse parser error",
         )
+        parser_provenance_ok(parser_failure_value, "orhun-parse parser error")
         require(parser_failure_value.get("ok") is False, "parser error should set ok=false")
         require(
             "yazdır" in json.dumps(parser_failure_value, ensure_ascii=False),
@@ -136,9 +146,10 @@ def main() -> int:
         parser_lexer_value = payload(parser_lexer_failure, "orhun-parse lexer error")
         validation_ok(
             parser_lexer_value,
-            "orhun-parser-ir-v1",
+            "orhun-parser-ir-v2",
             "orhun-parse lexer error",
         )
+        parser_provenance_ok(parser_lexer_value, "orhun-parse lexer error")
         require(parser_lexer_value.get("ok") is False, "lexer error should set parser ok=false")
 
         bad_option = run(binary, repo, "orhun-parse", str(valid), "--unknown")
