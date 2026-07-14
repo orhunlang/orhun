@@ -1,4 +1,4 @@
-0.24.0
+0.25.0
 orhun-parser-ir-v1
 orhun-parser-ir-v1
 1
@@ -84,6 +84,10 @@ Eger|Yazdir|Yazdir
 3
 2
 Eger|Yazdir|Yazdir
+1
+2
+2
+0
 3
 Mantik|Metin|Metin
 {"alt_sayisi":0,"altlar":[],"ayrinti":"3","op":"","satir":1,"tur":"Sayi"}
@@ -103,6 +107,16 @@ IkiliIslem|Kimlik|IkiliIslem|Kimlik|Sayi
 5
 3
 IkiliIslem|Kimlik|IkiliIslem|Kimlik|Sayi
+2
+2
+1
+2
+0
+1
+2
+1
+5
+1
 [{"alt_sayisi":0,"altlar":[],"ayrinti":"1","op":"","satir":1,"tur":"Sayi"},{"alt_sayisi":0,"altlar":[],"ayrinti":"2","op":"","satir":1,"tur":"Sayi"},{"alt_sayisi":0,"altlar":[],"ayrinti":"3","op":"","satir":1,"tur":"Sayi"}]
 3
 [{"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"x","op":"","satir":2,"tur":"Kimlik"},{"alt_sayisi":0,"altlar":[],"ayrinti":"2","op":"","satir":2,"tur":"Sayi"}],"ayrinti":"*","op":"*","satir":2,"tur":"IkiliIslem"},{"alt_sayisi":0,"altlar":[],"ayrinti":"liste","op":"","satir":2,"tur":"Kimlik"},{"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"x","op":"","satir":2,"tur":"Kimlik"},{"alt_sayisi":0,"altlar":[],"ayrinti":"1","op":"","satir":2,"tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","satir":2,"tur":"IkiliIslem"}]

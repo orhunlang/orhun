@@ -59,14 +59,19 @@ def main() -> int:
         "tum_ifade_satir_araliklari",
         "ifade_derinligi",
         "ifade_agaci_ozeti",
+        "ifade_tur_sayilari",
+        "ifade_turu_araliklari",
         "komut_satir_araligi",
         "tum_komut_satir_araliklari",
         "komut_derinligi",
         "komut_agaci_ozeti",
+        "komut_tur_sayilari",
+        "komut_turu_araliklari",
         "ir_uyumlu_mu",
         "ir_dogrula",
         "ir_gecerli_mi",
         "ir_ozeti",
+        "ir_indeksi",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "tani_listesi_ozeti",
@@ -137,6 +142,8 @@ def main() -> int:
             "Parser snippet should expose the IR contract summary")
     require("parser.ir_dogrula(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose recursive IR validation")
+    require("parser.ir_indeksi(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose the IR source index")
     require("parser.hata_tanilari(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose parser diagnostics")
     require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Tanı Listesi"]["body"]),

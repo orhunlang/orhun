@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.24.0"
+surum olsun "0.25.0"
 ir_sozlesmesi olsun "orhun-parser-ir-v1"
 ir_azami_derinlik olsun 256
 
@@ -2144,6 +2144,25 @@ işlev ifade_agaci_ozeti(sonuc):
         "turler": turler
     }
 
+işlev tur_sayilarini_uret(turler):
+    sayilar olsun {}
+    her tur içinde turler:
+        deneme:
+            sayilar[tur] = sayilar[tur] + 1
+        yakala hata:
+            sayilar[tur] = 1
+    döndür sayilar
+
+işlev ifade_tur_sayilari(sonuc):
+    döndür tur_sayilarini_uret(ifade_turleri(sonuc))
+
+işlev ifade_turu_araliklari(sonuc, tur):
+    araliklar olsun []
+    her aralik içinde tum_ifade_satir_araliklari(sonuc):
+        eğer aralik.tur eşit tur ise:
+            araliklar.ekle(aralik)
+    döndür araliklar
+
 işlev blok_son_satiri(blok):
     son olsun blok.satir
     her komut içinde blok.komutlar:
@@ -2278,6 +2297,16 @@ işlev komut_agaci_ozeti(sonuc):
         "derinlik": tum_komut_derinligi(sonuc),
         "turler": turler
     }
+
+işlev komut_tur_sayilari(sonuc):
+    döndür tur_sayilarini_uret(komut_turleri(sonuc))
+
+işlev komut_turu_araliklari(sonuc, tur):
+    araliklar olsun []
+    her aralik içinde tum_komut_satir_araliklari(sonuc):
+        eğer aralik.tur eşit tur ise:
+            araliklar.ekle(aralik)
+    döndür araliklar
 
 işlev ir_uyumlu_mu(sonuc):
     deneme:
@@ -2415,6 +2444,17 @@ işlev ir_dogrula(sonuc):
 
 işlev ir_gecerli_mi(sonuc):
     döndür ir_dogrula(sonuc).ok
+
+işlev ir_indeksi(sonuc):
+    dogrulama olsun ir_dogrula(sonuc)
+    döndür {
+        "sozlesme": sonuc.ir_sozlesmesi,
+        "gecerli": dogrulama.ok,
+        "ifade_tur_sayilari": ifade_tur_sayilari(sonuc),
+        "komut_tur_sayilari": komut_tur_sayilari(sonuc),
+        "ifade_araliklari": tum_ifade_satir_araliklari(sonuc),
+        "komut_araliklari": tum_komut_satir_araliklari(sonuc)
+    }
 
 işlev ir_ozeti(sonuc):
     dogrulama olsun ir_dogrula(sonuc)

@@ -56,6 +56,9 @@ These percentages are planning estimates, not promises.
   `orhun-parser-ir-v1` contract. The Orhun-written compiler validates this
   boundary and recursively checks program, command, block, expression,
   anonymous-default, and parallel-body structure before compiling IR fields.
+- The parser can build an opt-in IR source index with ordered expression and
+  command ranges, type-count maps, type filters, and validation state for
+  linters, editors, and future compiler passes.
 - The shared Orhun language-toolkit module can format standalone diagnostic
   lists with or without source-line context, and can flatten/filter AST records
   for parser, DSL, and LSP surfaces.

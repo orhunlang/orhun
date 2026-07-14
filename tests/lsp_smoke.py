@@ -72,6 +72,7 @@ def main() -> int:
             "k olsun komut_agaci_ozeti(sonuc)",
             "q olsun ir_uyumlu_mu(sonuc)",
             "d olsun ir_dogrula(sonuc)",
+            "i olsun ir_indeksi(sonuc)",
             "",
         ]
     )
@@ -159,7 +160,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 17, "character": 0},
+                        "position": {"line": 18, "character": 0},
                     },
                 }
             ),
@@ -358,6 +359,28 @@ def main() -> int:
                     "params": {
                         "textDocument": {"uri": uri},
                         "position": {"line": 16, "character": 12},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 29,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 17, "character": 19},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 30,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 17, "character": 12},
                     },
                 }
             ),
@@ -706,6 +729,26 @@ def main() -> int:
     if "ir_dogrula(sonuc)" not in ir_validation_hover:
         raise SystemExit("LSP smoke failed: IR-validation hover label mismatch")
 
+    ir_index_sig_resp = next((m for m in messages if m.get("id") == 29), None)
+    if ir_index_sig_resp is None or "result" not in ir_index_sig_resp:
+        raise SystemExit("LSP smoke failed: IR-index signatureHelp response missing")
+    ir_index_signatures = ir_index_sig_resp["result"].get("signatures", [])
+    if not ir_index_signatures:
+        raise SystemExit("LSP smoke failed: IR-index signatures empty")
+    if ir_index_signatures[0].get("label") != "ir_indeksi(sonuc)":
+        raise SystemExit("LSP smoke failed: IR-index signature label mismatch")
+
+    ir_index_hover_resp = next(
+        (m for m in messages if m.get("id") == 30), None
+    )
+    if ir_index_hover_resp is None or "result" not in ir_index_hover_resp:
+        raise SystemExit("LSP smoke failed: IR-index hover response missing")
+    ir_index_hover = (
+        ir_index_hover_resp["result"].get("contents", {}).get("value", "")
+    )
+    if "ir_indeksi(sonuc)" not in ir_index_hover:
+        raise SystemExit("LSP smoke failed: IR-index hover label mismatch")
+
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
         raise SystemExit("LSP smoke failed: references response missing")
@@ -739,6 +782,8 @@ def main() -> int:
         "ifade_turu_sayisi",
         "ifade_turu_var_mi",
         "ifade_agaci_ozeti",
+        "ifade_tur_sayilari",
+        "ifade_turu_araliklari",
         "komut_satir_araligi",
         "tum_komut_satir_araliklari",
         "komut_derinligi",
@@ -748,10 +793,13 @@ def main() -> int:
         "komut_turu_sayisi",
         "komut_turu_var_mi",
         "komut_agaci_ozeti",
+        "komut_tur_sayilari",
+        "komut_turu_araliklari",
         "ir_uyumlu_mu",
         "ir_dogrula",
         "ir_gecerli_mi",
         "ir_ozeti",
+        "ir_indeksi",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "tani_listesi_seviyeleri",

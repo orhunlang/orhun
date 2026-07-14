@@ -728,6 +728,7 @@ yazdır uzunluk(parser.tum_komut_satir_araliklari(sonuc))
 yazdır parser.komut_agaci_ozeti(sonuc)
 yazdır parser.ir_dogrula(sonuc)
 yazdır parser.ir_ozeti(sonuc)
+yazdır parser.ir_indeksi(sonuc)
 yazdır parser.hata_tanilari(sonuc)
 ```
 
@@ -762,7 +763,12 @@ without rewriting its command or expression nodes. `ifade_sayisi`, `ifade_turler
 the complete parse result. The corresponding `komut_sayisi`, `komut_turleri`,
 `komut_turu_sayisi`, `komut_turu_var_mi`, `komut_derinligi`,
 `tum_komut_derinligi`, and `komut_agaci_ozeti` helpers expose the same metrics
-for the recursive command tree, including parallel bodies. Parse failures can
+for the recursive command tree, including parallel bodies.
+`ifade_tur_sayilari` and `komut_tur_sayilari` return type-count dictionaries;
+`ifade_turu_araliklari` and `komut_turu_araliklari` filter recursive source
+ranges by type. `ir_indeksi` combines validation state, both type-count maps,
+and both ordered range lists into an opt-in source index for linters, editors,
+and compiler passes. Parse failures can
 also be exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The
@@ -870,7 +876,7 @@ functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `token_araligi`, `ifade_satir_araligi`, `tum_ifade_satir_araliklari`,
 `ifade_agaci_ozeti`, `komut_satir_araligi`,
 `tum_komut_satir_araliklari`, `komut_agaci_ozeti`, `ir_uyumlu_mu`,
-`ir_dogrula`, `ir_gecerli_mi`, `ir_ozeti`, `hata_tanilari`, and
+`ir_dogrula`, `ir_gecerli_mi`, `ir_ozeti`, `ir_indeksi`, `hata_tanilari`, and
 `tani_listesi_bicimlendir`, `tani_listesi_ozeti`, plus AST helpers such as
 `dugum_turu_var_mi` and `dugum_ozeti`.
 Signature help also includes common built-in and Orhun-source helper

@@ -94,6 +94,7 @@ def main() -> int:
         "parser.komut_agaci_ozeti(sonuc)",
         "parser.ir_dogrula(sonuc)",
         "parser.ir_ozeti(sonuc)",
+        "parser.ir_indeksi(sonuc)",
         "parser.hata_tanilari(hatali)",
     ):
         require(snippet in stdlib_parser, f"stdlib_parser should include {snippet}")

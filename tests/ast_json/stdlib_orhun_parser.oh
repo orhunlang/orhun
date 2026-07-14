@@ -106,6 +106,11 @@ yazdır parser.tum_komut_derinligi(kontrol)
 yazdır komut_agaci.komut_sayisi
 yazdır komut_agaci.derinlik
 yazdır metin.birlestir(komut_agaci.turler, "|")
+komut_sayilari olsun parser.komut_tur_sayilari(kontrol)
+yazdır komut_sayilari.Eger
+yazdır komut_sayilari.Yazdir
+yazdır uzunluk(parser.komut_turu_araliklari(kontrol, "Yazdir"))
+yazdır uzunluk(parser.komut_turu_araliklari(kontrol, "SinifTanim"))
 kontrol_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(kontrol)
 yazdır uzunluk(kontrol_ifade_araliklari)
 yazdır kontrol_ifade_araliklari[0].tur + "|" + kontrol_ifade_araliklari[1].tur + "|" + kontrol_ifade_araliklari[2].tur
@@ -131,6 +136,18 @@ yazdır parser.tum_ifade_derinligi(ifade_kontrol)
 yazdır ifade_agaci.ifade_sayisi
 yazdır ifade_agaci.derinlik
 yazdır metin.birlestir(ifade_agaci.turler, "|")
+ifade_sayilari olsun parser.ifade_tur_sayilari(ifade_kontrol)
+yazdır ifade_sayilari.IkiliIslem
+yazdır ifade_sayilari.Kimlik
+yazdır ifade_sayilari.Sayi
+yazdır uzunluk(parser.ifade_turu_araliklari(ifade_kontrol, "IkiliIslem"))
+yazdır uzunluk(parser.ifade_turu_araliklari(ifade_kontrol, "Metin"))
+ifade_ir_indeksi olsun parser.ir_indeksi(ifade_kontrol)
+yazdır ifade_ir_indeksi.gecerli
+yazdır ifade_ir_indeksi.ifade_tur_sayilari.IkiliIslem
+yazdır ifade_ir_indeksi.komut_tur_sayilari.Yazdir
+yazdır uzunluk(ifade_ir_indeksi.ifade_araliklari)
+yazdır uzunluk(ifade_ir_indeksi.komut_araliklari)
 
 koleksiyon_kontrol olsun parser.ozetle("liste olsun [1, 2, 3]\nyazdır [x * 2 için x içinde liste eğer x büyük 1]\n")
 yazdır json.yaz(koleksiyon_kontrol.komutlar[0].ifade_ozeti.altlar)

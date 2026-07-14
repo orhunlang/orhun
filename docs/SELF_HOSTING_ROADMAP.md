@@ -90,7 +90,7 @@ kullanir. AST dugumleri on-sirali duz listeye cevrilebilir, tur listeleri
 toplanabilir, belirli dugum turleri filtrelenebilir ve agac derinligi/tur
 sayilari ozetlenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.24.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.25.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -117,7 +117,9 @@ en buyuk derinlik olarak ozetlenebiliyor. Basarili ve hatali sonuclar
 `orhun-parser-ir-v1` sozlesme kimligini tasiyor; uyumluluk ve toplu IR ozeti saf
 Orhun yardimcilariyla sorgulanabiliyor. Program/komut/blok/ifade baglantilari,
 isimsiz varsayilanlar ve paralel govdeler 256 seviye sinirli recursive IR
-dogrulamasindan gecirilebiliyor.
+dogrulamasindan gecirilebiliyor. Ifade/komut tur sayilari ve ture gore kaynak
+araliklari, dogrulama durumuyla birlikte istege bagli IR kaynak indeksinde
+toplanabiliyor.
 
 Hedefler:
 

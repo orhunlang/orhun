@@ -79,6 +79,7 @@ yazdır uzunluk(parser.tum_komut_satir_araliklari(parse_sonuc))
 yazdır parser.komut_agaci_ozeti(parse_sonuc)
 yazdır parser.ir_dogrula(parse_sonuc)
 yazdır parser.ir_ozeti(parse_sonuc)
+yazdır parser.ir_indeksi(parse_sonuc)
 yazdır json.yaz(parser.hata_tanilari(parse_sonuc))
 ```
 
