@@ -76,6 +76,7 @@ yazdır parser.ifade_satir_araligi(parse_sonuc.komutlar[0].ifade_ozeti).satir_sa
 yazdır uzunluk(parser.tum_ifade_satir_araliklari(parse_sonuc))
 yazdır parser.ifade_agaci_ozeti(parse_sonuc)
 yazdır uzunluk(parser.tum_komut_satir_araliklari(parse_sonuc))
+yazdır parser.komut_agaci_ozeti(parse_sonuc)
 yazdır json.yaz(parser.hata_tanilari(parse_sonuc))
 ```
 

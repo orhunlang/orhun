@@ -115,6 +115,15 @@ def validate_error_parity(
         == {"ifade_sayisi": 0, "derinlik": 0, "turler": []},
         f"prototype error expression summary should be empty for {source_file}",
     )
+    require(
+        proto_payload.get("tum_komut_satir_araliklari") == [],
+        f"prototype error command ranges should be empty for {source_file}",
+    )
+    require(
+        proto_payload.get("komut_agaci_ozeti")
+        == {"komut_sayisi": 0, "derinlik": 0, "turler": []},
+        f"prototype error command summary should be empty for {source_file}",
+    )
     proto_error = proto_payload.get("hata")
     require(
         isinstance(proto_error, dict),
@@ -616,9 +625,13 @@ def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
             "eğer sonuc.ok ise:\n"
             '    sonuc["tum_ifade_satir_araliklari"] = parser.tum_ifade_satir_araliklari(sonuc)\n'
             '    sonuc["ifade_agaci_ozeti"] = parser.ifade_agaci_ozeti(sonuc)\n'
+            '    sonuc["tum_komut_satir_araliklari"] = parser.tum_komut_satir_araliklari(sonuc)\n'
+            '    sonuc["komut_agaci_ozeti"] = parser.komut_agaci_ozeti(sonuc)\n'
             "değilse:\n"
             '    sonuc["tum_ifade_satir_araliklari"] = []\n'
             '    sonuc["ifade_agaci_ozeti"] = {"ifade_sayisi": 0, "derinlik": 0, "turler": []}\n'
+            '    sonuc["tum_komut_satir_araliklari"] = []\n'
+            '    sonuc["komut_agaci_ozeti"] = {"komut_sayisi": 0, "derinlik": 0, "turler": []}\n'
             "yazdır json.yaz(sonuc)\n",
             encoding="utf-8",
             newline="\n",
@@ -913,6 +926,212 @@ def validate_recursive_expression_ranges(payload: dict, source_file: Path) -> No
     )
 
 
+def prototype_expression_command_ranges(
+    expression: dict, source_file: Path
+) -> list[dict]:
+    kind = expression.get("tur")
+    require(
+        isinstance(kind, str),
+        f"prototype expression kind invalid for {source_file}: {expression}",
+    )
+    if not kind:
+        return []
+    ranges = []
+    if kind == "IsimsizIslev":
+        defaults = expression.get("varsayilanlar")
+        require(
+            isinstance(defaults, list),
+            f"prototype anonymous defaults invalid for {source_file}: {expression}",
+        )
+        for default in defaults:
+            ranges.extend(prototype_expression_command_ranges(default, source_file))
+    children = expression.get("altlar")
+    require(
+        isinstance(children, list),
+        f"prototype expression children invalid for {source_file}: {expression}",
+    )
+    for child in children:
+        ranges.extend(prototype_expression_command_ranges(child, source_file))
+    if kind == "ParalelYap":
+        commands = expression.get("paralel_komutlar")
+        require(
+            isinstance(commands, list),
+            f"prototype parallel commands invalid for {source_file}: {expression}",
+        )
+        for command in commands:
+            ranges.extend(prototype_command_ranges(command, source_file))
+    return ranges
+
+
+def prototype_command_ranges(command: dict, source_file: Path) -> list[dict]:
+    kind = command.get("tur")
+    line = command.get("satir")
+    require(
+        isinstance(kind, str) and isinstance(line, int),
+        f"prototype command shape invalid for {source_file}: {command}",
+    )
+    end_line = max(line, prototype_command_end_line(command, source_file))
+    ranges = [
+        {
+            "baslangic_satir": line,
+            "bitis_satir": end_line,
+            "satir_sayisi": end_line - line + 1,
+            "tur": kind,
+        }
+    ]
+    if kind == "Atama":
+        target = command.get("hedef_ozeti")
+        require(
+            isinstance(target, dict),
+            f"prototype assignment target invalid for {source_file}: {command}",
+        )
+        ranges.extend(prototype_expression_command_ranges(target, source_file))
+    if kind == "IslevTanim":
+        defaults = command.get("varsayilanlar")
+        require(
+            isinstance(defaults, list),
+            f"prototype function defaults invalid for {source_file}: {command}",
+        )
+        for default in defaults:
+            ranges.extend(prototype_expression_command_ranges(default, source_file))
+    expression = command.get("ifade_ozeti")
+    require(
+        isinstance(expression, dict),
+        f"prototype command expression invalid for {source_file}: {command}",
+    )
+    ranges.extend(prototype_expression_command_ranges(expression, source_file))
+    blocks = command.get("bloklar")
+    require(
+        isinstance(blocks, list),
+        f"prototype command blocks invalid for {source_file}: {command}",
+    )
+    for block in blocks:
+        require(
+            isinstance(block, dict) and isinstance(block.get("komutlar"), list),
+            f"prototype block invalid for {source_file}: {block}",
+        )
+        for child_command in block["komutlar"]:
+            ranges.extend(prototype_command_ranges(child_command, source_file))
+    return ranges
+
+
+def prototype_expression_command_depth(expression: dict, source_file: Path) -> int:
+    kind = expression.get("tur")
+    require(
+        isinstance(kind, str),
+        f"prototype expression kind invalid for {source_file}: {expression}",
+    )
+    if not kind:
+        return 0
+    depths = []
+    if kind == "IsimsizIslev":
+        defaults = expression.get("varsayilanlar")
+        require(
+            isinstance(defaults, list),
+            f"prototype anonymous defaults invalid for {source_file}: {expression}",
+        )
+        depths.extend(
+            prototype_expression_command_depth(default, source_file)
+            for default in defaults
+        )
+    children = expression.get("altlar")
+    require(
+        isinstance(children, list),
+        f"prototype expression children invalid for {source_file}: {expression}",
+    )
+    depths.extend(
+        prototype_expression_command_depth(child, source_file) for child in children
+    )
+    if kind == "ParalelYap":
+        commands = expression.get("paralel_komutlar")
+        require(
+            isinstance(commands, list),
+            f"prototype parallel commands invalid for {source_file}: {expression}",
+        )
+        depths.extend(
+            prototype_command_depth(command, source_file) for command in commands
+        )
+    return max(depths, default=0)
+
+
+def prototype_command_depth(command: dict, source_file: Path) -> int:
+    depths = []
+    kind = command.get("tur")
+    if kind == "Atama":
+        target = command.get("hedef_ozeti")
+        require(
+            isinstance(target, dict),
+            f"prototype assignment target invalid for {source_file}: {command}",
+        )
+        depths.append(prototype_expression_command_depth(target, source_file))
+    if kind == "IslevTanim":
+        defaults = command.get("varsayilanlar")
+        require(
+            isinstance(defaults, list),
+            f"prototype function defaults invalid for {source_file}: {command}",
+        )
+        depths.extend(
+            prototype_expression_command_depth(default, source_file)
+            for default in defaults
+        )
+    expression = command.get("ifade_ozeti")
+    require(
+        isinstance(expression, dict),
+        f"prototype command expression invalid for {source_file}: {command}",
+    )
+    depths.append(prototype_expression_command_depth(expression, source_file))
+    blocks = command.get("bloklar")
+    require(
+        isinstance(blocks, list),
+        f"prototype command blocks invalid for {source_file}: {command}",
+    )
+    for block in blocks:
+        require(
+            isinstance(block, dict) and isinstance(block.get("komutlar"), list),
+            f"prototype block invalid for {source_file}: {block}",
+        )
+        depths.extend(
+            prototype_command_depth(child_command, source_file)
+            for child_command in block["komutlar"]
+        )
+    return 1 + max(depths, default=0)
+
+
+def validate_recursive_command_ranges(payload: dict, source_file: Path) -> None:
+    commands = payload.get("komutlar")
+    require(
+        isinstance(commands, list),
+        f"prototype payload commands invalid for {source_file}",
+    )
+    expected = []
+    for command in commands:
+        require(
+            isinstance(command, dict),
+            f"prototype command invalid for {source_file}: {command}",
+        )
+        expected.extend(prototype_command_ranges(command, source_file))
+    actual = payload.get("tum_komut_satir_araliklari")
+    require(
+        actual == expected,
+        f"prototype recursive command ranges mismatch for {source_file}\n"
+        f"Expected: {expected}\nActual: {actual}",
+    )
+    expected_summary = {
+        "komut_sayisi": len(expected),
+        "derinlik": max(
+            (prototype_command_depth(command, source_file) for command in commands),
+            default=0,
+        ),
+        "turler": [entry["tur"] for entry in expected],
+    }
+    actual_summary = payload.get("komut_agaci_ozeti")
+    require(
+        actual_summary == expected_summary,
+        f"prototype command summary mismatch for {source_file}\n"
+        f"Expected: {expected_summary}\nActual: {actual_summary}",
+    )
+
+
 def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(payload.get("ok") is True, f"prototype returned error for {source_file}: {payload}")
     require(
@@ -934,6 +1153,7 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
         f"prototype token count mismatch for {source_file}: {payload}",
     )
     validate_recursive_expression_ranges(payload, source_file)
+    validate_recursive_command_ranges(payload, source_file)
     return [orhun_node_summary(command, source_file) for command in commands]
 
 

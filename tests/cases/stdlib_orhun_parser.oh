@@ -89,6 +89,17 @@ yazdır uzunluk(tum_araliklar)
 yazdır tum_araliklar[0].satir_sayisi
 yazdır tum_araliklar[1].baslangic_satir
 yazdır tum_araliklar[2].baslangic_satir
+yazdır tum_araliklar[0].tur + "|" + tum_araliklar[1].tur + "|" + tum_araliklar[2].tur
+komut_agaci olsun parser.komut_agaci_ozeti(kontrol)
+yazdır parser.komut_sayisi(kontrol)
+yazdır parser.komut_turu_sayisi(kontrol, "Yazdir")
+yazdır parser.komut_turu_var_mi(kontrol, "Eger")
+yazdır parser.komut_turu_var_mi(kontrol, "SinifTanim")
+yazdır parser.komut_derinligi(kontrol.komutlar[0])
+yazdır parser.tum_komut_derinligi(kontrol)
+yazdır komut_agaci.komut_sayisi
+yazdır komut_agaci.derinlik
+yazdır metin.birlestir(komut_agaci.turler, "|")
 kontrol_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(kontrol)
 yazdır uzunluk(kontrol_ifade_araliklari)
 yazdır kontrol_ifade_araliklari[0].tur + "|" + kontrol_ifade_araliklari[1].tur + "|" + kontrol_ifade_araliklari[2].tur
@@ -180,6 +191,10 @@ yazdır json.yaz(paralel_kontrol.komutlar[0].ifade_ozeti)
 paralel_ifade_araliklari olsun parser.tum_ifade_satir_araliklari(paralel_kontrol)
 yazdır uzunluk(paralel_ifade_araliklari)
 yazdır paralel_ifade_araliklari[0].tur + "|" + paralel_ifade_araliklari[1].tur + "|" + paralel_ifade_araliklari[2].tur
+paralel_komut_araliklari olsun parser.tum_komut_satir_araliklari(paralel_kontrol)
+yazdır uzunluk(paralel_komut_araliklari)
+yazdır paralel_komut_araliklari[0].tur + "|" + paralel_komut_araliklari[1].tur
+yazdır parser.tum_komut_derinligi(paralel_kontrol)
 
 ozel_ifade_kontrol olsun parser.ozetle("yanit olsun sor \"Ad?\"\ntemel olsun dahil_et \"orhun/temel.oh\"\n")
 yazdır json.yaz(ozel_ifade_kontrol.komutlar[0].ifade_ozeti)

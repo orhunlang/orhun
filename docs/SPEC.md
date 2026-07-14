@@ -725,6 +725,7 @@ yazdır parser.ifade_satir_araligi(sonuc.komutlar[0].ifade_ozeti).satir_sayisi
 yazdır uzunluk(parser.tum_ifade_satir_araliklari(sonuc))
 yazdır parser.ifade_agaci_ozeti(sonuc)
 yazdır uzunluk(parser.tum_komut_satir_araliklari(sonuc))
+yazdır parser.komut_agaci_ozeti(sonuc)
 yazdır parser.hata_tanilari(sonuc)
 ```
 
@@ -739,13 +740,17 @@ and expression line ranges (`baslangic_satir`, `bitis_satir`, `satir_sayisi`).
 function defaults, expression children, nested command blocks, and
 `paralel yap` commands; its entries also carry the expression `tur`. Assignment
 targets precede assigned values, named defaults precede body commands, and
-anonymous defaults precede body expressions. Recursive command ranges remain
-available for nested blocks. These helpers operate on the structural summary
+anonymous defaults precede body expressions. Recursive command ranges walk
+nested blocks and expression-contained `paralel yap` bodies; every entry also
+carries the command `tur`. These helpers operate on the structural summary
 without changing the parser JSON contract. `ifade_sayisi`, `ifade_turleri`,
 `ifade_turu_sayisi`, and `ifade_turu_var_mi` expose query-friendly metrics.
 `ifade_derinligi` measures one expression tree, while
 `tum_ifade_derinligi` and `ifade_agaci_ozeti` report the maximum depth across
-the complete parse result. Parse failures can also be
+the complete parse result. The corresponding `komut_sayisi`, `komut_turleri`,
+`komut_turu_sayisi`, `komut_turu_var_mi`, `komut_derinligi`,
+`tum_komut_derinligi`, and `komut_agaci_ozeti` helpers expose the same metrics
+for the recursive command tree, including parallel bodies. Parse failures can also be
 exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The
@@ -852,7 +857,7 @@ functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `ifade_satir_araligi`, `tum_ifade_satir_araliklari`,
 `ifade_agaci_ozeti`, `komut_satir_araligi`,
-`tum_komut_satir_araliklari`, `hata_tanilari`, and
+`tum_komut_satir_araliklari`, `komut_agaci_ozeti`, `hata_tanilari`, and
 `tani_listesi_bicimlendir`, `tani_listesi_ozeti`, plus AST helpers such as
 `dugum_turu_var_mi` and `dugum_ozeti`.
 Signature help also includes common built-in and Orhun-source helper

@@ -69,6 +69,7 @@ def main() -> int:
             "s olsun tani_listesi_ozeti([])",
             "v olsun tum_ifade_satir_araliklari(sonuc)",
             "w olsun ifade_agaci_ozeti(sonuc)",
+            "k olsun komut_agaci_ozeti(sonuc)",
             "",
         ]
     )
@@ -156,7 +157,7 @@ def main() -> int:
                     "method": "textDocument/completion",
                     "params": {
                         "textDocument": {"uri": uri},
-                        "position": {"line": 14, "character": 0},
+                        "position": {"line": 15, "character": 0},
                     },
                 }
             ),
@@ -289,6 +290,28 @@ def main() -> int:
                     "params": {
                         "textDocument": {"uri": uri},
                         "position": {"line": 13, "character": 12},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 23,
+                    "method": "textDocument/signatureHelp",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 14, "character": 26},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 24,
+                    "method": "textDocument/hover",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 14, "character": 12},
                     },
                 }
             ),
@@ -531,7 +554,10 @@ def main() -> int:
     expression_summary_sig_resp = next(
         (m for m in messages if m.get("id") == 21), None
     )
-    if expression_summary_sig_resp is None or "result" not in expression_summary_sig_resp:
+    if (
+        expression_summary_sig_resp is None
+        or "result" not in expression_summary_sig_resp
+    ):
         raise SystemExit(
             "LSP smoke failed: expression-summary signatureHelp response missing"
         )
@@ -556,6 +582,35 @@ def main() -> int:
     )
     if "ifade_agaci_ozeti(sonuc)" not in expression_summary_hover:
         raise SystemExit("LSP smoke failed: expression-summary hover label mismatch")
+
+    command_summary_sig_resp = next(
+        (m for m in messages if m.get("id") == 23), None
+    )
+    if command_summary_sig_resp is None or "result" not in command_summary_sig_resp:
+        raise SystemExit(
+            "LSP smoke failed: command-summary signatureHelp response missing"
+        )
+    command_summary_signatures = command_summary_sig_resp["result"].get(
+        "signatures", []
+    )
+    if not command_summary_signatures:
+        raise SystemExit("LSP smoke failed: command-summary signatures empty")
+    if command_summary_signatures[0].get("label") != "komut_agaci_ozeti(sonuc)":
+        raise SystemExit("LSP smoke failed: command-summary signature label mismatch")
+
+    command_summary_hover_resp = next(
+        (m for m in messages if m.get("id") == 24), None
+    )
+    if (
+        command_summary_hover_resp is None
+        or "result" not in command_summary_hover_resp
+    ):
+        raise SystemExit("LSP smoke failed: command-summary hover response missing")
+    command_summary_hover = (
+        command_summary_hover_resp["result"].get("contents", {}).get("value", "")
+    )
+    if "komut_agaci_ozeti(sonuc)" not in command_summary_hover:
+        raise SystemExit("LSP smoke failed: command-summary hover label mismatch")
 
     refs_resp = next((m for m in messages if m.get("id") == 6), None)
     if refs_resp is None or "result" not in refs_resp:
@@ -592,6 +647,13 @@ def main() -> int:
         "ifade_agaci_ozeti",
         "komut_satir_araligi",
         "tum_komut_satir_araliklari",
+        "komut_derinligi",
+        "tum_komut_derinligi",
+        "komut_turleri",
+        "komut_sayisi",
+        "komut_turu_sayisi",
+        "komut_turu_var_mi",
+        "komut_agaci_ozeti",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "tani_listesi_seviyeleri",

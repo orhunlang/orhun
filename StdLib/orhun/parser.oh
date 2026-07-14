@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.21.0"
+surum olsun "0.22.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -2168,10 +2168,31 @@ işlev komut_satir_araliklari(sonuc):
     döndür araliklar
 
 işlev komut_satir_araliklarini_topla(komut, araliklar):
-    araliklar.ekle(komut_satir_araligi(komut))
+    aralik olsun komut_satir_araligi(komut)
+    aralik["tur"] = komut.tur
+    araliklar.ekle(aralik)
+    eğer komut.tur eşit "Atama" ise:
+        ifade_komut_satir_araliklarini_topla(komut.hedef_ozeti, araliklar)
+    eğer komut.tur eşit "IslevTanim" ise:
+        her varsayilan içinde komut.varsayilanlar:
+            ifade_komut_satir_araliklarini_topla(varsayilan, araliklar)
+    ifade_komut_satir_araliklarini_topla(komut.ifade_ozeti, araliklar)
     her blok içinde komut.bloklar:
         her alt_komut içinde blok.komutlar:
             komut_satir_araliklarini_topla(alt_komut, araliklar)
+    döndür araliklar
+
+işlev ifade_komut_satir_araliklarini_topla(ifade, araliklar):
+    eğer uzunluk(ifade.tur) eşit 0 ise:
+        döndür araliklar
+    eğer ifade.tur eşit "IsimsizIslev" ise:
+        her varsayilan içinde ifade.varsayilanlar:
+            ifade_komut_satir_araliklarini_topla(varsayilan, araliklar)
+    her alt içinde ifade.altlar:
+        ifade_komut_satir_araliklarini_topla(alt, araliklar)
+    eğer ifade.tur eşit "ParalelYap" ise:
+        her komut içinde ifade.paralel_komutlar:
+            komut_satir_araliklarini_topla(komut, araliklar)
     döndür araliklar
 
 işlev tum_komut_satir_araliklari(sonuc):
@@ -2179,6 +2200,82 @@ işlev tum_komut_satir_araliklari(sonuc):
     her komut içinde sonuc.komutlar:
         komut_satir_araliklarini_topla(komut, araliklar)
     döndür araliklar
+
+işlev ifade_komut_derinligi(ifade):
+    eğer uzunluk(ifade.tur) eşit 0 ise:
+        döndür 0
+    en_derin olsun 0
+    eğer ifade.tur eşit "IsimsizIslev" ise:
+        her varsayilan içinde ifade.varsayilanlar:
+            aday olsun ifade_komut_derinligi(varsayilan)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    her alt içinde ifade.altlar:
+        aday olsun ifade_komut_derinligi(alt)
+        eğer aday büyük en_derin ise:
+            en_derin olsun aday
+    eğer ifade.tur eşit "ParalelYap" ise:
+        her komut içinde ifade.paralel_komutlar:
+            aday olsun komut_derinligi(komut)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    döndür en_derin
+
+işlev komut_derinligi(komut):
+    en_derin olsun 1
+    eğer komut.tur eşit "Atama" ise:
+        aday olsun 1 + ifade_komut_derinligi(komut.hedef_ozeti)
+        eğer aday büyük en_derin ise:
+            en_derin olsun aday
+    eğer komut.tur eşit "IslevTanim" ise:
+        her varsayilan içinde komut.varsayilanlar:
+            aday olsun 1 + ifade_komut_derinligi(varsayilan)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    aday olsun 1 + ifade_komut_derinligi(komut.ifade_ozeti)
+    eğer aday büyük en_derin ise:
+        en_derin olsun aday
+    her blok içinde komut.bloklar:
+        her alt_komut içinde blok.komutlar:
+            aday olsun 1 + komut_derinligi(alt_komut)
+            eğer aday büyük en_derin ise:
+                en_derin olsun aday
+    döndür en_derin
+
+işlev tum_komut_derinligi(sonuc):
+    en_derin olsun 0
+    her komut içinde sonuc.komutlar:
+        aday olsun komut_derinligi(komut)
+        eğer aday büyük en_derin ise:
+            en_derin olsun aday
+    döndür en_derin
+
+işlev komut_turleri(sonuc):
+    turler olsun []
+    her aralik içinde tum_komut_satir_araliklari(sonuc):
+        turler.ekle(aralik.tur)
+    döndür turler
+
+işlev komut_sayisi(sonuc):
+    döndür uzunluk(tum_komut_satir_araliklari(sonuc))
+
+işlev komut_turu_sayisi(sonuc, tur):
+    sayi olsun 0
+    her komut_turu içinde komut_turleri(sonuc):
+        eğer komut_turu eşit tur ise:
+            sayi olsun sayi + 1
+    döndür sayi
+
+işlev komut_turu_var_mi(sonuc, tur):
+    döndür komut_turu_sayisi(sonuc, tur) büyük 0
+
+işlev komut_agaci_ozeti(sonuc):
+    turler olsun komut_turleri(sonuc)
+    döndür {
+        "komut_sayisi": uzunluk(turler),
+        "derinlik": tum_komut_derinligi(sonuc),
+        "turler": turler
+    }
 
 işlev ozetle_tokenlar(tokenlar):
     token_sayisi olsun uzunluk(tokenlar)

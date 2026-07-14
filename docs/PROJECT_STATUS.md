@@ -49,7 +49,9 @@ These percentages are planning estimates, not promises.
   structural summary without changing the parity JSON contract. Recursive
   expression ranges include assignment targets, named and anonymous function
   defaults, nested blocks, and parallel command bodies. Expression-tree metrics
-  expose total count, ordered kinds, kind queries, and maximum depth.
+  expose total count, ordered kinds, kind queries, and maximum depth. Command
+  ranges and matching tree metrics also include commands nested under parallel
+  expressions.
 - The shared Orhun language-toolkit module can format standalone diagnostic
   lists with or without source-line context, and can flatten/filter AST records
   for parser, DSL, and LSP surfaces.
