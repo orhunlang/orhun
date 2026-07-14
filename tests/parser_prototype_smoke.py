@@ -112,6 +112,11 @@ def validate_error_parity(
         f"prototype error IR contract mismatch for {source_file}",
     )
     require(
+        proto_payload.get("ir_dogrulamasi")
+        == {"ok": True, "hata": "", "sozlesme": PARSER_IR_CONTRACT},
+        f"prototype error IR validation failed for {source_file}: {proto_payload}",
+    )
+    require(
         proto_payload.get("tum_ifade_satir_araliklari") == [],
         f"prototype error expression ranges should be empty for {source_file}",
     )
@@ -627,6 +632,7 @@ def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
             f'kaynak olsun dosya.oku("{orhun_string(source_path)}")\n'
             "sonuc olsun parser.ozetle(kaynak)\n"
             'sonuc["dogrulama_token_sayisi"] = uzunluk(lexer.tokenlestir(kaynak))\n'
+            'sonuc["ir_dogrulamasi"] = parser.ir_dogrula(sonuc)\n'
             "eğer sonuc.ok ise:\n"
             '    sonuc["tum_ifade_satir_araliklari"] = parser.tum_ifade_satir_araliklari(sonuc)\n'
             '    sonuc["ifade_agaci_ozeti"] = parser.ifade_agaci_ozeti(sonuc)\n'
@@ -1142,6 +1148,11 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(
         payload.get("ir_sozlesmesi") == PARSER_IR_CONTRACT,
         f"prototype success IR contract mismatch for {source_file}",
+    )
+    require(
+        payload.get("ir_dogrulamasi")
+        == {"ok": True, "hata": "", "sozlesme": PARSER_IR_CONTRACT},
+        f"prototype success IR validation failed for {source_file}: {payload}",
     )
     require(
         payload.get("hata_sayisi") == 0,

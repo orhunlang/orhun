@@ -25,3 +25,8 @@ eksik_ir olsun {"ok": doğru}
 eksik_ir_sonucu olsun derleyici.ir_derle(eksik_ir)
 yazdır eksik_ir_sonucu.durum
 yazdır metin.icerir(eksik_ir_sonucu.hata.mesaj, "sozlesmesi")
+
+bozuk_ir olsun {"ir_sozlesmesi": "orhun-parser-ir-v1", "ok": doğru, "tur": "Program", "satir": 1, "token_sayisi": 0, "hata_sayisi": 0, "komut_sayisi": 1, "komut_turleri": [], "komutlar": []}
+bozuk_ir_sonucu olsun derleyici.ir_derle(bozuk_ir)
+yazdır bozuk_ir_sonucu.durum
+yazdır metin.icerir(bozuk_ir_sonucu.hata.mesaj, "komut_sayisi")

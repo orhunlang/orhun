@@ -1,4 +1,4 @@
-0.28.0
+0.29.0
 orhun-parser-ir-v1
 ok
 0
@@ -9,6 +9,8 @@ ok
 [{"deger":"Orhun","tur":"metin"},{"deger":"ad","tur":"metin"},{"deger":"ad","tur":"metin"}]
 fail
 1
+1
+fail
 1
 fail
 1

@@ -1,4 +1,4 @@
-0.23.0
+0.24.0
 orhun-parser-ir-v1
 orhun-parser-ir-v1
 1
@@ -6,6 +6,12 @@ orhun-parser-ir-v1
 orhun-parser-ir-v1
 1
 3
+1
+1
+0
+1
+0
+1
 1
 0
 Program

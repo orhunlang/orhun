@@ -12,6 +12,18 @@ ir_bilgisi olsun parser.ir_ozeti(sonuc)
 yazdır ir_bilgisi.sozlesme
 yazdır ir_bilgisi.uyumlu
 yazdır ir_bilgisi.ust_komut_sayisi
+yazdır ir_bilgisi.gecerli
+yazdır parser.ir_gecerli_mi(sonuc)
+bozuk_sayi olsun parser.ozetle("yazdır 1\n")
+bozuk_sayi["komut_sayisi"] = 2
+bozuk_sayi_dogrulamasi olsun parser.ir_dogrula(bozuk_sayi)
+yazdır bozuk_sayi_dogrulamasi.ok
+yazdır metin.icerir(bozuk_sayi_dogrulamasi.hata, "komut_sayisi")
+bozuk_ifade olsun parser.ozetle("yazdır 1\n")
+bozuk_ifade.komutlar[0].ifade_ozeti["alt_sayisi"] = 1
+bozuk_ifade_dogrulamasi olsun parser.ir_dogrula(bozuk_ifade)
+yazdır bozuk_ifade_dogrulamasi.ok
+yazdır metin.icerir(bozuk_ifade_dogrulamasi.hata, "alt_sayisi")
 yazdır sonuc.ok
 yazdır sonuc.hata_sayisi
 yazdır sonuc.tur

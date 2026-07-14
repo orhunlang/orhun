@@ -6,8 +6,9 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.23.0"
+surum olsun "0.24.0"
 ir_sozlesmesi olsun "orhun-parser-ir-v1"
+ir_azami_derinlik olsun 256
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -2284,10 +2285,143 @@ işlev ir_uyumlu_mu(sonuc):
     yakala hata:
         döndür yanlış
 
+işlev ir_dogrulama_sonucu(ok, hata):
+    döndür {"ok": ok, "hata": hata, "sozlesme": ir_sozlesmesi}
+
+işlev ifade_ir_hatasi(ifade, derinlik):
+    eğer derinlik büyük ir_azami_derinlik ise:
+        döndür "IR azami dogrulama derinligini asti."
+    deneme:
+        uzunluk(ifade.tur)
+        uzunluk(ifade.op)
+        uzunluk(ifade.ayrinti)
+        eğer ifade.satir küçük 0 ise:
+            döndür "Ifade IR satiri negatif olamaz."
+        eğer ifade.alt_sayisi eşit_değil uzunluk(ifade.altlar) ise:
+            döndür "Ifade IR alt_sayisi ile altlar uzunlugu uyusmuyor."
+        her alt içinde ifade.altlar:
+            alt_hatasi olsun ifade_ir_hatasi(alt, derinlik + 1)
+            eğer uzunluk(alt_hatasi) büyük 0 ise:
+                döndür alt_hatasi
+        eğer ifade.tur eşit "IsimsizIslev" ise:
+            her varsayilan içinde ifade.varsayilanlar:
+                varsayilan_hatasi olsun ifade_ir_hatasi(varsayilan, derinlik + 1)
+                eğer uzunluk(varsayilan_hatasi) büyük 0 ise:
+                    döndür varsayilan_hatasi
+        eğer ifade.tur eşit "ParalelYap" ise:
+            eğer ifade.komut_sayisi eşit_değil uzunluk(ifade.paralel_komutlar) ise:
+                döndür "ParalelYap IR komut_sayisi ile komutlar uyusmuyor."
+            her paralel_komut içinde ifade.paralel_komutlar:
+                paralel_hatasi olsun komut_ir_hatasi(paralel_komut, derinlik + 1)
+                eğer uzunluk(paralel_hatasi) büyük 0 ise:
+                    döndür paralel_hatasi
+    yakala hata:
+        döndür "Ifade IR alanlari eksik veya gecersiz."
+    döndür ""
+
+işlev blok_ir_hatasi(blok, derinlik):
+    eğer derinlik büyük ir_azami_derinlik ise:
+        döndür "IR azami dogrulama derinligini asti."
+    deneme:
+        eğer blok.tur eşit_değil "Block" ise:
+            döndür "Blok IR turu 'Block' olmali."
+        eğer blok.satir küçük 0 ise:
+            döndür "Blok IR satiri negatif olamaz."
+        eğer blok.komut_sayisi eşit_değil uzunluk(blok.komutlar) ise:
+            döndür "Blok IR komut_sayisi ile komutlar uzunlugu uyusmuyor."
+        her komut içinde blok.komutlar:
+            komut_hatasi olsun komut_ir_hatasi(komut, derinlik + 1)
+            eğer uzunluk(komut_hatasi) büyük 0 ise:
+                döndür komut_hatasi
+    yakala hata:
+        döndür "Blok IR alanlari eksik veya gecersiz."
+    döndür ""
+
+işlev komut_ir_hatasi(komut, derinlik):
+    eğer derinlik büyük ir_azami_derinlik ise:
+        döndür "IR azami dogrulama derinligini asti."
+    deneme:
+        eğer uzunluk(komut.tur) eşit 0 ise:
+            döndür "Komut IR turu bos olamaz."
+        eğer komut.satir küçük 1 ise:
+            döndür "Komut IR satiri en az 1 olmali."
+        ifade_hatasi olsun ifade_ir_hatasi(komut.ifade_ozeti, derinlik + 1)
+        eğer uzunluk(ifade_hatasi) büyük 0 ise:
+            döndür ifade_hatasi
+        eğer komut.ifade_turu eşit_değil komut.ifade_ozeti.tur ise:
+            döndür "Komut IR ifade_turu ile ifade_ozeti.tur uyusmuyor."
+        eğer komut.blok_sayisi eşit_değil uzunluk(komut.bloklar) ise:
+            döndür "Komut IR blok_sayisi ile bloklar uzunlugu uyusmuyor."
+        eğer uzunluk(komut.blok_sayilari) eşit_değil uzunluk(komut.bloklar) ise:
+            döndür "Komut IR blok_sayilari ile bloklar uzunlugu uyusmuyor."
+        i olsun 0
+        sürece i küçük uzunluk(komut.bloklar):
+            blok olsun komut.bloklar[i]
+            eğer komut.blok_sayilari[i] eşit_değil blok.komut_sayisi ise:
+                döndür "Komut IR blok_sayilari ile blok komut_sayisi uyusmuyor."
+            blok_hatasi olsun blok_ir_hatasi(blok, derinlik + 1)
+            eğer uzunluk(blok_hatasi) büyük 0 ise:
+                döndür blok_hatasi
+            i olsun i + 1
+        eğer komut.tur eşit "Atama" ise:
+            hedef_hatasi olsun ifade_ir_hatasi(komut.hedef_ozeti, derinlik + 1)
+            eğer uzunluk(hedef_hatasi) büyük 0 ise:
+                döndür hedef_hatasi
+        eğer komut.tur eşit "IslevTanim" ise:
+            eğer komut.parametre_sayisi eşit_değil uzunluk(komut.parametreler) ise:
+                döndür "IslevTanim IR parametre sayilari uyusmuyor."
+            her varsayilan içinde komut.varsayilanlar:
+                varsayilan_hatasi olsun ifade_ir_hatasi(varsayilan, derinlik + 1)
+                eğer uzunluk(varsayilan_hatasi) büyük 0 ise:
+                    döndür varsayilan_hatasi
+    yakala hata:
+        döndür "Komut IR alanlari eksik veya gecersiz."
+    döndür ""
+
+işlev ir_dogrula(sonuc):
+    eğer değil ir_uyumlu_mu(sonuc) ise:
+        döndür ir_dogrulama_sonucu(yanlış, "Desteklenmeyen parser ara temsil sozlesmesi; beklenen: " + ir_sozlesmesi)
+    deneme:
+        eğer sonuc.ok eşit_değil doğru ve sonuc.ok eşit_değil yanlış ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Program IR ok alani mantik olmali.")
+        eğer sonuc.token_sayisi küçük 0 ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Program IR token_sayisi negatif olamaz.")
+        eğer sonuc.komut_sayisi eşit_değil uzunluk(sonuc.komutlar) ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Program IR komut_sayisi ile komutlar uzunlugu uyusmuyor.")
+        eğer uzunluk(sonuc.komut_turleri) eşit_değil uzunluk(sonuc.komutlar) ise:
+            döndür ir_dogrulama_sonucu(yanlış, "Program IR komut_turleri ile komutlar uzunlugu uyusmuyor.")
+        eğer sonuc.ok ise:
+            eğer sonuc.tur eşit_değil "Program" ise:
+                döndür ir_dogrulama_sonucu(yanlış, "Basarili parser IR turu 'Program' olmali.")
+            eğer sonuc.hata_sayisi eşit_değil 0 ise:
+                döndür ir_dogrulama_sonucu(yanlış, "Basarili parser IR hata_sayisi 0 olmali.")
+            i olsun 0
+            sürece i küçük uzunluk(sonuc.komutlar):
+                komut olsun sonuc.komutlar[i]
+                eğer sonuc.komut_turleri[i] eşit_değil komut.tur ise:
+                    döndür ir_dogrulama_sonucu(yanlış, "Program IR komut_turleri sirasi komutlarla uyusmuyor.")
+                komut_hatasi olsun komut_ir_hatasi(komut, 1)
+                eğer uzunluk(komut_hatasi) büyük 0 ise:
+                    döndür ir_dogrulama_sonucu(yanlış, komut_hatasi)
+                i olsun i + 1
+        değilse:
+            eğer sonuc.hata_sayisi küçük 1 ise:
+                döndür ir_dogrulama_sonucu(yanlış, "Basarisiz parser IR hata_sayisi en az 1 olmali.")
+            eğer uzunluk(sonuc.hata.mesaj) eşit 0 ise:
+                döndür ir_dogrulama_sonucu(yanlış, "Basarisiz parser IR hata mesaji bos olamaz.")
+    yakala hata:
+        döndür ir_dogrulama_sonucu(yanlış, "Program IR alanlari eksik veya gecersiz.")
+    döndür ir_dogrulama_sonucu(doğru, "")
+
+işlev ir_gecerli_mi(sonuc):
+    döndür ir_dogrula(sonuc).ok
+
 işlev ir_ozeti(sonuc):
+    dogrulama olsun ir_dogrula(sonuc)
     döndür {
         "sozlesme": sonuc.ir_sozlesmesi,
         "uyumlu": ir_uyumlu_mu(sonuc),
+        "gecerli": dogrulama.ok,
         "ok": sonuc.ok,
         "token_sayisi": sonuc.token_sayisi,
         "ust_komut_sayisi": sonuc.komut_sayisi,

@@ -726,6 +726,7 @@ yazdır uzunluk(parser.tum_ifade_satir_araliklari(sonuc))
 yazdır parser.ifade_agaci_ozeti(sonuc)
 yazdır uzunluk(parser.tum_komut_satir_araliklari(sonuc))
 yazdır parser.komut_agaci_ozeti(sonuc)
+yazdır parser.ir_dogrula(sonuc)
 yazdır parser.ir_ozeti(sonuc)
 yazdır parser.hata_tanilari(sonuc)
 ```
@@ -733,10 +734,14 @@ yazdır parser.hata_tanilari(sonuc)
 The current prototype exposes a `Program` root and `Block` structural nodes,
 and every success or error result carries the versioned
 `ir_sozlesmesi: "orhun-parser-ir-v1"` boundary. `ir_uyumlu_mu` checks this
-contract without throwing on missing fields, while `ir_ozeti` exposes the
-contract, parse status, top-level count, and expression/command tree metrics.
-The Orhun-written compiler rejects missing or unknown parser IR contracts
-before compiling commands. The prototype then summarizes command node kinds,
+contract without throwing on missing fields. `ir_dogrula` recursively checks
+program counts, ordered command kinds, command/expression links, blocks,
+anonymous defaults, and parallel bodies with a 256-level depth limit;
+`ir_gecerli_mi` is its boolean shorthand. `ir_ozeti` exposes the contract,
+validation state, parse status, top-level count, and expression/command tree
+metrics. The Orhun-written compiler runs this structural validation and
+rejects malformed or unknown parser IR before compiling commands. The
+prototype then summarizes command node kinds,
 line numbers, primary expression summaries (`tur`, `satir`, `op`, `ayrinti`,
 `alt_sayisi`, `altlar`), recursive expression children, assignment metadata,
 total child-block counts, child block line numbers and command counts,
@@ -864,8 +869,8 @@ functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `ifade_satir_araligi`, `tum_ifade_satir_araliklari`,
 `ifade_agaci_ozeti`, `komut_satir_araligi`,
-`tum_komut_satir_araliklari`, `komut_agaci_ozeti`, `ir_uyumlu_mu`, `ir_ozeti`,
-`hata_tanilari`, and
+`tum_komut_satir_araliklari`, `komut_agaci_ozeti`, `ir_uyumlu_mu`,
+`ir_dogrula`, `ir_gecerli_mi`, `ir_ozeti`, `hata_tanilari`, and
 `tani_listesi_bicimlendir`, `tani_listesi_ozeti`, plus AST helpers such as
 `dugum_turu_var_mi` and `dugum_ozeti`.
 Signature help also includes common built-in and Orhun-source helper

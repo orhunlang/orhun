@@ -108,6 +108,7 @@
       "yaz parser.ifade_agaci_ozeti(sonuc)",
       "yaz parser.tum_komut_satir_araliklari(sonuc)",
       "yaz parser.komut_agaci_ozeti(sonuc)",
+      "yaz parser.ir_dogrula(sonuc)",
       "yaz parser.ir_ozeti(sonuc)",
       "yaz parser.hata_tanilari(sonuc)"
     ],
