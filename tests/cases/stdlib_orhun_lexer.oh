@@ -5,6 +5,14 @@ sonuc olsun lexer.ozetle(kaynak)
 tokenlar olsun sonuc.tokenlar
 
 yazdır lexer.surum
+yazdır sonuc.ir_sozlesmesi
+yazdır lexer.ir_sozlesmesi
+yazdır lexer.ir_uyumlu_mu(sonuc)
+yazdır lexer.ir_gecerli_mi(sonuc)
+yazdır lexer.ir_dogrula(sonuc).ok
+ir_ozeti olsun lexer.ir_ozeti(sonuc)
+yazdır ir_ozeti.sozlesme
+yazdır ir_ozeti.gecerli
 yazdır sonuc.hata_sayisi
 yazdır sonuc.token_sayisi
 yazdır uzunluk(tokenlar)
@@ -53,3 +61,21 @@ araliklar olsun lexer.token_araliklari(lexer.tokenlestir("a olsun 1\n"))
 yazdır uzunluk(araliklar)
 yazdır araliklar[1].baslangic_sutun
 yazdır araliklar[1].bitis_sutun
+
+uyumsuz olsun lexer.ozetle("x\n")
+uyumsuz.ir_sozlesmesi = "orhun-lexer-ir-v0"
+yazdır lexer.ir_uyumlu_mu(uyumsuz)
+yazdır metin.icerir(lexer.ir_dogrula(uyumsuz).hata, "beklenen")
+
+bozuk_sayi olsun lexer.ozetle("x\n")
+bozuk_sayi.token_sayisi = bozuk_sayi.token_sayisi + 1
+yazdır lexer.ir_gecerli_mi(bozuk_sayi)
+yazdır metin.icerir(lexer.ir_dogrula(bozuk_sayi).hata, "token_sayisi")
+
+bozuk_son olsun {"ir_sozlesmesi": lexer.ir_sozlesmesi, "hata_sayisi": 0, "token_sayisi": 1, "tokenlar": [lexer.token("KIMLIK", "x", 1, 1)]}
+yazdır lexer.ir_gecerli_mi(bozuk_son)
+yazdır metin.icerir(lexer.ir_dogrula(bozuk_son).hata, "bitmeli")
+
+bozuk_konum olsun {"ir_sozlesmesi": lexer.ir_sozlesmesi, "hata_sayisi": 0, "token_sayisi": 1, "tokenlar": [lexer.token("DOSYA_SONU", "", 0, 1)]}
+yazdır lexer.ir_gecerli_mi(bozuk_konum)
+yazdır metin.icerir(lexer.ir_dogrula(bozuk_konum).hata, "satir")

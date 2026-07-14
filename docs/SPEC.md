@@ -685,11 +685,17 @@ lexer olsun dahil_et "orhun/lexer.oh"
 sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")
 tokenlar olsun sonuc.tokenlar
 yazdır lexer.degerleri(tokenlar)
+yazdır lexer.ir_dogrula(sonuc)
 ```
 
 Each token is a dictionary with `tur`, `deger`, `satir`, and `sutun` fields.
-`ozetle(kaynak)` returns a dictionary with `hata_sayisi`, `token_sayisi`, and `tokenlar`,
-matching the C++ `lex --json` health shape used by parity tests. Helper
+`ozetle(kaynak)` returns a dictionary with `ir_sozlesmesi`, `hata_sayisi`,
+`token_sayisi`, and `tokenlar`, matching the C++ `lex --json` health shape used
+by parity tests plus the additive `orhun-lexer-ir-v1` boundary. `ir_uyumlu_mu`
+checks that boundary, while `ir_dogrula` verifies token fields, positions,
+counts, error counts, and the final end-of-file token before other Orhun-written
+tools consume the stream. `ir_gecerli_mi` and `ir_ozeti` expose compact forms.
+Helper
 functions expose token types, token values, UTF-8-aware token lengths, inclusive
 source ranges (`satir`, `baslangic_sutun`, `bitis_sutun`, `uzunluk`), first
 error token, error presence, error count, and error-token values.

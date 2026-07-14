@@ -202,8 +202,12 @@
   kütüphane yardımcısıdır.
 
 ## 12.2. Orhun-source lexer/parser helpers
-- `orhun/lexer.oh` `0.6.0`, token değerleri, hata token değerleri ve
+- `orhun/lexer.oh` `0.7.0`, token değerleri, hata token değerleri ve
   UTF-8-aware token aralıkları için yardımcı özet fonksiyonları ekler.
+- 0.7.0 ile lexer özetleri `orhun-lexer-ir-v1` sözleşmesini taşır.
+  `ir_dogrula`, token alanlarını, konumları, sayaçları ve son `DOSYA_SONU`
+  kaydını denetler; `ir_uyumlu_mu`, `ir_gecerli_mi` ve `ir_ozeti` daha kısa
+  sözleşme sorguları sağlar.
 - `orhun/parser.oh` `0.25.0`, parse sonucunda hata var/yok, hata mesajı,
   ortak tanı listesi, komut satır aralığı, ifade satır aralığı, iç içe
   bloklardaki tüm komut satır aralıkları ve alt ifadeler ile `paralel yap`
@@ -228,7 +232,8 @@
   `ir_indeksi` yardımcısını ekler.
 - `orhun/derleyici.oh` 0.29.0, eksik, farklı veya yapısal olarak bozuk parser
   IR girdisini komut alanlarını derlemeden önce açıklayıcı bir hatayla reddeder.
-- Bu yardımcılar mevcut lexer/parser çıktı sözleşmesini değiştirmez.
+- Lexer sözleşme alanı mevcut sağlık alanlarına eklenmiştir; parser yardımcıları
+  mevcut parity JSON sözleşmesini değiştirmez.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri

@@ -81,6 +81,10 @@ def main() -> int:
         "lexer.token_araligi(tokenlar[0])" in stdlib_lexer,
         "stdlib_lexer should expose token ranges",
     )
+    require(
+        "lexer.ir_dogrula(sonuc)" in stdlib_lexer,
+        "stdlib_lexer should expose lexer IR validation",
+    )
 
     stdlib_parser = (repo / "examples" / "stdlib_parser.oh").read_text(
         encoding="utf-8"

@@ -124,6 +124,8 @@ def main() -> int:
             "Lexer snippet should expose error summaries")
     require("lexer.token_araligi(" in "\n".join(snippets["Lexer Özeti"]["body"]),
             "Lexer snippet should expose token ranges")
+    require("lexer.ir_dogrula(" in "\n".join(snippets["Lexer Özeti"]["body"]),
+            "Lexer snippet should expose IR validation")
     require("parser.hata_var_mi(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose parser error helpers")
     require("parser.komut_satir_araligi(" in "\n".join(snippets["Parser Özeti"]["body"]),

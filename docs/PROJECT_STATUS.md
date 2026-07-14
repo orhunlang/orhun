@@ -44,6 +44,10 @@ These percentages are planning estimates, not promises.
   fields/methods/inheritance, locals, and optimizations with parity smoke tests.
 - The Orhun-written lexer exposes UTF-8-aware token length and inclusive source
   range helpers for diagnostics, LSP, and future self-hosted language tooling.
+- Orhun-written lexer summaries carry the versioned `orhun-lexer-ir-v1`
+  contract. Pure-Orhun validation checks token fields, source positions,
+  counters, error-token parity, and the final end-of-file marker before parser
+  or editor tooling consumes the stream.
 - The Orhun-written parser exposes expression/command line ranges, recursive
   expression and command ranges, and diagnostic-list helpers on top of its
   structural summary without changing the parity JSON contract. Recursive

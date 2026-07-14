@@ -47,6 +47,7 @@ sonuc olsun lexer.ozetle("yazdır \"Merhaba\"\n")
 yazdır sonuc.tokenlar[0].tur
 yazdır lexer.degerleri(sonuc.tokenlar)
 yazdır lexer.token_araligi(sonuc.tokenlar[1]).uzunluk
+yazdır lexer.ir_dogrula(sonuc)
 
 dil olsun dahil_et "orhun/dil.oh"
 tokenlar olsun [dil.token("AD", "merhaba", 1, 1), dil.dosya_sonu(1, 8)]

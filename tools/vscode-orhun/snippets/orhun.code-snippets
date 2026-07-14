@@ -91,7 +91,8 @@
       "sonuc olsun lexer.ozetle(\"${1:yazdır \\\"Merhaba\\\"\\\\n}\")",
       "yaz lexer.turleri(sonuc.tokenlar)",
       "yaz lexer.hata_degerleri(sonuc.tokenlar)",
-      "yaz lexer.token_araligi(sonuc.tokenlar[0])"
+      "yaz lexer.token_araligi(sonuc.tokenlar[0])",
+      "yaz lexer.ir_dogrula(sonuc)"
     ],
     "description": "Orhun lexer prototipiyle kaynak özeti al"
   },

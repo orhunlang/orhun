@@ -106,6 +106,7 @@ def compare_file(
             'lexer olsun dahil_et "orhun/lexer.oh"\n'
             f'kaynak olsun dosya.oku("{orhun_string(source_path)}")\n'
             "sonuc olsun lexer.ozetle(kaynak)\n"
+            'sonuc["ir_dogrulamasi"] = lexer.ir_dogrula(sonuc)\n'
             "yazdır json.yaz(sonuc)\n",
             encoding="utf-8",
             newline="\n",
@@ -118,6 +119,15 @@ def compare_file(
         )
         orhun_payload = parse_last_json(orhun_proc.stdout)
         require(isinstance(orhun_payload, dict), "Orhun lexer output is not an object")
+        require(
+            orhun_payload.get("ir_sozlesmesi") == "orhun-lexer-ir-v1",
+            f"Orhun lexer IR contract mismatch: {source_file}",
+        )
+        validation = orhun_payload.get("ir_dogrulamasi")
+        require(
+            isinstance(validation, dict) and validation.get("ok") is True,
+            f"Orhun lexer IR validation failed: {source_file}\n{validation}",
+        )
         require(
             orhun_payload.get("hata_sayisi") == cxx_payload.get("hata_sayisi"),
             f"Lexer error count mismatch: {source_file}\n"
