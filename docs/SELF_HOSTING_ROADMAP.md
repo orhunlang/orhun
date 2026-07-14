@@ -80,6 +80,9 @@ eklendi. Basarili ve hatali lexer ozetleri `orhun-lexer-ir-v1` kimligini tasir;
 token alanlari, konumlari, sayaclari ve son `DOSYA_SONU` kaydi saf Orhun
 yardimcisiyla dogrulanabilir. Parser prototipi 158 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
+`orhun-lex` ve `orhun-parse`, Orhun-yazili on ucu surumlu ve dogrulanmis JSON
+olarak dogrudan CLI'dan calistirir; kaynak hatalarini yapisal IR'i bozmadan
+cikis kodu 1 ile bildirir ve source/OBC modul politikalarini destekler.
 `orhun/dil.oh` 0.10.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
 Tani kayitlari ortak kod/konum bicimleyicileriyle yeni baslayanlara acik

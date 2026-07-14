@@ -555,6 +555,38 @@ def main() -> int:
             "source-free obc-only compiler chain must match direct VM output",
         )
 
+        for frontend_command, contract in (
+            ("orhun-lex", "orhun-lexer-ir-v1"),
+            ("orhun-parse", "orhun-parser-ir-v1"),
+        ):
+            frontend = run_cmd(
+                [
+                    str(binary),
+                    frontend_command,
+                    str(artifact_source),
+                    "--obc-only",
+                ],
+                repo,
+                env=obc_only_env,
+            )
+            require(
+                frontend.returncode == 0,
+                f"source-free {frontend_command} failed: {combined(frontend)}",
+            )
+            frontend_lines = [
+                line for line in frontend.stdout.splitlines() if line.strip()
+            ]
+            require(frontend_lines, f"{frontend_command} JSON output is empty")
+            frontend_payload = json.loads(frontend_lines[-1])
+            require(
+                frontend_payload.get("ir_sozlesmesi") == contract,
+                f"{frontend_command} source-free contract mismatch",
+            )
+            require(
+                frontend_payload.get("ir_dogrulamasi", {}).get("ok") is True,
+                f"{frontend_command} source-free IR validation failed",
+            )
+
         strict_base = tmpdir / "strict_artifact"
         strict_compile = run_cmd(
             [
@@ -1188,7 +1220,8 @@ def main() -> int:
         f"Compiler bootstrap smoke passed ({len(FIXTURES)} bridge and "
         f"{len(FIXTURES)} orhun-vm parity, "
         "1 artifact parity, 1 self-source artifact parity, "
-        "1 prepared obc-only module chain, 1 source-free strict compile, "
+        "1 prepared obc-only module chain, 2 source-free frontend commands, "
+        "1 source-free strict compile, "
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
         "1 standalone compiler bundle verification, 1 Orhun-owned compiler CLI "

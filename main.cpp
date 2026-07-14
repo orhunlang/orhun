@@ -3849,6 +3849,84 @@ int komutBytecodeJsonCalistir(const std::string &jsonDosyaYolu) {
   return 0;
 }
 
+int komutOrhunOnUc(const std::string &kaynakYolu, bool parserModu) {
+  namespace fs = std::filesystem;
+  if (kaynakYolu.size() < 3 ||
+      kaynakYolu.substr(kaynakYolu.size() - 3) != ".oh") {
+    throw std::runtime_error(
+        std::string("Hata: ") + (parserModu ? "orhun-parse" : "orhun-lex") +
+        " komutu .oh dosyasi bekliyor.");
+  }
+
+  const std::string tamYol = fs::absolute(kaynakYolu).generic_u8string();
+  const std::string modulYolu =
+      parserModu ? "orhun/parser.oh" : "orhun/lexer.oh";
+  const std::string dogrulama =
+      parserModu ? "on_uc.ir_dogrula(sonuc)"
+                 : "on_uc.lexer_ir_dogrula(sonuc)";
+  const std::string surucu =
+      "on_uc olsun dahil_et \"" + modulYolu + "\"\n"
+      "kaynak olsun dosya.oku(\"" +
+      jsonKacis(tamYol) +
+      "\")\n"
+      "sonuc olsun on_uc.ozetle(kaynak)\n"
+      "sonuc[\"ir_dogrulamasi\"] = " +
+      dogrulama +
+      "\n"
+      "yazdır json.yaz(sonuc)\n";
+
+  std::ostringstream yakalanan;
+  std::streambuf *eskiCout = std::cout.rdbuf(yakalanan.rdbuf());
+  try {
+    kodCalistirVM(surucu);
+  } catch (...) {
+    std::cout.rdbuf(eskiCout);
+    throw;
+  }
+  std::cout.rdbuf(eskiCout);
+
+  const std::string jsonCiktisi = yakalanan.str();
+  try {
+    const yerlesik::JsonDeger kok = yerlesik::jsonCoz(jsonCiktisi);
+    const auto &ozet = jsonSozlukBekle(kok, "orhun_on_uc");
+    const std::string sozlesme = jsonMetinBekle(
+        jsonAlanBekle(ozet, "ir_sozlesmesi", "orhun_on_uc"),
+        "orhun_on_uc.ir_sozlesmesi");
+    const std::string beklenen =
+        parserModu ? "orhun-parser-ir-v1" : "orhun-lexer-ir-v1";
+    if (sozlesme != beklenen) {
+      throw std::runtime_error("beklenmeyen IR sozlesmesi: " + sozlesme);
+    }
+
+    const auto &dogrulamaSozlugu = jsonSozlukBekle(
+        jsonAlanBekle(ozet, "ir_dogrulamasi", "orhun_on_uc"),
+        "orhun_on_uc.ir_dogrulamasi");
+    if (!jsonMantikBekle(
+            jsonAlanBekle(dogrulamaSozlugu, "ok",
+                          "orhun_on_uc.ir_dogrulamasi"),
+            "orhun_on_uc.ir_dogrulamasi.ok")) {
+      throw std::runtime_error("Orhun on-uc IR dogrulamasi basarisiz");
+    }
+
+    std::cout << jsonCiktisi;
+    if (parserModu) {
+      return jsonMantikBekle(jsonAlanBekle(ozet, "ok", "orhun_on_uc"),
+                             "orhun_on_uc.ok")
+                 ? 0
+                 : 1;
+    }
+    return jsonBoyutBekle(
+               jsonAlanBekle(ozet, "hata_sayisi", "orhun_on_uc"),
+               "orhun_on_uc.hata_sayisi") == 0
+               ? 0
+               : 1;
+  } catch (const std::exception &ex) {
+    throw std::runtime_error(
+        std::string("Hata: Orhun ") + (parserModu ? "parser" : "lexer") +
+        " ciktisi gecersiz: " + ex.what());
+  }
+}
+
 BytecodeChunk orhunDerleyiciyleDerle(const std::string &kaynakYolu) {
   namespace fs = std::filesystem;
   if (kaynakYolu.size() < 3 ||
@@ -6664,6 +6742,26 @@ int main(int argc, char *argv[]) {
       return komutLex(argv[2], jsonCikti);
     }
 
+    if (komut == "orhun-lex") {
+      if (argc < 3) {
+        throw std::runtime_error(
+            "Hata: orhun-lex <kaynak.oh> "
+            "[--source|--obc-first|--obc-only] kullanin.");
+      }
+      std::optional<std::string> modulModu;
+      for (int i = 3; i < argc; ++i) {
+        const std::string secenek = argv[i];
+        const std::optional<std::string> adayMod = cliModulModuCoz(secenek);
+        if (!adayMod.has_value() || modulModu.has_value()) {
+          throw std::runtime_error(
+              "Hata: bilinmeyen orhun-lex secenegi: " + secenek);
+        }
+        modulModu = adayMod;
+      }
+      cliModulModunuAyarla(modulModu);
+      return komutOrhunOnUc(argv[2], false);
+    }
+
     if (komut == "parse" || komut == "ast") {
       if (argc < 3) {
         throw std::runtime_error(
@@ -6680,6 +6778,26 @@ int main(int argc, char *argv[]) {
             "Hata: parse secenekleri yalnizca '--json' olabilir.");
       }
       return komutParse(argv[2], jsonCikti);
+    }
+
+    if (komut == "orhun-parse") {
+      if (argc < 3) {
+        throw std::runtime_error(
+            "Hata: orhun-parse <kaynak.oh> "
+            "[--source|--obc-first|--obc-only] kullanin.");
+      }
+      std::optional<std::string> modulModu;
+      for (int i = 3; i < argc; ++i) {
+        const std::string secenek = argv[i];
+        const std::optional<std::string> adayMod = cliModulModuCoz(secenek);
+        if (!adayMod.has_value() || modulModu.has_value()) {
+          throw std::runtime_error(
+              "Hata: bilinmeyen orhun-parse secenegi: " + secenek);
+        }
+        modulModu = adayMod;
+      }
+      cliModulModunuAyarla(modulModu);
+      return komutOrhunOnUc(argv[2], true);
     }
 
     if (komut == "baytkod" || komut == "bytecode") {

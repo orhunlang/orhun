@@ -111,6 +111,7 @@ def main() -> int:
         ),
         ("AST JSON", [py, "tests/ast_json_smoke.py", str(binary)]),
         ("parser prototype", [py, "tests/parser_prototype_smoke.py", str(binary)]),
+        ("Orhun frontend CLI", [py, "tests/orhun_frontend_cli_smoke.py", str(binary)]),
         ("bytecode JSON", [py, "tests/bytecode_json_smoke.py", str(binary)]),
         ("compiler prototype", [py, "tests/compiler_prototype_smoke.py", str(binary)]),
         ("compiler prototype sweep", [py, "tests/compiler_prototype_sweep.py", str(binary)]),

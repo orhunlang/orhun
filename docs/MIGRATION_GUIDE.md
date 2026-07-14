@@ -159,6 +159,15 @@
 - Parser hatalarında komut `1` ile çıkar, `durum: "fail"` döndürür ve `ast`
   alanını `null` yapar.
 
+## 11.1. Orhun-source frontend commands
+- `orhun orhun-lex <dosya.oh>`, Orhun ile yazılmış lexerı çalıştırır ve
+  doğrulanmış `orhun-lexer-ir-v1` JSON sonucu verir.
+- `orhun orhun-parse <dosya.oh>`, doğrulanmış lexer -> parser zincirini
+  çalıştırır ve `orhun-parser-ir-v1` JSON sonucu verir.
+- Kaynak hataları JSON sözleşmesini bozmaz; komutlar hata için çıkış kodu 1
+  döndürür. Her iki komut da `--source`, `--obc-first` ve `--obc-only`
+  modül politikalarını destekler.
+
 ## 12. Self-hosting: `orhun/parser.oh`
 - `orhun/parser.oh`, Orhun ile yazılan ilk parser prototipidir.
 - Şimdilik üst seviye komut türlerini, satırlarını, ana ifade özetlerini

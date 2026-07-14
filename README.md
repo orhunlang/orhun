@@ -154,6 +154,8 @@ orhun fmt dosya.oh
 orhun lint dosya.oh
 orhun lex dosya.oh --json
 orhun parse dosya.oh --json
+orhun orhun-lex dosya.oh
+orhun orhun-parse dosya.oh
 orhun baytkod dosya.oh --json
 orhun baytkod-yurut derlenmis.bytecode.json
 orhun obc-dogrula derlenmis.obc

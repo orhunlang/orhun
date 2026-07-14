@@ -51,6 +51,9 @@ These percentages are planning estimates, not promises.
 - The Orhun-written parser validates that lexer contract before consuming
   tokens. Its explicit checked-entry helper turns incompatible or malformed
   lexer summaries into ordinary Turkish parser error results.
+- `orhun-lex` and `orhun-parse` expose the Orhun-written frontend as validated,
+  machine-readable CLI paths with source, OBC-first, and OBC-only module
+  policies and meaningful success/error exit codes.
 - The Orhun-written parser exposes expression/command line ranges, recursive
   expression and command ranges, and diagnostic-list helpers on top of its
   structural summary without changing the parity JSON contract. Recursive

@@ -340,6 +340,19 @@ jobs:
         if: runner.os == 'macOS'
         run: python3 tests/parser_prototype_smoke.py ./build/orhun_test
 
+      - name: Orhun frontend CLI smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/orhun_frontend_cli_smoke.py .\build\orhun_test.exe
+
+      - name: Orhun frontend CLI smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/orhun_frontend_cli_smoke.py ./build/orhun_test
+
+      - name: Orhun frontend CLI smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/orhun_frontend_cli_smoke.py ./build/orhun_test
+
       - name: Bytecode JSON smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

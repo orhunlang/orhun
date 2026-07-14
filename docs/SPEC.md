@@ -927,6 +927,14 @@ Stable channel defaults:
   `arguman_sayisi`.
   Parser AST JSON fixtures live in `tests/ast_json/` and are checked through
   `tests/ast_json_smoke.py`.
+- `orhun-lex <file.oh>` runs the Orhun-written lexer and emits a validated
+  `orhun-lexer-ir-v1` JSON summary. It exits with status 1 for source lexer
+  errors while keeping the emitted IR structurally valid.
+- `orhun-parse <file.oh>` runs the checked Orhun-written lexer/parser chain and
+  emits a validated `orhun-parser-ir-v1` JSON summary. Parser or lexer errors
+  produce status 1 and a normal Turkish parser error result.
+- Both Orhun frontend commands accept `--source`, `--obc-first`, and
+  `--obc-only` module-loading policies.
 - `baytkod --json` exposes the C++ compiler output as a decoded, machine-readable
   bytecode contract for self-hosting parity checks. Its successful payload
   contains bytecode size, instruction and constant counts, decoded instructions,
