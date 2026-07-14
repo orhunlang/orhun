@@ -2,6 +2,7 @@ derleyici olsun dahil_et "orhun/derleyici.oh"
 
 sonuc olsun derleyici.derle("ad olsun \"Orhun\"\nyazdır ad\n")
 yazdır derleyici.surum
+yazdır derleyici.desteklenen_ir_sozlesmesi
 yazdır sonuc.durum
 yazdır sonuc.hata_sayisi
 yazdır sonuc.bytecode.kod_boyutu
@@ -14,3 +15,13 @@ desteklenmeyen olsun derleyici.derle("tip Kutu:\n    yazdır \"a\"\n")
 yazdır desteklenmeyen.durum
 yazdır desteklenmeyen.hata_sayisi
 yazdır metin.icerir(desteklenmeyen.hata.mesaj, "Desteklenmeyen")
+
+eski_ir olsun {"ir_sozlesmesi": "orhun-parser-ir-v0", "ok": doğru}
+eski_ir_sonucu olsun derleyici.ir_derle(eski_ir)
+yazdır eski_ir_sonucu.durum
+yazdır metin.icerir(eski_ir_sonucu.hata.mesaj, "sozlesmesi")
+
+eksik_ir olsun {"ok": doğru}
+eksik_ir_sonucu olsun derleyici.ir_derle(eksik_ir)
+yazdır eksik_ir_sonucu.durum
+yazdır metin.icerir(eksik_ir_sonucu.hata.mesaj, "sozlesmesi")

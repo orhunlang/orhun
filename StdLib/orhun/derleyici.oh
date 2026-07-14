@@ -6,7 +6,8 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.27.0"
+surum olsun "0.28.0"
+desteklenen_ir_sozlesmesi olsun parser.ir_sozlesmesi
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -1145,6 +1146,8 @@ işlev basarisiz(mesaj):
     döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
 
 işlev ir_derle(ir):
+    eğer değil parser.ir_uyumlu_mu(ir) ise:
+        döndür basarisiz("Desteklenmeyen parser ara temsil sozlesmesi; beklenen: " + desteklenen_ir_sozlesmesi)
     eğer değil ir.ok ise:
         döndür basarisiz(ir.hata.mesaj)
 

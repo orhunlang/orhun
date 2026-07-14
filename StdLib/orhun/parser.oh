@@ -6,7 +6,8 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.22.0"
+surum olsun "0.23.0"
+ir_sozlesmesi olsun "orhun-parser-ir-v1"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -316,10 +317,10 @@ işlev komut_turleri_uret(komutlar):
     döndür liste
 
 işlev sonuc_ok(komutlar, token_sayisi, satir):
-    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "tur": "Program", "satir": satir, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komut_turleri": komut_turleri_uret(komutlar), "komutlar": komutlar}
+    döndür {"ir_sozlesmesi": ir_sozlesmesi, "ok": doğru, "hata": "", "hata_sayisi": 0, "tur": "Program", "satir": satir, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komut_turleri": komut_turleri_uret(komutlar), "komutlar": komutlar}
 
 işlev sonuc_hata(mesaj, token, token_sayisi):
-    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
+    döndür {"ir_sozlesmesi": ir_sozlesmesi, "ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
 
 işlev baslik_hata_tokeni(tokenlar, konum, mesaj):
     eğer mesaj eşit "Liste ifadesinin sonunda ']' bekleniyor." veya mesaj eşit "Liste üretecinin sonunda ']' bekleniyor." veya mesaj eşit "Sözlük ifadesinin sonunda '}' bekleniyor." veya mesaj eşit "Argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Kurucu argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Parantezli ifade kapanırken ')' bekleniyor." veya mesaj eşit "İndeks erişiminde ']' bekleniyor." veya mesaj eşit "Dilim erişiminde ']' bekleniyor." ise:
@@ -2275,6 +2276,23 @@ işlev komut_agaci_ozeti(sonuc):
         "komut_sayisi": uzunluk(turler),
         "derinlik": tum_komut_derinligi(sonuc),
         "turler": turler
+    }
+
+işlev ir_uyumlu_mu(sonuc):
+    deneme:
+        döndür sonuc.ir_sozlesmesi eşit ir_sozlesmesi
+    yakala hata:
+        döndür yanlış
+
+işlev ir_ozeti(sonuc):
+    döndür {
+        "sozlesme": sonuc.ir_sozlesmesi,
+        "uyumlu": ir_uyumlu_mu(sonuc),
+        "ok": sonuc.ok,
+        "token_sayisi": sonuc.token_sayisi,
+        "ust_komut_sayisi": sonuc.komut_sayisi,
+        "komut_agaci": komut_agaci_ozeti(sonuc),
+        "ifade_agaci": ifade_agaci_ozeti(sonuc)
     }
 
 işlev ozetle_tokenlar(tokenlar):

@@ -8,6 +8,7 @@ yazdır parser.tum_ifade_satir_araliklari(sonuc)
 yazdır parser.ifade_agaci_ozeti(sonuc)
 yazdır parser.tum_komut_satir_araliklari(sonuc)
 yazdır parser.komut_agaci_ozeti(sonuc)
+yazdır parser.ir_ozeti(sonuc)
 yazdır parser.hata_tanilari(sonuc)
 
 hatali olsun parser.ozetle("@\n")

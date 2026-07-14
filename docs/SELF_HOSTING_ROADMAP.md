@@ -90,7 +90,7 @@ kullanir. AST dugumleri on-sirali duz listeye cevrilebilir, tur listeleri
 toplanabilir, belirli dugum turleri filtrelenebilir ve agac derinligi/tur
 sayilari ozetlenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.22.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.23.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -113,7 +113,9 @@ hedeflerini ve isimli/isimsiz islev varsayilan degerlerini de kapsiyor. Ifade
 agaci toplam sayi, sirali turler, tur sorgulari ve en buyuk derinlik olarak
 ozetlenebiliyor. Komut agaci da ic ice bloklar ve ifade icindeki `paralel yap`
 govdeleri dahil toplam sayi, sirali turler, tur sorgulari, satir araliklari ve
-en buyuk derinlik olarak ozetlenebiliyor.
+en buyuk derinlik olarak ozetlenebiliyor. Basarili ve hatali sonuclar
+`orhun-parser-ir-v1` sozlesme kimligini tasiyor; uyumluluk ve toplu IR ozeti saf
+Orhun yardimcilariyla sorgulanabiliyor.
 
 Hedefler:
 
@@ -143,7 +145,8 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.27.0; sabitler, bicimlendirilmis metinler,
+hazirlandi. `orhun/derleyici.oh` 0.28.0; parser girdisinde
+`orhun-parser-ir-v1` sozlesmesini zorunlu tutar; sabitler, bicimlendirilmis metinler,
 global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
 cagrilari, kisa devreli `ve`/`veya`, indeks/alan/guvenli alan okumalari,

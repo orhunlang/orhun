@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 DEFAULT_FIXTURE_DIR = Path("tests/ast_json")
+PARSER_IR_CONTRACT = "orhun-parser-ir-v1"
 
 
 def require(condition: bool, message: str) -> None:
@@ -106,6 +107,10 @@ def suggested_command(message: str) -> str:
 def validate_error_parity(
     cxx_payload: dict, proto_payload: dict, source_file: Path
 ) -> None:
+    require(
+        proto_payload.get("ir_sozlesmesi") == PARSER_IR_CONTRACT,
+        f"prototype error IR contract mismatch for {source_file}",
+    )
     require(
         proto_payload.get("tum_ifade_satir_araliklari") == [],
         f"prototype error expression ranges should be empty for {source_file}",
@@ -1134,6 +1139,10 @@ def validate_recursive_command_ranges(payload: dict, source_file: Path) -> None:
 
 def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(payload.get("ok") is True, f"prototype returned error for {source_file}: {payload}")
+    require(
+        payload.get("ir_sozlesmesi") == PARSER_IR_CONTRACT,
+        f"prototype success IR contract mismatch for {source_file}",
+    )
     require(
         payload.get("hata_sayisi") == 0,
         f"prototype success error count mismatch for {source_file}: {payload}",

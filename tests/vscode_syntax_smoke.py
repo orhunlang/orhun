@@ -63,6 +63,8 @@ def main() -> int:
         "tum_komut_satir_araliklari",
         "komut_derinligi",
         "komut_agaci_ozeti",
+        "ir_uyumlu_mu",
+        "ir_ozeti",
         "hata_tanilari",
         "tani_listesi_bicimlendir",
         "tani_listesi_ozeti",
@@ -129,6 +131,8 @@ def main() -> int:
             "Parser snippet should expose recursive command ranges")
     require("parser.komut_agaci_ozeti(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose command tree summaries")
+    require("parser.ir_ozeti(" in "\n".join(snippets["Parser Özeti"]["body"]),
+            "Parser snippet should expose the IR contract summary")
     require("parser.hata_tanilari(" in "\n".join(snippets["Parser Özeti"]["body"]),
             "Parser snippet should expose parser diagnostics")
     require("dil.tani_listesi_bicimlendir(" in "\n".join(snippets["Tanı Listesi"]["body"]),

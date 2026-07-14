@@ -726,14 +726,21 @@ yazdır uzunluk(parser.tum_ifade_satir_araliklari(sonuc))
 yazdır parser.ifade_agaci_ozeti(sonuc)
 yazdır uzunluk(parser.tum_komut_satir_araliklari(sonuc))
 yazdır parser.komut_agaci_ozeti(sonuc)
+yazdır parser.ir_ozeti(sonuc)
 yazdır parser.hata_tanilari(sonuc)
 ```
 
 The current prototype exposes a `Program` root and `Block` structural nodes,
-then summarizes command node kinds, line numbers, primary
-expression summaries (`tur`, `satir`, `op`, `ayrinti`, `alt_sayisi`, `altlar`), recursive expression
-children, assignment metadata, total child-block counts, child block line
-numbers and command counts, recursive child block command summaries, and result command kinds,
+and every success or error result carries the versioned
+`ir_sozlesmesi: "orhun-parser-ir-v1"` boundary. `ir_uyumlu_mu` checks this
+contract without throwing on missing fields, while `ir_ozeti` exposes the
+contract, parse status, top-level count, and expression/command tree metrics.
+The Orhun-written compiler rejects missing or unknown parser IR contracts
+before compiling commands. The prototype then summarizes command node kinds,
+line numbers, primary expression summaries (`tur`, `satir`, `op`, `ayrinti`,
+`alt_sayisi`, `altlar`), recursive expression children, assignment metadata,
+total child-block counts, child block line numbers and command counts,
+recursive child block command summaries, result command kinds, and
 command/error and token counts. Helper functions can derive inclusive command
 and expression line ranges (`baslangic_satir`, `bitis_satir`, `satir_sayisi`).
 `tum_ifade_satir_araliklari` walks assignment targets, named and anonymous
@@ -743,15 +750,15 @@ targets precede assigned values, named defaults precede body commands, and
 anonymous defaults precede body expressions. Recursive command ranges walk
 nested blocks and expression-contained `paralel yap` bodies; every entry also
 carries the command `tur`. These helpers operate on the structural summary
-without changing the parser JSON contract. `ifade_sayisi`, `ifade_turleri`,
+without rewriting its command or expression nodes. `ifade_sayisi`, `ifade_turleri`,
 `ifade_turu_sayisi`, and `ifade_turu_var_mi` expose query-friendly metrics.
 `ifade_derinligi` measures one expression tree, while
 `tum_ifade_derinligi` and `ifade_agaci_ozeti` report the maximum depth across
 the complete parse result. The corresponding `komut_sayisi`, `komut_turleri`,
 `komut_turu_sayisi`, `komut_turu_var_mi`, `komut_derinligi`,
 `tum_komut_derinligi`, and `komut_agaci_ozeti` helpers expose the same metrics
-for the recursive command tree, including parallel bodies. Parse failures can also be
-exposed as diagnostic dictionaries through `hata_tanisi` and
+for the recursive command tree, including parallel bodies. Parse failures can
+also be exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The
 structural summary is compared against the C++ parser AST through
@@ -857,7 +864,8 @@ functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 `dosya`, and Orhun-source helpers such as `numaralandir`, `eslestir`,
 `token_araligi`, `ifade_satir_araligi`, `tum_ifade_satir_araliklari`,
 `ifade_agaci_ozeti`, `komut_satir_araligi`,
-`tum_komut_satir_araliklari`, `komut_agaci_ozeti`, `hata_tanilari`, and
+`tum_komut_satir_araliklari`, `komut_agaci_ozeti`, `ir_uyumlu_mu`, `ir_ozeti`,
+`hata_tanilari`, and
 `tani_listesi_bicimlendir`, `tani_listesi_ozeti`, plus AST helpers such as
 `dugum_turu_var_mi` and `dugum_ozeti`.
 Signature help also includes common built-in and Orhun-source helper

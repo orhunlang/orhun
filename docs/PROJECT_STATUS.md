@@ -52,6 +52,9 @@ These percentages are planning estimates, not promises.
   expose total count, ordered kinds, kind queries, and maximum depth. Command
   ranges and matching tree metrics also include commands nested under parallel
   expressions.
+- Successful and failed Orhun-parser results carry the versioned
+  `orhun-parser-ir-v1` contract. The Orhun-written compiler validates this
+  boundary before reading or compiling structural IR fields.
 - The shared Orhun language-toolkit module can format standalone diagnostic
   lists with or without source-line context, and can flatten/filter AST records
   for parser, DSL, and LSP surfaces.

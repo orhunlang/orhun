@@ -4,6 +4,14 @@ kaynak olsun "işlev topla(a olsun 1, b olsun 2):\n    döndür a + b\n\nsonuc o
 sonuc olsun parser.ozetle(kaynak)
 
 yazdır parser.surum
+yazdır parser.ir_sozlesmesi
+yazdır sonuc.ir_sozlesmesi
+yazdır parser.ir_uyumlu_mu(sonuc)
+yazdır parser.ir_uyumlu_mu({"ir_sozlesmesi": "orhun-parser-ir-v0"})
+ir_bilgisi olsun parser.ir_ozeti(sonuc)
+yazdır ir_bilgisi.sozlesme
+yazdır ir_bilgisi.uyumlu
+yazdır ir_bilgisi.ust_komut_sayisi
 yazdır sonuc.ok
 yazdır sonuc.hata_sayisi
 yazdır sonuc.token_sayisi
