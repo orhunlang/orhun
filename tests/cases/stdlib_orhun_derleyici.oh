@@ -3,6 +3,16 @@ derleyici olsun dahil_et "orhun/derleyici.oh"
 sonuc olsun derleyici.derle("ad olsun \"Orhun\"\nyazdır ad\n")
 yazdır derleyici.surum
 yazdır derleyici.desteklenen_ir_sozlesmesi
+yazdır derleyici.bytecode_ir_sozlesmesi
+yazdır sonuc.bytecode.ir_sozlesmesi
+yazdır sonuc.parser_ir_sozlesmesi
+yazdır sonuc.parser_ir_gecerli
+yazdır sonuc.ir_dogrulamasi.ok
+yazdır sonuc.ir_dogrulamasi.sozlesme
+ir_ozeti olsun derleyici.bytecode_ir_ozeti(sonuc)
+yazdır ir_ozeti.gecerli
+yazdır ir_ozeti.komut_sayisi
+yazdır ir_ozeti.sabit_sayisi
 yazdır sonuc.durum
 yazdır sonuc.hata_sayisi
 yazdır sonuc.bytecode.kod_boyutu
@@ -15,6 +25,7 @@ desteklenmeyen olsun derleyici.derle("tip Kutu:\n    yazdır \"a\"\n")
 yazdır desteklenmeyen.durum
 yazdır desteklenmeyen.hata_sayisi
 yazdır metin.icerir(desteklenmeyen.hata.mesaj, "Desteklenmeyen")
+yazdır desteklenmeyen.ir_dogrulamasi.ok
 
 eski_ir olsun {"ir_sozlesmesi": "orhun-parser-ir-v1", "ok": doğru}
 eski_ir_sonucu olsun derleyici.ir_derle(eski_ir)
@@ -36,3 +47,33 @@ gecersiz_lexer_ir["lexer_ir_gecerli"] = yanlış
 gecersiz_lexer_ir_sonucu olsun derleyici.ir_derle(gecersiz_lexer_ir)
 yazdır gecersiz_lexer_ir_sonucu.durum
 yazdır metin.icerir(gecersiz_lexer_ir_sonucu.hata.mesaj, "lexer")
+
+bozuk_bytecode_sayimi olsun derleyici.derle("yazdır 1\n")
+bozuk_bytecode_sayimi.bytecode["komut_sayisi"] = bozuk_bytecode_sayimi.bytecode.komut_sayisi + 1
+bozuk_bytecode_sayimi_dogrulamasi olsun derleyici.bytecode_ir_dogrula(bozuk_bytecode_sayimi)
+yazdır bozuk_bytecode_sayimi_dogrulamasi.ok
+yazdır metin.icerir(bozuk_bytecode_sayimi_dogrulamasi.hata, "komut_sayisi")
+
+eski_bytecode_ir olsun derleyici.derle("yazdır 1\n")
+eski_bytecode_ir.bytecode["ir_sozlesmesi"] = "orhun-bytecode-ir-v0"
+eski_bytecode_ir_dogrulamasi olsun derleyici.bytecode_ir_dogrula(eski_bytecode_ir)
+yazdır eski_bytecode_ir_dogrulamasi.ok
+yazdır metin.icerir(eski_bytecode_ir_dogrulamasi.hata, "sozlesmesi")
+
+bozuk_ip olsun derleyici.derle("yazdır 1\n")
+bozuk_ip.bytecode.komutlar[0]["ip"] = 1
+bozuk_ip_dogrulamasi olsun derleyici.bytecode_ir_dogrula(bozuk_ip)
+yazdır bozuk_ip_dogrulamasi.ok
+yazdır metin.icerir(bozuk_ip_dogrulamasi.hata, "IP")
+
+bozuk_sabit olsun derleyici.derle("yazdır 1\n")
+bozuk_sabit.bytecode.komutlar[0]["operand"] = 999
+bozuk_sabit_dogrulamasi olsun derleyici.bytecode_ir_dogrula(bozuk_sabit)
+yazdır bozuk_sabit_dogrulamasi.ok
+yazdır metin.icerir(bozuk_sabit_dogrulamasi.hata, "sabit")
+
+fazla_operand olsun derleyici.derle("yazdır 1\n")
+fazla_operand.bytecode.komutlar[1]["operand"] = 0
+fazla_operand_dogrulamasi olsun derleyici.bytecode_ir_dogrula(fazla_operand)
+yazdır fazla_operand_dogrulamasi.ok
+yazdır metin.icerir(fazla_operand_dogrulamasi.hata, "Operandsiz")

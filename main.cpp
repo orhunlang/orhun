@@ -1298,6 +1298,16 @@ BytecodeChunk bytecodeJsonCoz(const std::string &metin) {
       bytecodeDegeri == nullptr
           ? kokSozluk
           : jsonSozlukBekle(*bytecodeDegeri, "bytecode");
+  if (const yerlesik::JsonDeger *sozlesmeDegeri =
+          jsonAlanBul(bytecode, "ir_sozlesmesi")) {
+    const std::string sozlesme =
+        jsonMetinBekle(*sozlesmeDegeri, "bytecode.ir_sozlesmesi");
+    if (sozlesme != "orhun-bytecode-ir-v1") {
+      throw std::runtime_error(
+          "Gecersiz bytecode JSON: desteklenmeyen IR sozlesmesi '" +
+          sozlesme + "'.");
+    }
+  }
 
   BytecodeChunk chunk;
   const auto &sabitler = jsonListeBekle(
@@ -1404,6 +1414,67 @@ BytecodeChunk bytecodeJsonCoz(const std::string &metin) {
   return chunk;
 }
 
+const yerlesik::JsonDeger::Sozluk &orhunDerleyiciIrDogrula(
+    const yerlesik::JsonDeger &kok, std::string_view baglam) {
+  const auto &sonuc = jsonSozlukBekle(kok, baglam);
+  const std::string durum = jsonMetinBekle(
+      jsonAlanBekle(sonuc, "durum", baglam),
+      std::string(baglam) + ".durum");
+  if (durum == "fail") {
+    const auto &hata = jsonSozlukBekle(
+        jsonAlanBekle(sonuc, "hata", baglam),
+        std::string(baglam) + ".hata");
+    const std::string mesaj = jsonMetinBekle(
+        jsonAlanBekle(hata, "mesaj", std::string(baglam) + ".hata"),
+        std::string(baglam) + ".hata.mesaj");
+    throw std::runtime_error("Hata: Orhun derleyici: " + mesaj);
+  }
+  if (durum != "ok") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici sonucu bilinmeyen durum tasiyor: " + durum);
+  }
+
+  const std::string parserSozlesmesi = jsonMetinBekle(
+      jsonAlanBekle(sonuc, "parser_ir_sozlesmesi", baglam),
+      std::string(baglam) + ".parser_ir_sozlesmesi");
+  if (parserSozlesmesi != "orhun-parser-ir-v2") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici parser IR kokeni desteklenmiyor: " +
+        parserSozlesmesi);
+  }
+  if (!jsonMantikBekle(
+          jsonAlanBekle(sonuc, "parser_ir_gecerli", baglam),
+          std::string(baglam) + ".parser_ir_gecerli")) {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici gecerli parser IR kokeni tasimiyor.");
+  }
+
+  const auto &dogrulama = jsonSozlukBekle(
+      jsonAlanBekle(sonuc, "ir_dogrulamasi", baglam),
+      std::string(baglam) + ".ir_dogrulamasi");
+  const std::string dogrulamaSozlesmesi = jsonMetinBekle(
+      jsonAlanBekle(dogrulama, "sozlesme",
+                    std::string(baglam) + ".ir_dogrulamasi"),
+      std::string(baglam) + ".ir_dogrulamasi.sozlesme");
+  if (dogrulamaSozlesmesi != "orhun-bytecode-ir-v1") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici bytecode IR sozlesmesi desteklenmiyor: " +
+        dogrulamaSozlesmesi);
+  }
+  if (!jsonMantikBekle(
+          jsonAlanBekle(dogrulama, "ok",
+                        std::string(baglam) + ".ir_dogrulamasi"),
+          std::string(baglam) + ".ir_dogrulamasi.ok")) {
+    const std::string hata = jsonMetinBekle(
+        jsonAlanBekle(dogrulama, "hata",
+                      std::string(baglam) + ".ir_dogrulamasi"),
+        std::string(baglam) + ".ir_dogrulamasi.hata");
+    throw std::runtime_error(
+        "Hata: Orhun derleyici bytecode IR dogrulamasi basarisiz: " + hata);
+  }
+  return sonuc;
+}
+
 DerleyiciCliSonucu derleyiciCliCalistir(
     const BytecodeChunk &cliChunk,
     const std::vector<std::string> &programArgumanlari) {
@@ -1442,6 +1513,7 @@ DerleyiciCliSonucu derleyiciCliCalistir(
     throw std::runtime_error(
         "Hata: Orhun derleyici CLI basarisiz sonuc ile artifact istedi.");
   }
+  static_cast<void>(orhunDerleyiciIrDogrula(kok, "derleyici_cli"));
 
   const auto &istek =
       jsonSozlukBekle(*artifactIstegi, "derleyici_cli.artifact_istegi");
@@ -1820,7 +1892,8 @@ int komutBytecode(const std::string &dosyaYolu, bool jsonCikti) {
                 << "\"dosya\":\"" << jsonKacis(dosyaYolu) << "\","
                 << "\"durum\":\"ok\","
                 << "\"hata_sayisi\":0,"
-                << "\"bytecode\":{\"kod_boyutu\":" << chunk.kod.size() << ","
+                << "\"bytecode\":{\"ir_sozlesmesi\":\"orhun-bytecode-ir-v1\","
+                << "\"kod_boyutu\":" << chunk.kod.size() << ","
                 << "\"komut_sayisi\":" << komutSayisi << ","
                 << "\"sabit_sayisi\":" << chunk.sabitler.size() << ","
                 << "\"komutlar\":" << komutlar << ","
@@ -3843,7 +3916,14 @@ int komutPaketliDogrula(const std::string &paketliDosyaYolu) {
 }
 
 int komutBytecodeJsonCalistir(const std::string &jsonDosyaYolu) {
-  const BytecodeChunk chunk = bytecodeJsonCoz(dosyaOku(jsonDosyaYolu));
+  const std::string jsonMetni = dosyaOku(jsonDosyaYolu);
+  const yerlesik::JsonDeger kok = yerlesik::jsonCoz(jsonMetni);
+  const auto &kokSozluk = jsonSozlukBekle(kok, "bytecode_run");
+  if (jsonAlanBul(kokSozluk, "parser_ir_sozlesmesi") != nullptr ||
+      jsonAlanBul(kokSozluk, "ir_dogrulamasi") != nullptr) {
+    static_cast<void>(orhunDerleyiciIrDogrula(kok, "bytecode_run"));
+  }
+  const BytecodeChunk chunk = bytecodeJsonCoz(jsonMetni);
   VM vm;
   vm.calistir(chunk);
   return 0;
@@ -3952,6 +4032,8 @@ BytecodeChunk orhunDerleyiciyleDerle(const std::string &kaynakYolu) {
   }
   std::cout.rdbuf(eskiCout);
 
+  const yerlesik::JsonDeger kok = yerlesik::jsonCoz(yakalanan.str());
+  static_cast<void>(orhunDerleyiciIrDogrula(kok, "orhun_derleyici"));
   return bytecodeJsonCoz(yakalanan.str());
 }
 

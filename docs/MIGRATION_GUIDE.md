@@ -248,8 +248,12 @@
   kökenini taşır. Eski `orhun-parser-ir-v1` sonuçları yeni derleyiciye doğrudan
   verilemez; kaynak yeniden parse edilmelidir. `ozetle_tokenlar` da aynı lexer
   doğrulama sınırından geçer.
-- `orhun/derleyici.oh` 0.30.0, eksik, farklı veya yapısal olarak bozuk parser
+- `orhun/derleyici.oh` 0.31.0, eksik, farklı veya yapısal olarak bozuk parser
   IR girdisini komut alanlarını derlemeden önce açıklayıcı bir hatayla reddeder.
+  Başarılı bytecode artık `orhun-bytecode-ir-v1` sözleşmesini; derleyici sonucu
+  parser IR kökenini ve saf Orhun `ir_dogrulamasi` kaydını taşır.
+- İşlev içindeki `her ... içinde ...` kaynak, indeks ve döngü değişkenleri artık
+  Orhun-yazılı derleyicide C++ ile aynı yerel bildirim opcode'larını üretir.
 - Parser v2 lexer kökenini zorunlu kıldığı için elle üretilmiş parser IR
   kayıtlarına bu iki alanın eklenmesi gerekir.
 
@@ -275,6 +279,9 @@
 ## 15. Self-hosting: `orhun/derleyici.oh`
 - `orhun/derleyici.oh`, parser prototipinin yapısal IR çıktısını çözümlenmiş
   bytecode özetine dönüştüren ilk Orhun-yazılı derleyici prototipidir.
+- `bytecode_ir_dogrula`, opcode/operand/IP/sayım/sabit/işlev metadata yapısını
+  ve parser kökenini C++ köprüsünden önce saf Orhun koduyla denetler;
+  `bytecode_ir_ozeti` aynı sınırın kısa makine-okur özetini verir.
 - Desteklenen subset; temel ifadeler, koleksiyonlar, global/local değişkenler,
   dallanma/döngüler, işlevler, varsayılan parametreler ve ilk sabit katlama
   kurallarını içerir.

@@ -132,6 +132,27 @@ def main() -> int:
                 f"bootstrap output mismatch for {fixture}\n"
                 f"bridge={combined(bridge)!r}\ndirect={combined(direct)!r}",
             )
+            if fixture == FIXTURES[0]:
+                legacy_bytecode = dict(payload["bytecode"])
+                legacy_bytecode.pop("ir_sozlesmesi")
+                legacy_path = tmpdir / "legacy-contract-free.bytecode.json"
+                legacy_path.write_text(
+                    json.dumps(
+                        legacy_bytecode,
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    ),
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                legacy_run = run_cmd(
+                    [str(binary), "bytecode-run", str(legacy_path)], repo
+                )
+                require(
+                    legacy_run.returncode == 0
+                    and combined(legacy_run) == combined(direct),
+                    "legacy contract-free bytecode must remain executable",
+                )
             command = "bootstrap-vm" if fixture == FIXTURES[0] else "orhun-vm"
             single_command = run_cmd([str(binary), command, str(source)], repo)
             require(
@@ -142,6 +163,84 @@ def main() -> int:
                 combined(single_command) == combined(direct),
                 f"orhun-vm output mismatch for {fixture}\n"
                 f"orhun-vm={combined(single_command)!r}\ndirect={combined(direct)!r}",
+            )
+
+        invalid_contract_payload = json.loads(json.dumps(payload))
+        invalid_contract_payload["bytecode"]["ir_sozlesmesi"] = (
+            "orhun-bytecode-ir-v0"
+        )
+        invalid_contract = tmpdir / "invalid-contract.bytecode.json"
+        invalid_contract.write_text(
+            json.dumps(
+                invalid_contract_payload,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
+        contract_rejected = run_cmd(
+            [str(binary), "bytecode-run", str(invalid_contract)], repo
+        )
+        require(
+            contract_rejected.returncode != 0,
+            "unknown bytecode IR contract must be rejected",
+        )
+        require(
+            "desteklenmeyen IR sozlesmesi" in combined(contract_rejected),
+            "bytecode IR contract rejection must explain the incompatibility",
+        )
+
+        invalid_provenance_cases = []
+        invalid_parser_contract = json.loads(json.dumps(payload))
+        invalid_parser_contract["parser_ir_sozlesmesi"] = "orhun-parser-ir-v1"
+        invalid_provenance_cases.append(
+            (
+                "invalid-parser-contract",
+                invalid_parser_contract,
+                "parser IR kokeni desteklenmiyor",
+            )
+        )
+        invalid_parser_state = json.loads(json.dumps(payload))
+        invalid_parser_state["parser_ir_gecerli"] = False
+        invalid_provenance_cases.append(
+            (
+                "invalid-parser-state",
+                invalid_parser_state,
+                "gecerli parser IR kokeni tasimiyor",
+            )
+        )
+        invalid_validation = json.loads(json.dumps(payload))
+        invalid_validation["ir_dogrulamasi"]["ok"] = False
+        invalid_validation["ir_dogrulamasi"]["hata"] = "degistirilmis IR"
+        invalid_provenance_cases.append(
+            (
+                "invalid-validation",
+                invalid_validation,
+                "bytecode IR dogrulamasi basarisiz",
+            )
+        )
+        for name, invalid_payload, expected_error in invalid_provenance_cases:
+            invalid_path = tmpdir / f"{name}.bytecode.json"
+            invalid_path.write_text(
+                json.dumps(
+                    invalid_payload,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ),
+                encoding="utf-8",
+                newline="\n",
+            )
+            rejected = run_cmd(
+                [str(binary), "bytecode-run", str(invalid_path)], repo
+            )
+            require(
+                rejected.returncode != 0,
+                f"{name} must be rejected by the compiler bridge",
+            )
+            require(
+                expected_error in combined(rejected),
+                f"{name} rejection must explain the provenance violation",
             )
 
         invalid = tmpdir / "invalid.bytecode.json"
@@ -1227,9 +1326,10 @@ def main() -> int:
         "1 standalone compiler bundle verification, 1 Orhun-owned compiler CLI "
         "control plane, 4 Orhun-owned artifact plans, 2 bundled direct artifact "
         "compile modes, 1 staged artifact replacement, 1 staged artifact "
-        "rollback, 2 legacy v1 manifest compatibility checks, 1 renamed "
+        "rollback, 1 legacy contract-free bytecode, "
+        "2 legacy v1 manifest compatibility checks, 1 renamed "
         "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
-        "1 standalone rebuild manifest verification, 17 rejected invalid inputs)."
+        "1 standalone rebuild manifest verification, 21 rejected invalid inputs)."
     )
     return 0
 

@@ -78,7 +78,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Basarili ve hatali lexer ozetleri `orhun-lexer-ir-v1` kimligini tasir;
 token alanlari, konumlari, sayaclari ve son `DOSYA_SONU` kaydi saf Orhun
-yardimcisiyla dogrulanabilir. Parser prototipi 158 basarili AST
+yardimcisiyla dogrulanabilir. Parser prototipi 163 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 `orhun-lex` ve `orhun-parse`, Orhun-yazili on ucu surumlu ve dogrulanmis JSON
 olarak dogrudan CLI'dan calistirir; kaynak hatalarini yapisal IR'i bozmadan
@@ -157,9 +157,12 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.30.0; parser girdisinde
+hazirlandi. `orhun/derleyici.oh` 0.31.0; parser girdisinde
 `orhun-parser-ir-v2` sozlesmesini, lexer kokenini ve recursive yapi
 dogrulamasini zorunlu tutar;
+basarili bytecode nesnelerini `orhun-bytecode-ir-v1` sozlesmesiyle surumler ve
+parser kokeni, opcode/operand/IP, sabit, sayim, islev metadata ve program sonu
+yapisini C++ koprusunden once saf Orhun koduyla dogrular;
 sabitler, bicimlendirilmis metinler,
 global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
@@ -167,6 +170,8 @@ cagrilari, kisa devreli `ve`/`veya`, indeks/alan/guvenli alan okumalari,
 `eger/degilse`, basit `surece`
 ve `tekrarla` donguleri, `her ... icinde ...` liste donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
 sabit havuzu parity'si uretiyor.
+Islev-ici `her` dongulerinin kaynak, indeks ve iterasyon degiskenleri de C++
+derleyiciyle ayni yerel bildirim opcode'larini kullanir.
 Zorunlu/varsayilan parametreli islev tanimlari, yerel tanim/okuma/yazma, acik/ortuk donus ve
 `OP_ISLEV_OLUSTUR` local-ad metadata'si de ilk parity kapsaminda.
 Dogudan literal sayi/metin/mantik islemleri ve tekli islemler C++ ile ayni
@@ -200,7 +205,7 @@ Compiler prototype smoke su anda 98 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 146
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 151
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis

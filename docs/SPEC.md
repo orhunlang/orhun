@@ -826,6 +826,15 @@ error presence, and the current error message.
 It consumes the structural IR from `orhun/parser.oh` and emits the same decoded
 bytecode shape exposed by C++ `baytkod --json`.
 
+Successful decoded bytecode objects carry the versioned
+`ir_sozlesmesi: "orhun-bytecode-ir-v1"` boundary in both compiler paths. The
+Orhun-written compiler result also carries `parser_ir_sozlesmesi`,
+`parser_ir_gecerli`, and `ir_dogrulamasi`. Its pure-Orhun
+`bytecode_ir_dogrula` helper checks parser provenance, result state, opcode
+membership, U16 operands, exact instruction positions and widths, constants,
+function/local-name metadata, counts, and terminal `OP_BOS` / `OP_DON`
+instructions before the C++ bootstrap bridge consumes the result.
+
 The initial supported subset contains number, string, and boolean constants,
 global identifier reads and assignments, basic binary and unary operations,
 list and dictionary literals, simple global function calls, index access,
@@ -949,8 +958,9 @@ Stable channel defaults:
   `--obc-only` module-loading policies.
 - `baytkod --json` exposes the C++ compiler output as a decoded, machine-readable
   bytecode contract for self-hosting parity checks. Its successful payload
-  contains bytecode size, instruction and constant counts, decoded instructions,
-  source lines, operands, and primitive constants. `OP_ISLEV_OLUSTUR`
+  identifies the inner object as `orhun-bytecode-ir-v1` and contains bytecode
+  size, instruction and constant counts, decoded instructions, source lines,
+  operands, and primitive constants. `OP_ISLEV_OLUSTUR`
   instructions also expose function name/constant, arity, entry IP, local count,
   context argument count, and local-name mappings. Compiler errors return exit
   code `1`, set `durum` to `fail`, and leave `bytecode` as `null`. The English
@@ -958,10 +968,11 @@ Stable channel defaults:
   surface; it does not write build artifacts.
 - `baytkod-yurut <dosya.json>` validates and executes the decoded bytecode
   contract through the C++ VM. It accepts the full successful compiler payload
-  or its inner `bytecode` object. Unknown opcodes, missing fields, invalid
-  operand widths, mismatched instruction positions/counts, and malformed
-  function metadata are rejected before execution. `bytecode-run` is the
-  English compatibility alias.
+  or its inner `bytecode` object. A present bytecode IR contract must be
+  `orhun-bytecode-ir-v1`; contract-free legacy inputs remain readable. Unknown
+  opcodes, missing fields, invalid operand widths, mismatched instruction
+  positions/counts, and malformed function metadata are rejected before
+  execution. `bytecode-run` is the English compatibility alias.
 - `obc-dogrula <file.obc> [metadata.json]` validates the serialized OBC
   structure and its metadata contract without executing it. New
   `orhun-obc-v2` metadata records payload size, CRC32, and SHA-256.

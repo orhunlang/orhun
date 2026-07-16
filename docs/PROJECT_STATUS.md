@@ -78,6 +78,11 @@ These percentages are planning estimates, not promises.
   for parser, DSL, and LSP surfaces.
 - Exact Orhun/C++ compiler bytecode parity across all current C++-compileable
   runtime cases, guarded by a full-case sweep.
+- C++ and Orhun-written compiler outputs share the versioned
+  `orhun-bytecode-ir-v1` object contract. The Orhun compiler records validated
+  parser provenance and structurally validates instructions, operands, IPs,
+  constants, counts, function metadata, and program termination before the C++
+  bootstrap bridge accepts the result.
 - Strict decoded-bytecode execution bridge from the Orhun-written compiler to
   the C++ VM, guarded by end-to-end bootstrap tests.
 - Experimental single-command `orhun-vm` path through the Orhun-written
@@ -150,7 +155,8 @@ These percentages are planning estimates, not promises.
   reserving those words as keywords.
 - Beginner-friendly `her ... içinde ...` list loops with interpreter, VM,
   parser, Orhun-parser, and Orhun-compiler parity, including `kır` / `devam`
-  loop control.
+  loop control. Function-local loop temporaries and iteration variables use the
+  same declaration semantics in both compiler paths.
 - Multiline list and dictionary literals with optional trailing commas,
   including matching Orhun-written parser/compiler parity.
 - Multiline function, method, and constructor calls with optional trailing

@@ -82,6 +82,12 @@ yazdır parser.ir_dogrula(parse_sonuc)
 yazdır parser.ir_ozeti(parse_sonuc)
 yazdır parser.ir_indeksi(parse_sonuc)
 yazdır json.yaz(parser.hata_tanilari(parse_sonuc))
+
+derleyici olsun dahil_et "orhun/derleyici.oh"
+derleme_sonucu olsun derleyici.derle("yazdır 42\n")
+yazdır derleme_sonucu.bytecode.ir_sozlesmesi
+yazdır derleyici.bytecode_ir_dogrula(derleme_sonucu)
+yazdır derleyici.bytecode_ir_ozeti(derleme_sonucu)
 ```
 
 Module lookup checks the requested path first, then searches the standard

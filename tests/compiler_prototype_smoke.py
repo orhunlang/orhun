@@ -6,6 +6,10 @@ import tempfile
 from pathlib import Path
 
 
+BYTECODE_IR_CONTRACT = "orhun-bytecode-ir-v1"
+PARSER_IR_CONTRACT = "orhun-parser-ir-v2"
+
+
 PARITY_CASES = {
     "number": "yazdır 5\n",
     "string": 'yazdır "merhaba"\n',
@@ -305,7 +309,41 @@ def cxx_bytecode(binary: Path, repo: Path, source: Path) -> dict:
     require(payload.get("durum") == "ok", f"C++ payload failed for {source.name}")
     bytecode = payload.get("bytecode")
     require(isinstance(bytecode, dict), f"C++ bytecode missing for {source.name}")
+    require(
+        bytecode.get("ir_sozlesmesi") == BYTECODE_IR_CONTRACT,
+        f"C++ bytecode contract mismatch for {source.name}",
+    )
     return bytecode
+
+
+def validate_prototype_contract(payload: dict, source: Path) -> None:
+    require(
+        payload.get("parser_ir_sozlesmesi") == PARSER_IR_CONTRACT,
+        f"Orhun compiler parser provenance mismatch for {source.name}",
+    )
+    require(
+        isinstance(payload.get("parser_ir_gecerli"), bool),
+        f"Orhun compiler parser validity missing for {source.name}",
+    )
+    validation = payload.get("ir_dogrulamasi")
+    require(
+        isinstance(validation, dict)
+        and validation.get("sozlesme") == BYTECODE_IR_CONTRACT
+        and validation.get("ok") is True
+        and validation.get("hata") == "",
+        f"Orhun compiler IR validation failed for {source.name}: {validation}",
+    )
+    if payload.get("durum") == "ok":
+        require(
+            payload.get("parser_ir_gecerli") is True,
+            f"Successful compiler result needs valid parser IR for {source.name}",
+        )
+        bytecode = payload.get("bytecode")
+        require(
+            isinstance(bytecode, dict)
+            and bytecode.get("ir_sozlesmesi") == BYTECODE_IR_CONTRACT,
+            f"Orhun bytecode contract mismatch for {source.name}",
+        )
 
 
 def prototype_payload(binary: Path, repo: Path, source: Path, tmpdir: Path) -> dict:
@@ -324,7 +362,9 @@ def prototype_payload(binary: Path, repo: Path, source: Path, tmpdir: Path) -> d
         f"Orhun compiler prototype failed for {source.name}\n"
         f"STDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}",
     )
-    return parse_last_json(proc.stdout)
+    payload = parse_last_json(proc.stdout)
+    validate_prototype_contract(payload, source)
+    return payload
 
 
 def main() -> int:

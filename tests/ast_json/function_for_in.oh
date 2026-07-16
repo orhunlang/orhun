@@ -1,0 +1,7 @@
+işlev topla(sayilar):
+    toplam olsun 0
+    her sayi içinde sayilar:
+        toplam = toplam + sayi
+    döndür toplam
+
+yazdır topla([1, 2, 3])

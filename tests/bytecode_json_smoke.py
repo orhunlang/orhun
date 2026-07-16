@@ -12,6 +12,7 @@ SUCCESS_FIXTURES = (
 )
 ERROR_FIXTURE = Path("tests/ast_json/error_missing_ise.oh")
 CONSTANT_KINDS = {"bos", "sayi", "metin", "mantik"}
+BYTECODE_IR_CONTRACT = "orhun-bytecode-ir-v1"
 
 
 def require(condition: bool, message: str) -> None:
@@ -45,6 +46,10 @@ def validate_success(payload: dict, source: Path) -> None:
 
     bytecode = payload.get("bytecode")
     require(isinstance(bytecode, dict), f"{source}: bytecode object missing")
+    require(
+        bytecode.get("ir_sozlesmesi") == BYTECODE_IR_CONTRACT,
+        f"{source}: bytecode IR contract mismatch",
+    )
     commands = bytecode.get("komutlar")
     constants = bytecode.get("sabitler")
     require(isinstance(commands, list) and commands, f"{source}: commands missing")

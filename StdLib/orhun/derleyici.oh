@@ -6,8 +6,31 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.30.0"
+surum olsun "0.31.0"
 desteklenen_ir_sozlesmesi olsun parser.ir_sozlesmesi
+bytecode_ir_sozlesmesi olsun "orhun-bytecode-ir-v1"
+
+operandli_opcode_adlari olsun [
+    "OP_SABIT", "OP_GET_LOCAL", "OP_SET_LOCAL", "OP_DEFINE_LOCAL",
+    "OP_GET_GLOBAL", "OP_SET_GLOBAL", "OP_ALAN_AL", "OP_GUVENLI_ALAN_AL",
+    "OP_ALAN_YAZ", "OP_METOD_YAZ", "OP_LISTE_OLUSTUR",
+    "OP_SOZLUK_OLUSTUR", "OP_CAGIR", "OP_SINIF", "OP_ATLA",
+    "OP_ATLA_EGER_YANLIS", "OP_DONGU", "OP_TRY_BASLA"
+]
+
+operandsiz_opcode_adlari olsun [
+    "OP_BOS", "OP_DOGRU", "OP_YANLIS", "OP_POP", "OP_KOPYA",
+    "OP_INDEKS_AL", "OP_INDEKS_YAZ", "OP_UZUNLUK", "OP_LISTE_PUSH",
+    "OP_LISTE_REZERVE", "OP_MIRAS_AL", "OP_TOPLA", "OP_CIKAR",
+    "OP_CARP", "OP_BOL", "OP_MOD", "OP_NEGATE", "OP_NOT", "OP_ESIT",
+    "OP_BUYUK", "OP_KUCUK", "OP_VE", "OP_VEYA", "OP_YAZDIR",
+    "OP_TRY_BITIR", "OP_DON", "OP_NOP", "OP_LISTE_DOGRULA"
+]
+
+metin_sabit_operandli_opcode_adlari olsun [
+    "OP_GET_GLOBAL", "OP_SET_GLOBAL", "OP_ALAN_AL", "OP_GUVENLI_ALAN_AL",
+    "OP_ALAN_YAZ", "OP_METOD_YAZ", "OP_SINIF"
+]
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -819,14 +842,14 @@ işlev her_dongu_derle(durum, komut):
     indeks_ad olsun gecici_ad_uret(durum, "__vm_her_indeks")
 
     ifade_derle(durum, komut.kaynak_ozeti)
-    ad_zorunlu_set_komutu_yaz(durum, kaynak_ad, komut.satir)
+    ad_atama_komutu_yaz(durum, kaynak_ad, komut.satir, doğru)
     komut_ekle(durum, "OP_POP", komut.satir)
 
     cagrilan_ad_yukle(durum, kaynak_ad, komut.satir)
     komut_ekle(durum, "OP_LISTE_DOGRULA", komut.satir)
 
     sabit_deger_yaz(durum, "sayi", 0, komut.satir)
-    ad_zorunlu_set_komutu_yaz(durum, indeks_ad, komut.satir)
+    ad_atama_komutu_yaz(durum, indeks_ad, komut.satir, doğru)
     komut_ekle(durum, "OP_POP", komut.satir)
 
     dongu_baslangici olsun durum.ip
@@ -842,7 +865,7 @@ işlev her_dongu_derle(durum, komut):
     cagrilan_ad_yukle(durum, kaynak_ad, komut.satir)
     cagrilan_ad_yukle(durum, indeks_ad, komut.satir)
     komut_ekle(durum, "OP_INDEKS_AL", komut.satir)
-    ad_zorunlu_set_komutu_yaz(durum, komut.degisken, komut.satir)
+    ad_atama_komutu_yaz(durum, komut.degisken, komut.satir, doğru)
     komut_ekle(durum, "OP_POP", komut.satir)
 
     eğer uzunluk(komut.bloklar) büyük 0 ise:
@@ -1142,25 +1165,254 @@ işlev blok_derle(durum, blok):
         i olsun i + 1
     döndür 0
 
-işlev basarisiz(mesaj):
-    döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
+işlev metin_listede_mi(liste, aranan):
+    her oge içinde liste:
+        eğer oge eşit aranan ise:
+            döndür doğru
+    döndür yanlış
+
+işlev negatif_olmayan_tam_sayi_mi(deger):
+    deneme:
+        döndür deger büyük -1 ve tam(deger) eşit deger
+    yakala hata:
+        döndür yanlış
+
+işlev u16_mi(deger):
+    döndür negatif_olmayan_tam_sayi_mi(deger) ve deger küçük 65536
+
+işlev opcode_biliniyor_mu(op):
+    eğer op eşit "OP_ISLEV_OLUSTUR" ise:
+        döndür doğru
+    eğer metin_listede_mi(operandli_opcode_adlari, op) ise:
+        döndür doğru
+    döndür metin_listede_mi(operandsiz_opcode_adlari, op)
+
+işlev opcode_operandli_mi(op):
+    döndür metin_listede_mi(operandli_opcode_adlari, op)
+
+işlev bytecode_ir_dogrulama_sonucu(ok, hata):
+    döndür {"ok": ok, "hata": hata, "sozlesme": bytecode_ir_sozlesmesi}
+
+işlev bytecode_sabit_hatasi(sabit):
+    deneme:
+        eğer sabit.tur eşit "bos" ise:
+            döndür ""
+        eğer sabit.tur eşit "sayi" ise:
+            sayi_dogrulamasi olsun sabit.deger - 0
+            döndür ""
+        eğer sabit.tur eşit "metin" ise:
+            uzunluk(sabit.deger)
+            döndür ""
+        eğer sabit.tur eşit "mantik" ise:
+            eğer sabit.deger eşit_değil doğru ve sabit.deger eşit_değil yanlış ise:
+                döndür "Bytecode mantik sabiti mantik olmali."
+            döndür ""
+        döndür "Bilinmeyen bytecode sabit turu: " + sabit.tur
+    yakala hata:
+        döndür "Bytecode sabit alanlari eksik veya gecersiz."
+
+işlev bytecode_metin_sabiti_hatasi(bytecode, indeks, ad):
+    eğer değil u16_mi(indeks) veya indeks büyük uzunluk(bytecode.sabitler) - 1 ise:
+        döndür ad + " sabit indeksi gecersiz."
+    sabit olsun bytecode.sabitler[indeks]
+    eğer sabit.tur eşit_değil "metin" ise:
+        döndür ad + " metin sabitine isaret etmeli."
+    deneme:
+        eğer uzunluk(sabit.deger) eşit 0 ise:
+            döndür ad + " metin sabiti bos olamaz."
+    yakala hata:
+        döndür ad + " metin sabiti gecersiz."
+    döndür ""
+
+işlev bytecode_islev_hatasi(bytecode, islev):
+    deneme:
+        sayisal_alanlar olsun [islev.ad_sabit, islev.min_arity, islev.max_arity, islev.giris, islev.local_sayisi, islev.baglam_arg]
+        her sayisal_alan içinde sayisal_alanlar:
+            eğer değil u16_mi(sayisal_alan) ise:
+                döndür "Bytecode islev metadata sayilari U16 olmali."
+        eğer islev.min_arity büyük islev.max_arity ise:
+            döndür "Bytecode islev min_arity degeri max_arity degerini asamaz."
+        eğer islev.giris büyük bytecode.kod_boyutu - 1 ise:
+            döndür "Bytecode islev giris konumu kod sinirini asiyor."
+        eğer islev.local_sayisi eşit_değil uzunluk(islev.local_adlari) ise:
+            döndür "Bytecode islev local_sayisi ile local_adlari uzunlugu uyusmuyor."
+        ad_hatasi olsun bytecode_metin_sabiti_hatasi(bytecode, islev.ad_sabit, "Islev adi")
+        eğer uzunluk(ad_hatasi) büyük 0 ise:
+            döndür ad_hatasi
+        eğer bytecode.sabitler[islev.ad_sabit].deger eşit_değil islev.ad ise:
+            döndür "Bytecode islev adi metadata ve sabit havuzunda uyusmuyor."
+        her yerel içinde islev.local_adlari:
+            eğer değil u16_mi(yerel.indeks) veya değil u16_mi(yerel.ad_sabit) ise:
+                döndür "Bytecode yerel ad metadata sayilari U16 olmali."
+            eğer yerel.indeks büyük islev.local_sayisi - 1 ise:
+                döndür "Bytecode yerel ad indeksi local_sayisi sinirini asiyor."
+            yerel_hatasi olsun bytecode_metin_sabiti_hatasi(bytecode, yerel.ad_sabit, "Yerel adi")
+            eğer uzunluk(yerel_hatasi) büyük 0 ise:
+                döndür yerel_hatasi
+            eğer bytecode.sabitler[yerel.ad_sabit].deger eşit_değil yerel.ad ise:
+                döndür "Bytecode yerel adi metadata ve sabit havuzunda uyusmuyor."
+    yakala hata:
+        döndür "Bytecode islev metadata alanlari eksik veya gecersiz."
+    döndür ""
+
+işlev bytecode_komut_hatasi(bytecode, komut, beklenen_ip):
+    deneme:
+        eğer değil negatif_olmayan_tam_sayi_mi(komut.ip) veya komut.ip eşit_değil beklenen_ip ise:
+            döndür "Bytecode komut IP sirasi gecersiz."
+        eğer değil negatif_olmayan_tam_sayi_mi(komut.satir) veya komut.satir küçük 1 ise:
+            döndür "Bytecode komut satiri en az 1 olmali."
+        eğer uzunluk(komut.op) eşit 0 veya değil opcode_biliniyor_mu(komut.op) ise:
+            döndür "Bilinmeyen bytecode opcode: " + komut.op
+        operand_var olsun yanlış
+        deneme:
+            operand_dogrulamasi olsun komut.operand
+            operand_var olsun doğru
+        yakala hata:
+            operand_var olsun yanlış
+        eğer opcode_operandli_mi(komut.op) ise:
+            eğer değil operand_var veya değil u16_mi(komut.operand) ise:
+                döndür "Bytecode komut operandi U16 olmali."
+            eğer komut.op eşit "OP_SABIT" ve komut.operand büyük uzunluk(bytecode.sabitler) - 1 ise:
+                döndür "Bytecode sabit operandi sabit havuzu sinirini asiyor."
+            eğer metin_listede_mi(metin_sabit_operandli_opcode_adlari, komut.op) ise:
+                döndür bytecode_metin_sabiti_hatasi(bytecode, komut.operand, "Opcode " + komut.op)
+        değilse:
+            eğer operand_var ise:
+                döndür "Operandsiz bytecode opcode operand tasiyamaz."
+        eğer komut.op eşit "OP_ISLEV_OLUSTUR" ise:
+            döndür bytecode_islev_hatasi(bytecode, komut.islev)
+    yakala hata:
+        döndür "Bytecode komut alanlari eksik veya gecersiz."
+    döndür ""
+
+işlev bytecode_komut_uzunlugu(komut):
+    eğer komut.op eşit "OP_ISLEV_OLUSTUR" ise:
+        döndür 15 + uzunluk(komut.islev.local_adlari) * 4
+    eğer opcode_operandli_mi(komut.op) ise:
+        döndür 3
+    döndür 1
+
+işlev bytecode_yapisi_hatasi(bytecode):
+    deneme:
+        eğer bytecode.ir_sozlesmesi eşit_değil bytecode_ir_sozlesmesi ise:
+            döndür "Desteklenmeyen bytecode ara temsil sozlesmesi; beklenen: " + bytecode_ir_sozlesmesi
+        sayimlar olsun [bytecode.kod_boyutu, bytecode.komut_sayisi, bytecode.sabit_sayisi]
+        her sayim içinde sayimlar:
+            eğer değil negatif_olmayan_tam_sayi_mi(sayim) ise:
+                döndür "Bytecode sayim alanlari negatif olmayan tam sayi olmali."
+        eğer bytecode.komut_sayisi eşit_değil uzunluk(bytecode.komutlar) ise:
+            döndür "Bytecode komut_sayisi ile komutlar uzunlugu uyusmuyor."
+        eğer bytecode.sabit_sayisi eşit_değil uzunluk(bytecode.sabitler) ise:
+            döndür "Bytecode sabit_sayisi ile sabitler uzunlugu uyusmuyor."
+        her sabit içinde bytecode.sabitler:
+            sabit_hatasi olsun bytecode_sabit_hatasi(sabit)
+            eğer uzunluk(sabit_hatasi) büyük 0 ise:
+                döndür sabit_hatasi
+        beklenen_ip olsun 0
+        her komut içinde bytecode.komutlar:
+            komut_hatasi olsun bytecode_komut_hatasi(bytecode, komut, beklenen_ip)
+            eğer uzunluk(komut_hatasi) büyük 0 ise:
+                döndür komut_hatasi
+            beklenen_ip olsun beklenen_ip + bytecode_komut_uzunlugu(komut)
+        eğer bytecode.kod_boyutu eşit_değil beklenen_ip ise:
+            döndür "Bytecode kod_boyutu komut uzunluklariyla uyusmuyor."
+        eğer bytecode.komut_sayisi küçük 2 ise:
+            döndür "Bytecode program sonlandirma komutlarini icermiyor."
+        sondan_ikinci_op olsun bytecode.komutlar[bytecode.komut_sayisi - 2].op
+        son_op olsun bytecode.komutlar[bytecode.komut_sayisi - 1].op
+        eğer sondan_ikinci_op eşit_değil "OP_BOS" veya son_op eşit_değil "OP_DON" ise:
+            döndür "Bytecode programi OP_BOS ve OP_DON ile bitmeli."
+    yakala hata:
+        döndür "Bytecode IR alanlari eksik veya gecersiz."
+    döndür ""
+
+işlev bytecode_ir_dogrula(sonuc):
+    deneme:
+        eğer sonuc.parser_ir_sozlesmesi eşit_değil desteklenen_ir_sozlesmesi ise:
+            döndür bytecode_ir_dogrulama_sonucu(yanlış, "Derleyici sonucu parser IR sozlesmesiyle uyusmuyor.")
+        eğer sonuc.parser_ir_gecerli eşit_değil doğru ve sonuc.parser_ir_gecerli eşit_değil yanlış ise:
+            döndür bytecode_ir_dogrulama_sonucu(yanlış, "Derleyici sonucu parser_ir_gecerli alani mantik olmali.")
+        eğer sonuc.durum eşit "fail" ise:
+            eğer sonuc.hata_sayisi küçük 1 veya uzunluk(sonuc.hata.mesaj) eşit 0 ise:
+                döndür bytecode_ir_dogrulama_sonucu(yanlış, "Basarisiz derleyici sonucu gecerli hata bilgisi tasimali.")
+            döndür bytecode_ir_dogrulama_sonucu(doğru, "")
+        eğer sonuc.durum eşit_değil "ok" ise:
+            döndür bytecode_ir_dogrulama_sonucu(yanlış, "Derleyici sonucu durum alani 'ok' veya 'fail' olmali.")
+        eğer sonuc.hata_sayisi eşit_değil 0 ise:
+            döndür bytecode_ir_dogrulama_sonucu(yanlış, "Basarili derleyici sonucu hata_sayisi 0 olmali.")
+        eğer değil sonuc.parser_ir_gecerli ise:
+            döndür bytecode_ir_dogrulama_sonucu(yanlış, "Basarili derleyici sonucu gecerli parser IR gerektirir.")
+        yapi_hatasi olsun bytecode_yapisi_hatasi(sonuc.bytecode)
+        eğer uzunluk(yapi_hatasi) büyük 0 ise:
+            döndür bytecode_ir_dogrulama_sonucu(yanlış, yapi_hatasi)
+    yakala hata:
+        döndür bytecode_ir_dogrulama_sonucu(yanlış, "Derleyici sonuc alanlari eksik veya gecersiz.")
+    döndür bytecode_ir_dogrulama_sonucu(doğru, "")
+
+işlev bytecode_ir_gecerli_mi(sonuc):
+    döndür bytecode_ir_dogrula(sonuc).ok
+
+işlev bytecode_ir_ozeti(sonuc):
+    dogrulama olsun bytecode_ir_dogrula(sonuc)
+    komut_sayisi olsun 0
+    sabit_sayisi olsun 0
+    eğer sonuc.durum eşit "ok" ise:
+        komut_sayisi olsun sonuc.bytecode.komut_sayisi
+        sabit_sayisi olsun sonuc.bytecode.sabit_sayisi
+    döndür {
+        "sozlesme": bytecode_ir_sozlesmesi,
+        "parser_sozlesmesi": sonuc.parser_ir_sozlesmesi,
+        "parser_gecerli": sonuc.parser_ir_gecerli,
+        "gecerli": dogrulama.ok,
+        "durum": sonuc.durum,
+        "komut_sayisi": komut_sayisi,
+        "sabit_sayisi": sabit_sayisi
+    }
+
+işlev dogrulama_ekle(sonuc):
+    sonuc["ir_dogrulamasi"] = bytecode_ir_dogrula(sonuc)
+    döndür sonuc
+
+işlev basarisiz(mesaj, parser_ir_gecerli):
+    döndür {
+        "parser_ir_sozlesmesi": desteklenen_ir_sozlesmesi,
+        "parser_ir_gecerli": parser_ir_gecerli,
+        "durum": "fail",
+        "hata_sayisi": 1,
+        "hata": {"mesaj": mesaj},
+        "bytecode": 0
+    }
 
 işlev ir_derle(ir):
     dogrulama olsun parser.ir_dogrula(ir)
     eğer değil dogrulama.ok ise:
-        döndür basarisiz("Parser IR dogrulamasi basarisiz: " + dogrulama.hata)
+        döndür dogrulama_ekle(basarisiz("Parser IR dogrulamasi basarisiz: " + dogrulama.hata, yanlış))
     eğer değil ir.ok ise:
-        döndür basarisiz(ir.hata.mesaj)
+        döndür dogrulama_ekle(basarisiz(ir.hata.mesaj, doğru))
 
     durum olsun durum_yeni()
     blok_derle(durum, ir)
     eğer uzunluk(durum.hata) büyük 0 ise:
-        döndür basarisiz(durum.hata)
+        döndür dogrulama_ekle(basarisiz(durum.hata, doğru))
 
     komut_ekle(durum, "OP_BOS", ir.satir)
     komut_ekle(durum, "OP_DON", ir.satir)
-    bytecode olsun {"kod_boyutu": durum.ip, "komut_sayisi": uzunluk(durum.komutlar), "sabit_sayisi": uzunluk(durum.sabitler), "komutlar": durum.komutlar, "sabitler": durum.sabitler}
-    döndür {"durum": "ok", "hata_sayisi": 0, "bytecode": bytecode}
+    bytecode olsun {
+        "ir_sozlesmesi": bytecode_ir_sozlesmesi,
+        "kod_boyutu": durum.ip,
+        "komut_sayisi": uzunluk(durum.komutlar),
+        "sabit_sayisi": uzunluk(durum.sabitler),
+        "komutlar": durum.komutlar,
+        "sabitler": durum.sabitler
+    }
+    sonuc olsun {
+        "parser_ir_sozlesmesi": desteklenen_ir_sozlesmesi,
+        "parser_ir_gecerli": doğru,
+        "durum": "ok",
+        "hata_sayisi": 0,
+        "bytecode": bytecode
+    }
+    döndür dogrulama_ekle(sonuc)
 
 işlev derle(kaynak):
     döndür ir_derle(parser.ozetle(kaynak))
