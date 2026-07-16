@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -163,6 +164,15 @@ private:
   std::unordered_map<std::string, const SinifTanimNode *> sinifTablosu_;
   std::unordered_map<std::string, GomuluIslev> gomuluIslevler_;
   std::vector<std::unique_ptr<ProgramNode>> yukluModuller_;
+  struct ModulBaglami {
+    OrhunDegeri::SozlukTipi degerler;
+    std::unordered_map<std::string, std::string> islevAliaslari;
+  };
+  using ModulBaglamPtr = std::shared_ptr<ModulBaglami>;
+  std::unordered_map<std::string, OrhunDegeri> modulOnbellegi_;
+  std::unordered_map<std::string, ModulBaglamPtr> modulIslevBaglamlari_;
+  std::vector<ModulBaglamPtr> aktifModulBaglamlari_;
+  std::unordered_set<std::string> yuklenenModuller_;
   std::unordered_map<int, std::shared_ptr<runtime::DynamicLibrary>>
       ffiKutuphaneleri_;
   std::unordered_map<std::string, int> ffiKutuphaneKimlikleri_;

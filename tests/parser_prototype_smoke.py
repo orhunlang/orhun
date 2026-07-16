@@ -637,9 +637,10 @@ def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
         source_path = source_file.resolve().as_posix()
         driver.write_text(
             'parser olsun dahil_et "orhun/parser.oh"\n'
+            'lexer olsun dahil_et "orhun/lexer.oh"\n'
             f'kaynak olsun dosya.oku("{orhun_string(source_path)}")\n'
             "sonuc olsun parser.ozetle(kaynak)\n"
-            'sonuc["dogrulama_token_sayisi"] = uzunluk(parser.lexer.tokenlestir(kaynak))\n'
+            'sonuc["dogrulama_token_sayisi"] = uzunluk(lexer.tokenlestir(kaynak))\n'
             'sonuc["ir_dogrulamasi"] = parser.ir_dogrula(sonuc)\n'
             "eğer sonuc.ok ise:\n"
             '    sonuc["tum_ifade_satir_araliklari"] = parser.tum_ifade_satir_araliklari(sonuc)\n'

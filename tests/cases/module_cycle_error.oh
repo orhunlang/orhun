@@ -1,0 +1,8 @@
+deneme:
+    a olsun dahil_et "tests/cases/module_cycle_a_lib.oh"
+    yazdır 0
+yakala hata:
+    yazdır metin.icerir(hata, "döngüsel modül")
+
+m olsun dahil_et "tests/cases/module_callable_lib.oh"
+yazdır m.topla(2, 3)

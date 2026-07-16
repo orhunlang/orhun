@@ -3940,6 +3940,18 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
                    orhunDahilAramaYollariMetni());
   }
 
+  const std::string onbellekAnahtari =
+      orhunDahilOnbellekAnahtari(*cozulmusYol);
+  const auto onbellekte = modulOnbellegi_.find(onbellekAnahtari);
+  if (onbellekte != modulOnbellegi_.end()) {
+    return onbellekte->second;
+  }
+  if (yuklenenModuller_.find(onbellekAnahtari) != yuklenenModuller_.end()) {
+    hataFirlat(dugum->satir(),
+               "dahil_et: döngüsel modül bağımlılığı algılandı: " +
+                   istenenYol);
+  }
+
   std::ifstream dosya(*cozulmusYol, std::ios::binary);
   if (!dosya.is_open()) {
     hataFirlat(dugum->satir(),
@@ -3949,6 +3961,7 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
   std::ostringstream tampon;
   tampon << dosya.rdbuf();
 
+  yuklenenModuller_.insert(onbellekAnahtari);
   try {
     // Modül içeriğini parse et.
     Lexer lexer(tampon.str());
@@ -3964,7 +3977,17 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
     const DegiskenTablosu globalOncesi = globalHafiza_;
     const auto islevOncesi = islevTablosu_;
 
-    calistir(programHam);
+    auto yerelKapsamOncesi = std::move(yerelKapsamYigini_);
+    auto aktifModulOncesi = std::move(aktifModulBaglamlari_);
+    try {
+      calistir(programHam);
+    } catch (...) {
+      yerelKapsamYigini_ = std::move(yerelKapsamOncesi);
+      aktifModulBaglamlari_ = std::move(aktifModulOncesi);
+      throw;
+    }
+    yerelKapsamYigini_ = std::move(yerelKapsamOncesi);
+    aktifModulBaglamlari_ = std::move(aktifModulOncesi);
 
     // Modülde üretilen değerleri sözlükte topla.
     OrhunDegeri::SozlukVeri modulSozlugu;
@@ -3981,9 +4004,15 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
         "__modul__" + std::to_string(++modulSayaci) + "__";
 
     std::vector<std::pair<std::string, const IslevTanimNode *>> aliaslar;
+    std::vector<std::pair<std::string, const IslevTanimNode *>>
+        icModulAliaslari;
     for (const auto &[islevAdi, islevDugumu] : islevTablosu_) {
       const auto onceki = islevOncesi.find(islevAdi);
       if (onceki != islevOncesi.end() && onceki->second == islevDugumu) {
+        continue;
+      }
+      if (islevAdi.rfind("__modul__", 0) == 0) {
+        icModulAliaslari.push_back({islevAdi, islevDugumu});
         continue;
       }
       const std::string alias = modulOnEki + islevAdi;
@@ -3994,12 +4023,27 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
     // Ortamı geri al ve yalnızca modül alias işlevleri sistemde bırak.
     globalHafiza_ = globalOncesi;
     islevTablosu_ = islevOncesi;
+    for (const auto &[alias, islevDugumu] : icModulAliaslari) {
+      islevTablosu_[alias] = islevDugumu;
+    }
     for (const auto &[alias, islevDugumu] : aliaslar) {
       islevTablosu_[alias] = islevDugumu;
     }
 
-    return OrhunDegeri(std::move(modulSozlugu));
+    OrhunDegeri modulDegeri(std::move(modulSozlugu));
+    auto baglam = std::make_shared<ModulBaglami>();
+    baglam->degerler = std::get<OrhunDegeri::SozlukTipi>(modulDegeri.veri);
+    for (const auto &[alias, islevDugumu] : aliaslar) {
+      (void)islevDugumu;
+      const std::string yerelAd = alias.substr(modulOnEki.size());
+      baglam->islevAliaslari[yerelAd] = alias;
+      modulIslevBaglamlari_[alias] = baglam;
+    }
+    modulOnbellegi_[onbellekAnahtari] = modulDegeri;
+    yuklenenModuller_.erase(onbellekAnahtari);
+    return modulDegeri;
   } catch (const std::exception &ex) {
+    yuklenenModuller_.erase(onbellekAnahtari);
     hataFirlat(dugum->satir(),
                "dahil_et içinde hata: " + std::string(ex.what()));
   }
@@ -4757,6 +4801,16 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode *dugum,
     return ustIslevCagir(cagriAdi.substr(4), argumanDegerleri, dugum->satir());
   }
 
+  if (cagriAdi.find('.') == std::string::npos &&
+      !aktifModulBaglamlari_.empty()) {
+    const auto &baglam = aktifModulBaglamlari_.back();
+    const auto modulIslevi = baglam->islevAliaslari.find(cagriAdi);
+    if (modulIslevi != baglam->islevAliaslari.end()) {
+      return islevCagirAdaGore(modulIslevi->second, argumanDegerleri,
+                               dugum->satir(), dondurZorunlu);
+    }
+  }
+
   if (islevTablosu_.find(cagriAdi) != islevTablosu_.end() ||
       anonimIslevTablosu_.find(cagriAdi) != anonimIslevTablosu_.end() ||
       gomuluIslevler_.find(cagriAdi) != gomuluIslevler_.end()) {
@@ -4900,8 +4954,23 @@ Interpreter::islevCagirAdaGore(const std::string &ad,
 
   const auto yerelIslev = islevTablosu_.find(ad);
   if (yerelIslev != islevTablosu_.end()) {
-    return kullaniciIslevCalistir(yerelIslev->second, argumanlar, satir,
-                                  nullptr, nullptr, dondurZorunlu);
+    const auto modulBaglami = modulIslevBaglamlari_.find(ad);
+    if (modulBaglami == modulIslevBaglamlari_.end()) {
+      return kullaniciIslevCalistir(yerelIslev->second, argumanlar, satir,
+                                    nullptr, nullptr, dondurZorunlu);
+    }
+
+    aktifModulBaglamlari_.push_back(modulBaglami->second);
+    try {
+      OrhunDegeri sonuc = kullaniciIslevCalistir(
+          yerelIslev->second, argumanlar, satir, nullptr, nullptr,
+          dondurZorunlu);
+      aktifModulBaglamlari_.pop_back();
+      return sonuc;
+    } catch (...) {
+      aktifModulBaglamlari_.pop_back();
+      throw;
+    }
   }
 
   const auto anonimIslev = anonimIslevTablosu_.find(ad);
@@ -5421,6 +5490,18 @@ void Interpreter::atamaHedefiYaz(const std::string &ad,
     }
   }
 
+  for (auto it = aktifModulBaglamlari_.rbegin();
+       it != aktifModulBaglamlari_.rend(); ++it) {
+    if (!*it || !(*it)->degerler) {
+      continue;
+    }
+    const auto bulunan = (*it)->degerler->find(ad);
+    if (bulunan != (*it)->degerler->end()) {
+      bulunan->second = deger;
+      return;
+    }
+  }
+
   globalHafiza_[ad] = deger;
 }
 
@@ -5437,6 +5518,17 @@ OrhunDegeri &Interpreter::degiskenBulYazilabilir(const std::string &ad,
     }
   }
 
+  for (auto it = aktifModulBaglamlari_.rbegin();
+       it != aktifModulBaglamlari_.rend(); ++it) {
+    if (!*it || !(*it)->degerler) {
+      continue;
+    }
+    const auto bulunan = (*it)->degerler->find(ad);
+    if (bulunan != (*it)->degerler->end()) {
+      return bulunan->second;
+    }
+  }
+
   const auto global = globalHafiza_.find(ad);
   if (global != globalHafiza_.end()) {
     return global->second;
@@ -5449,6 +5541,14 @@ OrhunDegeri &Interpreter::degiskenBulYazilabilir(const std::string &ad,
       continue;
     }
     for (const auto &[isim, _] : *kapsam) {
+      adayEkleTekil(adaylar, gorulen, isim);
+    }
+  }
+  for (const auto &baglam : aktifModulBaglamlari_) {
+    if (!baglam || !baglam->degerler) {
+      continue;
+    }
+    for (const auto &[isim, _] : *baglam->degerler) {
       adayEkleTekil(adaylar, gorulen, isim);
     }
   }
@@ -5570,6 +5670,17 @@ const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
     }
   }
 
+  for (auto it = aktifModulBaglamlari_.rbegin();
+       it != aktifModulBaglamlari_.rend(); ++it) {
+    if (!*it || !(*it)->degerler) {
+      continue;
+    }
+    const auto bulunan = (*it)->degerler->find(ad);
+    if (bulunan != (*it)->degerler->end()) {
+      return bulunan->second;
+    }
+  }
+
   const auto global = globalHafiza_.find(ad);
   if (global != globalHafiza_.end()) {
     return global->second;
@@ -5582,6 +5693,14 @@ const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
       continue;
     }
     for (const auto &[isim, _] : *kapsam) {
+      adayEkleTekil(adaylar, gorulen, isim);
+    }
+  }
+  for (const auto &baglam : aktifModulBaglamlari_) {
+    if (!baglam || !baglam->degerler) {
+      continue;
+    }
+    for (const auto &[isim, _] : *baglam->degerler) {
       adayEkleTekil(adaylar, gorulen, isim);
     }
   }

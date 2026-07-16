@@ -407,6 +407,8 @@ void VM::sifirla() {
   ffiIslevBaglantilari_.clear();
   ffiSonrakiKimlik_ = 1;
   ffiSonrakiIslevKimlik_ = 1;
+  modulOnbellegi_.clear();
+  yuklenenModuller_.clear();
   modulChunklari_.clear();
   gcEsigi_ = 1024;
   gcErtelemeDerinligi_ = 0;
@@ -2165,99 +2167,135 @@ void VM::yerlesikNativesYukle() {
                obcIstegi.replace_extension(".obc");
                const auto cozulmusObcYol =
                    orhunDahilYolunuCoz(obcIstegi.string());
-               std::unique_ptr<BytecodeChunk> modulChunk;
-               if (modulModu != "source" && cozulmusObcYol.has_value()) {
-                 std::ifstream in(*cozulmusObcYol, std::ios::binary);
-                 if (!in.is_open()) {
-                   throw std::runtime_error("dahil_et: OBC dosyasi acilamadi: " +
-                                            cozulmusObcYol->string());
-                 }
-                 const std::vector<std::uint8_t> ham{
-                     std::istreambuf_iterator<char>(in),
-                     std::istreambuf_iterator<char>()};
-                 modulChunk =
-                     std::make_unique<BytecodeChunk>(chunkCoz(ham));
-               } else {
-                 if (modulModu == "obc-only") {
-                   throw std::runtime_error(
-                       "dahil_et: obc-only modunda onceden derlenmis modul "
-                       "bulunamadi: " +
-                       obcIstegi.string() + orhunDahilAramaYollariMetni());
-                 }
-                 if (!cozulmusKaynakYol.has_value()) {
-                   throw std::runtime_error("dahil_et: dosya acilamadi: " + yol +
-                                            orhunDahilAramaYollariMetni());
-                 }
-                 std::ifstream in(*cozulmusKaynakYol, std::ios::binary);
-                 if (!in.is_open()) {
-                   throw std::runtime_error("dahil_et: dosya acilamadi: " +
-                                            yol);
-                 }
-                 std::ostringstream ss;
-                 ss << in.rdbuf();
-                 const std::string kaynak = ss.str();
-
-                 Lexer lexer(kaynak);
-                 std::vector<OrhunToken> tokenlar = lexer.tokenize();
-                 Parser parser(std::move(tokenlar));
-                 std::unique_ptr<ProgramNode> program = parser.parse();
-                 Compiler derleyici;
-                 modulChunk = std::make_unique<BytecodeChunk>(
-                     derleyici.derle(program.get()));
+               const bool obcKullan =
+                   modulModu != "source" && cozulmusObcYol.has_value();
+               if (!obcKullan && modulModu == "obc-only") {
+                 throw std::runtime_error(
+                     "dahil_et: obc-only modunda onceden derlenmis modul "
+                     "bulunamadi: " +
+                     obcIstegi.string() + orhunDahilAramaYollariMetni());
                }
-               BytecodeChunk &chunk = *modulChunk;
+               if (!obcKullan && !cozulmusKaynakYol.has_value()) {
+                 throw std::runtime_error("dahil_et: dosya acilamadi: " + yol +
+                                          orhunDahilAramaYollariMetni());
+               }
 
-               const auto oncekiGloballer = vm.globaller_;
+               const fs::path secilenYol =
+                   obcKullan ? *cozulmusObcYol : *cozulmusKaynakYol;
+               const std::string onbellekAnahtari =
+                   orhunDahilOnbellekAnahtari(secilenYol);
+               const auto onbellekte =
+                   vm.modulOnbellegi_.find(onbellekAnahtari);
+               if (onbellekte != vm.modulOnbellegi_.end()) {
+                 return onbellekte->second;
+               }
+               if (vm.yuklenenModuller_.find(onbellekAnahtari) !=
+                   vm.yuklenenModuller_.end()) {
+                 throw std::runtime_error(
+                     "dahil_et: döngüsel modül bağımlılığı algılandı: " + yol);
+               }
 
-               const BytecodeChunk *kayitChunk = vm.chunk_;
-               auto kayitFrameYigini = std::move(vm.frameYigini_);
-               auto kayitBekleyenKurucular = std::move(vm.bekleyenKurucular_);
-               auto kayitTryYigini = std::move(vm.tryYigini_);
-               auto kayitYigin = std::move(vm.yigin_);
-               auto kayitGlobalInlineCache = std::move(vm.globalInlineCache_);
-               auto kayitRuntimeSabitCache = std::move(vm.runtimeSabitCache_);
-               const std::size_t kayitGcEsigi = vm.gcEsigi_;
-
-               // Ic ice calistirmada dis frame/stack degerleri gecici olarak
-               // kenara alinir; modul bitene kadar GC bu kokleri goremez.
-               ++vm.gcErtelemeDerinligi_;
-               vm.gcEsigi_ = std::numeric_limits<std::size_t>::max() / 2;
+               vm.yuklenenModuller_.insert(onbellekAnahtari);
                try {
-                 vm.calistir(chunk);
-               } catch (...) {
+                 std::unique_ptr<BytecodeChunk> modulChunk;
+                 if (obcKullan) {
+                   std::ifstream in(secilenYol, std::ios::binary);
+                   if (!in.is_open()) {
+                     throw std::runtime_error(
+                         "dahil_et: OBC dosyasi acilamadi: " +
+                         secilenYol.string());
+                   }
+                   const std::vector<std::uint8_t> ham{
+                       std::istreambuf_iterator<char>(in),
+                       std::istreambuf_iterator<char>()};
+                   modulChunk =
+                       std::make_unique<BytecodeChunk>(chunkCoz(ham));
+                 } else {
+                   std::ifstream in(secilenYol, std::ios::binary);
+                   if (!in.is_open()) {
+                     throw std::runtime_error(
+                         "dahil_et: dosya acilamadi: " + yol);
+                   }
+                   std::ostringstream ss;
+                   ss << in.rdbuf();
+                   const std::string kaynak = ss.str();
+
+                   Lexer lexer(kaynak);
+                   std::vector<OrhunToken> tokenlar = lexer.tokenize();
+                   Parser parser(std::move(tokenlar));
+                   std::unique_ptr<ProgramNode> program = parser.parse();
+                   Compiler derleyici;
+                   modulChunk = std::make_unique<BytecodeChunk>(
+                       derleyici.derle(program.get()));
+                 }
+                 BytecodeChunk &chunk = *modulChunk;
+
+                 const auto oncekiGloballer = vm.globaller_;
+
+                 const BytecodeChunk *kayitChunk = vm.chunk_;
+                 auto kayitFrameYigini = std::move(vm.frameYigini_);
+                 auto kayitBekleyenKurucular =
+                     std::move(vm.bekleyenKurucular_);
+                 auto kayitTryYigini = std::move(vm.tryYigini_);
+                 auto kayitYigin = std::move(vm.yigin_);
+                 auto kayitGlobalInlineCache =
+                     std::move(vm.globalInlineCache_);
+                 auto kayitRuntimeSabitCache =
+                     std::move(vm.runtimeSabitCache_);
+                 const std::size_t kayitGcEsigi = vm.gcEsigi_;
+
+                 // Ic ice calistirmada dis frame/stack degerleri gecici olarak
+                 // kenara alinir; modul bitene kadar GC bu kokleri goremez.
+                 ++vm.gcErtelemeDerinligi_;
+                 vm.gcEsigi_ = std::numeric_limits<std::size_t>::max() / 2;
+                 try {
+                   vm.calistir(chunk);
+                 } catch (...) {
+                   --vm.gcErtelemeDerinligi_;
+                   vm.chunk_ = kayitChunk;
+                   vm.frameYigini_ = std::move(kayitFrameYigini);
+                   vm.bekleyenKurucular_ =
+                       std::move(kayitBekleyenKurucular);
+                   vm.tryYigini_ = std::move(kayitTryYigini);
+                   vm.yigin_ = std::move(kayitYigin);
+                   vm.globalInlineCache_ =
+                       std::move(kayitGlobalInlineCache);
+                   vm.runtimeSabitCache_ =
+                       std::move(kayitRuntimeSabitCache);
+                   vm.gcEsigi_ = kayitGcEsigi;
+                   throw;
+                 }
                  --vm.gcErtelemeDerinligi_;
                  vm.chunk_ = kayitChunk;
                  vm.frameYigini_ = std::move(kayitFrameYigini);
-                 vm.bekleyenKurucular_ = std::move(kayitBekleyenKurucular);
+                 vm.bekleyenKurucular_ =
+                     std::move(kayitBekleyenKurucular);
                  vm.tryYigini_ = std::move(kayitTryYigini);
                  vm.yigin_ = std::move(kayitYigin);
                  vm.globalInlineCache_ = std::move(kayitGlobalInlineCache);
-                 vm.runtimeSabitCache_ = std::move(kayitRuntimeSabitCache);
+                 vm.runtimeSabitCache_ =
+                     std::move(kayitRuntimeSabitCache);
                  vm.gcEsigi_ = kayitGcEsigi;
+
+                 auto *modul = vm.memory_.allocate<ObjDict>();
+                 for (const auto &[ad, deger] : vm.globaller_) {
+                   const auto onceki = oncekiGloballer.find(ad);
+                   if (onceki != oncekiGloballer.end() &&
+                       vm.esitMi(onceki->second, deger)) {
+                     continue;
+                   }
+                   modul->alanlar[ad] = deger;
+                 }
+
+                 vm.modulChunklari_.push_back(std::move(modulChunk));
+                 const Value modulDegeri = Value::nesne(modul);
+                 vm.modulOnbellegi_[onbellekAnahtari] = modulDegeri;
+                 vm.yuklenenModuller_.erase(onbellekAnahtari);
+                 return modulDegeri;
+               } catch (...) {
+                 vm.yuklenenModuller_.erase(onbellekAnahtari);
                  throw;
                }
-               --vm.gcErtelemeDerinligi_;
-               vm.chunk_ = kayitChunk;
-               vm.frameYigini_ = std::move(kayitFrameYigini);
-               vm.bekleyenKurucular_ = std::move(kayitBekleyenKurucular);
-               vm.tryYigini_ = std::move(kayitTryYigini);
-               vm.yigin_ = std::move(kayitYigin);
-               vm.globalInlineCache_ = std::move(kayitGlobalInlineCache);
-               vm.runtimeSabitCache_ = std::move(kayitRuntimeSabitCache);
-               vm.gcEsigi_ = kayitGcEsigi;
-
-               auto *modul = vm.memory_.allocate<ObjDict>();
-               for (const auto &[ad, deger] : vm.globaller_) {
-                 const auto onceki = oncekiGloballer.find(ad);
-                 if (onceki != oncekiGloballer.end() &&
-                     vm.esitMi(onceki->second, deger)) {
-                   continue;
-                 }
-                 modul->alanlar[ad] = deger;
-               }
-
-               vm.modulChunklari_.push_back(std::move(modulChunk));
-               return Value::nesne(modul);
              });
 }
 
@@ -2279,6 +2317,10 @@ void VM::gcCalistir() {
     for (const auto &[ad, deger] : globaller_) {
       (void)ad;
       mem.markValue(deger);
+    }
+    for (const auto &[anahtar, modul] : modulOnbellegi_) {
+      (void)anahtar;
+      mem.markValue(modul);
     }
     for (const CallFrame &frame : frameYigini_) {
       mem.markObject(frame.function);

@@ -472,6 +472,15 @@ Lookup order:
 3. A sibling `StdLib/` directory beside the running `orhun` executable.
 4. The local development standard library roots `StdLib/` and `stdlib/`.
 
+Resolved module paths are canonicalized and cached for the lifetime of the
+interpreter or VM. Repeating `dahil_et` with equivalent paths returns the same
+module object without rerunning its top-level code, so mutable exported values
+are shared between import aliases. Nested module functions retain their own
+module variables and sibling-function namespace. Imports executed inside a
+function still initialize the module in an isolated module scope rather than
+writing into the caller's locals. An A -> B -> A dependency is rejected with
+an explicit circular-module error instead of recursing forever.
+
 Official Orhun-source standard modules live under `StdLib/orhun/` and are
 included by their library-relative path:
 

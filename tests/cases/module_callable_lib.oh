@@ -1,7 +1,14 @@
 deger olsun 10
+paylasilan olsun [10]
 
 işlev topla(a, b):
     döndür a + b
+
+işlev iki_kat(x):
+    döndür x * 2
+
+işlev hesapla(x):
+    döndür iki_kat(x) + paylasilan[0]
 
 tip Kutu:
     sayi olsun 0

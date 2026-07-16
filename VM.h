@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace runtime {
@@ -94,6 +95,8 @@ private:
   std::vector<Value> geciciArgumanBuffer_;
   std::vector<Value> geciciBirlesikArgumanBuffer_;
   std::vector<std::unique_ptr<BytecodeChunk>> modulChunklari_;
+  std::unordered_map<std::string, Value> modulOnbellegi_;
+  std::unordered_set<std::string> yuklenenModuller_;
   std::vector<std::string> programArgumanlari_;
 
   MemoryManager memory_;

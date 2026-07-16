@@ -339,3 +339,14 @@
 - Kullanıcı programlarına kaynak/komut sonrasında verilen değerler artık
   `sistem.argumanlar` listesinde bulunur. `orhun-vm` yolunda çalışma zamanı
   argümanlarını modül seçeneklerinden ayırmak için `--` kullanılır.
+
+## 17. Modül örneği ve döngü denetimi
+- `dahil_et`, çözümlenen kanonik dosya yolunu interpreter/VM ömrü boyunca
+  önbelleğe alır. Aynı dosyanın `modul.oh` ve `./modul.oh` gibi eşdeğer
+  yollarla tekrar eklenmesi üst seviye kodu yeniden çalıştırmaz.
+- Tekrarlı eklemeler aynı modül nesnesini döndürür; dışa aktarılan değişebilir
+  liste/sözlük değerleri tüm takma adlar arasında paylaşılır.
+- Interpreter içindeki modül işlevleri kendi modül değişkenlerini ve kardeş
+  işlevlerini korur. İşlev içinden yapılan ilk modül yüklemesi çağıranın yerel
+  kapsamına değişken sızdırmaz. A -> B -> A gibi döngüsel bağımlılıklar artık
+  açık Türkçe hatayla reddedilir.

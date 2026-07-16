@@ -31,6 +31,9 @@ These percentages are planning estimates, not promises.
 - UTF-8 identifiers and Turkish keywords.
 - Interpreter and strict VM execution paths.
 - Bytecode compiler.
+- Canonical module caching in both execution paths; repeated imports share one
+  module instance, nested interpreter modules retain their function context,
+  and circular dependencies fail explicitly.
 - Functions, lambdas, default arguments, classes, inheritance, collections,
   slicing, safe access, and error handling.
 - File, JSON, regex, date/time, database helper, server, task, FFI, and system

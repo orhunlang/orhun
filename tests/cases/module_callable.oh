@@ -1,3 +1,7 @@
 m olsun dahil_et "tests/cases/module_callable_lib.oh"
+n olsun dahil_et "./tests/cases/module_callable_lib.oh"
 yazdır m.topla(2, 3)
 yazdır m.deger
+m.paylasilan[0] = 42
+yazdır n.paylasilan[0]
+yazdır n.hesapla(3)

@@ -1,0 +1,12 @@
+işlev modulu_hazirla():
+    gecici olsun dahil_et "tests/cases/module_callable_lib.oh"
+    gecici.paylasilan[0] = 77
+
+modulu_hazirla()
+
+tekrarla 1500 kez:
+    cop olsun [1, 2, 3]
+
+modul olsun dahil_et "./tests/cases/module_callable_lib.oh"
+yazdır modul.paylasilan[0]
+yazdır modul.hesapla(1)

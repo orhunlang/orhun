@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <cstddef>
 #include <filesystem>
@@ -187,6 +188,29 @@ orhunDahilYolunuCoz(const std::string &dosyaAdi) {
   }
 
   return std::nullopt;
+}
+
+inline std::string
+orhunDahilOnbellekAnahtari(const std::filesystem::path &dosyaYolu) {
+  namespace fs = std::filesystem;
+  std::error_code ec;
+  fs::path tamYol = fs::absolute(dosyaYolu, ec);
+  if (ec) {
+    ec.clear();
+    tamYol = dosyaYolu;
+  }
+  fs::path kanonik = fs::weakly_canonical(tamYol, ec);
+  if (ec) {
+    kanonik = tamYol.lexically_normal();
+  }
+  std::string anahtar = kanonik.generic_string();
+#ifdef _WIN32
+  std::transform(anahtar.begin(), anahtar.end(), anahtar.begin(),
+                 [](unsigned char c) {
+                   return static_cast<char>(std::tolower(c));
+                 });
+#endif
+  return anahtar;
 }
 
 inline std::string orhunDahilAramaYollariMetni() {
