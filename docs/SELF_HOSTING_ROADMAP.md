@@ -260,11 +260,14 @@ Orhun-yazili compiler zinciriyle byte-duzeyinde esit `.obc`, paketli
 calistirilabilir dosya ve metadata artifact'larini dogrudan uretir. Artifact
 isteginin kaynak/cikti argumanlarini ve `.obc`, paketli calistirilabilir,
 metadata yollarindan olusan tam cikti planini artik Orhun-yazili
-`derleyici_cli.oh` cozer. Plan `orhun-artifact-plan-v1` sozlesmesiyle
-surumlenir. C++ cekirdegi plani bilinmeyen sozlesme, bos alan, beklenmeyen
-uzanti, kaynak adinda yol ayirici ve cakisan cikti yollarina karsi
-dogruladiktan sonra yalniz OBC/paket serilestirme ve dosya yazma koprusu olarak
-kalir. Artifact'lar once hedeflerinin yanindaki benzersiz gecici dosyalara
+`derleyici_cli.oh` 0.6.0 cozer. Her cagri `orhun-compiler-cli-v1` sonuc zarfinda CLI
+surumunu, islem turunu, cikis kodunu ve saf Orhun `cli_dogrulamasi` kaydini
+tasir. Artifact plani ayrica `orhun-artifact-plan-v1` sozlesmesiyle surumlenir.
+C++ cekirdegi CLI ve plan zarflarini bilinmeyen sozlesme, tutarsiz islem/durum,
+basarisiz dogrulama, bos alan, beklenmeyen uzanti, kaynak adinda yol ayirici ve
+cakisan cikti yollarina karsi dogruladiktan sonra yalniz OBC/paket
+serilestirme ve dosya yazma koprusu olarak kalir. Artifact'lar once hedeflerinin
+yanindaki benzersiz gecici dosyalara
 yazilir; tumu hazirlanmadan yayinlanmaz ve hazirlama hatasi mevcut ciktilari
 korur. Paketli C++ host `--derle` veya `--compile` komut adlarini bilmez; her
 cagrinin yapilandirilmis cikis kodu ve artifact plani Orhun CLI bytecode'u

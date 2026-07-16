@@ -1026,13 +1026,19 @@ Stable channel defaults:
   same Orhun-written compiler and the runtime serialization bridge to emit
   `.obc`, packaged executable, and metadata artifacts directly. Source/output
   argument parsing and the complete artifact output plan are produced by
-  `orhun/derleyici_cli.oh`. That plan contains the `.obc`, packaged executable,
-  metadata paths, and metadata source name, and identifies its contract as
-  `orhun-artifact-plan-v1`. The C++ bootstrap runtime rejects unknown plan
-  contracts, empty fields, unexpected output suffixes, source names containing
-  path separators, and colliding output paths before its OBC/package
-  serialization bridge writes anything. Existing non-file targets are also
-  rejected. Valid outputs are first written to unique sibling staging files;
+  `orhun/derleyici_cli.oh`. Every invocation emits an
+  `orhun-compiler-cli-v1` envelope containing the CLI implementation version,
+  operation (`bytecode`, `artifact`, or `kullanim`), structured exit code, and
+  a pure-Orhun `cli_dogrulamasi` record. The validator cross-checks operation,
+  result state, bytecode IR provenance, artifact presence, and error state.
+  Successful artifact operations contain the `.obc`, packaged executable,
+  metadata paths, and metadata source name in an `orhun-artifact-plan-v1`
+  plan. The C++ bootstrap runtime independently rejects unknown CLI or plan
+  contracts, inconsistent result/exit/operation state, failed validation,
+  empty fields, unexpected output suffixes, source names containing path
+  separators, and colliding output paths before its OBC/package serialization
+  bridge writes anything. Existing non-file targets are also rejected. Valid
+  outputs are first written to unique sibling staging files;
   existing outputs are preserved and staged files are cleaned if any artifact
   cannot be produced. The packaged host does not dispatch individual
   compiler command names; it consumes the structured exit code and optional

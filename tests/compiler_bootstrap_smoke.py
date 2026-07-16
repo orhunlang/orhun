@@ -17,6 +17,7 @@ FIXTURES = (
     "oop_super.oh",
     "vm_try_catch.oh",
 )
+CLI_IR_CONTRACT = "orhun-compiler-cli-v1"
 
 
 def combined(proc) -> str:
@@ -39,6 +40,24 @@ def expected_artifact_plan(source: str, output: str = "") -> dict[str, str]:
     }
 
 
+def require_cli_contract(payload: dict, operation: str) -> None:
+    require(
+        payload.get("cli_ir_sozlesmesi") == CLI_IR_CONTRACT
+        and isinstance(payload.get("cli_surumu"), str)
+        and payload.get("cli_surumu")
+        and payload.get("cli_islemi") == operation,
+        f"Compiler CLI envelope mismatch: {payload}",
+    )
+    validation = payload.get("cli_dogrulamasi")
+    require(
+        isinstance(validation, dict)
+        and validation.get("sozlesme") == CLI_IR_CONTRACT
+        and validation.get("ok") is True
+        and validation.get("hata") == "",
+        f"Compiler CLI validation failed: {validation}",
+    )
+
+
 def packaged_compiler_fixture(
     binary: Path,
     repo: Path,
@@ -47,13 +66,25 @@ def packaged_compiler_fixture(
     bundle_exe: Path,
     name: str,
     artifact_request: dict[str, str],
+    *,
+    cli_contract: str = CLI_IR_CONTRACT,
+    cli_operation: str = "artifact",
+    cli_validation_ok: bool = True,
 ) -> Path:
+    validation_literal = "doğru" if cli_validation_ok else "yanlış"
+    validation_error = "" if cli_validation_ok else "degistirilmis CLI"
     source = tmpdir / f"{name}.oh"
     source.write_text(
         'derleyici olsun dahil_et "orhun/derleyici.oh"\n'
         "kaynak olsun dosya.oku(sistem.argumanlar[1])\n"
         "sonuc olsun derleyici.derle(kaynak)\n"
+        f'sonuc["cli_ir_sozlesmesi"] = {json.dumps(cli_contract)}\n'
+        'sonuc["cli_surumu"] = "fixture"\n'
+        f'sonuc["cli_islemi"] = {json.dumps(cli_operation)}\n'
         'sonuc["cikis_kodu"] = 0\n'
+        'sonuc["cli_dogrulamasi"] = '
+        f'{{"ok": {validation_literal}, "hata": '
+        f'{json.dumps(validation_error)}, "sozlesme": "{CLI_IR_CONTRACT}"}}\n'
         f'sonuc["artifact_istegi"] = '
         f"{json.dumps(artifact_request, ensure_ascii=False, separators=(',', ':'))}\n"
         "yazdır json.yaz(sonuc)\n",
@@ -773,6 +804,29 @@ def main() -> int:
             == expected_artifact_plan(str(artifact_source), str(cli_control_output)),
             "Orhun compiler CLI must own the complete artifact output plan",
         )
+        require_cli_contract(cli_control_payload, "artifact")
+        cli_error_source = repo / "tests" / "ast_json" / "error_missing_ise.oh"
+        cli_error = run_cmd(
+            [
+                str(binary),
+                "vm-kati",
+                str(compiler_cli_source),
+                str(cli_error_source),
+            ],
+            repo,
+        )
+        require(
+            cli_error.returncode == 0,
+            f"Orhun compiler CLI error envelope failed: {combined(cli_error)}",
+        )
+        cli_error_payload = json.loads(cli_error.stdout)
+        require_cli_contract(cli_error_payload, "bytecode")
+        require(
+            cli_error_payload.get("durum") == "fail"
+            and cli_error_payload.get("cikis_kodu") == 1
+            and cli_error_payload.get("ir_dogrulamasi", {}).get("ok") is True,
+            "Orhun compiler CLI must preserve validated compiler failures",
+        )
         for output in (
             "",
             "portable.dir/output.release.bin",
@@ -794,6 +848,7 @@ def main() -> int:
                 f"Orhun compiler artifact planning failed: {combined(planned)}",
             )
             planned_payload = json.loads(planned.stdout)
+            require_cli_contract(planned_payload, "artifact")
             require(
                 planned_payload.get("artifact_istegi")
                 == expected_artifact_plan(str(artifact_source), output),
@@ -868,6 +923,20 @@ def main() -> int:
             and bundled_payload.get("hata_sayisi") == 0,
             f"bundled Orhun compiler payload failed: {bundled_payload}",
         )
+        require_cli_contract(bundled_payload, "bytecode")
+        bundled_error = run_cmd(
+            [str(bundle_exe), str(cli_error_source)],
+            tmpdir,
+        )
+        bundled_error_text = combined(bundled_error)
+        require(
+            bundled_error.returncode != 0
+            and f'"cli_ir_sozlesmesi":"{CLI_IR_CONTRACT}"'
+            in bundled_error_text
+            and '"cli_islemi":"bytecode"' in bundled_error_text
+            and '"cikis_kodu":1' in bundled_error_text,
+            "bundled compiler must return the validated CLI failure envelope",
+        )
 
         renamed_bundle_exe = compiler_bundle / (
             "orhun-yeniden-adlandirilmis.exe"
@@ -888,6 +957,7 @@ def main() -> int:
             renamed_payload.get("bytecode") == bundled_payload.get("bytecode"),
             "renamed compiler bundle must keep the same compiler behavior",
         )
+        require_cli_contract(renamed_payload, "bytecode")
 
         bad_compiler_manifest = dict(compiler_manifest)
         bad_compiler_manifest["payload_crc32"] = "00000000"
@@ -1129,6 +1199,112 @@ def main() -> int:
             "unknown artifact plan must be rejected before writing files",
         )
 
+        valid_cli_plan = expected_artifact_plan(
+            str(artifact_source), str(tmpdir / "cli_contract_output")
+        )
+        invalid_cli_contract_exe = packaged_compiler_fixture(
+            binary,
+            repo,
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "invalid_cli_contract",
+            valid_cli_plan,
+            cli_contract="orhun-compiler-cli-v0",
+        )
+        rejected_cli_contract = run_cmd(
+            [
+                str(invalid_cli_contract_exe),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "ignored_cli_contract_output"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_cli_contract.returncode != 0
+            and "CLI IR sozlesmesi desteklenmiyor"
+            in combined(rejected_cli_contract),
+            "bundled compiler host must reject an unknown CLI contract",
+        )
+
+        invalid_cli_operation_exe = packaged_compiler_fixture(
+            binary,
+            repo,
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "invalid_cli_operation",
+            valid_cli_plan,
+            cli_operation="bilinmeyen",
+        )
+        rejected_cli_operation = run_cmd(
+            [
+                str(invalid_cli_operation_exe),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "ignored_cli_operation_output"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_cli_operation.returncode != 0
+            and "CLI islemi desteklenmiyor" in combined(rejected_cli_operation),
+            "bundled compiler host must reject an unknown CLI operation",
+        )
+
+        mismatched_cli_operation_exe = packaged_compiler_fixture(
+            binary,
+            repo,
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "mismatched_cli_operation",
+            valid_cli_plan,
+            cli_operation="bytecode",
+        )
+        rejected_cli_mismatch = run_cmd(
+            [
+                str(mismatched_cli_operation_exe),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "ignored_cli_mismatch_output"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_cli_mismatch.returncode != 0
+            and "islemi ile artifact istegi uyusmuyor"
+            in combined(rejected_cli_mismatch),
+            "bundled compiler host must reject operation/artifact mismatch",
+        )
+
+        invalid_cli_validation_exe = packaged_compiler_fixture(
+            binary,
+            repo,
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "invalid_cli_validation",
+            valid_cli_plan,
+            cli_validation_ok=False,
+        )
+        rejected_cli_validation = run_cmd(
+            [
+                str(invalid_cli_validation_exe),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "ignored_cli_validation_output"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_cli_validation.returncode != 0
+            and "CLI dogrulamasi basarisiz"
+            in combined(rejected_cli_validation),
+            "bundled compiler host must reject failed CLI validation",
+        )
+
         rollback_dir = tmpdir / "artifact_rollback"
         rollback_dir.mkdir()
         rollback_obc = rollback_dir / "korunan.obc"
@@ -1324,12 +1500,13 @@ def main() -> int:
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
         "1 standalone compiler bundle verification, 1 Orhun-owned compiler CLI "
-        "control plane, 4 Orhun-owned artifact plans, 2 bundled direct artifact "
+        "control plane, 1 structured compile failure, 4 Orhun-owned artifact "
+        "plans, 2 bundled direct artifact "
         "compile modes, 1 staged artifact replacement, 1 staged artifact "
         "rollback, 1 legacy contract-free bytecode, "
         "2 legacy v1 manifest compatibility checks, 1 renamed "
         "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
-        "1 standalone rebuild manifest verification, 21 rejected invalid inputs)."
+        "1 standalone rebuild manifest verification, 25 rejected invalid inputs)."
     )
     return 0
 

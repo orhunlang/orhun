@@ -330,6 +330,12 @@
   `bootstrap-compiler-bundle`'dır. Üretilen derleyici tek kaynak argümanıyla
   bytecode JSON, `--derle <kaynak.oh> [çıktı]` ile `.obc`, paketli
   çalıştırılabilir dosya ve metadata üretir.
+- `orhun/derleyici_cli.oh` 0.6.0 ile paketli derleyicinin bütün JSON sonuçları
+  artık `orhun-compiler-cli-v1`
+  sözleşmesini, `cli_surumu`, `cli_islemi`, `cikis_kodu` ve saf Orhun
+  `cli_dogrulamasi` kaydını taşır. Özel araçlar sürümsüz eski CLI sonucunu yeni
+  bootstrap host'una vermek yerine bu zarfı üretmelidir; host bilinmeyen veya
+  kendi içinde tutarsız zarfları artifact yazmadan reddeder.
 - `orhun bootstrap-derleyici-dogrula <bundle-dizini>`, dağıtımdan önce compiler
   manifestini, embedded CLI payload boyut/CRC32/SHA-256 değerini ve kardeş
   strict toolchain'i birlikte doğrular. Yeni bundle manifestleri v2'dir; v1

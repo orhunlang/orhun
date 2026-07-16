@@ -108,9 +108,11 @@ These percentages are planning estimates, not promises.
   strict toolchain before emitting bytecode JSON or complete `.obc`, packaged
   executable, and metadata artifacts.
 - The portable compiler's source/output argument parsing and complete artifact
-  plan are owned by Orhun-written `derleyici_cli.oh`, including all output
-  paths and the metadata source name. The plan is versioned as
-  `orhun-artifact-plan-v1`; C++ remains only as the strict plan-validation and
+  plan are owned by Orhun-written `derleyici_cli.oh`. Every invocation has a
+  pure-Orhun-validated `orhun-compiler-cli-v1` result envelope carrying the
+  CLI version, operation, exit code, and bytecode provenance. Artifact output
+  paths and the metadata source name remain versioned separately as
+  `orhun-artifact-plan-v1`; C++ remains the strict contract-validation and
   OBC/package serialization bootstrap bridge. Artifact publication stages the
   complete output set first and preserves existing outputs when staging fails.
 - The packaged compiler C++ host no longer recognizes individual compiler CLI

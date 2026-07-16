@@ -2,9 +2,10 @@
 
 derleyici olsun dahil_et "orhun/derleyici.oh"
 
-surum olsun "0.5.0"
+surum olsun "0.6.0"
+cli_ir_sozlesmesi olsun "orhun-compiler-cli-v1"
 
-işlev basarisiz(mesaj):
+işlev cli_basarisiz(mesaj):
     döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
 
 işlev kaynak_derle(kaynak_yolu):
@@ -39,11 +40,96 @@ işlev artifact_plani(kaynak_yolu, cikti):
     eğer temel eşit "" ise:
         temel olsun kaynak_yolu
     temel olsun uzantisiz_taban(temel)
-    döndür {"format": "orhun-artifact-plan-v1", "obc": temel + ".obc", "exe": temel + ".exe", "metadata": temel + ".obc.meta.json", "kaynak_adi": dosya_adi(kaynak_yolu)}
+    döndür {
+        "format": "orhun-artifact-plan-v1",
+        "obc": temel + ".obc",
+        "exe": temel + ".exe",
+        "metadata": temel + ".obc.meta.json",
+        "kaynak_adi": dosya_adi(kaynak_yolu)
+    }
+
+işlev cli_dogrulama_sonucu(ok, hata):
+    döndür {"ok": ok, "hata": hata, "sozlesme": cli_ir_sozlesmesi}
+
+işlev artifact_istegi_var_mi(sonuc):
+    deneme:
+        json.yaz(sonuc.artifact_istegi)
+        döndür doğru
+    yakala hata:
+        döndür yanlış
+
+işlev artifact_plani_dogrula(plan):
+    deneme:
+        eğer plan.format eşit_değil "orhun-artifact-plan-v1" ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Artifact plan sozlesmesi desteklenmiyor.")
+        eğer uzunluk(plan.obc) eşit 0 veya uzunluk(plan.exe) eşit 0 ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Artifact plan cikti yollari bos olamaz.")
+        eğer uzunluk(plan.metadata) eşit 0 veya uzunluk(plan.kaynak_adi) eşit 0 ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Artifact plan metadata ve kaynak adi bos olamaz.")
+    yakala hata:
+        döndür cli_dogrulama_sonucu(yanlış, "Artifact plan alanlari eksik veya gecersiz.")
+    döndür cli_dogrulama_sonucu(doğru, "")
+
+işlev cli_islemi_gecerli_mi(islem):
+    eğer islem eşit "bytecode" veya islem eşit "artifact" ise:
+        döndür doğru
+    döndür islem eşit "kullanim"
+
+işlev cli_sonucu_dogrula(sonuc):
+    deneme:
+        eğer sonuc.cli_ir_sozlesmesi eşit_değil cli_ir_sozlesmesi ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Derleyici CLI IR sozlesmesi desteklenmiyor.")
+        eğer uzunluk(sonuc.cli_surumu) eşit 0 ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Derleyici CLI surumu bos olamaz.")
+        eğer değil cli_islemi_gecerli_mi(sonuc.cli_islemi) ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Derleyici CLI islemi bilinmiyor.")
+
+        artifact_var olsun artifact_istegi_var_mi(sonuc)
+        eğer sonuc.durum eşit "fail" ise:
+            eğer sonuc.cikis_kodu eşit 0 veya sonuc.hata_sayisi küçük 1 ise:
+                döndür cli_dogrulama_sonucu(yanlış, "Basarisiz CLI sonucu hata kodu ve hata sayisi tasimali.")
+            eğer uzunluk(sonuc.hata.mesaj) eşit 0 ise:
+                döndür cli_dogrulama_sonucu(yanlış, "Basarisiz CLI sonucu hata mesaji tasimali.")
+            eğer artifact_var ise:
+                döndür cli_dogrulama_sonucu(yanlış, "Basarisiz CLI sonucu artifact isteyemez.")
+            eğer sonuc.cli_islemi eşit_değil "kullanim" ise:
+                derleyici_dogrulamasi olsun derleyici.bytecode_ir_dogrula(sonuc)
+                eğer değil derleyici_dogrulamasi.ok ise:
+                    döndür cli_dogrulama_sonucu(yanlış, derleyici_dogrulamasi.hata)
+            döndür cli_dogrulama_sonucu(doğru, "")
+
+        eğer sonuc.durum eşit_değil "ok" veya sonuc.cikis_kodu eşit_değil 0 ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Basarili CLI sonucu durum=ok ve cikis_kodu=0 tasimali.")
+        eğer sonuc.cli_islemi eşit "kullanim" ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Kullanim islemi basarili sonuc uretemez.")
+
+        derleyici_dogrulamasi olsun derleyici.bytecode_ir_dogrula(sonuc)
+        eğer değil derleyici_dogrulamasi.ok ise:
+            döndür cli_dogrulama_sonucu(yanlış, derleyici_dogrulamasi.hata)
+        eğer sonuc.cli_islemi eşit "artifact" ise:
+            eğer değil artifact_var ise:
+                döndür cli_dogrulama_sonucu(yanlış, "Artifact islemi artifact_istegi tasimali.")
+            döndür artifact_plani_dogrula(sonuc.artifact_istegi)
+        eğer artifact_var ise:
+            döndür cli_dogrulama_sonucu(yanlış, "Bytecode islemi artifact istegi tasiyamaz.")
+    yakala hata:
+        döndür cli_dogrulama_sonucu(yanlış, "Derleyici CLI sonuc alanlari eksik veya gecersiz.")
+    döndür cli_dogrulama_sonucu(doğru, "")
+
+işlev cli_sonucunu_tamamla(sonuc, islem):
+    sonuc["cli_ir_sozlesmesi"] = cli_ir_sozlesmesi
+    sonuc["cli_surumu"] = surum
+    sonuc["cli_islemi"] = islem
+    eğer sonuc.durum eşit "ok" ise:
+        sonuc["cikis_kodu"] = 0
+    değilse:
+        sonuc["cikis_kodu"] = 1
+    sonuc["cli_dogrulamasi"] = cli_sonucu_dogrula(sonuc)
+    döndür sonuc
 
 işlev artifact_istegi_derle(argumanlar):
     eğer uzunluk(argumanlar) küçük 2 veya uzunluk(argumanlar) büyük 3 ise:
-        döndür basarisiz("Kullanim: orhun-derleyici --derle <kaynak.oh> [cikti]")
+        döndür cli_basarisiz("Kullanim: orhun-derleyici --derle <kaynak.oh> [cikti]")
     sonuc olsun kaynak_derle(argumanlar[1])
     eğer sonuc.durum eşit "ok" ise:
         cikti olsun ""
@@ -54,16 +140,16 @@ işlev artifact_istegi_derle(argumanlar):
 
 işlev cli_calistir(argumanlar):
     eğer uzunluk(argumanlar) küçük 1 ise:
-        döndür basarisiz("Kullanim: orhun-derleyici <kaynak.oh> veya orhun-derleyici --derle <kaynak.oh> [cikti]")
+        sonuc olsun cli_basarisiz("Kullanim: orhun-derleyici <kaynak.oh> veya orhun-derleyici --derle <kaynak.oh> [cikti]")
+        döndür cli_sonucunu_tamamla(sonuc, "kullanim")
     eğer argumanlar[0] eşit "--derle" veya argumanlar[0] eşit "--compile" ise:
-        döndür artifact_istegi_derle(argumanlar)
+        eğer uzunluk(argumanlar) küçük 2 veya uzunluk(argumanlar) büyük 3 ise:
+            sonuc olsun cli_basarisiz("Kullanim: orhun-derleyici --derle <kaynak.oh> [cikti]")
+            döndür cli_sonucunu_tamamla(sonuc, "kullanim")
+        döndür cli_sonucunu_tamamla(artifact_istegi_derle(argumanlar), "artifact")
     eğer uzunluk(argumanlar) büyük 1 ise:
-        döndür basarisiz("Kullanim: orhun-derleyici <kaynak.oh>")
-    döndür kaynak_derle(argumanlar[0])
+        döndür cli_sonucunu_tamamla(cli_basarisiz("Kullanim: orhun-derleyici <kaynak.oh>"), "kullanim")
+    döndür cli_sonucunu_tamamla(kaynak_derle(argumanlar[0]), "bytecode")
 
 sonuc olsun cli_calistir(sistem.argumanlar)
-eğer sonuc.durum eşit "ok" ise:
-    sonuc["cikis_kodu"] = 0
-değilse:
-    sonuc["cikis_kodu"] = 1
 yazdır json.yaz(sonuc)

@@ -1475,6 +1475,110 @@ const yerlesik::JsonDeger::Sozluk &orhunDerleyiciIrDogrula(
   return sonuc;
 }
 
+void orhunDerleyiciCliDogrula(
+    const yerlesik::JsonDeger &kok,
+    const yerlesik::JsonDeger::Sozluk &sonuc, std::size_t cikisKodu) {
+  const std::string sozlesme = jsonMetinBekle(
+      jsonAlanBekle(sonuc, "cli_ir_sozlesmesi", "derleyici_cli"),
+      "derleyici_cli.cli_ir_sozlesmesi");
+  if (sozlesme != "orhun-compiler-cli-v1") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI IR sozlesmesi desteklenmiyor: " +
+        sozlesme);
+  }
+  const std::string cliSurumu = jsonMetinBekle(
+      jsonAlanBekle(sonuc, "cli_surumu", "derleyici_cli"),
+      "derleyici_cli.cli_surumu");
+  if (cliSurumu.empty()) {
+    throw std::runtime_error("Hata: Orhun derleyici CLI surumu bos olamaz.");
+  }
+  const std::string islem = jsonMetinBekle(
+      jsonAlanBekle(sonuc, "cli_islemi", "derleyici_cli"),
+      "derleyici_cli.cli_islemi");
+  if (islem != "bytecode" && islem != "artifact" && islem != "kullanim") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI islemi desteklenmiyor: " + islem);
+  }
+
+  const auto &dogrulama = jsonSozlukBekle(
+      jsonAlanBekle(sonuc, "cli_dogrulamasi", "derleyici_cli"),
+      "derleyici_cli.cli_dogrulamasi");
+  const std::string dogrulamaSozlesmesi = jsonMetinBekle(
+      jsonAlanBekle(dogrulama, "sozlesme", "derleyici_cli.cli_dogrulamasi"),
+      "derleyici_cli.cli_dogrulamasi.sozlesme");
+  if (dogrulamaSozlesmesi != "orhun-compiler-cli-v1") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI dogrulama sozlesmesi desteklenmiyor: " +
+        dogrulamaSozlesmesi);
+  }
+  const bool dogrulamaOk = jsonMantikBekle(
+      jsonAlanBekle(dogrulama, "ok", "derleyici_cli.cli_dogrulamasi"),
+      "derleyici_cli.cli_dogrulamasi.ok");
+  const std::string dogrulamaHatasi = jsonMetinBekle(
+      jsonAlanBekle(dogrulama, "hata", "derleyici_cli.cli_dogrulamasi"),
+      "derleyici_cli.cli_dogrulamasi.hata");
+  if (!dogrulamaOk) {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI dogrulamasi basarisiz: " +
+        dogrulamaHatasi);
+  }
+  if (!dogrulamaHatasi.empty()) {
+    throw std::runtime_error(
+        "Hata: Basarili Orhun derleyici CLI dogrulamasi bos hata "
+        "tasimali.");
+  }
+
+  const std::string durum = jsonMetinBekle(
+      jsonAlanBekle(sonuc, "durum", "derleyici_cli"),
+      "derleyici_cli.durum");
+  const bool artifactVar = jsonAlanBul(sonuc, "artifact_istegi") != nullptr;
+  if (durum == "fail") {
+    if (cikisKodu == 0) {
+      throw std::runtime_error(
+          "Hata: Basarisiz Orhun derleyici CLI sonucu sifir cikis kodu "
+          "tasiyamaz.");
+    }
+    if (artifactVar) {
+      throw std::runtime_error(
+          "Hata: Basarisiz Orhun derleyici CLI sonucu artifact isteyemez.");
+    }
+    const std::size_t hataSayisi = jsonBoyutBekle(
+        jsonAlanBekle(sonuc, "hata_sayisi", "derleyici_cli"),
+        "derleyici_cli.hata_sayisi");
+    const auto &hata = jsonSozlukBekle(
+        jsonAlanBekle(sonuc, "hata", "derleyici_cli"),
+        "derleyici_cli.hata");
+    const std::string mesaj = jsonMetinBekle(
+        jsonAlanBekle(hata, "mesaj", "derleyici_cli.hata"),
+        "derleyici_cli.hata.mesaj");
+    if (hataSayisi == 0 || mesaj.empty()) {
+      throw std::runtime_error(
+          "Hata: Basarisiz Orhun derleyici CLI sonucu hata bilgisi "
+          "tasimali.");
+    }
+    return;
+  }
+  if (durum != "ok") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI sonucu bilinmeyen durum tasiyor: " +
+        durum);
+  }
+  if (cikisKodu != 0) {
+    throw std::runtime_error(
+        "Hata: Basarili Orhun derleyici CLI sonucu sifir cikis kodu "
+        "tasimali.");
+  }
+  if (islem == "kullanim") {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI kullanim islemi basarili olamaz.");
+  }
+  if ((islem == "artifact") != artifactVar) {
+    throw std::runtime_error(
+        "Hata: Orhun derleyici CLI islemi ile artifact istegi uyusmuyor.");
+  }
+  static_cast<void>(orhunDerleyiciIrDogrula(kok, "derleyici_cli"));
+}
+
 DerleyiciCliSonucu derleyiciCliCalistir(
     const BytecodeChunk &cliChunk,
     const std::vector<std::string> &programArgumanlari) {
@@ -1499,6 +1603,7 @@ DerleyiciCliSonucu derleyiciCliCalistir(
     throw std::runtime_error(
         "Hata: Orhun derleyici CLI cikis kodu 255 sinirini asiyor.");
   }
+  orhunDerleyiciCliDogrula(kok, kokSozluk, cikisKodu);
 
   DerleyiciCliSonucu sonuc;
   sonuc.jsonCiktisi = cliCiktisi;
@@ -1513,7 +1618,6 @@ DerleyiciCliSonucu derleyiciCliCalistir(
     throw std::runtime_error(
         "Hata: Orhun derleyici CLI basarisiz sonuc ile artifact istedi.");
   }
-  static_cast<void>(orhunDerleyiciIrDogrula(kok, "derleyici_cli"));
 
   const auto &istek =
       jsonSozlukBekle(*artifactIstegi, "derleyici_cli.artifact_istegi");
