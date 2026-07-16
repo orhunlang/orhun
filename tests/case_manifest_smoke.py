@@ -6,6 +6,8 @@ EXPECTEDLESS_CASES = {
     "math_features",
     "mod_in_func",
     "module_callable_lib",
+    "module_cycle_a_lib",
+    "module_cycle_b_lib",
     "primes_loop_caller",
     "primes_loop_once",
     "primes_mini",
