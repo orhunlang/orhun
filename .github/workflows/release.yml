@@ -25,15 +25,15 @@ jobs:
       - name: Build and test release binary (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: ./tests/run_tests.ps1 -Output build/orhun_release.exe
+        run: ./tests/run_tests.ps1 -Output build/orhun_release.exe -BuildMode release
 
       - name: Build and test release binary (Linux)
         if: runner.os == 'Linux'
-        run: bash tests/run_tests.sh g++ build/orhun_release
+        run: bash tests/run_tests.sh g++ build/orhun_release release
 
       - name: Build and test release binary (macOS)
         if: runner.os == 'macOS'
-        run: bash tests/run_tests.sh clang++ build/orhun_release
+        run: bash tests/run_tests.sh clang++ build/orhun_release release
 
       - name: VM strict parity (Windows)
         if: runner.os == 'Windows'

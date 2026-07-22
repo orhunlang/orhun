@@ -37,6 +37,9 @@ These percentages are planning estimates, not promises.
   the 153 guarded runtime fixtures and tracks 3 explicit performance-budget
   gaps instead of allowing unmeasured fallback drift. All three large
   Orhun-source tooling fixtures are output-exact under the exhaustive timeout.
+  The optimized release configuration completes 152 of 153 within the same
+  ten-second budget on the current Windows baseline; only the largest parser
+  fixture still needs the exhaustive budget.
 - Interpreter runtime diagnostics now match VM call names, current source
   lines, caught stack traces, and arity/index/access error contracts.
 - Task primitives and `paralel yap` execute through the same task-plan contract
@@ -161,6 +164,8 @@ These percentages are planning estimates, not promises.
 - Matching version tags run the full gate on all three platforms and publish
   deterministic versioned compiler and runtime archives, per-archive SHA-256
   files, and a combined `SHA256SUMS` manifest as GitHub Release assets.
+- Release binaries are built with `-O2 -DNDEBUG` and the complete release gate
+  runs against that exact optimized executable before it is archived.
 - Runtime archives carry the platform `orhun` executable and source standard
   library; the executable discovers its sibling `StdLib` outside the repository.
 - `orhun doctor` distinguishes healthy source checkouts from installed portable

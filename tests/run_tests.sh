@@ -3,6 +3,7 @@ set -euo pipefail
 
 COMPILER="${1:-g++}"
 OUTPUT="${2:-build/orhun_test}"
+BUILD_MODE="${3:-debug}"
 TEST_TIMEOUT_SECONDS="${ORHUN_TEST_TIMEOUT_SECONDS:-10}"
 SKIP_BUILD="${ORHUN_SKIP_BUILD:-0}"
 REPO_ROOT="$(pwd -P)"
@@ -36,8 +37,16 @@ if [[ "${SKIP_BUILD}" == "1" ]]; then
     exit 2
   fi
 else
-  echo "[1/3] Building..."
-  "${COMPILER}" -std=c++17 -Wall -Wextra -pedantic \
+  case "${BUILD_MODE}" in
+    debug) OPT_FLAGS=() ;;
+    release) OPT_FLAGS=(-O2 -DNDEBUG) ;;
+    *)
+      echo "Unknown build mode: ${BUILD_MODE} (expected debug or release)" >&2
+      exit 2
+      ;;
+  esac
+  echo "[1/3] Building (${BUILD_MODE})..."
+  "${COMPILER}" -std=c++17 -Wall -Wextra -pedantic "${OPT_FLAGS[@]}" \
     main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp \
     -o "${OUTPUT}"
 fi

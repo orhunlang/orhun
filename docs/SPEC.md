@@ -889,7 +889,7 @@ also be exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The
 structural summary is compared against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 174 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 175 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,

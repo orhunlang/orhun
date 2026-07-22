@@ -187,15 +187,21 @@ jobs:
       - name: Release packaging smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: py -3 tests/release_packaging_smoke.py
+        run: |
+          py -3 tests/release_packaging_smoke.py
+          py -3 tests/release_build_mode_smoke.py
 
       - name: Release packaging smoke (Linux)
         if: runner.os == 'Linux'
-        run: python3 tests/release_packaging_smoke.py
+        run: |
+          python3 tests/release_packaging_smoke.py
+          python3 tests/release_build_mode_smoke.py
 
       - name: Release packaging smoke (macOS)
         if: runner.os == 'macOS'
-        run: python3 tests/release_packaging_smoke.py
+        run: |
+          python3 tests/release_packaging_smoke.py
+          python3 tests/release_build_mode_smoke.py
 
       - name: Fallback ORH-COMP smoke (Windows)
         if: runner.os == 'Windows'

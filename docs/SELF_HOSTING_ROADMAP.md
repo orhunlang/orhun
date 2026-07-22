@@ -25,7 +25,8 @@ guncellerken, islev-ici iterasyon closure hucreleri taze kalir. Tam interpreter
 parity sweep'i 153 korumali runtime ciktisinin 150'sini hizli butcede birebir
 eslestirir ve kalan 3 performans farkini acik known-gap listesinde tutar. Bu uc
 buyuk Orhun-kaynakli arac fixture'i genis zaman butcesinde birebir ayni ciktiyi
-verir.
+verir. Optimize release yapisi ayni Windows tabaninda 153 ciktinin 152'sini on
+saniyelik butcede tamamlar; yalniz en buyuk parser fixture'i genis butce ister.
 
 `gorev` ilkelleri ve `paralel yap` planlari hem yorumlayici hem VM yolunda ayni
 sozlesmeyle calisir. Coklu atama, hedef sayisini liste boyutuyla hicbir hedefi
@@ -98,7 +99,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Basarili ve hatali lexer ozetleri `orhun-lexer-ir-v1` kimligini tasir;
 token alanlari, konumlari, sayaclari ve son `DOSYA_SONU` kaydi saf Orhun
-yardimcisiyla dogrulanabilir. Parser prototipi 174 basarili AST
+yardimcisiyla dogrulanabilir. Parser prototipi 175 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 `orhun-lex` ve `orhun-parse`, Orhun-yazili on ucu surumlu ve dogrulanmis JSON
 olarak dogrudan CLI'dan calistirir; kaynak hatalarini yapisal IR'i bozmadan
@@ -228,7 +229,7 @@ Compiler prototype smoke su anda 98 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 161
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 162
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis
@@ -317,6 +318,8 @@ Hedefler:
 - CI tarafinda dogrulanan tasinabilir compiler bundle'lari surumlu, SHA-256
   dogrulamali ve GitHub/Sigstore build-provenance attestation'li release
   asset'lerine donusturulur; platform code-signing ayri bir katman olur.
+- Release runtime'i `-O2 -DNDEBUG` ile uretilir ve arsivlenen ayni binary tam
+  release kapisindan gecirilir.
 
 Basari olcutu:
 

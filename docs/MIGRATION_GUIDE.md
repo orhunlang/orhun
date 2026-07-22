@@ -414,3 +414,13 @@
   hücrelere yazılır, aynı adlı global işlevi değiştirmez. Blok ön tanımları öz
   yineleme ve karşılıklı öz yinelemeyi destekler; döngüye yeniden girişte yeni
   closure hücreleri oluşturulur.
+
+## 18. Release derleme yapılandırması
+- `tests/run_tests.ps1`, `-BuildMode release` ile `-O2 -DNDEBUG` kullanır.
+- `tests/run_tests.sh` üçüncü argüman olarak `release` kabul eder ve aynı
+  optimizasyon sözleşmesini uygular. Varsayılan geliştirme modu `debug` olarak
+  kalır.
+- Sürüm iş akışı Windows, Linux ve macOS üzerinde optimize ikiliyi üretir, tüm
+  kapıları o ikili üzerinde çalıştırır ve doğrulanan aynı dosyayı arşivler.
+- Kaynaktan kullanıcı ikilisi üreten README komutları da release bayraklarını
+  kullanır; tanı odaklı yerel test derlemeleri için ek bayrak gerekmez.

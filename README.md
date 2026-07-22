@@ -84,14 +84,18 @@ Requirements:
 Windows:
 
 ```powershell
-g++ -std=c++17 -Wall -Wextra main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp -o orhun.exe
+g++ -std=c++17 -O2 -DNDEBUG -Wall -Wextra main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp -o orhun.exe
 ```
 
 Linux/macOS:
 
 ```bash
-g++ -std=c++17 -Wall -Wextra main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp -o orhun
+g++ -std=c++17 -O2 -DNDEBUG -Wall -Wextra main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp -o orhun
 ```
+
+These commands produce the optimized runtime configuration used by release
+assets. The test runners keep an unoptimized development build by default so
+compiler warnings and diagnostics remain straightforward.
 
 ## Quick Start
 
@@ -197,10 +201,11 @@ complete set only after all writes succeed.
 
 Version tags must exactly match `VERSION`, for example `v0.8.0`. Pushing a
 matching tag runs the full release gate on Windows, Linux, and macOS, rebuilds
-the source-free compiler toolchain, and publishes deterministic compiler and
-runtime archives with SHA-256 verification files. Runtime archives include the
-`orhun` executable and sibling source `StdLib`, so they can run standard-library
-programs outside the source repository.
+and tests an `-O2 -DNDEBUG` runtime, rebuilds the source-free compiler toolchain,
+and publishes deterministic compiler and runtime archives with SHA-256
+verification files. Runtime archives include the `orhun` executable and sibling
+source `StdLib`, so they can run standard-library programs outside the source
+repository.
 
 Release assets are published on
 [GitHub Releases](https://github.com/orhunlang/orhun/releases). Every asset
@@ -253,6 +258,16 @@ Linux/macOS:
 
 ```bash
 bash tests/run_tests.sh g++ build/orhun_test
+```
+
+To build and run the same optimized configuration used for releases:
+
+```powershell
+.\tests\run_tests.ps1 -Output build/orhun_release.exe -BuildMode release
+```
+
+```bash
+bash tests/run_tests.sh g++ build/orhun_release release
 ```
 
 The test runner applies per-case timeouts so one broken fixture cannot hang the

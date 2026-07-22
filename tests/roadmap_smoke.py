@@ -79,6 +79,7 @@ def main() -> int:
         ("version consistency", [py, "tests/version_consistency_smoke.py", str(binary)]),
         ("project status", [py, "tests/project_status_smoke.py"]),
         ("release packaging", [py, "tests/release_packaging_smoke.py"]),
+        ("release build mode", [py, "tests/release_build_mode_smoke.py"]),
         ("doctor JSON", [py, "tests/doctor_json_smoke.py", str(binary)]),
         ("stdlib versions", [py, "tests/stdlib_version_smoke.py"]),
         ("known gaps", [py, "tests/known_gap_smoke.py", str(binary)]),
