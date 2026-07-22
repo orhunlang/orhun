@@ -33,8 +33,8 @@ These percentages are planning estimates, not promises.
 - The interpreter and VM share distinct `bos`, boolean, and numeric runtime
   types. Equality, truthiness, JSON conversion, strict indexing, result
   records, and implicit no-value returns are guarded by cross-runtime fixtures.
-- The fast interpreter parity sweep currently records 149 exact outputs across
-  the 152 guarded runtime fixtures and tracks 3 explicit performance-budget
+- The fast interpreter parity sweep currently records 150 exact outputs across
+  the 153 guarded runtime fixtures and tracks 3 explicit performance-budget
   gaps instead of allowing unmeasured fallback drift. All three large
   Orhun-source tooling fixtures are output-exact under the exhaustive timeout.
 - Interpreter runtime diagnostics now match VM call names, current source

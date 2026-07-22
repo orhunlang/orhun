@@ -22,7 +22,7 @@ izler. Interpreter ve VM artik `bos`, mantik ve sayi turlerini ayri tasir;
 esitlik, JSON, kati indeks ve donussuz islev semantigi ortak fixture'larda
 eslenir. Global dongu govdelerindeki `olsun` baglari VM ile ayni global ortami
 guncellerken, islev-ici iterasyon closure hucreleri taze kalir. Tam interpreter
-parity sweep'i 152 korumali runtime ciktisinin 149'unu hizli butcede birebir
+parity sweep'i 153 korumali runtime ciktisinin 150'sini hizli butcede birebir
 eslestirir ve kalan 3 performans farkini acik known-gap listesinde tutar. Bu uc
 buyuk Orhun-kaynakli arac fixture'i genis zaman butcesinde birebir ayni ciktiyi
 verir.

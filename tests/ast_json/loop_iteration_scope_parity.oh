@@ -1,0 +1,33 @@
+işlev tekrarla_kapanislari():
+    islevler olsun []
+    sayac olsun 0
+    tekrarla 4 kez:
+        deger olsun sayac
+        işlev oku():
+            döndür deger
+        islevler.ekle(oku)
+        sayac = sayac + 1
+        eğer sayac eşit 2 ise:
+            devam
+        eğer sayac eşit 4 ise:
+            kır
+    döndür islevler
+
+işlev her_kapanislari():
+    islevler olsun []
+    her oge içinde [10, 20, 30, 40]:
+        deger olsun oge
+        işlev oku():
+            döndür deger
+        islevler.ekle(oku)
+        eğer oge eşit 20 ise:
+            devam
+        eğer oge eşit 40 ise:
+            kır
+    döndür islevler
+
+her fn içinde tekrarla_kapanislari():
+    yazdır fn()
+
+her fn içinde her_kapanislari():
+    yazdır fn()
