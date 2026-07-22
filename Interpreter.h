@@ -290,6 +290,7 @@ private:
   void atamaHedefiYaz(const std::string &ad, const OrhunDegeri &deger,
                       bool bildirimMi, std::size_t satir);
   OrhunDegeri &degiskenBulYazilabilir(const std::string &ad, std::size_t satir);
+  const OrhunDegeri *degiskenBulunursa(const std::string &ad) const;
   const OrhunDegeri &degiskenBul(const std::string &ad,
                                  std::size_t satir) const;
   OrhunDegeri &atananHedefYazilabilir(const ASTNode *hedef, std::size_t satir,

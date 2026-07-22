@@ -61,3 +61,22 @@ işlev yerel_karsilikli():
     döndür [cift(6), tek(7)]
 
 yazdır yerel_karsilikli()
+
+işlev eksik_islev_tanisi():
+    deneme:
+        döndür uznluk([1])
+    yakala hata:
+        döndür metin.icerir(hata, "uzunluk")
+    döndür yanlış
+
+yazdır eksik_islev_tanisi()
+
+işlev eksik_yerel_tanisi():
+    yerel_deger olsun 7
+    deneme:
+        döndür yerel_degr
+    yakala hata:
+        döndür metin.icerir(hata, "yerel_deger")
+    döndür yanlış
+
+yazdır eksik_yerel_tanisi()

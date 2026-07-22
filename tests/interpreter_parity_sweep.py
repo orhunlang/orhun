@@ -15,11 +15,7 @@ WINDOWS_ONLY = {
     "ffi_text",
 }
 
-KNOWN_GAPS = {
-    "stdlib_orhun_derleyici",
-    "stdlib_orhun_paket",
-    "stdlib_orhun_parser",
-}
+KNOWN_GAPS: set[str] = set()
 
 TIMEOUT_FLOORS = {
     "gc_stress": 30.0,
@@ -150,7 +146,8 @@ def main() -> int:
     if args.discover:
         return 0
 
-    # New mismatches fail; resolved gaps are allowed and reported.
+    # Every mismatch fails. The set stays explicit so a temporary, reviewed
+    # platform gap cannot silently become part of the normal baseline.
     unexpected = sorted(set(mismatches) - KNOWN_GAPS)
     if unexpected:
         print("Unexpected interpreter parity gaps: " + ", ".join(unexpected))

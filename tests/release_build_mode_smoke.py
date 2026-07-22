@@ -28,8 +28,17 @@ def main() -> int:
     )
     require_all(
         shell,
-        ('BUILD_MODE="${3:-debug}"', "release) OPT_FLAGS=(-O2 -DNDEBUG)"),
+        (
+            'BUILD_MODE="${3:-debug}"',
+            "compiler_args=(-std=c++17 -Wall -Wextra -pedantic)",
+            "release) compiler_args+=(-O2 -DNDEBUG)",
+            '"${COMPILER}" "${compiler_args[@]}"',
+        ),
         "tests/run_tests.sh",
+    )
+    require(
+        "OPT_FLAGS=()" not in shell,
+        "tests/run_tests.sh must not expand an empty array under macOS Bash 3.2",
     )
     require_all(
         workflow,

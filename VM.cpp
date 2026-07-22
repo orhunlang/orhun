@@ -2717,7 +2717,27 @@ void VM::calistir(const BytecodeChunk &chunk) {
                                        : yerlesikGloballer_;
         const auto it = globalKaynak.find(ad);
         if (it == globalKaynak.end()) {
-          calismaHatasi("Tanimsiz degisken: '" + ad + "'.");
+          std::vector<std::string> adaylar;
+          std::unordered_set<std::string> gorulen;
+          const auto adaylariEkle = [&adaylar, &gorulen](const auto &kaynak) {
+            for (const auto &[isim, _] : kaynak) {
+              if (gorulen.insert(isim).second) {
+                adaylar.push_back(isim);
+              }
+            }
+          };
+          for (const std::string &isim : aktifIslev->localAdlari) {
+            if (!isim.empty() && gorulen.insert(isim).second) {
+              adaylar.push_back(isim);
+            }
+          }
+          adaylariEkle(aktifIslev->yakalananDegerler);
+          if (aktifIslev->modulOrtami != nullptr) {
+            adaylariEkle(aktifIslev->modulOrtami->alanlar);
+          }
+          adaylariEkle(globalKaynak);
+          calismaHatasi(oneriliMesaj("Tanimsiz degisken: '" + ad + "'.", ad,
+                                      adaylar));
         }
         if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
           GlobalInlineCacheKaydi &kayit = globalInlineCache_[sabitIndeks];

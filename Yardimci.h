@@ -125,6 +125,21 @@ enYakinOneri(std::string_view aranan, const std::vector<std::string> &adaylar,
   return std::nullopt;
 }
 
+inline std::string oneriliMesaj(const std::string &mesaj,
+                                const std::string &aranan,
+                                const std::vector<std::string> &adaylar) {
+  if (aranan.empty()) {
+    return mesaj;
+  }
+  const std::size_t maxMesafe =
+      utf8KodNoktalarinaCevir(aranan).size() >= 7 ? 3 : 2;
+  const auto oneri = enYakinOneri(aranan, adaylar, maxMesafe);
+  if (!oneri.has_value()) {
+    return mesaj;
+  }
+  return mesaj + " Bunu mu demek istediniz: '" + oneri.value() + "'?";
+}
+
 inline bool orhunNormalDosyaMi(const std::filesystem::path &yol) {
   std::error_code ec;
   return std::filesystem::exists(yol, ec) && !ec &&

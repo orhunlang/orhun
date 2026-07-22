@@ -37,18 +37,21 @@ if [[ "${SKIP_BUILD}" == "1" ]]; then
     exit 2
   fi
 else
+  compiler_args=(-std=c++17 -Wall -Wextra -pedantic)
   case "${BUILD_MODE}" in
-    debug) OPT_FLAGS=() ;;
-    release) OPT_FLAGS=(-O2 -DNDEBUG) ;;
+    debug) ;;
+    release) compiler_args+=(-O2 -DNDEBUG) ;;
     *)
       echo "Unknown build mode: ${BUILD_MODE} (expected debug or release)" >&2
       exit 2
       ;;
   esac
-  echo "[1/3] Building (${BUILD_MODE})..."
-  "${COMPILER}" -std=c++17 -Wall -Wextra -pedantic "${OPT_FLAGS[@]}" \
-    main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp \
+  compiler_args+=(
+    main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp
     -o "${OUTPUT}"
+  )
+  echo "[1/3] Building (${BUILD_MODE})..."
+  "${COMPILER}" "${compiler_args[@]}"
 fi
 
 uname_lc="$(uname -s | tr '[:upper:]' '[:lower:]')"

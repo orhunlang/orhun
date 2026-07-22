@@ -70,20 +70,6 @@ void adayEkleTekil(std::vector<std::string> &adaylar,
   }
 }
 
-std::string oneriliMesaj(const std::string &mesaj, const std::string &aranan,
-                         const std::vector<std::string> &adaylar) {
-  if (aranan.empty()) {
-    return mesaj;
-  }
-  const std::size_t maxMesafe =
-      utf8KodNoktalarinaCevir(aranan).size() >= 7 ? 3 : 2;
-  const auto oneri = enYakinOneri(aranan, adaylar, maxMesafe);
-  if (!oneri.has_value()) {
-    return mesaj;
-  }
-  return mesaj + " Bunu mu demek istediniz: '" + oneri.value() + "'?";
-}
-
 std::vector<std::string> sabitMetinMetodAdaylari() {
   return {"buyuk", "kucuk", "parcala", "uzunluk"};
 }
@@ -5229,22 +5215,14 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode *dugum,
 
   const std::size_t nokta = cagriAdi.rfind('.');
   if (nokta == std::string::npos) {
-    bool isimliDegiskenVar = false;
     std::string degiskenIslevAdi;
-    try {
-      const OrhunDegeri &aday = degiskenBul(cagriAdi, dugum->satir());
-      isimliDegiskenVar = true;
-      static_cast<void>(islevReferansiCoz(aday, degiskenIslevAdi));
-    } catch (const OrhunHatasi &) {
-      // Değişken yoksa kayıtlı/gömülü işlev tablolarına geç.
-    }
-    if (!degiskenIslevAdi.empty()) {
-      return islevCagirAdaGore(degiskenIslevAdi, argumanDegerleri,
-                               dugum->satir(), dondurZorunlu);
-    }
-    if (isimliDegiskenVar) {
-      hataFirlat(dugum->satir(),
-                 "'" + cagriAdi + "' çağrılabilir bir işlev değil.");
+    if (const OrhunDegeri *aday = degiskenBulunursa(cagriAdi)) {
+      if (islevReferansiCoz(*aday, degiskenIslevAdi)) {
+        return islevCagirAdaGore(degiskenIslevAdi, argumanDegerleri,
+                                 dugum->satir(), dondurZorunlu);
+      }
+      hataFirlat(dugum->satir(), "'" + cagriAdi +
+                                     "' çağrılabilir bir işlev değil.");
     }
 
     const bool modulDisiCagri = aktifModulBaglamlari_.empty();
@@ -6167,8 +6145,7 @@ OrhunDegeri &Interpreter::atananHedefYazilabilir(const ASTNode *hedef,
   hataFirlat(satir, "Geçersiz atama hedefi.");
 }
 
-const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
-                                            std::size_t satir) const {
+const OrhunDegeri *Interpreter::degiskenBulunursa(const std::string &ad) const {
   const std::size_t aramaBaslangici = gorunurKapsamBaslangici();
   for (std::size_t i = yerelKapsamYigini_.size(); i > aramaBaslangici; --i) {
     const KapsamPtr &kapsam = yerelKapsamYigini_[i - 1];
@@ -6177,7 +6154,7 @@ const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
     }
     const auto bulunan = kapsam->find(ad);
     if (bulunan != kapsam->end()) {
-      return bulunan->second;
+      return &bulunan->second;
     }
   }
 
@@ -6188,7 +6165,7 @@ const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
     }
     const auto bulunan = (*it)->degerler->find(ad);
     if (bulunan != (*it)->degerler->end()) {
-      return bulunan->second;
+      return &bulunan->second;
     }
   }
 
@@ -6197,8 +6174,22 @@ const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
                                            : yerlesikGlobalHafiza_;
   const auto global = globalKaynak.find(ad);
   if (global != globalKaynak.end()) {
-    return global->second;
+    return &global->second;
   }
+
+  return nullptr;
+}
+
+const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
+                                            std::size_t satir) const {
+  if (const OrhunDegeri *bulunan = degiskenBulunursa(ad)) {
+    return *bulunan;
+  }
+
+  const std::size_t aramaBaslangici = gorunurKapsamBaslangici();
+  const DegiskenTablosu &globalKaynak = aktifModulBaglamlari_.empty()
+                                           ? globalHafiza_
+                                           : yerlesikGlobalHafiza_;
 
   std::vector<std::string> adaylar;
   std::unordered_set<std::string> gorulen;

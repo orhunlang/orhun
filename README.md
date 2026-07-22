@@ -279,12 +279,12 @@ To measure the C++ interpreter against every guarded runtime output:
 py -3 tests\interpreter_parity_sweep.py .\build\orhun_test.exe
 ```
 
-The sweep fails on new drift while reporting the currently tracked parity gaps.
-The three large Orhun-source tooling fixtures intentionally remain under the
-fast ten-second budget. An exhaustive local parity run can include them with:
+The sweep requires every guarded output to match the VM/runtime contract within
+its fast budget. A larger timeout remains available for diagnosis on unusually
+slow development machines:
 
 ```powershell
-py -3 tests\interpreter_parity_sweep.py .\build\orhun_test.exe --timeout 240
+py -3 tests\interpreter_parity_sweep.py .\build\orhun_test.exe --timeout 30
 ```
 
 ## Project Direction

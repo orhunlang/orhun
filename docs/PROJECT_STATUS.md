@@ -33,13 +33,14 @@ These percentages are planning estimates, not promises.
 - The interpreter and VM share distinct `bos`, boolean, and numeric runtime
   types. Equality, truthiness, JSON conversion, strict indexing, result
   records, and implicit no-value returns are guarded by cross-runtime fixtures.
-- The fast interpreter parity sweep currently records 150 exact outputs across
-  the 153 guarded runtime fixtures and tracks 3 explicit performance-budget
-  gaps instead of allowing unmeasured fallback drift. All three large
-  Orhun-source tooling fixtures are output-exact under the exhaustive timeout.
-  The optimized release configuration completes 152 of 153 within the same
-  ten-second budget on the current Windows baseline; only the largest parser
-  fixture still needs the exhaustive budget.
+- The fast interpreter parity sweep records exact output across all 153 guarded
+  runtime fixtures with no known gaps in both development and optimized release
+  builds. The same gate runs on Windows, Linux, and macOS CI.
+- Plain function calls use a non-throwing lexical shadow lookup before function
+  table dispatch. Suggestions and rich diagnostics are built only for genuine
+  missing-name errors rather than on every built-in or sibling function call.
+- VM and interpreter missing-name diagnostics share the same UTF-8-aware
+  suggestion helper and consider only names reachable from the active scope.
 - Interpreter runtime diagnostics now match VM call names, current source
   lines, caught stack traces, and arity/index/access error contracts.
 - Task primitives and `paralel yap` execute through the same task-plan contract

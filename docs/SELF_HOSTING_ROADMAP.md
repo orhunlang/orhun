@@ -22,11 +22,12 @@ izler. Interpreter ve VM artik `bos`, mantik ve sayi turlerini ayri tasir;
 esitlik, JSON, kati indeks ve donussuz islev semantigi ortak fixture'larda
 eslenir. Global dongu govdelerindeki `olsun` baglari VM ile ayni global ortami
 guncellerken, islev-ici iterasyon closure hucreleri taze kalir. Tam interpreter
-parity sweep'i 153 korumali runtime ciktisinin 150'sini hizli butcede birebir
-eslestirir ve kalan 3 performans farkini acik known-gap listesinde tutar. Bu uc
-buyuk Orhun-kaynakli arac fixture'i genis zaman butcesinde birebir ayni ciktiyi
-verir. Optimize release yapisi ayni Windows tabaninda 153 ciktinin 152'sini on
-saniyelik butcede tamamlar; yalniz en buyuk parser fixture'i genis butce ister.
+parity sweep'i 153 korumali runtime ciktisinin tamamini hizli butcede birebir
+eslestirir; development ve optimize release yapilarinda bilinen fark kalmamistir.
+Duz islev cagrilari lexical golgeleme kontrolunu istisna olusturmadan yapar;
+aday onerileri yalniz gercek eksik-ad hatalarinda hesaplanir. VM ve yorumlayici
+ayni UTF-8 yakinlik hesabini ve yalniz erisilebilir adlari kullanir. Ayni tam
+parite kapisi Windows, Linux ve macOS CI'da calisir.
 
 `gorev` ilkelleri ve `paralel yap` planlari hem yorumlayici hem VM yolunda ayni
 sozlesmeyle calisir. Coklu atama, hedef sayisini liste boyutuyla hicbir hedefi

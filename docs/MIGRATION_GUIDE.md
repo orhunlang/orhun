@@ -410,6 +410,11 @@
   da gömülü işlevden önce çözülür; bu öncelik noktalı çağrının kökü için de
   geçerlidir. Çağrılabilir olmayan yerel bir değer aynı adı gölgeliyorsa global
   işleve sessizce düşülmez, açık çalışma zamanı hatası üretilir.
+- Düz işlev çağrılarının gölgeleme kontrolü artık eksik değişkeni normal akışta
+  hata ve öneri listesi oluşturmadan sınar. Eksik işlev tanıları değişmez;
+  maliyetli aday önerileri yalnız gerçek hata yolunda hesaplanır.
+- VM eksik-ad tanıları yorumlayıcıyla aynı UTF-8 yakınlık hesabını kullanır;
+  yalnız erişilebilir yerel, yakalanmış, modül ve global adlar öneri adayıdır.
 - İç içe isimli işlev tanımları artık C++ ve Orhun-yazılı derleyicilerde yerel
   hücrelere yazılır, aynı adlı global işlevi değiştirmez. Blok ön tanımları öz
   yineleme ve karşılıklı öz yinelemeyi destekler; döngüye yeniden girişte yeni

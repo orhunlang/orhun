@@ -127,6 +127,11 @@ jobs:
         shell: pwsh
         run: py -3 tests/case_manifest_smoke.py
 
+      - name: Interpreter parity (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/interpreter_parity_sweep.py .\build\orhun_test.exe
+
       - name: Doctor JSON smoke (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/doctor_json_smoke.py ./build/orhun_test
@@ -143,6 +148,10 @@ jobs:
         if: runner.os == 'Linux'
         run: python3 tests/case_manifest_smoke.py
 
+      - name: Interpreter parity (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/interpreter_parity_sweep.py ./build/orhun_test
+
       - name: Doctor JSON smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/doctor_json_smoke.py ./build/orhun_test
@@ -158,6 +167,10 @@ jobs:
       - name: Case manifest smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/case_manifest_smoke.py
+
+      - name: Interpreter parity (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/interpreter_parity_sweep.py ./build/orhun_test
 
       - name: Docs, examples, and VS Code smoke (Windows)
         if: runner.os == 'Windows'
