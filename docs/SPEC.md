@@ -303,6 +303,17 @@ iki_kat olsun işlev(x): x * 2
 yazdır iki_kat(4)
 ```
 
+Call lookup is lexical. A callable stored in a local or captured binding wins
+over a same-named module, global, or built-in function. The same rule applies
+to the root of a dotted call, so a local `metin` value can intentionally shadow
+the built-in `metin` module.
+
+Named functions declared inside another function are local bindings; they do
+not overwrite a same-named global function. Direct nested declarations in the
+same block receive shared cells before their function objects are created, so
+self-recursion and mutual recursion work while returned closures keep those
+cells alive. Re-entering a loop block creates fresh cells for that iteration.
+
 ## Collections
 
 Lists:

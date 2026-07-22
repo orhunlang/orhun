@@ -40,6 +40,7 @@ yakala hata:
     yazdır "yazma-izole"
 yazdır modul.yeni_modul_global
 yazdır modul.geri_cagir(ana_okur)
+yazdır modul.yerel_cagrilabilir_golge()
 yazdır modul.anonim()
 modul_closure olsun modul.closure_uret()
 yazdır modul_closure()

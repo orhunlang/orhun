@@ -28,6 +28,10 @@ işlev yeni_global_yaz():
 işlev geri_cagir(islem):
     döndür islem()
 
+işlev yerel_cagrilabilir_golge():
+    yardimci olsun işlev(): "modul-yerel"
+    döndür yardimci()
+
 anonim olsun işlev(): deger + ":anonim"
 
 işlev closure_uret():

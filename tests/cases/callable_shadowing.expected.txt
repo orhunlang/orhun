@@ -1,0 +1,8 @@
+yerel
+global
+lambda-x
+99
+cagrilamaz
+yerel-a
+120
+[1, 1]

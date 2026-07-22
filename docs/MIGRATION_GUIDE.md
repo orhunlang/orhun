@@ -251,7 +251,7 @@
 - 0.28.0, metin, sayı, mantık ve parantezli ifadelerin ardından gelen indeks
   ve dilim zincirlerini C++ parser ile aynı `IndeksErisim` / `DilimErisim`
   yapısında özetler. IR sözleşme kimliği değişmez.
-- `orhun/derleyici.oh` 0.31.0, eksik, farklı veya yapısal olarak bozuk parser
+- `orhun/derleyici.oh` 0.32.0, eksik, farklı veya yapısal olarak bozuk parser
   IR girdisini komut alanlarını derlemeden önce açıklayıcı bir hatayla reddeder.
   Başarılı bytecode artık `orhun-bytecode-ir-v1` sözleşmesini; derleyici sonucu
   parser IR kökenini ve saf Orhun `ir_dogrulamasi` kaydını taşır.
@@ -382,3 +382,11 @@
   değiştiremez; iç içe işlevler de yalnızca tanımlandıkları görünür kapsamları
   yakalar. Daha önce çağrı zincirinden örtük değişken alan kod, değeri açık
   parametreyle geçirmeli veya gerçek bir closure içinde tanımlamalıdır.
+- Yerel veya yakalanmış çağrılabilir değerler artık aynı adlı global, modül ya
+  da gömülü işlevden önce çözülür; bu öncelik noktalı çağrının kökü için de
+  geçerlidir. Çağrılabilir olmayan yerel bir değer aynı adı gölgeliyorsa global
+  işleve sessizce düşülmez, açık çalışma zamanı hatası üretilir.
+- İç içe isimli işlev tanımları artık C++ ve Orhun-yazılı derleyicilerde yerel
+  hücrelere yazılır, aynı adlı global işlevi değiştirmez. Blok ön tanımları öz
+  yineleme ve karşılıklı öz yinelemeyi destekler; döngüye yeniden girişte yeni
+  closure hücreleri oluşturulur.

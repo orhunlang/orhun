@@ -1,4 +1,4 @@
-0.31.0
+0.32.0
 orhun-parser-ir-v2
 orhun-bytecode-ir-v1
 orhun-bytecode-ir-v1

@@ -40,6 +40,8 @@ These percentages are planning estimates, not promises.
   slicing, safe access, and error handling.
 - Interpreter and VM function calls share lexical variable lookup: caller-only
   locals cannot leak into callees or their returned closures.
+- Local callables consistently shadow global and built-in names; nested named
+  functions remain local and support self/mutual recursion in both runtimes.
 - File, JSON, regex, date/time, database helper, server, task, FFI, and system
   policy surfaces.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.

@@ -4847,46 +4847,35 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode *dugum,
     return ustIslevCagir(cagriAdi.substr(4), argumanDegerleri, dugum->satir());
   }
 
-  if (cagriAdi.find('.') == std::string::npos &&
-      !aktifModulBaglamlari_.empty()) {
-    const auto &baglam = aktifModulBaglamlari_.back();
-    const auto modulIslevi = baglam->islevAliaslari.find(cagriAdi);
-    if (modulIslevi != baglam->islevAliaslari.end()) {
-      return islevCagirAdaGore(modulIslevi->second, argumanDegerleri,
+  const std::size_t nokta = cagriAdi.rfind('.');
+  if (nokta == std::string::npos) {
+    bool isimliDegiskenVar = false;
+    std::string degiskenIslevAdi;
+    try {
+      const OrhunDegeri &aday = degiskenBul(cagriAdi, dugum->satir());
+      isimliDegiskenVar = true;
+      static_cast<void>(islevReferansiCoz(aday, degiskenIslevAdi));
+    } catch (const OrhunHatasi &) {
+      // Değişken yoksa kayıtlı/gömülü işlev tablolarına geç.
+    }
+    if (!degiskenIslevAdi.empty()) {
+      return islevCagirAdaGore(degiskenIslevAdi, argumanDegerleri,
                                dugum->satir(), dondurZorunlu);
     }
-  }
-
-  const bool modulDisiCagri = aktifModulBaglamlari_.empty();
-  if ((modulDisiCagri &&
-       (islevTablosu_.find(cagriAdi) != islevTablosu_.end() ||
-        anonimIslevTablosu_.find(cagriAdi) != anonimIslevTablosu_.end())) ||
-      gomuluIslevler_.find(cagriAdi) != gomuluIslevler_.end()) {
-    return islevCagirAdaGore(cagriAdi, argumanDegerleri, dugum->satir(),
-                             dondurZorunlu);
-  }
-
-  bool isimliDegiskenVar = false;
-  std::string degiskenIslevAdi;
-  try {
-    const OrhunDegeri &aday = degiskenBul(cagriAdi, dugum->satir());
-    isimliDegiskenVar = true;
-    static_cast<void>(islevReferansiCoz(aday, degiskenIslevAdi));
-  } catch (const std::exception &) {
-    // Degisken yoksa normal çözümleme akışıyla devam et.
-  }
-  if (!degiskenIslevAdi.empty()) {
-    return islevCagirAdaGore(degiskenIslevAdi, argumanDegerleri,
-                             dugum->satir(), dondurZorunlu);
-  }
-
-  const std::size_t nokta = cagriAdi.rfind('.');
-  if (nokta == std::string::npos || nokta == 0 ||
-      nokta + 1 >= cagriAdi.size()) {
     if (isimliDegiskenVar) {
       hataFirlat(dugum->satir(),
                  "'" + cagriAdi + "' çağrılabilir bir işlev değil.");
     }
+
+    const bool modulDisiCagri = aktifModulBaglamlari_.empty();
+    if ((modulDisiCagri &&
+         (islevTablosu_.find(cagriAdi) != islevTablosu_.end() ||
+          anonimIslevTablosu_.find(cagriAdi) != anonimIslevTablosu_.end())) ||
+        gomuluIslevler_.find(cagriAdi) != gomuluIslevler_.end()) {
+      return islevCagirAdaGore(cagriAdi, argumanDegerleri, dugum->satir(),
+                               dondurZorunlu);
+    }
+
     std::vector<std::string> adaylar;
     std::unordered_set<std::string> gorulen;
     for (const auto &[ad, _] : islevTablosu_) {
@@ -4901,6 +4890,11 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode *dugum,
     hataFirlat(dugum->satir(),
                oneriliMesaj("'" + cagriAdi + "' adlı işlev bulunamadı.",
                             cagriAdi, adaylar));
+  }
+
+  if (nokta == 0 || nokta + 1 >= cagriAdi.size()) {
+    hataFirlat(dugum->satir(), "Geçersiz işlev çağrı yolu: '" + cagriAdi +
+                                   "'.");
   }
 
   const std::string hedefYolu = cagriAdi.substr(0, nokta);

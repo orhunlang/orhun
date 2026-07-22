@@ -1,0 +1,63 @@
+işlev sec():
+    döndür "global"
+
+işlev ic_golge():
+    işlev sec():
+        döndür "yerel"
+    döndür sec()
+
+yazdır ic_golge()
+yazdır sec()
+
+işlev donustur(x):
+    döndür "global-" + x
+
+işlev lambda_golge():
+    donustur olsun işlev(x): "lambda-" + x
+    döndür donustur("x")
+
+yazdır lambda_golge()
+
+işlev gomulu_golge():
+    uzunluk olsun işlev(x): 99
+    döndür uzunluk([1, 2])
+
+yazdır gomulu_golge()
+
+işlev cagrilamaz_golge():
+    uzunluk olsun 7
+    deneme:
+        yazdır uzunluk([1])
+    yakala hata:
+        döndür "cagrilamaz"
+    döndür "beklenmeyen"
+
+yazdır cagrilamaz_golge()
+
+işlev noktali_golge():
+    metin olsun {"buyuk": işlev(x): "yerel-" + x}
+    döndür metin.buyuk("a")
+
+yazdır noktali_golge()
+
+işlev yerel_oz_yineleme():
+    işlev faktoriyel(n):
+        eğer n küçük 2 ise:
+            döndür 1
+        döndür n * faktoriyel(n - 1)
+    döndür faktoriyel(5)
+
+yazdır yerel_oz_yineleme()
+
+işlev yerel_karsilikli():
+    işlev cift(n):
+        eğer n eşit 0 ise:
+            döndür 1
+        döndür tek(n - 1)
+    işlev tek(n):
+        eğer n eşit 0 ise:
+            döndür 0
+        döndür cift(n - 1)
+    döndür [cift(6), tek(7)]
+
+yazdır yerel_karsilikli()

@@ -12,5 +12,6 @@ sonradan
 yazma-izole
 sonradan
 geri
+modul-yerel
 modul:anonim
 modul:yerel

@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
+#include <unordered_set>
 #include <utility>
 
 namespace {
@@ -334,6 +335,20 @@ void Compiler::komutDerle(const ASTNode *dugum) {
 void Compiler::blokDerle(const BlockNode *dugum) {
   if (dugum == nullptr) {
     return;
+  }
+  if (islevIcindeyim()) {
+    std::unordered_set<std::string> onTanimlananlar;
+    for (const auto &komut : dugum->komutlar()) {
+      const auto *islev = dynamic_cast<const IslevTanimNode *>(komut.get());
+      if (islev == nullptr || !onTanimlananlar.insert(islev->ad()).second) {
+        continue;
+      }
+      const std::uint16_t local = localAlVeyaOlustur(islev->ad());
+      opcodeYaz(OpCode::OP_BOS, islev->satir());
+      chunk_.yazOpCode(OpCode::OP_DEFINE_LOCAL, islev->satir());
+      chunk_.yazU16(local, islev->satir());
+      opcodeYaz(OpCode::OP_POP, islev->satir());
+    }
   }
   for (const auto &komut : dugum->komutlar()) {
     komutDerle(komut.get());
@@ -1277,7 +1292,7 @@ void Compiler::ifadeKomutDerle(const IfadeKomutNode *dugum) {
 
 void Compiler::islevTanimDerle(const IslevTanimNode *dugum) {
   islevLiteralDerle(dugum, false, false, dugum->ad(), "");
-  globalOperandYaz(OpCode::OP_SET_GLOBAL, dugum->ad(), dugum->satir());
+  atamaHedefiYaz(dugum->ad(), dugum->satir(), false);
   opcodeYaz(OpCode::OP_POP, dugum->satir());
 }
 
