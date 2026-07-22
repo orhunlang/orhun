@@ -6,7 +6,7 @@
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 
-surum olsun "0.10.0"
+surum olsun "0.11.0"
 
 işlev token(tur, deger, satir, sutun):
     döndür {"tur": tur, "deger": deger, "satir": satir, "sutun": sutun}
@@ -223,6 +223,50 @@ işlev esles(imlec_degeri, tur, deger):
         döndür yanlış
     ilerle(imlec_degeri)
     döndür doğru
+
+işlev isaretle(imlec_degeri):
+    döndür {"konum": imlec_degeri.konum, "hata_sayisi": uzunluk(imlec_degeri.hatalar)}
+
+işlev isarete_don(imlec_degeri, isaret):
+    hedef_konum olsun isaret.konum
+    eğer hedef_konum küçük 0 ise:
+        hedef_konum = 0
+    eğer hedef_konum büyük uzunluk(imlec_degeri.tokenlar) ise:
+        hedef_konum = uzunluk(imlec_degeri.tokenlar)
+    imlec_degeri["konum"] = hedef_konum
+
+    hedef_hata_sayisi olsun isaret.hata_sayisi
+    eğer hedef_hata_sayisi küçük 0 ise:
+        hedef_hata_sayisi = 0
+    eğer hedef_hata_sayisi büyük uzunluk(imlec_degeri.hatalar) ise:
+        hedef_hata_sayisi = uzunluk(imlec_degeri.hatalar)
+    sürece uzunluk(imlec_degeri.hatalar) büyük hedef_hata_sayisi:
+        imlec_degeri.hatalar.sil(uzunluk(imlec_degeri.hatalar) - 1)
+    döndür simdiki(imlec_degeri)
+
+işlev tur_listesinde_mi(tur, turler):
+    her aday içinde turler:
+        eğer tur eşit aday ise:
+            döndür doğru
+    döndür yanlış
+
+işlev turlerden_biri_mi(imlec_degeri, turler):
+    döndür tur_listesinde_mi(simdiki(imlec_degeri).tur, turler)
+
+işlev turlerden_birini_esles(imlec_degeri, turler):
+    eğer değil turlerden_biri_mi(imlec_degeri, turler) ise:
+        döndür yanlış
+    ilerle(imlec_degeri)
+    döndür doğru
+
+işlev durma_turune_ilerle(imlec_degeri, durma_turleri):
+    atlanan olsun 0
+    sürece değil bitti_mi(imlec_degeri):
+        eğer turlerden_biri_mi(imlec_degeri, durma_turleri) ise:
+            döndür atlanan
+        ilerle(imlec_degeri)
+        atlanan olsun atlanan + 1
+    döndür atlanan
 
 işlev bekle(imlec_degeri, tur, deger, mesaj):
     eğer esles(imlec_degeri, tur, deger) ise:

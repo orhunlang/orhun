@@ -105,8 +105,11 @@ fixture ve 63 hata fixture seviyesine tasindi.
 `orhun-lex` ve `orhun-parse`, Orhun-yazili on ucu surumlu ve dogrulanmis JSON
 olarak dogrudan CLI'dan calistirir; kaynak hatalarini yapisal IR'i bozmadan
 cikis kodu 1 ile bildirir ve source/OBC modul politikalarini destekler.
-`orhun/dil.oh` 0.10.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
+`orhun/dil.oh` 0.11.0 token, imlec, tani ve AST dugumu yardimcilari saglayarak
 Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
+Imlec isaretleri secimli parse denemelerinin konum ve tanilarini geri alir;
+token kumesi esleme ve acik senkronizasyon turlerine ilerleme ortak hata
+kurtarma akislarini saf Orhun kodunda sunar.
 Tani kayitlari ortak kod/konum bicimleyicileriyle yeni baslayanlara acik
 mesajlar olarak sunulabilir; kaynak satiri ve sutun isareti de eklenebilir.
 Aralik tani isaretleri, hata/uyari seviyesi ve Turkce ipuclari da bu ortak
@@ -347,5 +350,8 @@ Basari olcutu:
 2. Saf Orhun stdlib cekirdegini genislet: metin, koleksiyon ve paket manifest
    yardimcilarini Orhun kaynaklarina tasi.
 3. Lexer ve parser ara temsil sozlesmelerini self-hosting icin sabitle.
-4. Kaynak-kodsuz derleyici bundle'ini surumlu release asset'ine donustur.
-5. AOT denemelerini VM ve guvenlik sozlesmesini bozmadan baslat.
+4. Surumlu ve provenance-attested kaynak-kodsuz derleyici/runtime arsivlerinin
+   ustune platform code-signing ve yerel kurucu katmanlarini ekle.
+5. Orhun ile yeni dil ve DSL yazmayi kolaylastiran ortak token, parser kurtarma,
+   tani ve AST yardimcilarini genislet.
+6. AOT denemelerini VM ve guvenlik sozlesmesini bozmadan baslat.

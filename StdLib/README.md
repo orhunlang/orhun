@@ -74,6 +74,10 @@ aralikli olsun dil.tani_araligi("ornek", "gecersiz bolum", 1, 2, 2)
 yazdır dil.tani_kaynak_bicimlendir(aralikli, "abc")
 kimlik_tanisi olsun dil.token_tanisi("tanimsiz_ad", "ad tanimli degil", dil.token("AD", "deger", 1, 1))
 yazdır dil.tani_bicimlendir(kimlik_tanisi)
+isaret olsun dil.isaretle(imlec)
+yazdır dil.turlerden_birini_esles(imlec, ["AD", "SAYI"])
+dil.isarete_don(imlec, isaret)
+yazdır dil.durma_turune_ilerle(imlec, ["DOSYA_SONU"])
 
 parser olsun dahil_et "orhun/parser.oh"
 parse_sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")

@@ -1,5 +1,13 @@
 # Orhun Migration Guide (V2)
 
+## Orhun-Source Dil Yardımcıları (0.11.0)
+- `orhun/dil.oh`, seçimli gramerler için `isaretle` ve `isarete_don`
+  yardımcılarını ekler. Geri dönüş hem token konumunu hem de deneme sırasında
+  üretilen tanıları geri alır.
+- `turlerden_biri_mi`, `turlerden_birini_esles` ve
+  `durma_turune_ilerle`, ortak token kümelerini ve hata sonrası parser
+  senkronizasyonunu her DSL'in yeniden yazmasını önler.
+
 ## Orhun-Source Dil Yardımcıları (0.10.0)
 - `orhun/dil.oh`, tanı listeleri için `tani_listesi_seviyeleri`,
   `tani_listesi_seviye_sayisi`, `tani_listesi_seviyeye_gore_filtrele` ve

@@ -236,7 +236,9 @@ These percentages are planning estimates, not promises.
   token records, token cursors, expected-token diagnostics, AST node builders,
   token/value summaries, diagnostic-message and severity summaries, diagnostic
   severity filters, AST traversal helpers, and AST metrics for compiler/DSL
-  prototypes written in Orhun. Its diagnostic records can be rendered as
+  prototypes written in Orhun. Cursor checkpoints restore speculative parser
+  diagnostics, token-set matching supports grammar alternatives, and recovery
+  can advance to an explicit synchronization set. Diagnostic records render as
   consistent code and source-location messages for beginner-facing DSLs and
   editor tooling, with optional source-line and column-marker output.
 

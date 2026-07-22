@@ -92,3 +92,27 @@ turkce_token olsun dil.token("AD", "çığ", 1, 2)
 yazdır dil.token_uzunlugu(turkce_token)
 token_tanisi olsun dil.token_tanisi("tanimsiz_ad", "bu ad tanimli degil", turkce_token)
 yazdır dil.tani_kaynak_bicimlendir(token_tanisi, "açığ b")
+
+secim_tokenlari olsun [
+    dil.token("AD", "x", 1, 1),
+    dil.token("VIRGUL", ",", 1, 2),
+    dil.token("SAYI", "4", 1, 3),
+    dil.token("NOKTALI_VIRGUL", ";", 1, 4),
+    dil.dosya_sonu(1, 5),
+]
+secim_imleci olsun dil.imlec(secim_tokenlari)
+isaret olsun dil.isaretle(secim_imleci)
+dil.turlerden_birini_esles(secim_imleci, ["AD"])
+yanlis_secim olsun dil.bekle(secim_imleci, "SAYI", "", "sayi bekleniyor")
+yazdır yanlis_secim.ok
+yazdır dil.hata_sayisi(secim_imleci)
+dil.isarete_don(secim_imleci, isaret)
+yazdır secim_imleci.konum
+yazdır dil.hata_sayisi(secim_imleci)
+yazdır dil.turlerden_biri_mi(secim_imleci, ["SAYI", "AD"])
+yazdır dil.turlerden_birini_esles(secim_imleci, ["SAYI", "AD"])
+yazdır secim_imleci.konum
+yazdır dil.durma_turune_ilerle(secim_imleci, ["SAYI"])
+yazdır dil.simdiki(secim_imleci).deger
+yazdır dil.durma_turune_ilerle(secim_imleci, ["DOSYA_SONU"])
+yazdır dil.bitti_mi(secim_imleci)
