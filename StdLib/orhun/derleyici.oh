@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.32.0"
+surum olsun "0.33.0"
 desteklenen_ir_sozlesmesi olsun parser.ir_sozlesmesi
 bytecode_ir_sozlesmesi olsun "orhun-bytecode-ir-v1"
 
@@ -15,7 +15,8 @@ operandli_opcode_adlari olsun [
     "OP_GET_GLOBAL", "OP_SET_GLOBAL", "OP_ALAN_AL", "OP_GUVENLI_ALAN_AL",
     "OP_ALAN_YAZ", "OP_METOD_YAZ", "OP_LISTE_OLUSTUR",
     "OP_SOZLUK_OLUSTUR", "OP_CAGIR", "OP_SINIF", "OP_ATLA",
-    "OP_ATLA_EGER_YANLIS", "OP_DONGU", "OP_TRY_BASLA"
+    "OP_ATLA_EGER_YANLIS", "OP_DONGU", "OP_TRY_BASLA",
+    "OP_COKLU_ATAMA_DOGRULA"
 ]
 
 operandsiz_opcode_adlari olsun [
@@ -939,6 +940,7 @@ işlev komut_derle(durum, komut):
 
     eğer komut.tur eşit "CokluAtama" ise:
         ifade_derle(durum, komut.ifade_ozeti)
+        operandli_komut_ekle(durum, "OP_COKLU_ATAMA_DOGRULA", komut.satir, uzunluk(komut.hedefler))
         i olsun 0
         sürece i küçük uzunluk(komut.hedefler):
             komut_ekle(durum, "OP_KOPYA", komut.satir)

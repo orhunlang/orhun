@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <future>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -28,7 +29,7 @@ public:
 };
 
 // Orhun çalışma zamanı değeri.
-// v0.8: sayı(int/double), metin, liste, sözlük ve nesne desteklenir.
+// v0.8: boş, mantık, sayı(int/double), metin, liste, sözlük ve nesne desteklenir.
 struct OrhunDegeri {
   // Recursive variant problemi için konteynerler shared_ptr ile taşınır.
   using ListeVeri = std::vector<OrhunDegeri>;
@@ -37,9 +38,12 @@ struct OrhunDegeri {
   using SozlukTipi = std::shared_ptr<SozlukVeri>;
   using NesneTipi = std::shared_ptr<OrhunNesne>;
 
-  std::variant<int, double, std::string, ListeTipi, SozlukTipi, NesneTipi> veri;
+  std::variant<std::monostate, bool, int, double, std::string, ListeTipi,
+               SozlukTipi, NesneTipi>
+      veri;
 
-  OrhunDegeri() : veri(0) {}
+  OrhunDegeri() : veri(std::monostate{}) {}
+  explicit OrhunDegeri(bool v) : veri(v) {}
   explicit OrhunDegeri(int v) : veri(v) {}
   explicit OrhunDegeri(double v) : veri(v) {}
   explicit OrhunDegeri(std::string v) : veri(std::move(v)) {}
@@ -74,6 +78,12 @@ inline bool OrhunDegeri::operator==(const OrhunDegeri &diger) const {
     return false;
   }
 
+  if (std::holds_alternative<std::monostate>(veri)) {
+    return true;
+  }
+  if (const auto *v = std::get_if<bool>(&veri)) {
+    return *v == std::get<bool>(diger.veri);
+  }
   if (const auto *v = std::get_if<int>(&veri)) {
     return *v == std::get<int>(diger.veri);
   }
@@ -186,6 +196,13 @@ private:
   std::unordered_map<int, FFIBinding> ffiIslevBaglantilari_;
   int ffiSonrakiKimlik_ = 1;
   int ffiSonrakiIslevKimlik_ = 1;
+  struct GorevKaydi {
+    std::future<double> future;
+    double sonuc = 0.0;
+    bool sonucHazir = false;
+  };
+  std::unordered_map<int, GorevKaydi> gorevler_;
+  int gorevSonrakiKimlik_ = 1;
   std::size_t anonimIslevSayaci_ = 0;
   std::size_t closureSayaci_ = 0;
   struct CagriCercevesi {
@@ -233,6 +250,7 @@ private:
   OrhunDegeri islevCagir(const IslevCagriNode *dugum,
                          bool dondurZorunlu = true);
   OrhunDegeri anonimIslevOlustur(const IsimsizIslevNode *dugum);
+  OrhunDegeri paralelYapBaslat(const ParalelYapNode *dugum);
   OrhunDegeri dahilEtDegerlendir(const DahilEtNode *dugum);
   OrhunDegeri ustIslevCagir(const std::string &metodAdi,
                             const std::vector<OrhunDegeri> &argumanlar,
@@ -256,7 +274,8 @@ private:
                                   const std::string *etkinSinifAdi,
                                   bool dondurZorunlu,
                                   const std::vector<KapsamPtr>
-                                      *yakalananKapsamlar = nullptr);
+                                      *yakalananKapsamlar = nullptr,
+                                  const std::string *cagriAdi = nullptr);
   OrhunDegeri nesneMetoduCagir(const OrhunDegeri &hedef,
                                const std::string &metodAdi,
                                const std::vector<OrhunDegeri> &argumanlar,

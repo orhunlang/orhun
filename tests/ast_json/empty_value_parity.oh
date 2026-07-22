@@ -1,0 +1,32 @@
+işlev yan_etki():
+    gecici olsun 1
+
+bos_deger olsun yan_etki()
+yazdır bos_deger
+yazdır json.yaz(bos_deger)
+yazdır bos_deger eşit 0
+yazdır bos_deger eşit bos_deger
+
+eğer bos_deger ise:
+    yazdır "beklenmeyen"
+değilse:
+    yazdır "bos-yanlis"
+
+liste olsun []
+ekleme_sonucu olsun listeye_ekle(liste, 1)
+yazdır liste
+yazdır ekleme_sonucu
+
+oklu olsun sonuc.ok(42)
+hatali olsun sonuc.hata("x")
+yazdır json.yaz([oklu.hata, hatali.deger])
+
+json_bos olsun json.coz("null")
+yazdır json_bos
+yazdır json.yaz(json_bos)
+yazdır bekle(0)
+
+deneme:
+    yazdır 0?.ad
+yakala hata:
+    yazdır "sayi-guvenli-degil"

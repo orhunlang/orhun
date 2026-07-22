@@ -258,6 +258,20 @@ bash tests/run_tests.sh g++ build/orhun_test
 The test runner applies per-case timeouts so one broken fixture cannot hang the
 whole suite.
 
+To measure the C++ interpreter against every guarded runtime output:
+
+```powershell
+py -3 tests\interpreter_parity_sweep.py .\build\orhun_test.exe
+```
+
+The sweep fails on new drift while reporting the currently tracked parity gaps.
+The three large Orhun-source tooling fixtures intentionally remain under the
+fast ten-second budget. An exhaustive local parity run can include them with:
+
+```powershell
+py -3 tests\interpreter_parity_sweep.py .\build\orhun_test.exe --timeout 240
+```
+
 ## Project Direction
 
 Near-term priorities:
@@ -293,6 +307,7 @@ self-hosting plan.
 - Closure capture analysis smoke: `tests/closure_capture_analysis_smoke.py`
 - Lambda capture analysis smoke: `tests/lambda_capture_analysis_smoke.py`
 - Interpreter closure smoke: `tests/interpreter_closure_smoke.py`
+- Full interpreter/runtime parity sweep: `tests/interpreter_parity_sweep.py`
 - VM closure extra smoke: `tests/vm_closure_extra_smoke.py`
 - LSP smoke: `tests/lsp_smoke.py`
 - Cross-platform workspace/file-URI LSP smoke: `tests/lsp_workspace_smoke.py`

@@ -1,0 +1,18 @@
+tekrar_sayisi olsun 0
+tekrarla 3 kez:
+    tekrar_sayisi olsun tekrar_sayisi + 1
+yazdır tekrar_sayisi
+
+surece_sayisi olsun 0
+sürece surece_sayisi küçük 3:
+    surece_sayisi olsun surece_sayisi + 1
+yazdır surece_sayisi
+
+toplam olsun 0
+her oge içinde [1, 2, 3]:
+    toplam olsun toplam + oge
+yazdır toplam
+
+tekrarla 1 kez:
+    dongude_tanimlanan olsun 7
+yazdır dongude_tanimlanan

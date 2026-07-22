@@ -106,6 +106,12 @@ doğru
 yanlış
 ```
 
+`bos`, booleans, and numbers are distinct runtime types in both execution
+engines. In particular, `doğru eşit 1` and `yanlış eşit 0` are false even
+though booleans may be converted to `1` and `0` by numeric operators. JSON
+conversion preserves this distinction: `bos` maps to `null`, booleans map to
+JSON booleans, and numbers remain JSON numbers.
+
 ## Truthiness
 
 Values considered false:
@@ -148,6 +154,9 @@ Multiple assignment and destructuring are supported by the current test suite.
 a, b olsun [1, 2]
 ```
 
+The number of assignment targets must exactly match the source list length.
+Both runtimes reject missing and surplus values before writing any target.
+
 ## Operators
 
 Arithmetic operators are `+`, `-`, `*`, `/`, and `%`. Modulo uses the same
@@ -155,6 +164,11 @@ zero-divisor error contract in the interpreter and VM. `ve` and `veya` are
 short-circuit boolean operators in both runtimes. They return normalized boolean
 results and do not evaluate the right operand when the left operand determines
 the result.
+
+Equality is type-sensitive except for the interpreter's internal integer and
+decimal number representations, which compare by numeric value. Boolean and
+`bos` values never compare equal to a number. List and string indexes require
+the numeric runtime type, so a boolean cannot be used as an implicit index.
 
 ## Printing
 
@@ -282,6 +296,10 @@ işlev selam(ad olsun "dünya"):
 ```
 
 Required parameters may not appear after default-valued parameters.
+
+A function or anonymous function that reaches the end without `döndür`
+returns `bos`. Side-effect helpers such as `listeye_ekle`, `dosya.yaz`, and
+`bekle` follow the same no-value contract in the interpreter and VM.
 
 Named functions, methods, anonymous functions, and external-function
 declarations may split their parameter lists across multiple lines. A trailing
@@ -478,6 +496,10 @@ deneme:
 yakala hata:
     yazdır hata
 ```
+
+Interpreter and VM diagnostics use the same generated anonymous-function names,
+current source lines, and stack-frame order. A caught error preserves that stack
+trace so logging it has the same result in both execution paths.
 
 The standard result-value helper is exposed as `sonuc`.
 
@@ -686,7 +708,8 @@ sonuçlar olsun gorev.hepsi_bekle([g1, g2])
 ```
 
 The current `paralel yap` implementation is intentionally narrow and should be
-expanded only with tests.
+expanded only with tests. The tree-walking interpreter and bytecode VM both
+lower it to the same `gorev.baslat_plan` contract.
 
 ## Standard Modules
 
@@ -717,6 +740,10 @@ Current built-in module surfaces include:
 - `orhun/derleyici_cli.oh`
 
 Safety-sensitive modules must keep policy checks enabled by default.
+
+Global numeric primitives include `tam(x)` (truncate toward zero) and
+`taban(x)` (floor). Both runtimes also retain the variadic ASCII compatibility
+call `yazdir(...)`; Turkish `yazdır`/`yaz` remains the documented default.
 
 `sistem.argumanlar` is a list containing only the arguments passed after the
 program source or runtime command. The runtime executable and source path are
@@ -862,7 +889,7 @@ also be exposed as diagnostic dictionaries through `hata_tanisi` and
 `hata_tanilari`, using the same `kod`, `mesaj`, `satir`, `sutun`, `uzunluk`,
 `seviye`, and `ipucu` fields as the language-development helpers. The
 structural summary is compared against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 158 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 174 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,

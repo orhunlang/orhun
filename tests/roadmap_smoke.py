@@ -85,6 +85,10 @@ def main() -> int:
         ("closure capture analysis", [py, "tests/closure_capture_analysis_smoke.py", str(binary)]),
         ("lambda capture analysis", [py, "tests/lambda_capture_analysis_smoke.py", str(binary)]),
         ("interpreter mode", [py, "tests/interpreter_mode_smoke.py", str(binary)]),
+        (
+            "interpreter parity sweep",
+            [py, "tests/interpreter_parity_sweep.py", str(binary)],
+        ),
         ("interpreter closures", [py, "tests/interpreter_closure_smoke.py", str(binary)]),
         ("VM closure extras", [py, "tests/vm_closure_extra_smoke.py", str(binary)]),
         ("input alias", [py, "tests/input_alias_smoke.py", str(binary)]),

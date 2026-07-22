@@ -1,2 +1,5 @@
-a, b, c olsun [1, 2]
-yazdır a
+deneme:
+    a, b, c olsun [1, 2]
+    yazdır "beklenmeyen"
+yakala hata:
+    yazdır "coklu-kisalik-hatasi"

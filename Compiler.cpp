@@ -144,6 +144,7 @@ std::size_t opcodeUzunlugu(const BytecodeChunk &chunk, std::size_t ip) {
   case OpCode::OP_ATLA_EGER_YANLIS:
   case OpCode::OP_DONGU:
   case OpCode::OP_TRY_BASLA:
+  case OpCode::OP_COKLU_ATAMA_DOGRULA:
     return 3;
   case OpCode::OP_ISLEV_OLUSTUR: {
     if (ip + 14 >= chunk.kod.size()) {
@@ -1019,7 +1020,14 @@ void Compiler::atamaDerle(const AtamaNode *dugum) {
 }
 
 void Compiler::cokluAtamaDerle(const CokluAtamaNode *dugum) {
+  if (dugum->hedefler().size() > std::numeric_limits<std::uint16_t>::max()) {
+    derlemeHatasi(dugum->satir(),
+                  "Coklu atama hedef sayisi U16 sinirini asiyor.");
+  }
   ifadeDerle(dugum->ifade());
+  opcodeYaz(OpCode::OP_COKLU_ATAMA_DOGRULA, dugum->satir());
+  chunk_.yazU16(static_cast<std::uint16_t>(dugum->hedefler().size()),
+                dugum->satir());
   for (std::size_t i = 0; i < dugum->hedefler().size(); ++i) {
     opcodeYaz(OpCode::OP_KOPYA, dugum->satir());
     sabitYaz(SabitDeger(static_cast<double>(i)), dugum->satir());

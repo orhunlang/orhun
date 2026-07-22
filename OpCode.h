@@ -51,5 +51,6 @@ enum class OpCode : std::uint8_t {
   OP_DON,
   OP_NOP,
   OP_GUVENLI_ALAN_AL,
-  OP_LISTE_DOGRULA
+  OP_LISTE_DOGRULA,
+  OP_COKLU_ATAMA_DOGRULA
 };

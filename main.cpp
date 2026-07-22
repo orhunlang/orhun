@@ -1010,6 +1010,8 @@ std::string opCodeAdi(OpCode op) {
   case OpCode::OP_NOP: return "OP_NOP";
   case OpCode::OP_GUVENLI_ALAN_AL: return "OP_GUVENLI_ALAN_AL";
   case OpCode::OP_LISTE_DOGRULA: return "OP_LISTE_DOGRULA";
+  case OpCode::OP_COKLU_ATAMA_DOGRULA:
+    return "OP_COKLU_ATAMA_DOGRULA";
   }
   return "OP_BILINMEYEN";
 }
@@ -1047,6 +1049,7 @@ std::size_t bytecodeKomutUzunlugu(const BytecodeChunk &chunk, std::size_t ip) {
   case OpCode::OP_ATLA_EGER_YANLIS:
   case OpCode::OP_DONGU:
   case OpCode::OP_TRY_BASLA:
+  case OpCode::OP_COKLU_ATAMA_DOGRULA:
     return 3;
   case OpCode::OP_ISLEV_OLUSTUR: {
     if (ip + 14 >= chunk.kod.size()) {
@@ -1253,7 +1256,7 @@ std::uint16_t jsonU16Bekle(const yerlesik::JsonDeger &deger,
 
 OpCode opCodeAdindanCoz(const std::string &ad) {
   for (int i = static_cast<int>(OpCode::OP_SABIT);
-       i <= static_cast<int>(OpCode::OP_LISTE_DOGRULA); ++i) {
+       i <= static_cast<int>(OpCode::OP_COKLU_ATAMA_DOGRULA); ++i) {
     const OpCode op = static_cast<OpCode>(i);
     if (opCodeAdi(op) == ad) {
       return op;
@@ -1283,6 +1286,7 @@ bool bytecodeOperandliMi(OpCode op) {
   case OpCode::OP_ATLA_EGER_YANLIS:
   case OpCode::OP_DONGU:
   case OpCode::OP_TRY_BASLA:
+  case OpCode::OP_COKLU_ATAMA_DOGRULA:
     return true;
   default:
     return false;

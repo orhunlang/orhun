@@ -18,7 +18,19 @@ baslar. Orhun icin asil bagimsizlik hedefi sudur:
 Durum: aktif; ana Windows ve POSIX test kosuculari her vaka icin timeout
 uygular. Coverage kosuculari enstrumante binary'yi yeniden derlemeden ayni
 vaka paketini calistirir; coverage kapisi varsayilan VM/derleyici cekirdegini
-izler.
+izler. Interpreter ve VM artik `bos`, mantik ve sayi turlerini ayri tasir;
+esitlik, JSON, kati indeks ve donussuz islev semantigi ortak fixture'larda
+eslenir. Global dongu govdelerindeki `olsun` baglari VM ile ayni global ortami
+guncellerken, islev-ici iterasyon closure hucreleri taze kalir. Tam interpreter
+parity sweep'i 152 korumali runtime ciktisinin 149'unu hizli butcede birebir
+eslestirir ve kalan 3 performans farkini acik known-gap listesinde tutar. Bu uc
+buyuk Orhun-kaynakli arac fixture'i genis zaman butcesinde birebir ayni ciktiyi
+verir.
+
+`gorev` ilkelleri ve `paralel yap` planlari hem yorumlayici hem VM yolunda ayni
+sozlesmeyle calisir. Coklu atama, hedef sayisini liste boyutuyla hicbir hedefi
+yazmadan once esleyen operandli bytecode dogrulamasini iki derleyici yolunda da
+uretir.
 
 Hedefler:
 
@@ -86,7 +98,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Basarili ve hatali lexer ozetleri `orhun-lexer-ir-v1` kimligini tasir;
 token alanlari, konumlari, sayaclari ve son `DOSYA_SONU` kaydi saf Orhun
-yardimcisiyla dogrulanabilir. Parser prototipi 171 basarili AST
+yardimcisiyla dogrulanabilir. Parser prototipi 174 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 `orhun-lex` ve `orhun-parse`, Orhun-yazili on ucu surumlu ve dogrulanmis JSON
 olarak dogrudan CLI'dan calistirir; kaynak hatalarini yapisal IR'i bozmadan
@@ -167,7 +179,7 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.32.0; parser girdisinde
+hazirlandi. `orhun/derleyici.oh` 0.33.0; parser girdisinde
 `orhun-parser-ir-v2` sozlesmesini, lexer kokenini ve recursive yapi
 dogrulamasini zorunlu tutar;
 basarili bytecode nesnelerini `orhun-bytecode-ir-v1` sozlesmesiyle surumler ve
@@ -216,7 +228,7 @@ Compiler prototype smoke su anda 98 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 158
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 161
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis

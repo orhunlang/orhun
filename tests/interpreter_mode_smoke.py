@@ -20,10 +20,18 @@ def main() -> int:
 
     fixtures = (
         "assignment_equals_scope",
+        "boolean_type_parity",
+        "empty_value_parity",
+        "global_loop_binding_parity",
         "listeye_ekle_parity",
+        "math_features",
         "modulo_parity",
         "short_circuit_parity",
+        "stdlib_async",
         "utf8_check",
+        "vm_sonuc_bos",
+        "vm_loop_control",
+        "vm_paralel_yap",
     )
     for fixture in fixtures:
         source = repo / "tests" / "cases" / f"{fixture}.oh"

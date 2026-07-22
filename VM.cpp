@@ -2611,7 +2611,8 @@ void VM::calistir(const BytecodeChunk &chunk) {
                                    &&CASE_OP_DON,
                                    &&CASE_OP_NOP,
                                    &&CASE_OP_GUVENLI_ALAN_AL,
-                                   &&CASE_OP_LISTE_DOGRULA};
+                                   &&CASE_OP_LISTE_DOGRULA,
+                                   &&CASE_OP_COKLU_ATAMA_DOGRULA};
 #define CASE(name) CASE_##name:
 #define BREAK DISPATCH()
 #define DISPATCH()                                                             \
@@ -2920,6 +2921,19 @@ void VM::calistir(const BytecodeChunk &chunk) {
         const Value hedef = yiginPop();
         if (!objTipiMi(hedef, ObjType::LIST)) {
           calismaHatasi("Liste kaynagi liste olmalidir.");
+        }
+        BREAK;
+      }
+      CASE(OP_COKLU_ATAMA_DOGRULA) {
+        const std::uint16_t beklenen = u16Oku();
+        const Value &hedef = yiginBak(0);
+        if (!objTipiMi(hedef, ObjType::LIST)) {
+          calismaHatasi("Coklu atamada sag taraf liste olmalidir.");
+        }
+        const auto *liste = static_cast<ObjList *>(hedef.as.nesne);
+        if (liste->ogeler.size() != beklenen) {
+          calismaHatasi(
+              "Coklu atamada hedef sayisi ile liste boyutu eslesmiyor.");
         }
         BREAK;
       }

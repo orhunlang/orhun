@@ -1,0 +1,15 @@
+--- Modulo Operator Tests ---
+1
+1.5
+0
+-1
+--- tam() Function Tests ---
+3
+-3
+10
+0
+--- taban() Function Tests ---
+3
+-4
+10
+0

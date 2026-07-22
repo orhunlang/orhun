@@ -7,6 +7,30 @@
 - Mevcut tanı kayıt biçimi ve biçimlendirme işlevleri değişmediği için bu sürüm
   önceki Orhun kaynaklarıyla geriye uyumludur.
 
+## Runtime Değer Ayrımı (0.8.0 geliştirme)
+- C++ yorumlayıcı artık `bos`, mantık ve sayı değerlerini ayrı runtime türleri
+  olarak taşır; VM ile aynı değer modelini kullanır.
+- `doğru eşit 1` ve `yanlış eşit 0` artık yorumlayıcıda da `yanlış` sonucunu
+  verir. Mantık değerleri sayısal işlemlerde `1/0` olarak kullanılmaya devam
+  eder, ancak örtük liste/metin indeksi olamaz.
+- JSON dönüşümü `bos -> null`, mantık -> JSON boolean ve sayı -> JSON number
+  ayrımını iki çalışma yolunda da korur.
+- Açık `döndür` olmadan biten isimli veya isimsiz işlevler ile değer üretmeyen
+  `listeye_ekle`, `dosya.yaz` ve `bekle` çağrıları yorumlayıcıda da `bos`
+  döndürür.
+- Bu değişiklik, `0` değerini eski yorumlayıcıya özgü bir `bos` vekili olarak
+  kullanan kodlar için bilinçli bir pre-1.0 semantik düzeltmedir.
+- Çoklu atamada hedef sayısı ile sağdaki liste uzunluğu artık iki çalışma
+  yolunda da tam eşleşmelidir. Fazla öğeler sessizce atılmaz; eksik öğeler de
+  genel indeks hatasına düşmeden doğrudan çoklu-atama tanısı üretir.
+- Yorumlayıcı, VM ile aynı `tam(x)` ve `taban(x)` sayısal ilkellerini ve
+  değişken argümanlı `yazdir(...)` ASCII uyumluluk çağrısını sağlar.
+- Yorumlayıcı çağrı yığını artık her çerçevenin güncel kaynak satırını ve VM ile
+  aynı anonim işlev adını taşır. `deneme/yakala` ile tutulan hata, stack trace
+  bilgisini iki çalışma yolunda da korur.
+- `gorev` ilkelleri ve `paralel yap` görev planları yorumlayıcıda da doğrudan
+  desteklenir; bu söz dizimi artık yalnızca VM yoluna bağlı değildir.
+
 ## 1. VM Fallback Davranışı
 - Varsayılan davranış VM'dir.
 - Fallback varsayılanı artık kanal bazlıdır:
@@ -251,7 +275,7 @@
 - 0.28.0, metin, sayı, mantık ve parantezli ifadelerin ardından gelen indeks
   ve dilim zincirlerini C++ parser ile aynı `IndeksErisim` / `DilimErisim`
   yapısında özetler. IR sözleşme kimliği değişmez.
-- `orhun/derleyici.oh` 0.32.0, eksik, farklı veya yapısal olarak bozuk parser
+- `orhun/derleyici.oh` 0.33.0, eksik, farklı veya yapısal olarak bozuk parser
   IR girdisini komut alanlarını derlemeden önce açıklayıcı bir hatayla reddeder.
   Başarılı bytecode artık `orhun-bytecode-ir-v1` sözleşmesini; derleyici sonucu
   parser IR kökenini ve saf Orhun `ir_dogrulamasi` kaydını taşır.

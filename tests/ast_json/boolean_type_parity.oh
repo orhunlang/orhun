@@ -1,0 +1,19 @@
+yazdır json.yaz([doğru, yanlış, 1, 0])
+yazdır doğru eşit 1
+yazdır yanlış eşit 0
+yazdır doğru eşit doğru
+yazdır değil yanlış
+yazdır json.yaz(metin.icerir("orhun", "hun"))
+yazdır json.yaz(regex.eslesir("orhun", "hun"))
+yazdır json.yaz(json.coz("[true,false]"))
+
+oklu olsun sonuc.ok(42)
+hatali olsun sonuc.hata("x")
+yazdır json.yaz([oklu.ok, hatali.ok])
+
+deneme:
+    yazdır [10][doğru]
+yakala hata:
+    yazdır "mantik-indeks-kati"
+
+yazdır doğru + 1

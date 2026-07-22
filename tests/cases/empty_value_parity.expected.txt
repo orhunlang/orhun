@@ -1,0 +1,12 @@
+bos
+null
+0
+1
+bos-yanlis
+[1]
+bos
+[null,null]
+bos
+null
+bos
+sayi-guvenli-degil

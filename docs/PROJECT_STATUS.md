@@ -30,6 +30,17 @@ These percentages are planning estimates, not promises.
 - Turkish-first syntax and diagnostics.
 - UTF-8 identifiers and Turkish keywords.
 - Interpreter and strict VM execution paths.
+- The interpreter and VM share distinct `bos`, boolean, and numeric runtime
+  types. Equality, truthiness, JSON conversion, strict indexing, result
+  records, and implicit no-value returns are guarded by cross-runtime fixtures.
+- The fast interpreter parity sweep currently records 149 exact outputs across
+  the 152 guarded runtime fixtures and tracks 3 explicit performance-budget
+  gaps instead of allowing unmeasured fallback drift. All three large
+  Orhun-source tooling fixtures are output-exact under the exhaustive timeout.
+- Interpreter runtime diagnostics now match VM call names, current source
+  lines, caught stack traces, and arity/index/access error contracts.
+- Task primitives and `paralel yap` execute through the same task-plan contract
+  in both the tree-walking interpreter and bytecode VM.
 - Bytecode compiler.
 - Canonical module caching in both execution paths; repeated imports share one
   module instance, interpreter and VM functions retain their module-global
@@ -40,6 +51,12 @@ These percentages are planning estimates, not promises.
   slicing, safe access, and error handling.
 - Interpreter and VM function calls share lexical variable lookup: caller-only
   locals cannot leak into callees or their returned closures.
+- Top-level bindings created or updated inside `tekrarla`, `sürece`, and `her`
+  loops remain global in both runtimes, while function-local loop iterations
+  retain fresh closure cells.
+- Destructuring validates the complete source-list arity before writing any
+  target in both runtimes. The same check is emitted by the C++ and
+  Orhun-written bytecode compilers.
 - Local callables consistently shadow global and built-in names; nested named
   functions remain local and support self/mutual recursion in both runtimes.
 - File, JSON, regex, date/time, database helper, server, task, FFI, and system

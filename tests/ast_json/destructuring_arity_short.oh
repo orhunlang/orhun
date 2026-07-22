@@ -1,3 +1,6 @@
-# ast: CokluAtama,Yazdir
-a, b, c olsun [1, 2]
-yazdır a
+# ast: DenemeYakala
+deneme:
+    a, b, c olsun [1, 2]
+    yazdır "beklenmeyen"
+yakala hata:
+    yazdır "coklu-kisalik-hatasi"
