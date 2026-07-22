@@ -1,0 +1,18 @@
+metin_degeri olsun "a,b,c"
+yazdır metin_degeri.uzunluk()
+yazdır metin_degeri.parcala(",")
+deneme:
+    yazdır metin.icerir({"x": 1}, "x")
+yakala hata:
+    yazdır "metin-kati"
+
+liste olsun [1, 2]
+yazdır liste.ekle(3)
+yazdır liste.sil(0)
+yazdır liste.uzunluk()
+
+sozluk olsun {"a": 1, "b": 2}
+yazdır sozluk.uzunluk()
+yazdır uzunluk(sozluk.anahtarlar())
+yazdır uzunluk(sozluk.degerler())
+yazdır sozluk.sil("a")

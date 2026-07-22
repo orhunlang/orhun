@@ -463,6 +463,7 @@ void VM::sifirla() {
   tryYigini_.clear();
   yigin_.clear();
   globaller_.clear();
+  yerlesikGloballer_.clear();
   globalInlineCache_.clear();
   runtimeSabitCache_.clear();
   gorevler_.clear();
@@ -479,6 +480,7 @@ void VM::sifirla() {
   gcEsigi_ = 1024;
   gcErtelemeDerinligi_ = 0;
   yerlesikNativesYukle();
+  yerlesikGloballer_ = globaller_;
 }
 
 Value VM::yeniString(const std::string &metin) {
@@ -596,9 +598,16 @@ void VM::yerlesikNativesYukle() {
                  throw std::runtime_error("sayiya_cevir: gecersiz sayi.");
                }
              });
-  ekleNative("icerir", 2, [](VM &vm, const std::vector<Value> &args) -> Value {
-    const std::string kaynak = vm.metneCevir(args[0]);
-    const std::string aranan = vm.metneCevir(args[1]);
+  ekleNative("icerir", 2, [](VM &, const std::vector<Value> &args) -> Value {
+    if (!objTipiMi(args[0], ObjType::STRING) ||
+        !objTipiMi(args[1], ObjType::STRING)) {
+      throw std::runtime_error(
+          "icerir(metin, aranan) yalnizca metin argumanlari kabul eder.");
+    }
+    const std::string &kaynak =
+        static_cast<ObjString *>(args[0].as.nesne)->deger;
+    const std::string &aranan =
+        static_cast<ObjString *>(args[1].as.nesne)->deger;
     return Value::mantik(kaynak.find(aranan) != std::string::npos);
   });
 
@@ -1012,9 +1021,17 @@ void VM::yerlesikNativesYukle() {
             utf8KodNoktalarinaCevir(vm.metneCevir(a[0])).size()));
       });
   metin->alanlar["icerir"] = nativeOlustur(
-      "metin.icerir", 2, [](VM &vm, const std::vector<Value> &a) -> Value {
-        const std::string kaynak = vm.metneCevir(a[0]);
-        const std::string aranan = vm.metneCevir(a[1]);
+      "metin.icerir", 2, [](VM &, const std::vector<Value> &a) -> Value {
+        if (!objTipiMi(a[0], ObjType::STRING) ||
+            !objTipiMi(a[1], ObjType::STRING)) {
+          throw std::runtime_error(
+              "metin.icerir(metin, aranan) yalnizca metin argumanlari "
+              "kabul eder.");
+        }
+        const std::string &kaynak =
+            static_cast<ObjString *>(a[0].as.nesne)->deger;
+        const std::string &aranan =
+            static_cast<ObjString *>(a[1].as.nesne)->deger;
         return Value::mantik(kaynak.find(aranan) != std::string::npos);
       });
   metin->alanlar["parcala"] = globaller_["parcala"];
@@ -2297,6 +2314,8 @@ void VM::yerlesikNativesYukle() {
                  BytecodeChunk &chunk = *modulChunk;
 
                  const auto oncekiGloballer = vm.globaller_;
+                 vm.globaller_ = vm.yerlesikGloballer_;
+                 const auto modulGlobalOncesi = vm.globaller_;
                  std::unordered_set<std::string> modulYazimlari;
 
                  const BytecodeChunk *kayitChunk = vm.chunk_;
@@ -2362,8 +2381,8 @@ void VM::yerlesikNativesYukle() {
                    }
                  }
                  for (const auto &[ad, deger] : vm.globaller_) {
-                   const auto onceki = oncekiGloballer.find(ad);
-                   if (onceki != oncekiGloballer.end() &&
+                   const auto onceki = modulGlobalOncesi.find(ad);
+                   if (onceki != modulGlobalOncesi.end() &&
                        vm.esitMi(onceki->second, deger)) {
                      continue;
                    }
@@ -2406,6 +2425,10 @@ void VM::gcCalistir() {
       mem.markValue(deger);
     }
     for (const auto &[ad, deger] : globaller_) {
+      (void)ad;
+      mem.markValue(deger);
+    }
+    for (const auto &[ad, deger] : yerlesikGloballer_) {
       (void)ad;
       mem.markValue(deger);
     }
@@ -2688,8 +2711,11 @@ void VM::calistir(const BytecodeChunk &chunk) {
             BREAK;
           }
         }
-        const auto it = globaller_.find(ad);
-        if (it == globaller_.end()) {
+        const auto &globalKaynak = aktifIslev->modulOrtami == nullptr
+                                       ? globaller_
+                                       : yerlesikGloballer_;
+        const auto it = globalKaynak.find(ad);
+        if (it == globalKaynak.end()) {
           calismaHatasi("Tanimsiz degisken: '" + ad + "'.");
         }
         if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
@@ -2721,6 +2747,8 @@ void VM::calistir(const BytecodeChunk &chunk) {
             modulDegeri->second = atanan;
             BREAK;
           }
+          aktifIslev->modulOrtami->alanlar[ad] = atanan;
+          BREAK;
         }
         if (!modulYazimYigini_.empty()) {
           modulYazimYigini_.back()->insert(ad);
@@ -2806,17 +2834,23 @@ void VM::calistir(const BytecodeChunk &chunk) {
         }
         if (hedef.as.nesne->type == ObjType::LIST) {
           auto *liste = static_cast<ObjList *>(hedef.as.nesne);
-          const double indeksSayi = indeks.type == ValueType::SAYI
-                                        ? indeks.as.sayi
-                                        : sayiyaCevir(indeks, "liste atama");
-          const int i = static_cast<int>(std::llround(indeksSayi));
-          if (i < 0 || static_cast<std::size_t>(i) >= liste->ogeler.size()) {
+          if (indeks.type != ValueType::SAYI || !tamSayiMi(indeks.as.sayi) ||
+              indeks.as.sayi < 0.0) {
+            calismaHatasi(
+                "Liste atama indeksi sifir veya pozitif tam sayi olmalidir.");
+          }
+          const std::size_t i = static_cast<std::size_t>(indeks.as.sayi);
+          if (i >= liste->ogeler.size()) {
             calismaHatasi("Liste indeksi sinir disi.");
           }
-          liste->ogeler[static_cast<std::size_t>(i)] = deger;
+          liste->ogeler[i] = deger;
         } else if (hedef.as.nesne->type == ObjType::DICT) {
+          if (!objTipiMi(indeks, ObjType::STRING)) {
+            calismaHatasi("Sozluk atama anahtari metin olmalidir.");
+          }
           static_cast<ObjDict *>(hedef.as.nesne)
-              ->alanlar[anahtaraCevir(indeks, "sozluk atama")] = deger;
+              ->alanlar[static_cast<ObjString *>(indeks.as.nesne)->deger] =
+              deger;
         } else {
           calismaHatasi("Bu tipte indeks atamasi desteklenmiyor.");
         }
@@ -3672,6 +3706,63 @@ Value VM::alanAl(const Value &hedef, const std::string &alanAdi) {
     if (it != sozluk->alanlar.end()) {
       return it->second;
     }
+    if (alanAdi == "anahtarlar") {
+      return Value::nesne(memory_.allocate<ObjNative>(
+          "sozluk.anahtarlar", 0,
+          [](VM &vm, const std::vector<Value> &args) -> Value {
+            auto *self = static_cast<ObjDict *>(args.at(0).as.nesne);
+            std::vector<Value> anahtarlar;
+            anahtarlar.reserve(self->alanlar.size());
+            for (const auto &[anahtar, _] : self->alanlar) {
+              anahtarlar.push_back(vm.yeniString(anahtar));
+            }
+            return vm.yeniListe(std::move(anahtarlar));
+          },
+          std::vector<Value>{hedef}));
+    }
+    if (alanAdi == "degerler") {
+      return Value::nesne(memory_.allocate<ObjNative>(
+          "sozluk.degerler", 0,
+          [](VM &vm, const std::vector<Value> &args) -> Value {
+            auto *self = static_cast<ObjDict *>(args.at(0).as.nesne);
+            std::vector<Value> degerler;
+            degerler.reserve(self->alanlar.size());
+            for (const auto &[anahtar, deger] : self->alanlar) {
+              (void)anahtar;
+              degerler.push_back(deger);
+            }
+            return vm.yeniListe(std::move(degerler));
+          },
+          std::vector<Value>{hedef}));
+    }
+    if (alanAdi == "sil") {
+      return Value::nesne(memory_.allocate<ObjNative>(
+          "sozluk.sil", 1,
+          [](VM &, const std::vector<Value> &args) -> Value {
+            auto *self = static_cast<ObjDict *>(args.at(0).as.nesne);
+            if (!objTipiMi(args.at(1), ObjType::STRING)) {
+              throw std::runtime_error(
+                  "sozluk.sil(anahtar) icin metin anahtar bekleniyor.");
+            }
+            const std::string &anahtar =
+                static_cast<ObjString *>(args.at(1).as.nesne)->deger;
+            if (self->alanlar.erase(anahtar) == 0) {
+              throw std::runtime_error("'" + anahtar +
+                                       "' anahtari sozlukte bulunamadi.");
+            }
+            return args.at(0);
+          },
+          std::vector<Value>{hedef}));
+    }
+    if (alanAdi == "uzunluk") {
+      return Value::nesne(memory_.allocate<ObjNative>(
+          "sozluk.uzunluk", 0,
+          [](VM &, const std::vector<Value> &args) -> Value {
+            auto *self = static_cast<ObjDict *>(args.at(0).as.nesne);
+            return Value::sayi(static_cast<double>(self->alanlar.size()));
+          },
+          std::vector<Value>{hedef}));
+    }
     calismaHatasi("Sozlukte '" + alanAdi + "' anahtari yok.");
   }
 
@@ -3718,7 +3809,28 @@ Value VM::alanAl(const Value &hedef, const std::string &alanAdi) {
           [](VM &, const std::vector<Value> &args) -> Value {
             auto *self = static_cast<ObjList *>(args.at(0).as.nesne);
             self->ogeler.push_back(args.at(1));
-            return Value::bos();
+            return args.at(0);
+          },
+          std::vector<Value>{hedef}));
+    }
+    if (alanAdi == "sil") {
+      return Value::nesne(memory_.allocate<ObjNative>(
+          "liste.sil", 1,
+          [](VM &, const std::vector<Value> &args) -> Value {
+            auto *self = static_cast<ObjList *>(args.at(0).as.nesne);
+            if (args.at(1).type != ValueType::SAYI ||
+                !tamSayiMi(args.at(1).as.sayi) || args.at(1).as.sayi < 0.0) {
+              throw std::runtime_error(
+                  "liste.sil indeksi sifir veya pozitif tam sayi olmalidir.");
+            }
+            const std::size_t indeks =
+                static_cast<std::size_t>(args.at(1).as.sayi);
+            if (indeks >= self->ogeler.size()) {
+              throw std::runtime_error("liste.sil indeksi sinir disinda.");
+            }
+            self->ogeler.erase(self->ogeler.begin() +
+                               static_cast<std::ptrdiff_t>(indeks));
+            return args.at(0);
           },
           std::vector<Value>{hedef}));
     }
@@ -3743,6 +3855,28 @@ Value VM::alanAl(const Value &hedef, const std::string &alanAdi) {
           },
           std::vector<Value>{hedef}));
     }
+    if (alanAdi == "parcala") {
+      return Value::nesne(memory_.allocate<ObjNative>(
+          "metin.parcala", 1,
+          [](VM &vm, const std::vector<Value> &args) -> Value {
+            const auto parcala = vm.yerlesikGloballer_.find("parcala");
+            if (parcala == vm.yerlesikGloballer_.end()) {
+              throw std::runtime_error("metin.parcala yerlesigi bulunamadi.");
+            }
+            return vm.cagir(parcala->second,
+                            std::vector<Value>{args.at(0), args.at(1)});
+          },
+          std::vector<Value>{hedef}));
+    }
+    if (alanAdi == "uzunluk") {
+      return Value::nesne(memory_.allocate<ObjNative>(
+          "metin.uzunluk", 0,
+          [](VM &, const std::vector<Value> &args) -> Value {
+            const auto *self = static_cast<ObjString *>(args.at(0).as.nesne);
+            return Value::sayi(static_cast<double>(self->deger.size()));
+          },
+          std::vector<Value>{hedef}));
+    }
     calismaHatasi("Metinde '" + alanAdi + "' metodu yok.");
   }
 
@@ -3755,18 +3889,23 @@ Value VM::indeksAl(const Value &hedef, const Value &indeks) {
   }
   if (hedef.as.nesne->type == ObjType::LIST) {
     auto *liste = static_cast<ObjList *>(hedef.as.nesne);
-    const double indeksSayi = indeks.type == ValueType::SAYI
-                                  ? indeks.as.sayi
-                                  : sayiyaCevir(indeks, "liste indeksi");
-    const int i = static_cast<int>(std::llround(indeksSayi));
-    if (i < 0 || static_cast<std::size_t>(i) >= liste->ogeler.size()) {
+    if (indeks.type != ValueType::SAYI || !tamSayiMi(indeks.as.sayi) ||
+        indeks.as.sayi < 0.0) {
+      calismaHatasi("Liste indeksi sifir veya pozitif tam sayi olmalidir.");
+    }
+    const std::size_t i = static_cast<std::size_t>(indeks.as.sayi);
+    if (i >= liste->ogeler.size()) {
       calismaHatasi("Liste indeksi sinir disi.");
     }
-    return liste->ogeler[static_cast<std::size_t>(i)];
+    return liste->ogeler[i];
   }
   if (hedef.as.nesne->type == ObjType::DICT) {
     auto *sozluk = static_cast<ObjDict *>(hedef.as.nesne);
-    const std::string anahtar = anahtaraCevir(indeks, "sozluk indeksi");
+    if (!objTipiMi(indeks, ObjType::STRING)) {
+      calismaHatasi("Sozluk anahtari metin olmalidir.");
+    }
+    const std::string anahtar =
+        static_cast<ObjString *>(indeks.as.nesne)->deger;
     auto it = sozluk->alanlar.find(anahtar);
     if (it == sozluk->alanlar.end()) {
       calismaHatasi("Hata: '" + anahtar + "' anahtari sozlukte bulunamadi.");
@@ -3775,14 +3914,15 @@ Value VM::indeksAl(const Value &hedef, const Value &indeks) {
   }
   if (hedef.as.nesne->type == ObjType::STRING) {
     const std::string &metin = static_cast<ObjString *>(hedef.as.nesne)->deger;
-    const double indeksSayi = indeks.type == ValueType::SAYI
-                                  ? indeks.as.sayi
-                                  : sayiyaCevir(indeks, "metin indeksi");
-    const int i = static_cast<int>(std::llround(indeksSayi));
-    if (i < 0 || static_cast<std::size_t>(i) >= metin.size()) {
+    if (indeks.type != ValueType::SAYI || !tamSayiMi(indeks.as.sayi) ||
+        indeks.as.sayi < 0.0) {
+      calismaHatasi("Metin indeksi sifir veya pozitif tam sayi olmalidir.");
+    }
+    const std::size_t i = static_cast<std::size_t>(indeks.as.sayi);
+    if (i >= metin.size()) {
       calismaHatasi("Metin indeksi sinir disi.");
     }
-    return yeniString(std::string(1, metin[static_cast<std::size_t>(i)]));
+    return yeniString(std::string(1, metin[i]));
   }
   calismaHatasi("Bu tipte indeks erisimi desteklenmiyor.");
 }

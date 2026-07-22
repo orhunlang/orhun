@@ -218,7 +218,7 @@
 - 0.8.0, lexer sözleşme yardımcılarını parser yardımcılarıyla kapsam
   çakışmasını önlemek için `lexer_ir_dogrula`, `lexer_ir_uyumlu_mu`,
   `lexer_ir_gecerli_mi` ve `lexer_ir_ozeti` adlarına taşır.
-- `orhun/parser.oh` `0.27.0`, parse sonucunda hata var/yok, hata mesajı,
+- `orhun/parser.oh` `0.28.0`, parse sonucunda hata var/yok, hata mesajı,
   ortak tanı listesi, komut satır aralığı, ifade satır aralığı, iç içe
   bloklardaki tüm komut satır aralıkları ve alt ifadeler ile `paralel yap`
   komutlarını kapsayan tüm ifade satır aralıklarını okuma yardımcıları ekler.
@@ -248,6 +248,9 @@
   kökenini taşır. Eski `orhun-parser-ir-v1` sonuçları yeni derleyiciye doğrudan
   verilemez; kaynak yeniden parse edilmelidir. `ozetle_tokenlar` da aynı lexer
   doğrulama sınırından geçer.
+- 0.28.0, metin, sayı, mantık ve parantezli ifadelerin ardından gelen indeks
+  ve dilim zincirlerini C++ parser ile aynı `IndeksErisim` / `DilimErisim`
+  yapısında özetler. IR sözleşme kimliği değişmez.
 - `orhun/derleyici.oh` 0.31.0, eksik, farklı veya yapısal olarak bozuk parser
   IR girdisini komut alanlarını derlemeden önce açıklayıcı bir hatayla reddeder.
   Başarılı bytecode artık `orhun-bytecode-ir-v1` sözleşmesini; derleyici sonucu
@@ -361,7 +364,16 @@
   liste/sözlük değerleri tüm takma adlar arasında paylaşılır.
 - Interpreter ve VM içindeki modül işlevleri kendi modül değişkenlerini ve
   kardeş işlevlerini korur; çağıran programın aynı adlı işlev veya değişkeni
-  bunları gölgeleyemez. Modül-global atamalar dışa aktarılan modül sözlüğünü
-  güncellerken çağıranın globalini değiştirmez. İşlev içinden yapılan ilk modül
+  bunları gölgeleyemez. Modülün üst seviye kodu da çağıranın kullanıcı
+  globallerini görmez. Modül-global atamalar dışa aktarılan modül sözlüğünü
+  güncellerken çağıranın globalini değiştirmez; modülden dönen anonim ve iç içe
+  işlevler de lexical modül ortamını korur. İşlev içinden yapılan ilk modül
   yüklemesi çağıranın yerel kapsamına değişken sızdırmaz. A -> B -> A gibi
   döngüsel bağımlılıklar açık Türkçe hatayla reddedilir.
+- Sözlüklerin `anahtarlar()`, `degerler()`, `sil(anahtar)` ve `uzunluk()`
+  yöntemleri artık katı VM yolunda da yorumlayıcıyla aynı biçimde çalışır.
+- `icerir` ve `metin.icerir`, iki yürütme yolunda da yalnızca metin kaynak ve
+  metin arama değeri kabul eder; VM artık sözlük/liste/sayıyı sessizce yazıya
+  dönüştürmez. Açık dönüşüm gerekiyorsa önce `metne_cevir` kullanılmalıdır.
+- Yorumlayıcıda işlev içindeki `olsun`, döngü bloklarında aynı işlevin mevcut
+  yerelini günceller; çağıran işlevin aynı adlı yerelini artık değiştirmez.

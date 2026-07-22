@@ -1,6 +1,24 @@
 # Orhun ile yazilmis koleksiyon yardimcilari.
 
-surum olsun "0.4.0"
+surum olsun "0.6.0"
+
+işlev ilk(liste, yedek):
+    eğer uzunluk(liste) eşit 0 ise:
+        döndür yedek
+    döndür liste[0]
+
+işlev son(liste, yedek):
+    eğer uzunluk(liste) eşit 0 ise:
+        döndür yedek
+    döndür liste[uzunluk(liste) - 1]
+
+işlev indeks(liste, aranan, yedek olsun -1):
+    i olsun 0
+    sürece i küçük uzunluk(liste):
+        eğer liste[i] eşit aranan ise:
+            döndür i
+        i olsun i + 1
+    döndür yedek
 
 işlev icerir(liste, aranan):
     her oge içinde liste:
@@ -123,3 +141,93 @@ işlev eslestir(sol, sag):
 
 işlev eşleştir(sol, sag):
     döndür eslestir(sol, sag)
+
+işlev al(liste, adet):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük adet ve i küçük uzunluk(liste):
+        sonuc.ekle(liste[i])
+        i olsun i + 1
+    döndür sonuc
+
+işlev atla(liste, adet):
+    sonuc olsun []
+    i olsun adet
+    eğer i küçük 0 ise:
+        i olsun 0
+    sürece i küçük uzunluk(liste):
+        sonuc.ekle(liste[i])
+        i olsun i + 1
+    döndür sonuc
+
+işlev parcalara_ayir(liste, boyut):
+    sonuc olsun []
+    eğer boyut küçük 1 ise:
+        döndür sonuc
+    i olsun 0
+    sürece i küçük uzunluk(liste):
+        parca olsun []
+        j olsun 0
+        sürece j küçük boyut ve i küçük uzunluk(liste):
+            parca.ekle(liste[i])
+            i olsun i + 1
+            j olsun j + 1
+        sonuc.ekle(parca)
+    döndür sonuc
+
+işlev parçalara_ayır(liste, boyut):
+    döndür parcalara_ayir(liste, boyut)
+
+işlev duzlestir(listeler):
+    sonuc olsun []
+    her liste içinde listeler:
+        her oge içinde liste:
+            sonuc.ekle(oge)
+    döndür sonuc
+
+işlev düzleştir(listeler):
+    döndür duzlestir(listeler)
+
+işlev birlesim(sol, sag):
+    sonuc olsun benzersiz(sol)
+    her oge içinde sag:
+        eğer değil icerir(sonuc, oge) ise:
+            sonuc.ekle(oge)
+    döndür sonuc
+
+işlev birleşim(sol, sag):
+    döndür birlesim(sol, sag)
+
+işlev kesisim(sol, sag):
+    sonuc olsun []
+    her oge içinde sol:
+        eğer icerir(sag, oge) ve değil icerir(sonuc, oge) ise:
+            sonuc.ekle(oge)
+    döndür sonuc
+
+işlev kesişim(sol, sag):
+    döndür kesisim(sol, sag)
+
+işlev fark(sol, sag):
+    sonuc olsun []
+    her oge içinde sol:
+        eğer değil icerir(sag, oge) ve değil icerir(sonuc, oge) ise:
+            sonuc.ekle(oge)
+    döndür sonuc
+
+işlev sirala(liste):
+    sonuc olsun al(liste, uzunluk(liste))
+    i olsun 0
+    sürece i küçük uzunluk(sonuc):
+        j olsun 0
+        sürece j küçük uzunluk(sonuc) - i - 1:
+            eğer sonuc[j] büyük sonuc[j + 1] ise:
+                gecici olsun sonuc[j]
+                sonuc[j] = sonuc[j + 1]
+                sonuc[j + 1] = gecici
+            j olsun j + 1
+        i olsun i + 1
+    döndür sonuc
+
+işlev sırala(liste):
+    döndür sirala(liste)

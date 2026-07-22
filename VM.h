@@ -53,6 +53,7 @@ private:
   std::vector<TryFrame> tryYigini_;
   std::vector<Value> yigin_;
   std::unordered_map<std::string, Value> globaller_;
+  std::unordered_map<std::string, Value> yerlesikGloballer_;
   struct GlobalInlineCacheKaydi {
     Value *deger = nullptr;
     bool gecerli = false;

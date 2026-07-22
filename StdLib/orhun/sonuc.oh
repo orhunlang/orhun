@@ -1,6 +1,6 @@
 # Orhun ile yazilmis sonuc yardimcilari.
 
-surum olsun "0.1.0"
+surum olsun "0.2.0"
 
 işlev ok(deger):
     döndür {"ok": doğru, "deger": deger, "hata": 0}
@@ -46,3 +46,34 @@ işlev dene(islem):
         döndür ok(islem())
     yakala hata_mesaji:
         döndür hata(hata_mesaji)
+
+işlev hata_haritala(kayit, donusturucu):
+    eğer kayit.ok ise:
+        döndür kayit
+    döndür hata(donusturucu(kayit.hata))
+
+işlev kurtar(kayit, kurtarici):
+    eğer kayit.ok ise:
+        döndür kayit
+    döndür kurtarici(kayit.hata)
+
+işlev birlestir(sol, sag, birlestirici):
+    eğer değil sol.ok ise:
+        döndür sol
+    eğer değil sag.ok ise:
+        döndür sag
+    döndür ok(birlestirici(sol.deger, sag.deger))
+
+işlev birleştir(sol, sag, birlestirici):
+    döndür birlestir(sol, sag, birlestirici)
+
+işlev tumunu_birlestir(kayitlar):
+    degerler olsun []
+    her kayit içinde kayitlar:
+        eğer değil kayit.ok ise:
+            döndür kayit
+        degerler.ekle(kayit.deger)
+    döndür ok(degerler)
+
+işlev tümünü_birleştir(kayitlar):
+    döndür tumunu_birlestir(kayitlar)

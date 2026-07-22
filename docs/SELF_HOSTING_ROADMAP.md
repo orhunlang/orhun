@@ -40,7 +40,11 @@ Basari olcutu:
 
 Durum: aktif; interpreter ve VM, Orhun-kaynakli modullerin global degerlerini
 ve kardes islevlerini cagiran programdaki ayni adlardan ayirir. Modul-global
-atamalar paylasilan modul nesnesinde kalir ve cagiran globaline sizmaz.
+atamalar paylasilan modul nesnesinde kalir ve cagiran globaline sizmaz. Saf
+Orhun `sonuc.oh` 0.2.0, `metin.oh` 0.4.0 ve `koleksiyon.oh` 0.6.0; sonuc
+zincirleme, konum/doldurma ve secme/parcalama/duzlestirme yardimcilarini sistem
+primitive'i olmadan sunar. `sozluk.oh` 0.1.0 da guvenli okuma, birlestirme,
+secme ve callback tabanli donusturme islemlerini saf Orhun katmanina tasir.
 
 Hedefler:
 
@@ -82,7 +86,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Basarili ve hatali lexer ozetleri `orhun-lexer-ir-v1` kimligini tasir;
 token alanlari, konumlari, sayaclari ve son `DOSYA_SONU` kaydi saf Orhun
-yardimcisiyla dogrulanabilir. Parser prototipi 165 basarili AST
+yardimcisiyla dogrulanabilir. Parser prototipi 169 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 `orhun-lex` ve `orhun-parse`, Orhun-yazili on ucu surumlu ve dogrulanmis JSON
 olarak dogrudan CLI'dan calistirir; kaynak hatalarini yapisal IR'i bozmadan
@@ -99,7 +103,7 @@ kullanir. AST dugumleri on-sirali duz listeye cevrilebilir, tur listeleri
 toplanabilir, belirli dugum turleri filtrelenebilir ve agac derinligi/tur
 sayilari ozetlenebilir.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.27.0, lexer ozetini `orhun-lexer-ir-v1` sinirinda
+`orhun/parser.oh` 0.28.0, lexer ozetini `orhun-lexer-ir-v1` sinirinda
 dogruladiktan sonra token akisini tuketir; `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
@@ -127,6 +131,8 @@ en buyuk derinlik olarak ozetlenebiliyor. Basarili ve hatali sonuclar
 `orhun-parser-ir-v2` sozlesme kimligini ve dogrulanmis lexer IR kokenini
 tasiyor; uyumluluk ve toplu IR ozeti saf Orhun yardimcilariyla sorgulanabiliyor.
 Ham token girisi de ayni lexer dogrulama sinirindan geciyor.
+Metin, sayi, mantik ve parantezli ifade gibi atomlardan sonra gelen indeks ve
+dilim zincirleri de C++ AST'siyle ayni yapisal ozeti uretir.
 Program/komut/blok/ifade baglantilari,
 isimsiz varsayilanlar ve paralel govdeler 256 seviye sinirli recursive IR
 dogrulamasindan gecirilebiliyor. Ifade/komut tur sayilari ve ture gore kaynak
@@ -209,7 +215,7 @@ Compiler prototype smoke su anda 98 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 153
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 156
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis

@@ -147,8 +147,10 @@ private:
       std::function<OrhunDegeri(const std::vector<OrhunDegeri> &, std::size_t)>;
 
   DegiskenTablosu globalHafiza_;
+  DegiskenTablosu yerlesikGlobalHafiza_;
   std::vector<std::string> programArgumanlari_;
   std::vector<KapsamPtr> yerelKapsamYigini_;
+  std::vector<std::size_t> islevYerelKapsamBaslangiclari_;
   int donguDerinligi_ = 0;
 
   std::unordered_map<std::string, const IslevTanimNode *> islevTablosu_;

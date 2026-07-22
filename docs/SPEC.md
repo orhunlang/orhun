@@ -133,6 +133,9 @@ puan olsun puan + 1
 functions, `=` updates an existing local binding when one exists; otherwise it
 writes the global binding. Use `olsun` to create or update the current
 function's local binding.
+That lookup is limited to the current function frame: loop blocks can update a
+local declared by the same function, while a called function cannot overwrite
+the caller's same-named local merely by declaring its own binding.
 
 Multiple assignment and destructuring are supported by the current test suite.
 
@@ -305,7 +308,13 @@ yazdır sayılar[0]
 yaz ilk(sayılar)
 yaz son(sayılar)
 yaz dolu_mu(sayılar)
+sayılar.ekle(4)
+sayılar.sil(1)
 ```
+
+List methods `ekle(deger)`, `sil(indeks)`, and `uzunluk()` return or inspect
+the same mutable list in both execution engines. `ekle` and `sil` return the
+list, allowing a mutation to be used in a larger expression.
 
 Dictionaries:
 
@@ -313,11 +322,28 @@ Dictionaries:
 kullanıcı olsun {"ad": "Ali", "yaş": 28}
 yazdır kullanıcı.ad
 yazdır kullanıcı["ad"]
+yazdır kullanıcı.anahtarlar()
+yazdır kullanıcı.degerler()
+yazdır kullanıcı.uzunluk()
 ```
+
+Dictionary methods `anahtarlar()`, `degerler()`, `sil(anahtar)`, and
+`uzunluk()` have the same behavior in the interpreter and VM. A real field with
+one of these names takes precedence over the built-in method.
+
+String methods `buyuk()`, `kucuk()`, `parcala(ayirici)`, and `uzunluk()` are
+also available with matching interpreter and VM behavior.
+`icerir(kaynak, aranan)` and `metin.icerir(kaynak, aranan)` require both
+arguments to be strings; implicit collection or number stringification is not
+performed.
 
 List and dictionary literals may span multiple lines. Newlines and indentation
 inside the literal are layout only, and a trailing comma before `]` or `}` is
 allowed.
+
+List and string indices must be zero-or-positive integers. Dictionary index
+reads and writes require string keys. The interpreter and VM reject fractional,
+negative, and implicitly converted index values instead of rounding them.
 
 ```orhun
 ayarlar olsun {
@@ -477,12 +503,14 @@ interpreter or VM. Repeating `dahil_et` with equivalent paths returns the same
 module object without rerunning its top-level code, so mutable exported values
 are shared between import aliases. Nested module functions retain their own
 module variables and sibling-function namespace in both the interpreter and
-VM; same-named caller globals cannot shadow them. Assigning an existing module
-global from a module function updates the exported module object without
-overwriting the caller's global. Imports executed inside a function still
-initialize the module in an isolated module scope rather than writing into the
-caller's locals. An A -> B -> A dependency is rejected with an explicit
-circular-module error instead of recursing forever.
+VM; same-named caller globals cannot shadow them. Module initialization can
+read built-ins but not caller-owned globals. Assigning a module global from a
+module function updates the exported module object without overwriting the
+caller's global, including names first created after import. Exported anonymous
+and nested functions retain the lexical module environment. Imports executed
+inside a function still initialize the module in an isolated module scope
+rather than writing into the caller's locals. An A -> B -> A dependency is
+rejected with an explicit circular-module error instead of recursing forever.
 
 Official Orhun-source standard modules live under `StdLib/orhun/` and are
 included by their library-relative path:
@@ -497,19 +525,36 @@ dil_yardimci olsun dahil_et "orhun/dil.oh"
 lexer olsun dahil_et "orhun/lexer.oh"
 ```
 
+`orhun/sonuc.oh` provides explicit `ok`/`hata` records and composable helpers.
+In addition to `haritala` and `zincirle`, `hata_haritala`, `kurtar`,
+`birlestir`/`birleştir`, and `tumunu_birlestir`/`tümünü_birleştir` support
+error transformation, recovery, and fail-fast result aggregation.
+
 `orhun/koleksiyon.oh` includes beginner-friendly list helpers such as
 `haritala`, `filtrele`, `katla`, `benzersiz`, `numaralandir`, and
 `eslestir`/`eşleştir`. `numaralandir(liste, [baslangic])` returns
 `[sira, deger]` pairs, and `eslestir(sol, sag)` returns pairs up to the
 shorter list. `toplam(liste, [baslangic])` accumulates values with `+`.
 `en_kucuk`/`en_küçük` and `en_buyuk`/`en_büyük` return their explicit fallback
-value for an empty list.
+value for an empty list. `ilk`, `son`, and `indeks` provide fallback-aware
+lookup; `al` and `atla` select list regions; `parcalara_ayir`/
+`parçalara_ayır` and `duzlestir`/`düzleştir` handle nested list shapes.
+`birlesim`/`birleşim`, `kesisim`/`kesişim`, and `fark` provide stable-order
+set-like operations, while `sirala`/`sırala` returns an ascending copy without
+mutating the input list.
 
 `orhun/metin.oh` includes beginner-friendly string helpers such as `say`,
 `on_eki_kaldir`/`ön_eki_kaldır`, and `son_eki_kaldir`/`son_eki_kaldır`.
 `say` counts non-overlapping occurrences and returns zero for an empty search
 string. Prefix and suffix removal return the original string when it does not
-match.
+match. `ilk_konum` and `son_konum` perform fallback-aware searches;
+`sol_doldur`, `sag_doldur`/`sağ_doldur`, and `ortala` produce text with an
+exact requested width even when the fill text contains multiple characters.
+
+`orhun/sozluk.oh` provides safe lookup, copying, merging, key selection and
+exclusion, plus callback-based value mapping and key filtering. These helpers
+are written in Orhun and build on `orhun/koleksiyon.oh` rather than adding new
+runtime primitives.
 
 `orhun/paket.oh` includes package manifest helpers such as `coz`,
 `coz_ve_dogrula`, `dogrula`, `bagimliliklar`, `bagimli_mi`, and
@@ -646,6 +691,7 @@ Current built-in module surfaces include:
 - `orhun/temel.oh`
 - `orhun/sonuc.oh`
 - `orhun/koleksiyon.oh`
+- `orhun/sozluk.oh`
 - `orhun/metin.oh`
 - `orhun/paket.oh`
 - `orhun/dil.oh`

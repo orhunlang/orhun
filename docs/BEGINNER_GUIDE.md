@@ -102,10 +102,13 @@ koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
 
 yaz koleksiyon.numaralandir([5, 6], 1)
 yaz koleksiyon.eslestir([1, 2], [7, 8, 9])
+yaz koleksiyon.parçalara_ayır([1, 2, 3, 4, 5], 2)
+yaz koleksiyon.düzleştir([[1, 2], [3, 4]])
 ```
 
 `numaralandir`, Python'daki `enumerate` fikrine benzer. `eslestir`, iki listeyi
-kisa olan liste bitene kadar ciftler.
+kisa olan liste bitene kadar ciftler. `parçalara_ayır` listeyi sabit boyutlu
+gruplara boler; `düzleştir` ise ic ice listeyi tek listeye indirir.
 
 ## 10. Dosyayi Calistir
 

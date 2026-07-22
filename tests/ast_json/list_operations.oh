@@ -5,3 +5,7 @@ yazdır liste
 yazdır uzunluk(liste)
 yazdır liste[0]
 yazdır liste[3]
+donen olsun liste.ekle(5)
+yazdır donen
+yazdır liste.sil(1)
+yazdır liste

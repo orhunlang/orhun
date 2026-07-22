@@ -7,3 +7,5 @@ yazdır sonuc_yardimci.deger_yada(iyi, 0)
 yazdır sonuc_yardimci.hata_yada(kotu, "hata_yok")
 yazdır sonuc_yardimci.haritala(iyi, işlev(x): x * 2).deger
 yazdır sonuc_yardimci.dene(işlev(): 7).deger
+yazdır sonuc_yardimci.birleştir(sonuc_yardimci.ok(2), sonuc_yardimci.ok(3), işlev(a, b): a + b).deger
+yazdır sonuc_yardimci.tümünü_birleştir([sonuc_yardimci.ok(1), sonuc_yardimci.ok(2)]).deger

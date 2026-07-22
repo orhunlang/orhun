@@ -1,0 +1,28 @@
+yazdır "orhun"[1]
+
+deneme:
+    yazdır [1, 2][0.5]
+yakala hata:
+    yazdır "liste-kati"
+
+deneme:
+    yazdır "ab"[0.5]
+yakala hata:
+    yazdır "metin-kati"
+
+deneme:
+    yazdır {"1": "bir"}[1]
+yakala hata:
+    yazdır "sozluk-kati"
+
+liste olsun [1]
+deneme:
+    liste[0.5] = 2
+yakala hata:
+    yazdır "liste-yaz-kati"
+
+sozluk olsun {}
+deneme:
+    sozluk[1] = "bir"
+yakala hata:
+    yazdır "sozluk-yaz-kati"

@@ -33,7 +33,8 @@ These percentages are planning estimates, not promises.
 - Bytecode compiler.
 - Canonical module caching in both execution paths; repeated imports share one
   module instance, interpreter and VM functions retain their module-global
-  variables and sibling functions across caller name collisions, and circular
+  variables, closures, and sibling functions across caller name collisions;
+  module initialization cannot read caller-owned globals, and circular
   dependencies fail explicitly.
 - Functions, lambdas, default arguments, classes, inheritance, collections,
   slicing, safe access, and error handling.

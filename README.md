@@ -279,7 +279,7 @@ self-hosting plan.
 - Lexer/parser/AST: `Lexer.cpp`, `Parser.cpp`, `AST.h`
 - Bytecode compiler: `Compiler.cpp`
 - Standard library helpers: `Yerlesik.h`, `StdLib/`, `StdLib/orhun/`
-  (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `metin.oh`, `paket.oh`,
+  (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `sozluk.oh`, `metin.oh`, `paket.oh`,
   `dil.oh`, `lexer.oh`, `parser.oh`, `derleyici.oh`)
 - Examples: `examples/`
 - Tests and fixtures: `tests/`

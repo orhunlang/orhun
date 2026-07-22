@@ -1,0 +1,6 @@
+sozluk_yardimci olsun dahil_et "orhun/sozluk.oh"
+
+ayarlar olsun {"tema": "acik", "dil": "tr"}
+yazdır sozluk_yardimci.al(ayarlar, "tema", "varsayilan")
+yazdır sozluk_yardimci.birleştir(ayarlar, {"tema": "koyu"})
+yazdır sozluk_yardimci.seç(ayarlar, ["dil"])

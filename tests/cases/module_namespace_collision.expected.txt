@@ -5,4 +5,12 @@ modul-yardimci:modul
 100
 2
 gizli
+1
 ana:ana
+okuma-izole
+sonradan
+yazma-izole
+sonradan
+geri
+modul:anonim
+modul:yerel

@@ -1,0 +1,6 @@
+r
+liste-kati
+metin-kati
+sozluk-kati
+liste-yaz-kati
+sozluk-yaz-kati

@@ -12,7 +12,7 @@ yazdır parser.surum
 yazdır lexer_gecisi.ok
 yazdır lexer_gecisi.token_sayisi eşit sonuc.token_sayisi
 yazdır bozuk_lexer_gecisi.ok
-yazdır metin.icerir(bozuk_lexer_gecisi.hata, "Lexer IR gecersiz")
+yazdır metin.icerir(bozuk_lexer_gecisi.hata.mesaj, "Lexer IR gecersiz")
 yazdır bozuk_lexer_gecisi.lexer_ir_sozlesmesi
 yazdır bozuk_lexer_gecisi.lexer_ir_gecerli
 yazdır parser.ir_dogrula(bozuk_lexer_gecisi).ok

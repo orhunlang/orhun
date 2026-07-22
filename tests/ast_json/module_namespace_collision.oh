@@ -1,5 +1,7 @@
 deger olsun "modul"
 sayac olsun 0
+sadece_ana olsun "ana-gizli"
+ana_deger olsun "geri"
 
 modul olsun dahil_et "tests/cases/module_namespace_collision_lib.oh"
 
@@ -14,10 +16,30 @@ sayac = 100
 işlev yardimci(metin_degeri):
     döndür "ana:" + metin_degeri
 
+işlev ana_okur():
+    döndür ana_deger
+
 yazdır modul.tanit()
 yazdır modul.arttir()
 yazdır modul.arttir()
 yazdır sayac
 yazdır modul.sayac
 yazdır modul.sadece_modul
+yazdır modul.top_okuma_izole
 yazdır yardimci(deger)
+
+deneme:
+    yazdır modul.dis_global_oku()
+yakala hata:
+    yazdır "okuma-izole"
+
+yazdır modul.yeni_global_yaz()
+deneme:
+    yazdır yeni_modul_global
+yakala hata:
+    yazdır "yazma-izole"
+yazdır modul.yeni_modul_global
+yazdır modul.geri_cagir(ana_okur)
+yazdır modul.anonim()
+modul_closure olsun modul.closure_uret()
+yazdır modul_closure()

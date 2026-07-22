@@ -1,4 +1,4 @@
-0.1.0
+0.2.0
 1
 0
 0
@@ -13,3 +13,9 @@ ag_hatasi
 ag_hatasi
 7
 1
+buyuk:ag_hatasi
+kurtarildi:ag_hatasi
+5
+ag_hatasi
+[1, 2]
+ag_hatasi

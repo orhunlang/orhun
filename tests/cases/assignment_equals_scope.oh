@@ -14,3 +14,26 @@ işlev yerel_degistir():
     döndür y
 
 yazdır yerel_degistir()
+
+# 'olsun', döngü bloğında mevcut işlev yerelini günceller.
+işlev yerel_dongu():
+    i olsun 0
+    toplam olsun 0
+    sürece i küçük 3:
+        toplam olsun toplam + i
+        i olsun i + 1
+    döndür toplam
+
+yazdır yerel_dongu()
+
+# Cagrilan islevdeki bildirim, cagiranin ayni adli yerelini degistirmez.
+işlev ic_bildirim():
+    token olsun "ic"
+    döndür token
+
+işlev dis_bildirim():
+    token olsun "dis"
+    ic_bildirim()
+    döndür token
+
+yazdır dis_bildirim()

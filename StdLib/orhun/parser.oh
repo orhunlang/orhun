@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.27.0"
+surum olsun "0.28.0"
 ir_sozlesmesi olsun "orhun-parser-ir-v2"
 ir_azami_derinlik olsun 256
 
@@ -838,6 +838,20 @@ işlev ifade_turu(tokenlar, baslangic, son):
     genel_soru_konum olsun aralikta_deger_konumu(tokenlar, baslangic, son, "?")
     eğer genel_soru_konum büyük 0 veya genel_soru_konum eşit 0 ise:
         döndür "GuvenliAlanErisim"
+
+    atom_postfix_mi olsun ilk.tur eşit "SAYI" veya ilk.tur eşit "ONDALIK" veya ilk.tur eşit "METIN" veya (ilk.tur eşit "ANAHTAR_KELIME" ve (ilk.deger eşit "doğru" veya ilk.deger eşit "yanlış")) veya (ilk.tur eşit "ISLEM" ve ilk.deger eşit "(")
+    eğer atom_postfix_mi ise:
+        genel_koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
+        genel_parantez_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "(")
+        genel_nokta_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, ".")
+        eğer genel_koseli_konum büyük genel_parantez_konum ve genel_koseli_konum büyük genel_nokta_konum ise:
+            eğer dilim_erisimi_mi(tokenlar, baslangic, son) ise:
+                döndür "DilimErisim"
+            döndür "IndeksErisim"
+        eğer genel_nokta_konum büyük genel_parantez_konum ve genel_nokta_konum büyük genel_koseli_konum ise:
+            döndür "AlanErisim"
+        eğer genel_parantez_konum büyük baslangic ise:
+            döndür "IslevCagri"
 
     eğer ilk.tur eşit "SAYI" veya ilk.tur eşit "ONDALIK" ise:
         döndür "Sayi"

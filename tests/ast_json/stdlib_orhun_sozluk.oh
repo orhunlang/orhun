@@ -1,0 +1,45 @@
+sozluk_yardimci olsun dahil_et "orhun/sozluk.oh"
+
+kaynak olsun {"a": 1, "b": 2}
+
+yazdır sozluk_yardimci.surum
+yazdır sozluk_yardimci.icerir(kaynak, "a")
+yazdır sozluk_yardimci.icerir(kaynak, "z")
+yazdır sozluk_yardimci.al(kaynak, "b", 99)
+yazdır sozluk_yardimci.al(kaynak, "z", 99)
+
+kopya olsun sozluk_yardimci.kopyala(kaynak)
+kopya["a"] = 10
+yazdır kaynak.a
+yazdır kopya.a
+
+birlesik olsun sozluk_yardimci.birleştir(kaynak, {"b": 20, "c": 30})
+yazdır birlesik.a
+yazdır birlesik.b
+yazdır birlesik.c
+
+secilen olsun sozluk_yardimci.seç(birlesik, ["a", "c", "yok"])
+yazdır secilen.a
+yazdır secilen.c
+
+kalan olsun sozluk_yardimci.hariç(birlesik, ["b"])
+yazdır kalan.a
+yazdır kalan.c
+
+iki_kat olsun işlev(x): x * 2
+haritalanan olsun sozluk_yardimci.değerleri_haritala(kaynak, iki_kat)
+yazdır haritalanan.a
+yazdır haritalanan.b
+
+b_mi olsun işlev(anahtar): anahtar eşit "b"
+filtrelenen olsun sozluk_yardimci.anahtarları_filtrele(kaynak, b_mi)
+yazdır filtrelenen.b
+
+gecici olsun sozluk_yardimci.kopyala(kaynak)
+yazdır gecici.uzunluk()
+yazdır uzunluk(gecici.degerler())
+gecici.sil("a")
+yazdır gecici.uzunluk()
+
+ozel olsun {"anahtarlar": işlev(): "alan"}
+yazdır ozel.anahtarlar()

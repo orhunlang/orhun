@@ -1,0 +1,67 @@
+# Orhun ile yazilmis sozluk yardimcilari.
+
+koleksiyon_yardimci olsun dahil_et "orhun/koleksiyon.oh"
+
+surum olsun "0.1.0"
+
+işlev icerir(kaynak, anahtar):
+    döndür koleksiyon_yardimci.icerir(kaynak.anahtarlar(), anahtar)
+
+işlev al(kaynak, anahtar, yedek):
+    eğer icerir(kaynak, anahtar) ise:
+        döndür kaynak[anahtar]
+    döndür yedek
+
+işlev kopyala(kaynak):
+    sonuc olsun {}
+    her anahtar içinde kaynak.anahtarlar():
+        sonuc[anahtar] = kaynak[anahtar]
+    döndür sonuc
+
+işlev birlestir(sol, sag):
+    sonuc olsun kopyala(sol)
+    her anahtar içinde sag.anahtarlar():
+        sonuc[anahtar] = sag[anahtar]
+    döndür sonuc
+
+işlev birleştir(sol, sag):
+    döndür birlestir(sol, sag)
+
+işlev sec(kaynak, anahtarlar):
+    sonuc olsun {}
+    her anahtar içinde anahtarlar:
+        eğer icerir(kaynak, anahtar) ise:
+            sonuc[anahtar] = kaynak[anahtar]
+    döndür sonuc
+
+işlev seç(kaynak, anahtarlar):
+    döndür sec(kaynak, anahtarlar)
+
+işlev haric(kaynak, anahtarlar):
+    sonuc olsun {}
+    her anahtar içinde kaynak.anahtarlar():
+        eğer değil koleksiyon_yardimci.icerir(anahtarlar, anahtar) ise:
+            sonuc[anahtar] = kaynak[anahtar]
+    döndür sonuc
+
+işlev hariç(kaynak, anahtarlar):
+    döndür haric(kaynak, anahtarlar)
+
+işlev degerleri_haritala(kaynak, donusturucu):
+    sonuc olsun {}
+    her anahtar içinde kaynak.anahtarlar():
+        sonuc[anahtar] = donusturucu(kaynak[anahtar])
+    döndür sonuc
+
+işlev değerleri_haritala(kaynak, donusturucu):
+    döndür degerleri_haritala(kaynak, donusturucu)
+
+işlev anahtarlari_filtrele(kaynak, kosul):
+    sonuc olsun {}
+    her anahtar içinde kaynak.anahtarlar():
+        eğer kosul(anahtar) ise:
+            sonuc[anahtar] = kaynak[anahtar]
+    döndür sonuc
+
+işlev anahtarları_filtrele(kaynak, kosul):
+    döndür anahtarlari_filtrele(kaynak, kosul)

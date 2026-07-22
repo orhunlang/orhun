@@ -18,12 +18,18 @@ yazdır temel.ilk([1, 2, 3], 0)
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 yazdır sonuc_yardimci.deger_yada(sonuc_yardimci.ok(42), 0)
 yazdır sonuc_yardimci.dene(işlev(): 7).deger
+yazdır sonuc_yardimci.tümünü_birleştir([sonuc_yardimci.ok(1), sonuc_yardimci.ok(2)]).deger
 
 koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
 yazdır koleksiyon.benzersiz([1, 2, 1, 3])
+yazdır koleksiyon.parçalara_ayır([1, 2, 3, 4, 5], 2)
+
+sozluk_yardimci olsun dahil_et "orhun/sozluk.oh"
+yazdır sozluk_yardimci.birleştir({"a": 1}, {"b": 2})
 
 metin_yardimci olsun dahil_et "orhun/metin.oh"
 yazdır metin_yardimci.kirp("  Orhun  ")
+yazdır metin_yardimci.ortala("Orhun", 9, "-")
 
 paket_yardimci olsun dahil_et "orhun/paket.oh"
 yazdır paket_yardimci.coz_ve_dogrula("{\"ad\":\"ornek\",\"surum\":\"0.1.0\"}").ok

@@ -1,6 +1,12 @@
 deger olsun "modul"
 sayac olsun 0
 sadece_modul olsun "gizli"
+top_okuma_izole olsun yanlış
+
+deneme:
+    gecici_top olsun sadece_ana
+yakala hata:
+    top_okuma_izole = doğru
 
 işlev yardimci():
     döndür "modul-yardimci"
@@ -11,3 +17,19 @@ işlev tanit():
 işlev arttir():
     sayac = sayac + 1
     döndür sayac
+
+işlev dis_global_oku():
+    döndür sadece_ana
+
+işlev yeni_global_yaz():
+    yeni_modul_global = "sonradan"
+    döndür yeni_modul_global
+
+işlev geri_cagir(islem):
+    döndür islem()
+
+anonim olsun işlev(): deger + ":anonim"
+
+işlev closure_uret():
+    yerel olsun "yerel"
+    döndür işlev(): deger + ":" + yerel

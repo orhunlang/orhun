@@ -27,3 +27,10 @@ yazdır metin_yardimci.bosluk_mu("r")
 yazdır "[" + metin_yardimci.sol_kirp("  orhun ") + "]"
 yazdır "[" + metin_yardimci.sag_kirp("  orhun ") + "]"
 yazdır "[" + metin_yardimci.kirp("  orhun ") + "]"
+yazdır metin_yardimci.ilk_konum("orhun dili", "hun")
+yazdır metin_yardimci.ilk_konum("orhun dili", "java", 99)
+yazdır metin_yardimci.son_konum("ababa", "ba")
+yazdır metin_yardimci.sol_doldur("7", 3, "0")
+yazdır metin_yardimci.sag_doldur("7", 3, "0")
+yazdır metin_yardimci.sağ_doldur("x", 4, "ab")
+yazdır metin_yardimci.ortala("x", 5, "-")

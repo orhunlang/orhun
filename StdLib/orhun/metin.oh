@@ -1,6 +1,6 @@
 # Orhun ile yazilmis metin yardimcilari.
 
-surum olsun "0.3.0"
+surum olsun "0.4.0"
 satir_donusu olsun json.coz("\"\\r\"")
 
 işlev bos_mu(kaynak):
@@ -104,3 +104,59 @@ işlev sag_kirp(kaynak):
 
 işlev kirp(kaynak):
     döndür sag_kirp(sol_kirp(kaynak))
+
+işlev ilk_konum(kaynak, aranan, yedek olsun -1):
+    eğer aranan eşit "" ise:
+        döndür 0
+    sinir olsun uzunluk(kaynak) - uzunluk(aranan)
+    i olsun 0
+    sürece i küçük sinir + 1:
+        eğer kaynak[i:i + uzunluk(aranan)] eşit aranan ise:
+            döndür i
+        i olsun i + 1
+    döndür yedek
+
+işlev son_konum(kaynak, aranan, yedek olsun -1):
+    eğer aranan eşit "" ise:
+        döndür uzunluk(kaynak)
+    i olsun uzunluk(kaynak) - uzunluk(aranan)
+    sürece i büyük -1:
+        eğer kaynak[i:i + uzunluk(aranan)] eşit aranan ise:
+            döndür i
+        i olsun i - 1
+    döndür yedek
+
+işlev dolgu_uret(dolgu, adet):
+    eğer dolgu eşit "" veya adet küçük 1 ise:
+        döndür ""
+    sonuc olsun ""
+    sürece uzunluk(sonuc) küçük adet:
+        sonuc olsun sonuc + dolgu
+    döndür sonuc[:adet]
+
+işlev sol_doldur(kaynak, toplam, dolgu olsun " "):
+    eksik olsun toplam - uzunluk(kaynak)
+    eğer eksik küçük 1 ise:
+        döndür kaynak
+    döndür dolgu_uret(dolgu, eksik) + kaynak
+
+işlev sag_doldur(kaynak, toplam, dolgu olsun " "):
+    eksik olsun toplam - uzunluk(kaynak)
+    eğer eksik küçük 1 ise:
+        döndür kaynak
+    döndür kaynak + dolgu_uret(dolgu, eksik)
+
+işlev sağ_doldur(kaynak, toplam, dolgu olsun " "):
+    döndür sag_doldur(kaynak, toplam, dolgu)
+
+işlev ortala(kaynak, toplam, dolgu olsun " "):
+    eksik olsun toplam - uzunluk(kaynak)
+    eğer eksik küçük 1 ise:
+        döndür kaynak
+    sol_adet olsun 0
+    sag_adet olsun 0
+    sürece sol_adet + sag_adet küçük eksik:
+        sol_adet olsun sol_adet + 1
+        eğer sol_adet + sag_adet küçük eksik ise:
+            sag_adet olsun sag_adet + 1
+    döndür dolgu_uret(dolgu, sol_adet) + kaynak + dolgu_uret(dolgu, sag_adet)
