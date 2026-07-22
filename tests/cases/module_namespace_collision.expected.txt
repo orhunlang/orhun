@@ -1,0 +1,8 @@
+izole
+modul-yardimci:modul
+1
+2
+100
+2
+gizli
+ana:ana

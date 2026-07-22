@@ -97,6 +97,7 @@ private:
   std::vector<std::unique_ptr<BytecodeChunk>> modulChunklari_;
   std::unordered_map<std::string, Value> modulOnbellegi_;
   std::unordered_set<std::string> yuklenenModuller_;
+  std::vector<std::unordered_set<std::string> *> modulYazimYigini_;
   std::vector<std::string> programArgumanlari_;
 
   MemoryManager memory_;

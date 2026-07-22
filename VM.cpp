@@ -74,6 +74,71 @@ std::string solaSagaKirp(std::string metin) {
 
 bool tamSayiMi(double d) { return std::isfinite(d) && std::floor(d) == d; }
 
+void modulOrtaminiBagla(const Value &deger, ObjDict *modulOrtami,
+                        const BytecodeChunk *modulChunk,
+                        std::unordered_set<Obj *> &ziyaretEdilenler) {
+  if (!deger.nesneMi() || deger.as.nesne == nullptr ||
+      !ziyaretEdilenler.insert(deger.as.nesne).second) {
+    return;
+  }
+
+  Obj *nesne = deger.as.nesne;
+  switch (nesne->type) {
+  case ObjType::FUNCTION: {
+    auto *islev = static_cast<ObjFunction *>(nesne);
+    if (islev->chunk == modulChunk && islev->modulOrtami == nullptr) {
+      islev->modulOrtami = modulOrtami;
+    }
+    return;
+  }
+  case ObjType::LIST:
+    for (const Value &oge : static_cast<ObjList *>(nesne)->ogeler) {
+      modulOrtaminiBagla(oge, modulOrtami, modulChunk, ziyaretEdilenler);
+    }
+    return;
+  case ObjType::DICT:
+    for (const auto &[ad, oge] : static_cast<ObjDict *>(nesne)->alanlar) {
+      (void)ad;
+      modulOrtaminiBagla(oge, modulOrtami, modulChunk, ziyaretEdilenler);
+    }
+    return;
+  case ObjType::CLASS: {
+    auto *sinif = static_cast<ObjClass *>(nesne);
+    for (const auto &[ad, metod] : sinif->metodlar) {
+      (void)ad;
+      modulOrtaminiBagla(metod, modulOrtami, modulChunk, ziyaretEdilenler);
+    }
+    for (const auto &[ad, alan] : sinif->alanVarsayilanlari) {
+      (void)ad;
+      modulOrtaminiBagla(alan, modulOrtami, modulChunk, ziyaretEdilenler);
+    }
+    return;
+  }
+  case ObjType::INSTANCE: {
+    auto *ornek = static_cast<ObjInstance *>(nesne);
+    modulOrtaminiBagla(Value::nesne(ornek->sinif), modulOrtami, modulChunk,
+                       ziyaretEdilenler);
+    for (const auto &[ad, alan] : ornek->alanlar) {
+      (void)ad;
+      modulOrtaminiBagla(alan, modulOrtami, modulChunk, ziyaretEdilenler);
+    }
+    return;
+  }
+  case ObjType::BOUND_METHOD: {
+    auto *bagli = static_cast<ObjBoundMethod *>(nesne);
+    modulOrtaminiBagla(bagli->alici, modulOrtami, modulChunk,
+                       ziyaretEdilenler);
+    modulOrtaminiBagla(bagli->metod, modulOrtami, modulChunk,
+                       ziyaretEdilenler);
+    return;
+  }
+  case ObjType::SUPER_REF:
+  case ObjType::STRING:
+  case ObjType::NATIVE:
+    return;
+  }
+}
+
 bool ortamDegiskeniAcik(const char *ad) {
   const char *v = std::getenv(ad);
   if (v == nullptr) {
@@ -409,6 +474,7 @@ void VM::sifirla() {
   ffiSonrakiIslevKimlik_ = 1;
   modulOnbellegi_.clear();
   yuklenenModuller_.clear();
+  modulYazimYigini_.clear();
   modulChunklari_.clear();
   gcEsigi_ = 1024;
   gcErtelemeDerinligi_ = 0;
@@ -2231,6 +2297,7 @@ void VM::yerlesikNativesYukle() {
                  BytecodeChunk &chunk = *modulChunk;
 
                  const auto oncekiGloballer = vm.globaller_;
+                 std::unordered_set<std::string> modulYazimlari;
 
                  const BytecodeChunk *kayitChunk = vm.chunk_;
                  auto kayitFrameYigini = std::move(vm.frameYigini_);
@@ -2248,9 +2315,11 @@ void VM::yerlesikNativesYukle() {
                  // kenara alinir; modul bitene kadar GC bu kokleri goremez.
                  ++vm.gcErtelemeDerinligi_;
                  vm.gcEsigi_ = std::numeric_limits<std::size_t>::max() / 2;
+                 vm.modulYazimYigini_.push_back(&modulYazimlari);
                  try {
                    vm.calistir(chunk);
                  } catch (...) {
+                   vm.modulYazimYigini_.pop_back();
                    --vm.gcErtelemeDerinligi_;
                    vm.chunk_ = kayitChunk;
                    vm.frameYigini_ = std::move(kayitFrameYigini);
@@ -2260,11 +2329,16 @@ void VM::yerlesikNativesYukle() {
                    vm.yigin_ = std::move(kayitYigin);
                    vm.globalInlineCache_ =
                        std::move(kayitGlobalInlineCache);
+                   for (auto &kayit : vm.globalInlineCache_) {
+                     kayit = GlobalInlineCacheKaydi{};
+                   }
                    vm.runtimeSabitCache_ =
                        std::move(kayitRuntimeSabitCache);
+                   vm.globaller_ = oncekiGloballer;
                    vm.gcEsigi_ = kayitGcEsigi;
                    throw;
                  }
+                 vm.modulYazimYigini_.pop_back();
                  --vm.gcErtelemeDerinligi_;
                  vm.chunk_ = kayitChunk;
                  vm.frameYigini_ = std::move(kayitFrameYigini);
@@ -2273,11 +2347,20 @@ void VM::yerlesikNativesYukle() {
                  vm.tryYigini_ = std::move(kayitTryYigini);
                  vm.yigin_ = std::move(kayitYigin);
                  vm.globalInlineCache_ = std::move(kayitGlobalInlineCache);
+                 for (auto &kayit : vm.globalInlineCache_) {
+                   kayit = GlobalInlineCacheKaydi{};
+                 }
                  vm.runtimeSabitCache_ =
                      std::move(kayitRuntimeSabitCache);
                  vm.gcEsigi_ = kayitGcEsigi;
 
                  auto *modul = vm.memory_.allocate<ObjDict>();
+                 for (const std::string &ad : modulYazimlari) {
+                   const auto yazilan = vm.globaller_.find(ad);
+                   if (yazilan != vm.globaller_.end()) {
+                     modul->alanlar[ad] = yazilan->second;
+                   }
+                 }
                  for (const auto &[ad, deger] : vm.globaller_) {
                    const auto onceki = oncekiGloballer.find(ad);
                    if (onceki != oncekiGloballer.end() &&
@@ -2286,6 +2369,14 @@ void VM::yerlesikNativesYukle() {
                    }
                    modul->alanlar[ad] = deger;
                  }
+
+                 std::unordered_set<Obj *> ziyaretEdilenler;
+                 for (const auto &[ad, deger] : modul->alanlar) {
+                   (void)ad;
+                   modulOrtaminiBagla(deger, modul, &chunk,
+                                      ziyaretEdilenler);
+                 }
+                 vm.globaller_ = oncekiGloballer;
 
                  vm.modulChunklari_.push_back(std::move(modulChunk));
                  const Value modulDegeri = Value::nesne(modul);
@@ -2403,10 +2494,21 @@ ObjClass *VM::metodUstSinifBaglamiBul(ObjInstance *alici,
     const std::size_t ayirici = fn->ad.find('.');
     if (ayirici != std::string::npos && ayirici > 0) {
       const std::string sinifAdi = fn->ad.substr(0, ayirici);
-      if (auto it = globaller_.find(sinifAdi); it != globaller_.end() &&
-                                             objTipiMi(it->second,
-                                                       ObjType::CLASS)) {
-        return static_cast<ObjClass *>(it->second.as.nesne)->ebeveyn;
+      const Value *sinifDegeri = nullptr;
+      if (fn->modulOrtami != nullptr) {
+        const auto modulSinifi = fn->modulOrtami->alanlar.find(sinifAdi);
+        if (modulSinifi != fn->modulOrtami->alanlar.end()) {
+          sinifDegeri = &modulSinifi->second;
+        }
+      }
+      if (sinifDegeri == nullptr) {
+        const auto globalSinif = globaller_.find(sinifAdi);
+        if (globalSinif != globaller_.end()) {
+          sinifDegeri = &globalSinif->second;
+        }
+      }
+      if (sinifDegeri != nullptr && objTipiMi(*sinifDegeri, ObjType::CLASS)) {
+        return static_cast<ObjClass *>(sinifDegeri->as.nesne)->ebeveyn;
       }
     }
   }
@@ -2568,8 +2670,17 @@ void VM::calistir(const BytecodeChunk &chunk) {
           yiginPush(*hucre);
           BREAK;
         }
+        ObjFunction *aktifIslev = frameYigini_.back().function;
+        if (aktifIslev->modulOrtami != nullptr) {
+          const auto modulDegeri =
+              aktifIslev->modulOrtami->alanlar.find(ad);
+          if (modulDegeri != aktifIslev->modulOrtami->alanlar.end()) {
+            yiginPush(modulDegeri->second);
+            BREAK;
+          }
+        }
         const bool anaChunk =
-            frameYigini_.back().function->chunk == chunk_;
+            aktifIslev->modulOrtami == nullptr && aktifIslev->chunk == chunk_;
         if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
           GlobalInlineCacheKaydi &kayit = globalInlineCache_[sabitIndeks];
           if (kayit.gecerli && kayit.deger != nullptr) {
@@ -2591,8 +2702,9 @@ void VM::calistir(const BytecodeChunk &chunk) {
       }
       CASE(OP_SET_GLOBAL) {
         const std::uint16_t sabitIndeks = u16Oku();
+        ObjFunction *aktifIslev = frameYigini_.back().function;
         const bool anaChunk =
-            frameYigini_.back().function->chunk == chunk_;
+            aktifIslev->modulOrtami == nullptr && aktifIslev->chunk == chunk_;
         const SabitDeger &adDegeri = sabitOku(sabitIndeks);
         if (!std::holds_alternative<std::string>(adDegeri.veri)) {
           calismaHatasi("SET_GLOBAL sabiti metin degil.");
@@ -2602,6 +2714,16 @@ void VM::calistir(const BytecodeChunk &chunk) {
         if (auto hucre = yakalananHucreBul(ad)) {
           *hucre = atanan;
           BREAK;
+        }
+        if (aktifIslev->modulOrtami != nullptr) {
+          auto modulDegeri = aktifIslev->modulOrtami->alanlar.find(ad);
+          if (modulDegeri != aktifIslev->modulOrtami->alanlar.end()) {
+            modulDegeri->second = atanan;
+            BREAK;
+          }
+        }
+        if (!modulYazimYigini_.empty()) {
+          modulYazimYigini_.back()->insert(ad);
         }
         auto it = globaller_.find(ad);
         if (it == globaller_.end()) {
@@ -2820,6 +2942,7 @@ void VM::calistir(const BytecodeChunk &chunk) {
         const CallFrame &olusturanFrame = frameYigini_.back();
         if (olusturanFrame.function != nullptr) {
           const ObjFunction *olusturan = olusturanFrame.function;
+          fn->modulOrtami = olusturan->modulOrtami;
           for (std::size_t i = 0; i < olusturan->localAdlari.size(); ++i) {
             const std::string &localAd = olusturan->localAdlari[i];
             if (localAd.empty()) {

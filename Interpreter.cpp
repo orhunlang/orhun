@@ -3799,6 +3799,7 @@ void Interpreter::calistirIslevTanim(const IslevTanimNode *dugum) {
     return;
   }
 
+  modulGlobalYaziminiKaydet(dugum->ad());
   islevTablosu_[dugum->ad()] = dugum;
   aktifKapsam()[dugum->ad()] = OrhunDegeri("__islev_ref__:" + dugum->ad());
 }
@@ -3865,6 +3866,7 @@ void Interpreter::calistirDisIslevTanim(const DisIslevTanimNode *dugum) {
   };
 
   // Aynı adda user-defined işlev varsa dış işlev tanımı geçerli olsun.
+  modulGlobalYaziminiKaydet(ad);
   islevTablosu_.erase(ad);
   aktifKapsam()[ad] = OrhunDegeri("__islev_ref__:" + ad);
 }
@@ -3976,21 +3978,31 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
     // Modül kapsamını mevcut global ortamdan izole etmek için anlık görüntü al.
     const DegiskenTablosu globalOncesi = globalHafiza_;
     const auto islevOncesi = islevTablosu_;
+    std::unordered_set<std::string> modulYazimlari;
 
     auto yerelKapsamOncesi = std::move(yerelKapsamYigini_);
     auto aktifModulOncesi = std::move(aktifModulBaglamlari_);
+    modulYazimYigini_.push_back(&modulYazimlari);
     try {
       calistir(programHam);
     } catch (...) {
+      modulYazimYigini_.pop_back();
       yerelKapsamYigini_ = std::move(yerelKapsamOncesi);
       aktifModulBaglamlari_ = std::move(aktifModulOncesi);
       throw;
     }
+    modulYazimYigini_.pop_back();
     yerelKapsamYigini_ = std::move(yerelKapsamOncesi);
     aktifModulBaglamlari_ = std::move(aktifModulOncesi);
 
     // Modülde üretilen değerleri sözlükte topla.
     OrhunDegeri::SozlukVeri modulSozlugu;
+    for (const std::string &ad : modulYazimlari) {
+      const auto bulunan = globalHafiza_.find(ad);
+      if (bulunan != globalHafiza_.end()) {
+        modulSozlugu[ad] = bulunan->second;
+      }
+    }
     for (const auto &[ad, deger] : globalHafiza_) {
       const auto onceki = globalOncesi.find(ad);
       if (onceki == globalOncesi.end() || !(onceki->second == deger)) {
@@ -5469,11 +5481,20 @@ Interpreter::DegiskenTablosu &Interpreter::aktifKapsam() {
   return globalHafiza_;
 }
 
+void Interpreter::modulGlobalYaziminiKaydet(const std::string &ad) {
+  if (!modulYazimYigini_.empty()) {
+    modulYazimYigini_.back()->insert(ad);
+  }
+}
+
 void Interpreter::atamaHedefiYaz(const std::string &ad,
                                  const OrhunDegeri &deger, bool bildirimMi,
                                  std::size_t satir) {
   (void)satir;
   if (bildirimMi || yerelKapsamYigini_.empty()) {
+    if (yerelKapsamYigini_.empty()) {
+      modulGlobalYaziminiKaydet(ad);
+    }
     aktifKapsam()[ad] = deger;
     return;
   }
@@ -5502,6 +5523,7 @@ void Interpreter::atamaHedefiYaz(const std::string &ad,
     }
   }
 
+  modulGlobalYaziminiKaydet(ad);
   globalHafiza_[ad] = deger;
 }
 

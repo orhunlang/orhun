@@ -1,0 +1,23 @@
+deger olsun "modul"
+sayac olsun 0
+
+modul olsun dahil_et "tests/cases/module_namespace_collision_lib.oh"
+
+deneme:
+    yazdır sadece_modul
+yakala hata:
+    yazdır "izole"
+
+deger = "ana"
+sayac = 100
+
+işlev yardimci(metin_degeri):
+    döndür "ana:" + metin_degeri
+
+yazdır modul.tanit()
+yazdır modul.arttir()
+yazdır modul.arttir()
+yazdır sayac
+yazdır modul.sayac
+yazdır modul.sadece_modul
+yazdır yardimci(deger)

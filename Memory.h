@@ -77,6 +77,7 @@ private:
             markValue(*hucre);
           }
         }
+        markObject(fn->modulOrtami);
         return;
       }
       case ObjType::NATIVE: {

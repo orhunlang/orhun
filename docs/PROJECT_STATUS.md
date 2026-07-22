@@ -32,8 +32,9 @@ These percentages are planning estimates, not promises.
 - Interpreter and strict VM execution paths.
 - Bytecode compiler.
 - Canonical module caching in both execution paths; repeated imports share one
-  module instance, nested interpreter modules retain their function context,
-  and circular dependencies fail explicitly.
+  module instance, interpreter and VM functions retain their module-global
+  variables and sibling functions across caller name collisions, and circular
+  dependencies fail explicitly.
 - Functions, lambdas, default arguments, classes, inheritance, collections,
   slicing, safe access, and error handling.
 - File, JSON, regex, date/time, database helper, server, task, FFI, and system

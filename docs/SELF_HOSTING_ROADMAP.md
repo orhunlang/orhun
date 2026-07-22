@@ -38,6 +38,10 @@ Basari olcutu:
 
 ## Faz 1: Orhun Ile Standart Kutuphane
 
+Durum: aktif; interpreter ve VM, Orhun-kaynakli modullerin global degerlerini
+ve kardes islevlerini cagiran programdaki ayni adlardan ayirir. Modul-global
+atamalar paylasilan modul nesnesinde kalir ve cagiran globaline sizmaz.
+
 Hedefler:
 
 - Saf Orhun ile yazilmis `StdLib/orhun/` modulleri baslar.
@@ -78,7 +82,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. `her` anahtar kelimesi de Orhun kaynakli lexer sozlesmesine
 eklendi. Basarili ve hatali lexer ozetleri `orhun-lexer-ir-v1` kimligini tasir;
 token alanlari, konumlari, sayaclari ve son `DOSYA_SONU` kaydi saf Orhun
-yardimcisiyla dogrulanabilir. Parser prototipi 163 basarili AST
+yardimcisiyla dogrulanabilir. Parser prototipi 165 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 `orhun-lex` ve `orhun-parse`, Orhun-yazili on ucu surumlu ve dogrulanmis JSON
 olarak dogrudan CLI'dan calistirir; kaynak hatalarini yapisal IR'i bozmadan
@@ -205,7 +209,7 @@ Compiler prototype smoke su anda 98 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 151
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 153
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis

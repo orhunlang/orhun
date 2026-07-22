@@ -359,7 +359,9 @@
   yollarla tekrar eklenmesi üst seviye kodu yeniden çalıştırmaz.
 - Tekrarlı eklemeler aynı modül nesnesini döndürür; dışa aktarılan değişebilir
   liste/sözlük değerleri tüm takma adlar arasında paylaşılır.
-- Interpreter içindeki modül işlevleri kendi modül değişkenlerini ve kardeş
-  işlevlerini korur. İşlev içinden yapılan ilk modül yüklemesi çağıranın yerel
-  kapsamına değişken sızdırmaz. A -> B -> A gibi döngüsel bağımlılıklar artık
-  açık Türkçe hatayla reddedilir.
+- Interpreter ve VM içindeki modül işlevleri kendi modül değişkenlerini ve
+  kardeş işlevlerini korur; çağıran programın aynı adlı işlev veya değişkeni
+  bunları gölgeleyemez. Modül-global atamalar dışa aktarılan modül sözlüğünü
+  güncellerken çağıranın globalini değiştirmez. İşlev içinden yapılan ilk modül
+  yüklemesi çağıranın yerel kapsamına değişken sızdırmaz. A -> B -> A gibi
+  döngüsel bağımlılıklar açık Türkçe hatayla reddedilir.

@@ -1,0 +1,13 @@
+deger olsun "modul"
+sayac olsun 0
+sadece_modul olsun "gizli"
+
+işlev yardimci():
+    döndür "modul-yardimci"
+
+işlev tanit():
+    döndür yardimci() + ":" + deger
+
+işlev arttir():
+    sayac = sayac + 1
+    döndür sayac

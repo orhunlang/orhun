@@ -172,6 +172,7 @@ private:
   std::unordered_map<std::string, OrhunDegeri> modulOnbellegi_;
   std::unordered_map<std::string, ModulBaglamPtr> modulIslevBaglamlari_;
   std::vector<ModulBaglamPtr> aktifModulBaglamlari_;
+  std::vector<std::unordered_set<std::string> *> modulYazimYigini_;
   std::unordered_set<std::string> yuklenenModuller_;
   std::unordered_map<int, std::shared_ptr<runtime::DynamicLibrary>>
       ffiKutuphaneleri_;
@@ -258,6 +259,7 @@ private:
   bool islevReferansiCoz(const OrhunDegeri &deger, std::string &gercekAd) const;
 
   DegiskenTablosu &aktifKapsam();
+  void modulGlobalYaziminiKaydet(const std::string &ad);
   void atamaHedefiYaz(const std::string &ad, const OrhunDegeri &deger,
                       bool bildirimMi, std::size_t satir);
   OrhunDegeri &degiskenBulYazilabilir(const std::string &ad, std::size_t satir);

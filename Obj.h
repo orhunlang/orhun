@@ -77,6 +77,7 @@ struct ObjFunction final : Obj {
   std::uint16_t baglamArgSayisi = 0;
   std::vector<std::string> localAdlari;
   std::unordered_map<std::string, std::shared_ptr<Value>> yakalananDegerler;
+  ObjDict *modulOrtami = nullptr;
 };
 
 struct ObjNative final : Obj {

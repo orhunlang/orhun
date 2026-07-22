@@ -8,6 +8,7 @@ EXPECTEDLESS_CASES = {
     "module_callable_lib",
     "module_cycle_a_lib",
     "module_cycle_b_lib",
+    "module_namespace_collision_lib",
     "primes_loop_caller",
     "primes_loop_once",
     "primes_mini",
