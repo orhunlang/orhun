@@ -1,8 +1,12 @@
 işlev modulu_hazirla():
     gecici olsun dahil_et "tests/cases/module_callable_lib.oh"
     gecici.paylasilan[0] = 77
+    döndür gecici.dongu_degeri
 
-modulu_hazirla()
+işlev ic_yukleyici():
+    döndür modulu_hazirla()
+
+yazdır ic_yukleyici()
 
 tekrarla 1500 kez:
     cop olsun [1, 2, 3]

@@ -3795,7 +3795,8 @@ void Interpreter::calistirIslevTanim(const IslevTanimNode *dugum) {
     const std::string closureAdi =
         "__closure__" + std::to_string(++closureSayaci_);
     closureTablosu_[closureAdi] =
-        ClosureKaydi{dugum, nullptr, yerelKapsamYigini_, dugum->ad()};
+        ClosureKaydi{dugum, nullptr, yakalanabilirKapsamlariKopyala(),
+                     dugum->ad()};
     if (!aktifModulBaglamlari_.empty()) {
       modulIslevBaglamlari_[closureAdi] = aktifModulBaglamlari_.back();
     }
@@ -3926,7 +3927,7 @@ void Interpreter::calistirDevam(const DevamNode *dugum) {
 }
 
 void Interpreter::calistirDondur(const DondurNode *dugum) {
-  if (yerelKapsamYigini_.empty()) {
+  if (islevKapsamCerceveleri_.empty() || yerelKapsamYigini_.empty()) {
     hataFirlat(dugum->satir(),
                "'döndür' yalnızca işlev içinde kullanılabilir.");
   }
@@ -3994,6 +3995,7 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
     std::unordered_set<std::string> modulYazimlari;
 
     auto yerelKapsamOncesi = std::move(yerelKapsamYigini_);
+    auto islevKapsamOncesi = std::move(islevKapsamCerceveleri_);
     auto aktifModulOncesi = std::move(aktifModulBaglamlari_);
     modulYazimYigini_.push_back(&modulYazimlari);
     try {
@@ -4001,6 +4003,7 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
     } catch (...) {
       modulYazimYigini_.pop_back();
       yerelKapsamYigini_ = std::move(yerelKapsamOncesi);
+      islevKapsamCerceveleri_ = std::move(islevKapsamOncesi);
       aktifModulBaglamlari_ = std::move(aktifModulOncesi);
       globalHafiza_ = globalOncesi;
       islevTablosu_ = islevOncesi;
@@ -4008,6 +4011,7 @@ OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
     }
     modulYazimYigini_.pop_back();
     yerelKapsamYigini_ = std::move(yerelKapsamOncesi);
+    islevKapsamCerceveleri_ = std::move(islevKapsamOncesi);
     aktifModulBaglamlari_ = std::move(aktifModulOncesi);
 
     // Modülde üretilen değerleri sözlükte topla.
@@ -4821,8 +4825,9 @@ OrhunDegeri Interpreter::yeniNesneOlustur(const YeniNesneNode *dugum) {
 
 OrhunDegeri Interpreter::anonimIslevOlustur(const IsimsizIslevNode *dugum) {
   const std::string ad = "__anonim__" + std::to_string(++anonimIslevSayaci_);
-  closureTablosu_[ad] =
-      ClosureKaydi{nullptr, dugum, yerelKapsamYigini_, "<anonim>"};
+  closureTablosu_[ad] = ClosureKaydi{nullptr, dugum,
+                                     yakalanabilirKapsamlariKopyala(),
+                                     "<anonim>"};
   if (!aktifModulBaglamlari_.empty()) {
     modulIslevBaglamlari_[ad] = aktifModulBaglamlari_.back();
   }
@@ -5112,7 +5117,8 @@ OrhunDegeri Interpreter::kullaniciIslevCalistir(
 
   yerelKapsamYigini_.push_back(
       std::make_shared<DegiskenTablosu>(std::move(yeniKapsam)));
-  islevYerelKapsamBaslangiclari_.push_back(islevYerelKapsamBaslangici);
+  islevKapsamCerceveleri_.push_back(
+      {kapsamBaslangici, islevYerelKapsamBaslangici});
   try {
     auto &kapsam = *yerelKapsamYigini_.back();
     for (std::size_t i = 0; i < islev->parametreler().size(); ++i) {
@@ -5131,18 +5137,18 @@ OrhunDegeri Interpreter::kullaniciIslevCalistir(
     calistirBlock(islev->govde());
   } catch (const DondurSinyali &sinyal) {
     yerelKapsamYigini_.resize(kapsamBaslangici);
-    islevYerelKapsamBaslangiclari_.pop_back();
+    islevKapsamCerceveleri_.pop_back();
     cagriYigini_.pop_back();
     return sinyal.deger;
   } catch (...) {
     yerelKapsamYigini_.resize(kapsamBaslangici);
-    islevYerelKapsamBaslangiclari_.pop_back();
+    islevKapsamCerceveleri_.pop_back();
     cagriYigini_.pop_back();
     throw;
   }
 
   yerelKapsamYigini_.resize(kapsamBaslangici);
-  islevYerelKapsamBaslangiclari_.pop_back();
+  islevKapsamCerceveleri_.pop_back();
   if (dondurZorunlu) {
     try {
       hataFirlat(satir, "'" + islev->ad() + "' işlevi bir değer döndürmedi.");
@@ -5195,7 +5201,8 @@ OrhunDegeri Interpreter::anonimIslevCalistir(
 
   yerelKapsamYigini_.push_back(
       std::make_shared<DegiskenTablosu>(std::move(yeniKapsam)));
-  islevYerelKapsamBaslangiclari_.push_back(islevYerelKapsamBaslangici);
+  islevKapsamCerceveleri_.push_back(
+      {kapsamBaslangici, islevYerelKapsamBaslangici});
   try {
     auto &kapsam = *yerelKapsamYigini_.back();
     for (std::size_t i = 0; i < islev->parametreler().size(); ++i) {
@@ -5214,18 +5221,18 @@ OrhunDegeri Interpreter::anonimIslevCalistir(
     calistirBlock(islev->govde());
   } catch (const DondurSinyali &sinyal) {
     yerelKapsamYigini_.resize(kapsamBaslangici);
-    islevYerelKapsamBaslangiclari_.pop_back();
+    islevKapsamCerceveleri_.pop_back();
     cagriYigini_.pop_back();
     return sinyal.deger;
   } catch (...) {
     yerelKapsamYigini_.resize(kapsamBaslangici);
-    islevYerelKapsamBaslangiclari_.pop_back();
+    islevKapsamCerceveleri_.pop_back();
     cagriYigini_.pop_back();
     throw;
   }
 
   yerelKapsamYigini_.resize(kapsamBaslangici);
-  islevYerelKapsamBaslangiclari_.pop_back();
+  islevKapsamCerceveleri_.pop_back();
   if (dondurZorunlu) {
     try {
       hataFirlat(satir, "Anonim işlev bir değer döndürmedi.");
@@ -5558,6 +5565,21 @@ Interpreter::DegiskenTablosu &Interpreter::aktifKapsam() {
   return globalHafiza_;
 }
 
+std::size_t Interpreter::gorunurKapsamBaslangici() const {
+  if (islevKapsamCerceveleri_.empty()) {
+    return 0;
+  }
+  return std::min(islevKapsamCerceveleri_.back().gorunurBaslangic,
+                  yerelKapsamYigini_.size());
+}
+
+std::vector<Interpreter::KapsamPtr>
+Interpreter::yakalanabilirKapsamlariKopyala() const {
+  const std::size_t baslangic = gorunurKapsamBaslangici();
+  return std::vector<KapsamPtr>(yerelKapsamYigini_.begin() + baslangic,
+                               yerelKapsamYigini_.end());
+}
+
 void Interpreter::modulGlobalYaziminiKaydet(const std::string &ad) {
   if (!modulYazimYigini_.empty()) {
     modulYazimYigini_.back()->insert(ad);
@@ -5570,9 +5592,9 @@ void Interpreter::atamaHedefiYaz(const std::string &ad,
   (void)satir;
   if (bildirimMi) {
     const std::size_t aramaBaslangici =
-        islevYerelKapsamBaslangiclari_.empty()
+        islevKapsamCerceveleri_.empty()
             ? 0
-            : std::min(islevYerelKapsamBaslangiclari_.back(),
+            : std::min(islevKapsamCerceveleri_.back().yerelBaslangic,
                        yerelKapsamYigini_.size());
     for (std::size_t i = yerelKapsamYigini_.size(); i > aramaBaslangici;
          --i) {
@@ -5600,13 +5622,14 @@ void Interpreter::atamaHedefiYaz(const std::string &ad,
     return;
   }
 
-  for (auto it = yerelKapsamYigini_.rbegin(); it != yerelKapsamYigini_.rend();
-       ++it) {
-    if (!*it) {
+  const std::size_t aramaBaslangici = gorunurKapsamBaslangici();
+  for (std::size_t i = yerelKapsamYigini_.size(); i > aramaBaslangici; --i) {
+    const KapsamPtr &kapsam = yerelKapsamYigini_[i - 1];
+    if (!kapsam) {
       continue;
     }
-    const auto bulunan = (*it)->find(ad);
-    if (bulunan != (*it)->end()) {
+    const auto bulunan = kapsam->find(ad);
+    if (bulunan != kapsam->end()) {
       bulunan->second = deger;
       return;
     }
@@ -5637,13 +5660,14 @@ void Interpreter::atamaHedefiYaz(const std::string &ad,
 
 OrhunDegeri &Interpreter::degiskenBulYazilabilir(const std::string &ad,
                                                  std::size_t satir) {
-  for (auto it = yerelKapsamYigini_.rbegin(); it != yerelKapsamYigini_.rend();
-       ++it) {
-    if (!*it) {
+  const std::size_t aramaBaslangici = gorunurKapsamBaslangici();
+  for (std::size_t i = yerelKapsamYigini_.size(); i > aramaBaslangici; --i) {
+    const KapsamPtr &kapsam = yerelKapsamYigini_[i - 1];
+    if (!kapsam) {
       continue;
     }
-    const auto bulunan = (*it)->find(ad);
-    if (bulunan != (*it)->end()) {
+    const auto bulunan = kapsam->find(ad);
+    if (bulunan != kapsam->end()) {
       return bulunan->second;
     }
   }
@@ -5669,7 +5693,8 @@ OrhunDegeri &Interpreter::degiskenBulYazilabilir(const std::string &ad,
 
   std::vector<std::string> adaylar;
   std::unordered_set<std::string> gorulen;
-  for (const auto &kapsam : yerelKapsamYigini_) {
+  for (std::size_t i = aramaBaslangici; i < yerelKapsamYigini_.size(); ++i) {
+    const KapsamPtr &kapsam = yerelKapsamYigini_[i];
     if (!kapsam) {
       continue;
     }
@@ -5792,13 +5817,14 @@ OrhunDegeri &Interpreter::atananHedefYazilabilir(const ASTNode *hedef,
 
 const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
                                             std::size_t satir) const {
-  for (auto it = yerelKapsamYigini_.rbegin(); it != yerelKapsamYigini_.rend();
-       ++it) {
-    if (!*it) {
+  const std::size_t aramaBaslangici = gorunurKapsamBaslangici();
+  for (std::size_t i = yerelKapsamYigini_.size(); i > aramaBaslangici; --i) {
+    const KapsamPtr &kapsam = yerelKapsamYigini_[i - 1];
+    if (!kapsam) {
       continue;
     }
-    const auto bulunan = (*it)->find(ad);
-    if (bulunan != (*it)->end()) {
+    const auto bulunan = kapsam->find(ad);
+    if (bulunan != kapsam->end()) {
       return bulunan->second;
     }
   }
@@ -5824,7 +5850,8 @@ const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
 
   std::vector<std::string> adaylar;
   std::unordered_set<std::string> gorulen;
-  for (const auto &kapsam : yerelKapsamYigini_) {
+  for (std::size_t i = aramaBaslangici; i < yerelKapsamYigini_.size(); ++i) {
+    const KapsamPtr &kapsam = yerelKapsamYigini_[i];
     if (!kapsam) {
       continue;
     }

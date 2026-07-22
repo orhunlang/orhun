@@ -150,7 +150,11 @@ private:
   DegiskenTablosu yerlesikGlobalHafiza_;
   std::vector<std::string> programArgumanlari_;
   std::vector<KapsamPtr> yerelKapsamYigini_;
-  std::vector<std::size_t> islevYerelKapsamBaslangiclari_;
+  struct IslevKapsamCercevesi {
+    std::size_t gorunurBaslangic = 0;
+    std::size_t yerelBaslangic = 0;
+  };
+  std::vector<IslevKapsamCercevesi> islevKapsamCerceveleri_;
   int donguDerinligi_ = 0;
 
   std::unordered_map<std::string, const IslevTanimNode *> islevTablosu_;
@@ -261,6 +265,8 @@ private:
   bool islevReferansiCoz(const OrhunDegeri &deger, std::string &gercekAd) const;
 
   DegiskenTablosu &aktifKapsam();
+  std::size_t gorunurKapsamBaslangici() const;
+  std::vector<KapsamPtr> yakalanabilirKapsamlariKopyala() const;
   void modulGlobalYaziminiKaydet(const std::string &ad);
   void atamaHedefiYaz(const std::string &ad, const OrhunDegeri &deger,
                       bool bildirimMi, std::size_t satir);

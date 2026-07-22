@@ -377,3 +377,8 @@
   dönüştürmez. Açık dönüşüm gerekiyorsa önce `metne_cevir` kullanılmalıdır.
 - Yorumlayıcıda işlev içindeki `olsun`, döngü bloklarında aynı işlevin mevcut
   yerelini günceller; çağıran işlevin aynı adlı yerelini artık değiştirmez.
+- Yorumlayıcıdaki işlev okuma ve `=` yazmaları artık VM ile aynı sözcüksel
+  kapsamı kullanır. Bir işlev çağıranın ilgisiz yerelini göremez veya
+  değiştiremez; iç içe işlevler de yalnızca tanımlandıkları görünür kapsamları
+  yakalar. Daha önce çağrı zincirinden örtük değişken alan kod, değeri açık
+  parametreyle geçirmeli veya gerçek bir closure içinde tanımlamalıdır.

@@ -1,0 +1,5 @@
+global
+cagiran
+degisti
+cagiran-izole
+closure-izole

@@ -1,0 +1,45 @@
+deger olsun "global"
+
+işlev global_oku():
+    döndür deger
+
+işlev global_yaz():
+    deger = "degisti"
+    döndür 0
+
+işlev cagiran():
+    deger olsun "cagiran"
+    yazdır global_oku()
+    global_yaz()
+    yazdır deger
+    döndür 0
+
+cagiran()
+yazdır deger
+
+işlev sizinti_oku():
+    döndür sadece_cagiran
+
+işlev sizinti_dene():
+    sadece_cagiran olsun "gizli"
+    deneme:
+        yazdır sizinti_oku()
+    yakala hata:
+        yazdır "cagiran-izole"
+    döndür 0
+
+sizinti_dene()
+
+işlev closure_yap():
+    döndür işlev(): yabanci
+
+işlev closure_sinavi():
+    yabanci olsun "gizli"
+    fn olsun closure_yap()
+    deneme:
+        yazdır fn()
+    yakala hata:
+        yazdır "closure-izole"
+    döndür 0
+
+closure_sinavi()

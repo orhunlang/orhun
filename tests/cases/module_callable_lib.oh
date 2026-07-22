@@ -1,5 +1,9 @@
 deger olsun 10
 paylasilan olsun [10]
+dongu_degeri olsun ""
+
+her oge içinde ["modul-dongu"]:
+    dongu_degeri = oge
 
 işlev topla(a, b):
     döndür a + b

@@ -38,6 +38,8 @@ These percentages are planning estimates, not promises.
   dependencies fail explicitly.
 - Functions, lambdas, default arguments, classes, inheritance, collections,
   slicing, safe access, and error handling.
+- Interpreter and VM function calls share lexical variable lookup: caller-only
+  locals cannot leak into callees or their returned closures.
 - File, JSON, regex, date/time, database helper, server, task, FFI, and system
   policy surfaces.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.

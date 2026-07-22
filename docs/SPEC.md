@@ -136,6 +136,11 @@ function's local binding.
 That lookup is limited to the current function frame: loop blocks can update a
 local declared by the same function, while a called function cannot overwrite
 the caller's same-named local merely by declaring its own binding.
+All function reads and `=` writes use lexical scope in both runtimes. A call
+can see its own locals, explicit closure captures, module bindings, and globals,
+but it cannot read or mutate an unrelated local belonging only to its caller.
+An unresolved name therefore continues as a module/global lookup instead of
+falling through into the dynamic call stack.
 
 Multiple assignment and destructuring are supported by the current test suite.
 
@@ -1139,6 +1144,9 @@ Target closure semantics:
   bindings with the same name.
 - A referenced name that is not local to the nested function is captured from
   the nearest enclosing function scope when such a binding exists.
+- Closure construction captures only scopes visible to the defining function;
+  locals belonging solely to a function farther down the dynamic call stack are
+  never captured.
 - Global bindings are not copied into closure environments; they remain global
   lookups.
 - Captured locals live as long as any closure that references them.
