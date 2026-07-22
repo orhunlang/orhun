@@ -241,6 +241,10 @@ These percentages are planning estimates, not promises.
   can advance to an explicit synchronization set. Diagnostic records render as
   consistent code and source-location messages for beginner-facing DSLs and
   editor tooling, with optional source-line and column-marker output.
+- `examples/mini_dil.oh` uses those helpers to implement a tokenizer, a
+  backtracking/recovering parser, an AST, and execution for a small command DSL
+  entirely in Orhun. The example produces identical output through the default
+  VM and the Orhun-written `orhun-vm` compiler path.
 
 ## Main Remaining Work
 

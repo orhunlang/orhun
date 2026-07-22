@@ -33,12 +33,14 @@ def main() -> int:
     examples = sorted((repo / "examples").glob("*.oh"))
     require(examples, "No examples found")
 
+    outputs: dict[str, str] = {}
     for example in examples:
         proc = run([str(binary), str(example)], repo)
         require(
             proc.returncode == 0,
             f"Example failed: {example.name}\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}",
         )
+        outputs[example.name] = proc.stdout.replace("\r\n", "\n")
 
     merhaba = (repo / "examples" / "merhaba.oh").read_text(encoding="utf-8")
     require(
@@ -73,6 +75,39 @@ def main() -> int:
         "dil.dugum_ozeti(ast)",
     ):
         require(snippet in stdlib_dil, f"stdlib_dil should include {snippet}")
+
+    mini_dil = (repo / "examples" / "mini_dil.oh").read_text(encoding="utf-8")
+    for snippet in (
+        "işlev tokenlestir(kaynak_metni):",
+        "dil.isaretle(imlec)",
+        "dil.isarete_don(imlec, isaret)",
+        'dil.durma_turune_ilerle(imlec, ["SATIR_SONU"])',
+        'dil.dugum("Topla"',
+        "programi_calistir(sonuc.ast)",
+    ):
+        require(snippet in mini_dil, f"mini_dil should include {snippet}")
+    for output in (
+        "Merhaba, Ada!",
+        "\n5\n",
+        "Merhaba, Orhun!",
+        "AST: Program -> Selam -> Topla -> Sayi -> Sayi -> Selam",
+        "Tani sayisi: 1",
+        "[bilinmeyen_komut]",
+    ):
+        require(output in outputs["mini_dil.oh"], f"mini_dil output missing {output}")
+
+    mini_self_hosted = run(
+        [str(binary), "orhun-vm", str(repo / "examples" / "mini_dil.oh")], repo
+    )
+    require(
+        mini_self_hosted.returncode == 0,
+        "Self-hosted mini_dil failed:\n"
+        f"STDOUT:\n{mini_self_hosted.stdout}\nSTDERR:\n{mini_self_hosted.stderr}",
+    )
+    require(
+        mini_self_hosted.stdout.replace("\r\n", "\n") == outputs["mini_dil.oh"],
+        "Self-hosted mini_dil output differs from the default VM path",
+    )
 
     stdlib_lexer = (repo / "examples" / "stdlib_lexer.oh").read_text(
         encoding="utf-8"

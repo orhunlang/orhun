@@ -1,0 +1,101 @@
+dil olsun dahil_et "orhun/dil.oh"
+sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+
+kaynak olsun "selam Ada\ntopla 2 3\nbozuk komut\nselam Orhun"
+
+işlev kelime_turu(kelime):
+    eğer kelime eşit "selam" ise:
+        döndür "SELAM"
+    eğer kelime eşit "topla" ise:
+        döndür "TOPLA"
+    deneme:
+        sayiya_cevir(kelime)
+        döndür "SAYI"
+    yakala hata:
+        döndür "AD"
+
+işlev tokenlestir(kaynak_metni):
+    tokenlar olsun []
+    satirlar olsun parcala(kaynak_metni, "\n")
+    satir_no olsun 1
+    her satir içinde satirlar:
+        kelimeler olsun parcala(satir, " ")
+        sutun olsun 1
+        her kelime içinde kelimeler:
+            eğer uzunluk(kelime) büyük 0 ise:
+                tokenlar.ekle(dil.token(kelime_turu(kelime), kelime, satir_no, sutun))
+                sutun olsun sutun + metin.utf8_uzunluk(kelime) + 1
+        tokenlar.ekle(dil.token("SATIR_SONU", "", satir_no, sutun))
+        satir_no olsun satir_no + 1
+    tokenlar.ekle(dil.dosya_sonu(satir_no, 1))
+    döndür tokenlar
+
+işlev selam_komutu_coz(imlec):
+    isaret olsun dil.isaretle(imlec)
+    eğer değil dil.esles(imlec, "SELAM", "selam") ise:
+        döndür sonuc_yardimci.hata("selam komutu degil")
+    komut_tokeni olsun dil.onceki(imlec)
+    ad olsun dil.bekle(imlec, "AD", "", "selam komutundan sonra ad bekleniyor")
+    satir_sonu olsun dil.bekle(imlec, "SATIR_SONU", "", "selam komutu satir sonunda bitmeli")
+    eğer ad.ok ve satir_sonu.ok ise:
+        döndür sonuc_yardimci.ok(dil.dugum("Selam", ad.deger.deger, [], komut_tokeni.satir, komut_tokeni.sutun))
+    dil.isarete_don(imlec, isaret)
+    döndür sonuc_yardimci.hata("gecersiz selam komutu")
+
+işlev topla_komutu_coz(imlec):
+    isaret olsun dil.isaretle(imlec)
+    eğer değil dil.esles(imlec, "TOPLA", "topla") ise:
+        döndür sonuc_yardimci.hata("topla komutu degil")
+    komut_tokeni olsun dil.onceki(imlec)
+    sol olsun dil.bekle(imlec, "SAYI", "", "ilk sayi bekleniyor")
+    sag olsun dil.bekle(imlec, "SAYI", "", "ikinci sayi bekleniyor")
+    satir_sonu olsun dil.bekle(imlec, "SATIR_SONU", "", "topla komutu satir sonunda bitmeli")
+    eğer sol.ok ve sag.ok ve satir_sonu.ok ise:
+        cocuklar olsun [
+            dil.yaprak("Sayi", sol.deger.deger, sol.deger),
+            dil.yaprak("Sayi", sag.deger.deger, sag.deger),
+        ]
+        döndür sonuc_yardimci.ok(dil.dugum("Topla", "", cocuklar, komut_tokeni.satir, komut_tokeni.sutun))
+    dil.isarete_don(imlec, isaret)
+    döndür sonuc_yardimci.hata("gecersiz topla komutu")
+
+işlev komut_coz(imlec):
+    isaret olsun dil.isaretle(imlec)
+    sonuc olsun selam_komutu_coz(imlec)
+    eğer sonuc.ok ise:
+        döndür sonuc
+    dil.isarete_don(imlec, isaret)
+
+    sonuc = topla_komutu_coz(imlec)
+    eğer sonuc.ok ise:
+        döndür sonuc
+    dil.isarete_don(imlec, isaret)
+
+    dil.tani_ekle(imlec, "bilinmeyen_komut", "selam veya topla komutu bekleniyor", dil.simdiki(imlec))
+    dil.durma_turune_ilerle(imlec, ["SATIR_SONU"])
+    dil.esles(imlec, "SATIR_SONU", "")
+    döndür sonuc_yardimci.hata("bilinmeyen komut")
+
+işlev program_coz(tokenlar):
+    imlec olsun dil.imlec(tokenlar)
+    komutlar olsun []
+    sürece değil dil.bitti_mi(imlec):
+        sonuc olsun komut_coz(imlec)
+        eğer sonuc.ok ise:
+            komutlar.ekle(sonuc.deger)
+    döndür {"ast": dil.program(komutlar), "hatalar": imlec.hatalar}
+
+işlev programi_calistir(ast):
+    her komut içinde ast.cocuklar:
+        eğer komut.tur eşit "Selam" ise:
+            yazdır "Merhaba, " + komut.deger + "!"
+        eğer komut.tur eşit "Topla" ise:
+            sol olsun sayiya_cevir(komut.cocuklar[0].deger)
+            sag olsun sayiya_cevir(komut.cocuklar[1].deger)
+            yazdır sol + sag
+
+sonuc olsun program_coz(tokenlestir(kaynak))
+programi_calistir(sonuc.ast)
+yazdır "AST: " + metin.birlestir(dil.dugum_turlerini_duzlestir(sonuc.ast), " -> ")
+yazdır "Tani sayisi: " + metne_cevir(uzunluk(sonuc.hatalar))
+yazdır dil.tani_listesi_kaynak_bicimlendir(sonuc.hatalar, kaynak)

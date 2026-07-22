@@ -311,6 +311,8 @@ self-hosting plan.
   (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `sozluk.oh`, `metin.oh`, `paket.oh`,
   `dil.oh`, `lexer.oh`, `parser.oh`, `derleyici.oh`)
 - Examples: `examples/`
+- Small language example: `examples/mini_dil.oh` (tokenizer, parser, AST,
+  recovery, and execution written in Orhun)
 - Tests and fixtures: `tests/`
 - Lexer parity fixtures: `tests/lexer_parity/`
 - Parser AST JSON fixtures: `tests/ast_json/`

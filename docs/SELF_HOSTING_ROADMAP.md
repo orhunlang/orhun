@@ -110,6 +110,9 @@ Orhun ile yeni dil/DSL prototipleri yazmak icin ortak bir on-katman baslatti.
 Imlec isaretleri secimli parse denemelerinin konum ve tanilarini geri alir;
 token kumesi esleme ve acik senkronizasyon turlerine ilerleme ortak hata
 kurtarma akislarini saf Orhun kodunda sunar.
+`examples/mini_dil.oh`, tokenizer, geri-almali parser, hata kurtarma, AST ve
+calistirmayi Orhun kodunda kurar; varsayilan VM ile Orhun-yazili `orhun-vm`
+derleyici yolunda ayni ciktiyi verir.
 Tani kayitlari ortak kod/konum bicimleyicileriyle yeni baslayanlara acik
 mesajlar olarak sunulabilir; kaynak satiri ve sutun isareti de eklenebilir.
 Aralik tani isaretleri, hata/uyari seviyesi ve Turkce ipuclari da bu ortak
