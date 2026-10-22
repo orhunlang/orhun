@@ -3,7 +3,7 @@
 [![Orhun CI](https://github.com/orhunlang/orhun/actions/workflows/ci.yml/badge.svg)](https://github.com/orhunlang/orhun/actions/workflows/ci.yml)
 
 Orhun is an actively developed, Turkish-first programming language runtime.
-It is experimental, but already has a working lexer, parser, interpreter,
+It is a stable 1.0 language contract with a working lexer, parser, interpreter,
 bytecode compiler, VM execution path, standard-library modules, package
 verification flows, and editor tooling.
 
@@ -17,8 +17,8 @@ Repository: https://github.com/orhunlang/orhun
 
 Orhun is under active development.
 
-- Current version: `0.9.0`
-- Stability: experimental / pre-1.0
+- Current version: `1.0.0`
+- Stability: 1.0 stable language contract
 - Primary implementation language: C++17
 - Source extension: `.oh`
 - Default language identity: Turkish-first
@@ -33,7 +33,7 @@ For a more concrete progress snapshot and the current estimate toward `1.0` /
 
 Stability contracts: [`docs/COMPATIBILITY_POLICY.md`](docs/COMPATIBILITY_POLICY.md),
 [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md),
-[`docs/RELEASE_NOTES_0.9.0.md`](docs/RELEASE_NOTES_0.9.0.md).
+[`docs/RELEASE_NOTES_1.0.0.md`](docs/RELEASE_NOTES_1.0.0.md).
 Quick reference: [`docs/CHEATSHEET.md`](docs/CHEATSHEET.md).
 
 ## What Orhun Provides

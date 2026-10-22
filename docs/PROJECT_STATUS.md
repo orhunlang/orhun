@@ -6,9 +6,9 @@ language.
 
 ## Current Version
 
-- Public version: `0.9.0`
-- Stability: experimental / pre-1.0
-- README current-version line: `0.9.0`
+- Public version: `1.0.0`
+- Stability: stable language contract (`docs/COMPATIBILITY_POLICY.md`)
+- README current-version line: `1.0.0`
 - Version source of truth: `VERSION`
 
 Normal development commits do not change the public version number. Version
@@ -20,9 +20,9 @@ These percentages are planning estimates, not promises.
 
 | Target | Estimated Progress | Meaning |
 | --- | ---: | --- |
-| Working experimental language / MVP | 70-75% | Orhun has lexer, parser, interpreter, bytecode compiler, VM, stdlib, package/security flows, teaching diagnostics, English keyword aliases, tests, and tooling. |
-| 1.0 stable language | 55-60% | Spec/migration docs and known-issues list now exist; still needs a frozen language contract, release binaries, stronger package flow, and hardened performance/security gates. |
-| 2.1.0 production-ready product bar | 25-30% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
+| Working experimental language / MVP | 100% | Lexer, parser, interpreter, bytecode compiler, VM, stdlib, package/security flows, teaching diagnostics, English aliases, ASCII operators, tests, tooling, and release gates. |
+| 1.0 stable language | 100% | Stable spec + compatibility policy + known-issues list + release readiness gates + tagged release path. |
+| 2.1.0 production-ready product bar | 30-35% | Still needs installers, code-signing, ecosystem docs/examples scale, and broader support process. |
 | Full self-hosting / independent compiler path | ~60% | The Orhun-written compiler has exact bytecode parity across every current runtime case accepted by C++, ships as a source-free portable compiler bundle that directly emits byte-identical artifacts, passes a three-stage byte-identical self-rebuild gate, and has a tag-triggered multi-platform release path. The serialization bridge and runtime are still C++. |
 
 ## What Is Already Real
