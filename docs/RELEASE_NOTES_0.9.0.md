@@ -37,6 +37,15 @@ Default mode normalizes selected English keywords to Turkish tokens:
 Structural particles stay Turkish (`if cond ise:`). Enable
 `ORHUN_TURKCE_KATI=1` to reject aliases and receive teaching hints.
 
+### ASCII Comparison Operators
+
+`==`, `!=`, `<`, `>`, `<=`, `>=` map to `eşit`, `eşit_değil`, `büyük`,
+`küçük` and the non-strict relations. Turkish keywords remain primary.
+
+### Discoverable CLI
+
+`orhun yardim` / `orhun help` prints a command summary.
+
 ### Benchmark Manifest
 
 `tests/benchmarks/python_compare/benchmarks.txt` is the source of truth for

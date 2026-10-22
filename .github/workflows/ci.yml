@@ -127,6 +127,11 @@ jobs:
         shell: pwsh
         run: py -3 tests/case_manifest_smoke.py
 
+      - name: Spec keyword contract smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/spec_keyword_contract_smoke.py
+
       - name: Interpreter parity (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -148,6 +153,10 @@ jobs:
         if: runner.os == 'Linux'
         run: python3 tests/case_manifest_smoke.py
 
+      - name: Spec keyword contract smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/spec_keyword_contract_smoke.py
+
       - name: Interpreter parity (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/interpreter_parity_sweep.py ./build/orhun_test
@@ -167,6 +176,10 @@ jobs:
       - name: Case manifest smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/case_manifest_smoke.py
+
+      - name: Spec keyword contract smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/spec_keyword_contract_smoke.py
 
       - name: Interpreter parity (macOS)
         if: runner.os == 'macOS'
@@ -226,6 +239,31 @@ jobs:
         shell: pwsh
         run: py -3 tests/known_gap_smoke.py .\build\orhun_test.exe
 
+      - name: Teaching-hint smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/teaching_hint_smoke.py .\build\orhun_test.exe
+
+      - name: English alias smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/english_alias_smoke.py .\build\orhun_test.exe
+
+      - name: ASCII compare smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/ascii_compare_smoke.py .\build\orhun_test.exe
+
+      - name: CLI contract smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/cli_contract_smoke.py .\build\orhun_test.exe
+
+      - name: Release readiness smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/release_readiness_smoke.py .\build\orhun_test.exe
+
       - name: Closure capture analysis smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -244,6 +282,26 @@ jobs:
         if: runner.os == 'Linux'
         run: python3 tests/known_gap_smoke.py ./build/orhun_test
 
+      - name: Teaching-hint smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/teaching_hint_smoke.py ./build/orhun_test
+
+      - name: English alias smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/english_alias_smoke.py ./build/orhun_test
+
+      - name: ASCII compare smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/ascii_compare_smoke.py ./build/orhun_test
+
+      - name: CLI contract smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/cli_contract_smoke.py ./build/orhun_test
+
+      - name: Release readiness smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/release_readiness_smoke.py ./build/orhun_test
+
       - name: Closure capture analysis smoke (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/closure_capture_analysis_smoke.py ./build/orhun_test
@@ -259,6 +317,26 @@ jobs:
       - name: Known-gap smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/known_gap_smoke.py ./build/orhun_test
+
+      - name: Teaching-hint smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/teaching_hint_smoke.py ./build/orhun_test
+
+      - name: English alias smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/english_alias_smoke.py ./build/orhun_test
+
+      - name: ASCII compare smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/ascii_compare_smoke.py ./build/orhun_test
+
+      - name: CLI contract smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/cli_contract_smoke.py ./build/orhun_test
+
+      - name: Release readiness smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/release_readiness_smoke.py ./build/orhun_test
 
       - name: Closure capture analysis smoke (macOS)
         if: runner.os == 'macOS'
