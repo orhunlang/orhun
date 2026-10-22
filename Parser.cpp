@@ -140,6 +140,15 @@ std::vector<std::string> sozdizimiOgreticiIpucu(const std::string &mesaj) {
   if (mesaj.find("İşlev adından sonra '('") != std::string::npos) {
     return sozdizimiIpucu("eksik-parantez-islev");
   }
+  if (mesaj.find("'<='") != std::string::npos ||
+      mesaj.find("'>='") != std::string::npos ||
+      mesaj.find("desteklenmiyor") != std::string::npos) {
+    return {
+        ipucuSatiri("Bu sürümde `==`, `!=`, `<`, `>` desteklenir; "
+                    "`<=`/`>=` için 'küçük'/'büyük' ve 'veya' kullanın."),
+        ornekSatiri("a küçük b veya a eşit b"),
+    };
+  }
   return {};
 }
 } // namespace
@@ -691,8 +700,27 @@ std::unique_ptr<ASTNode> Parser::parseKarsilastirma() {
   while (kontrol(TokenTuru::ANAHTAR_KELIME, "eşit") ||
          kontrol(TokenTuru::ANAHTAR_KELIME, "eşit_değil") ||
          kontrol(TokenTuru::ANAHTAR_KELIME, "büyük") ||
-         kontrol(TokenTuru::ANAHTAR_KELIME, "küçük")) {
-    const OrhunToken op = ilerle();
+         kontrol(TokenTuru::ANAHTAR_KELIME, "küçük") ||
+         kontrol(TokenTuru::ISLEM, "==") || kontrol(TokenTuru::ISLEM, "!=") ||
+         kontrol(TokenTuru::ISLEM, "<") || kontrol(TokenTuru::ISLEM, ">") ||
+         kontrol(TokenTuru::ISLEM, "<=") || kontrol(TokenTuru::ISLEM, ">=")) {
+    OrhunToken op = ilerle();
+    if (op.deger == "<=" || op.deger == ">=") {
+      syntaxError(op, "Karşılaştırma operatörü '" + op.deger +
+                          "' bu sürümde desteklenmiyor.");
+    }
+    // ASCII operatörler Türkçe karşılaştırma anahtarlarına eşlenir.
+    if (op.tur == TokenTuru::ISLEM) {
+      if (op.deger == "==") {
+        op.deger = "eşit";
+      } else if (op.deger == "!=") {
+        op.deger = "eşit_değil";
+      } else if (op.deger == "<") {
+        op.deger = "küçük";
+      } else if (op.deger == ">") {
+        op.deger = "büyük";
+      }
+    }
     ifadeDevamDuzeniniAtla();
     std::unique_ptr<ASTNode> sag = parseToplama();
     sol = std::make_unique<IkiliIslemNode>(std::move(sol), op.deger,

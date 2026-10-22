@@ -160,13 +160,37 @@ std::vector<OrhunToken> Lexer::tokenize() {
       continue;
     }
 
-    if (operatorMu(c) || c == U'%' || c == U'=' || c == U'>' || c == U'(' ||
-        c == U')' || c == U'[' || c == U']' || c == U',' || c == U':' ||
-        c == U'{' || c == U'}' || c == U'.' || c == U'?') {
+    if (operatorMu(c) || c == U'%' || c == U'=' || c == U'>' || c == U'<' ||
+        c == U'(' || c == U')' || c == U'[' || c == U']' || c == U',' ||
+        c == U':' || c == U'{' || c == U'}' || c == U'.' || c == U'?') {
       const std::size_t baslangicSutun = sutun_;
+      // Çok karakterli karşılaştırma operatörleri önce denenir.
+      if ((c == U'=' && bakIleri(1) == U'=') ||
+          (c == U'!' && bakIleri(1) == U'=') ||
+          (c == U'<' && bakIleri(1) == U'=') ||
+          (c == U'>' && bakIleri(1) == U'=')) {
+        ilerle();
+        ilerle();
+        const std::string ikili =
+            (c == U'=')   ? "=="
+            : (c == U'!') ? "!="
+            : (c == U'<') ? "<="
+                          : ">=";
+        tokenEkle(TokenTuru::ISLEM, ikili, satir_, baslangicSutun);
+        continue;
+      }
       const std::u32string tekKarakter(1, ilerle());
       tokenEkle(TokenTuru::ISLEM, u32ToUtf8(tekKarakter), satir_,
                 baslangicSutun);
+      continue;
+    }
+
+    // `!=` dışında tek başına `!` desteklenmez.
+    if (c == U'!' && bakIleri(1) == U'=') {
+      const std::size_t baslangicSutun = sutun_;
+      ilerle();
+      ilerle();
+      tokenEkle(TokenTuru::ISLEM, "!=", satir_, baslangicSutun);
       continue;
     }
 

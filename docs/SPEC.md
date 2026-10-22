@@ -184,10 +184,17 @@ Both runtimes reject missing and surplus values before writing any target.
 ## Operators
 
 Arithmetic operators are `+`, `-`, `*`, `/`, and `%`. Modulo uses the same
-zero-divisor error contract in the interpreter and VM. `ve` and `veya` are
-short-circuit boolean operators in both runtimes. They return normalized boolean
-results and do not evaluate the right operand when the left operand determines
-the result.
+zero-divisor error contract in the interpreter and VM.
+
+Comparison keywords: `eşit`, `eşit_değil`, `büyük`, `küçük`.
+ASCII aliases (default mode): `==`, `!=`, `<`, `>` map to the same comparison
+semantics (`==`→`eşit`, `!=`→`eşit_değil`, `<`→`küçük`, `>`→`büyük`).
+`<=` and `>=` are recognized but rejected with a teaching hint in this version;
+use `küçük` / `büyük` combined with `veya` instead.
+
+`ve` and `veya` are short-circuit boolean operators in both runtimes. They
+return normalized boolean results and do not evaluate the right operand when
+the left operand determines the result. Logical keywords: `ve`, `veya`, `değil`.
 
 Equality is type-sensitive except for the interpreter's internal integer and
 decimal number representations, which compare by numeric value. Boolean and

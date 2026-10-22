@@ -75,6 +75,7 @@ def main() -> int:
     run_py("tests/cli_contract_smoke.py", str(binary))
     run_py("tests/teaching_hint_smoke.py", str(binary))
     run_py("tests/english_alias_smoke.py", str(binary))
+    run_py("tests/ascii_compare_smoke.py", str(binary))
     run_py("tests/known_gap_smoke.py", str(binary))
     run_py("tests/beginner_docs_smoke.py")
     run_py("tests/benchmark_pipeline_smoke.py")

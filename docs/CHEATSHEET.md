@@ -33,6 +33,8 @@ her oge içinde liste:
     ...
 ```
 
+Karşılaştırma: `küçük`, `büyük`, `eşit` veya ASCII ` < > == != `.
+
 ## Collections
 
 ```orhun
