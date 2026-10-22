@@ -1,0 +1,28 @@
+# Orhun — English keyword aliases (non-strict mode)
+# ORHUN_TURKCE_KATI=1 ile bu dosya reddedilir; öğretici ipucu Türkçe karşılığı gösterir.
+
+print("Merhaba from aliases")
+
+function topla(a, b):
+    return a + b
+
+print(topla(2, 3))
+
+if 2 küçük 3 ise:
+    print("kosul calisti")
+
+for x in [10, 20]:
+    print(x)
+
+i olsun 0
+while i küçük 2:
+    print(i)
+    i = i + 1
+
+try:
+    print("deneme blogu")
+catch hata:
+    print("yakalandi")
+
+print(true)
+print(false)

@@ -1177,6 +1177,34 @@ Until `1.0`, Orhun may change quickly, but changes should follow these rules:
 - Any behavior needed for self-hosting must be documented here before it is
   depended on by Orhun-written tooling.
 
+From `1.0.0` onward:
+
+- This specification is the language contract. Implemented behavior must match
+  this document; silent drift is a release blocker.
+- Breaking changes require a major version bump and a `docs/MIGRATION_GUIDE.md`
+  entry before the breaking release.
+- Deprecations follow `docs/DEPRECATION_POLICY.md` (warn → opt-in → remove).
+- Passing test fixtures and documented CLI contracts remain valid across patch
+  releases.
+- English keyword aliases remain a non-strict-mode convenience layer; Turkish
+  strict mode stays alias-free.
+- Teaching diagnostics (`İpucu` / `Örnek` lines) are additive and may improve
+  wording without breaking programs.
+
+## 1.0 Stability Checklist
+
+A release may be tagged `v1.0.0` only when:
+
+1. `docs/SPEC.md` matches the implementation (keywords, operators, capture
+   model, module rules, CLI contract).
+2. `docs/KNOWN_ISSUES.md` lists every accepted gap.
+3. `docs/MIGRATION_GUIDE.md` covers every intentional break since `0.9.0`.
+4. Full suite, VM parity, teaching-hint, English-alias, and roadmap smokes are
+   green.
+5. `VERSION`, `ORHUN_SURUM`, and README current-version agree.
+6. Release binaries are published or the release is explicitly source-only
+   with verified build steps.
+
 ## Closure Capture Status
 
 Nested functions and anonymous functions are parsed and callable. The

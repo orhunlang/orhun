@@ -31,6 +31,10 @@ toward self-hosting.
 For a more concrete progress snapshot and the current estimate toward `1.0` /
 `2.1.0`, see [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
 
+Stability contracts: [`docs/COMPATIBILITY_POLICY.md`](docs/COMPATIBILITY_POLICY.md),
+[`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md),
+[`docs/RELEASE_NOTES_0.9.0.md`](docs/RELEASE_NOTES_0.9.0.md).
+
 ## What Orhun Provides
 
 - Turkish-first syntax and diagnostics

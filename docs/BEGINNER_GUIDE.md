@@ -46,6 +46,28 @@ değilse:
 
 Karsilastirma icin Turkce operatorler de vardir: `büyük`, `küçük`, `eşit`.
 
+Hata yaparsan derleyici yol gosterir:
+
+```text
+Koşuldan sonra 'ise' bekleniyor.
+  İpucu: Koşuldan sonra 'ise' ve iki nokta gelir.
+  Örnek: eğer dogru ise:
+```
+
+## 4.1. Ingilizce Anahtar Aliaslari (istege bagli)
+
+Varsayilan modda bazi Ingilizce anahtar kelimeler Turkce'ye cevrilir:
+
+```orhun
+if puan büyük 50 ise:
+    print("Gectin")
+else:
+    print("Kaldin")
+```
+
+`ORHUN_TURKCE_KATI=1` ile yalnizca Turkce anahtar kelimeler kabul edilir;
+Ingilizce yazarsaniz hangi kelimeyi kullanacaginiz soylenir.
+
 ## 5. Listeyle Calis
 
 ```orhun
