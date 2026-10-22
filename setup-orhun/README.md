@@ -11,15 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: orhunlang/orhun/setup-orhun@main
+      - uses: orhunlang/orhun/setup-orhun@v1.0.1
         with:
-          version: "1.0.0"
+          version: "1.0.1"
       - run: orhun surum
       - run: orhun examples/merhaba.oh
 ```
-
-Pin `@v1.0.1` (or later) once a release tag contains this action directory.
-Until then use `@main`.
 
 ## Inputs
 

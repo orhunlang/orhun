@@ -7,9 +7,9 @@ branding:
 
 inputs:
   version:
-    description: "Orhun version to install (for example 1.0.0). Defaults to latest stable release."
+    description: "Orhun version to install (for example 1.0.1). Defaults to latest stable release."
     required: false
-    default: "1.0.0"
+    default: "1.0.1"
   artifact:
     description: "Which release artifact to install: runtime or compiler."
     required: false

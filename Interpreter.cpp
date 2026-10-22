@@ -1391,7 +1391,7 @@ WinHttpApi &winHttpApi() {
       parcalar.nScheme == INTERNET_SCHEME_HTTPS ? WINHTTP_FLAG_SECURE : 0;
 
   HINTERNET oturum =
-      api.open(L"Orhun/1.0.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+      api.open(L"Orhun/1.0.1", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
   if (!oturum) {
     throw std::runtime_error("WinHttpOpen başarısız: " +

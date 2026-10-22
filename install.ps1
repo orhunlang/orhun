@@ -7,7 +7,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$Version = $(if ($env:ORHUN_VERSION) { $env:ORHUN_VERSION } else { "1.0.0" }),
+    [string]$Version = $(if ($env:ORHUN_VERSION) { $env:ORHUN_VERSION } else { "1.0.1" }),
     [string]$Repo = $(if ($env:ORHUN_REPO) { $env:ORHUN_REPO } else { "orhunlang/orhun" }),
     [string]$Prefix = $(if ($env:ORHUN_PREFIX) { $env:ORHUN_PREFIX } else { Join-Path $env:LOCALAPPDATA "orhun" }),
     [ValidateSet("runtime", "compiler")]

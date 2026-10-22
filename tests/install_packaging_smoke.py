@@ -41,8 +41,8 @@ def main() -> int:
         require(needle in text, f"grammar missing {needle!r}")
     for kw in ("eğer", "işlev", "if", "function", "print"):
         require(kw in text, f"grammar missing keyword {kw!r}")
-    vsix = list(ext_root.glob("*.vsix"))
-    require(vsix, "vsix package missing (run npm run package)")
+    vsix = list(ext_root.glob(f"orhun-language-{version}.vsix"))
+    require(vsix, f"vsix package missing for {version} (run npm run package)")
     print(f"[OK] vscode ({vsix[0].name})")
 
     action = repo / "setup-orhun" / "action.yml"

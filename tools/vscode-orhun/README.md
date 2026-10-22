@@ -1,7 +1,7 @@
 # Orhun Language (VS Code)
 
 Syntax highlighting and snippets for the [Orhun](https://github.com/orhunlang/orhun)
-programming language (v1.0).
+programming language (v1.0.1).
 
 ## Features
 

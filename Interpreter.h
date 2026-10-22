@@ -20,7 +20,7 @@ namespace runtime {
 class DynamicLibrary;
 }
 
-#define ORHUN_SURUM "1.0.0"
+#define ORHUN_SURUM "1.0.1"
 #define ORHUN_INSA_NO "50"
 
 class OrhunHatasi : public std::runtime_error {
