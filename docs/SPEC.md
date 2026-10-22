@@ -46,6 +46,18 @@ ve veya değil tip yeni benim deneme yakala kır devam ust için içinde
 paralel yap
 ```
 
+Beginner / builtin command names (recognized as commands in the parser; some
+are aliases of builtins rather than statement keywords):
+
+```text
+yaz oku ilk son uzunluk aralik aralık bos_mu boş_mu dolu_mu
+```
+
+- `yaz` is the short alias of `yazdır`.
+- `oku` is the input alias of `sor`.
+- `ilk`, `son`, `uzunluk`, `aralik`/`aralık`, `bos_mu`/`boş_mu`, `dolu_mu`
+  are builtin helpers also accepted in command position.
+
 Compatibility alias:
 
 ```text
