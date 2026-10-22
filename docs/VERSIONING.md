@@ -4,7 +4,7 @@ Orhun follows release-oriented semantic versioning.
 
 ## Current Stage
 
-- Current version: `0.8.0`
+- Current version: `0.9.0`
 - Stability: experimental, pre-1.0
 - Version source of truth: `VERSION`, `Interpreter.h` (`ORHUN_SURUM`), and the
   README current-version line must match.

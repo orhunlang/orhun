@@ -1,5 +1,21 @@
 # Orhun Migration Guide (V2)
 
+## Öğretici Hata İpuçları ve İngilizce Anahtar Alias'ları (0.9.0)
+
+- Derleyici hataları artık yalnızca "ne olduğunu" değil, `İpucu` ve `Örnek`
+  satırlarıyla "nasıl düzeltileceğini" de yazar (Compiler as a Teacher).
+- Varsayılan modda seçili İngilizce anahtar kelimeler Türkçe tokenlara
+  normalize edilir: `if`→`eğer`, `print`→`yazdır`, `function`→`işlev`,
+  `return`→`döndür`, `while`→`sürece`, `for`/`in`→`her`/`içinde`.
+- Yapısal parçalar Türkçe kalır: `if koşul ise:` için `ise` yine zorunludur;
+  `sürece koşul:` yapısında `ise` yoktur.
+- `ORHUN_TURKCE_KATI=1` (veya `--turkce-kati`) modunda İngilizce alias'lar
+  reddedilir ve öğretici ipucu Türkçe karşılığı gösterir.
+- Kısa çakışan adlar (`fn`, `func`, `def`) alias değildir; mevcut
+  değişken/arama adları bozulmaz.
+- `tests/english_alias_smoke.py` ve `tests/teaching_hint_smoke.py` bu
+  sözleşmeyi korur.
+
 ## Orhun-Source Dil Yardımcıları (0.11.0)
 - `orhun/dil.oh`, seçimli gramerler için `isaretle` ve `isarete_don`
   yardımcılarını ekler. Geri dönüş hem token konumunu hem de deneme sırasında

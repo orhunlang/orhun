@@ -20,9 +20,9 @@ These percentages are planning estimates, not promises.
 
 | Target | Estimated Progress | Meaning |
 | --- | ---: | --- |
-| Working experimental language / MVP | 55-60% | Orhun already has a lexer, parser, interpreter, bytecode compiler, VM, stdlib surface, package/security flows, tests, and tooling. |
-| 1.0 stable language | 35-40% | Needs a stable spec, compatibility policy, release binaries, cleaner docs, stronger package flow, and hardened performance/security gates. |
-| 2.1.0 production-ready product bar | 20-25% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
+| Working experimental language / MVP | 70-75% | Orhun has lexer, parser, interpreter, bytecode compiler, VM, stdlib, package/security flows, teaching diagnostics, English keyword aliases, tests, and tooling. |
+| 1.0 stable language | 55-60% | Spec/migration docs and known-issues list now exist; still needs a frozen language contract, release binaries, stronger package flow, and hardened performance/security gates. |
+| 2.1.0 production-ready product bar | 25-30% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
 | Full self-hosting / independent compiler path | ~60% | The Orhun-written compiler has exact bytecode parity across every current runtime case accepted by C++, ships as a source-free portable compiler bundle that directly emits byte-identical artifacts, passes a three-stage byte-identical self-rebuild gate, and has a tag-triggered multi-platform release path. The serialization bridge and runtime are still C++. |
 
 ## What Is Already Real
@@ -248,22 +248,33 @@ These percentages are planning estimates, not promises.
 
 ## Main Remaining Work
 
-- Stabilize the language specification and migration policy.
+- Freeze the language specification surface for 1.0 and keep the migration
+  policy credible (`docs/MIGRATION_GUIDE.md`, `docs/DEPRECATION_POLICY.md`).
 - Keep growing parser parity until the Orhun parser can replace more of the C++
   parser path.
 - Grow compiler parity beyond the current test corpus and reduce the remaining
   C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
-- Add platform code-signing and installer signing to versioned releases.
-- Add native platform installer formats and signing on top of the verified
-  cross-platform compiler/runtime archive installer.
+- Publish tagged `v1.0.0` release binaries (Windows, Linux, macOS) with SHA-256
+  verification; add platform code-signing before a production-grade bar.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Grow the Orhun-source language toolkit into shared lexer/parser/compiler
   building blocks for Orhun itself and for new small languages written in Orhun.
 - Add beginner learning material and larger example projects.
 - Harden the existing representative-workload performance gates with retained
   baselines and stricter release-candidate regression budgets.
-- Keep compatibility and deprecation rules credible before 1.0 and especially
-  before 2.1.0.
+
+## 1.0 Rule
+
+`1.0.0` means the language contract is stable enough that documented code keeps
+working across patch releases. Before calling a release `1.0.0`:
+
+- `docs/SPEC.md` matches implemented behavior (no silent drift).
+- Breaking changes are empty or fully listed in `docs/MIGRATION_GUIDE.md`.
+- `docs/KNOWN_ISSUES.md` is current.
+- Full suite + VM parity + teaching/alias smokes are green.
+- Version strings (`VERSION`, `ORHUN_SURUM`, README) match.
+- Release binaries exist for supported platforms (or the release is explicitly
+  source-only with documented build steps).
 
 ## 2.1.0 Rule
 
