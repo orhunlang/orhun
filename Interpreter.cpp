@@ -3,6 +3,7 @@
 #include "Parser.h"
 
 #include "DynamicLibrary.h"
+#include "HataOneri.h"
 #include "Yardimci.h"
 #include "Yerlesik.h"
 
@@ -5246,8 +5247,9 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode *dugum,
       adayEkleTekil(adaylar, gorulen, ad);
     }
     hataFirlat(dugum->satir(),
-               oneriliMesaj("'" + cagriAdi + "' adlı işlev bulunamadı.",
-                            cagriAdi, adaylar));
+               ogreticiOneriliMesaj("'" + cagriAdi + "' adlı işlev bulunamadı.",
+                                    cagriAdi, adaylar,
+                                    sozdizimiIpucu("tanimsiz-islev")));
   }
 
   if (nokta == 0 || nokta + 1 >= cagriAdi.size()) {
@@ -6050,7 +6052,9 @@ OrhunDegeri &Interpreter::degiskenBulYazilabilir(const std::string &ad,
     adayEkleTekil(adaylar, gorulen, isim);
   }
   hataFirlat(satir,
-             oneriliMesaj("'" + ad + "' değişkeni bulunamadı.", ad, adaylar));
+             ogreticiOneriliMesaj("'" + ad + "' değişkeni bulunamadı.", ad,
+                                  adaylar,
+                                  sozdizimiIpucu("tanimsiz-degisken")));
 }
 
 OrhunDegeri &Interpreter::atananHedefYazilabilir(const ASTNode *hedef,
@@ -6222,7 +6226,8 @@ const OrhunDegeri &Interpreter::degiskenBul(const std::string &ad,
 
   throw OrhunHatasi(
       "Satır " + std::to_string(satir) + ": " +
-      oneriliMesaj("'" + ad + "' değişkeni bulunamadı.", ad, adaylar));
+      ogreticiOneriliMesaj("'" + ad + "' değişkeni bulunamadı.", ad, adaylar,
+                           sozdizimiIpucu("tanimsiz-degisken")));
 }
 
 bool Interpreter::dogruMu(const OrhunDegeri &deger) const {

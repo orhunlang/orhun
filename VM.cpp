@@ -2,6 +2,7 @@
 #include "VM.h"
 #include "Compiler.h"
 #include "DynamicLibrary.h"
+#include "HataOneri.h"
 #include "Lexer.h"
 #include "Parser.h"
 #include "Yardimci.h"
@@ -2736,8 +2737,9 @@ void VM::calistir(const BytecodeChunk &chunk) {
             adaylariEkle(aktifIslev->modulOrtami->alanlar);
           }
           adaylariEkle(globalKaynak);
-          calismaHatasi(oneriliMesaj("Tanimsiz degisken: '" + ad + "'.", ad,
-                                      adaylar));
+          calismaHatasi(ogreticiOneriliMesaj(
+              "Tanımsız değişken: '" + ad + "'.", ad, adaylar,
+              sozdizimiIpucu("tanimsiz-degisken")));
         }
         if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
           GlobalInlineCacheKaydi &kayit = globalInlineCache_[sabitIndeks];

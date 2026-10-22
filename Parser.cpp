@@ -1,3 +1,4 @@
+#include "HataOneri.h"
 #include "Parser.h"
 #include "Yardimci.h"
 
@@ -106,9 +107,40 @@ akilliOneriBul(const OrhunToken &token,
   }
 
   const auto adaylar = olasiOneriAdaylariniTopla(tokenlar);
-  const std::size_t maxMesafe =
-      utf8KodNoktalarinaCevir(token.deger).size() >= 7 ? 3 : 2;
-  return enYakinOneri(token.deger, adaylar, maxMesafe);
+  return gelismisOneriBul(token.deger, adaylar);
+}
+
+// Sözdizimi hata metnine göre öğretici ipucu satırları üretir.
+std::vector<std::string> sozdizimiOgreticiIpucu(const std::string &mesaj) {
+  if (mesaj.find("İşlev başlığından sonra ':'") != std::string::npos) {
+    return sozdizimiIpucu("eksik-iki-nokta-islev");
+  }
+  if (mesaj.find("Sınıf adından sonra ':'") != std::string::npos) {
+    return sozdizimiIpucu("eksik-iki-nokta-tip");
+  }
+  if (mesaj.find("Koşuldan sonra 'ise'") != std::string::npos) {
+    return sozdizimiIpucu("eksik-ise");
+  }
+  if (mesaj.find("'eğer' komutundan sonra") != std::string::npos ||
+      mesaj.find("'eğer' komutu bekleniyor") != std::string::npos) {
+    return sozdizimiIpucu("eksik-iki-nokta-eger");
+  }
+  if (mesaj.find("'sürece' koşulundan sonra ':'") != std::string::npos ||
+      mesaj.find("'sürece' komutundan sonra") != std::string::npos) {
+    return sozdizimiIpucu("eksik-iki-nokta-surece");
+  }
+  if (mesaj.find("'her' kaynak ifadesinden sonra ':'") != std::string::npos ||
+      mesaj.find("'her' komutundan sonra") != std::string::npos) {
+    return sozdizimiIpucu("eksik-iki-nokta-her");
+  }
+  if (mesaj.find("'deneme' ifadesinden sonra ':'") != std::string::npos ||
+      mesaj.find("'yakala' ifadesinden sonra ':'") != std::string::npos) {
+    return sozdizimiIpucu("eksik-iki-nokta-deneme");
+  }
+  if (mesaj.find("İşlev adından sonra '('") != std::string::npos) {
+    return sozdizimiIpucu("eksik-parantez-islev");
+  }
+  return {};
 }
 } // namespace
 
@@ -1213,9 +1245,19 @@ bool Parser::atanabilirHedefMi(const ASTNode *dugum) const {
                                       const std::string &mesaj) const {
   const std::string gorunen = token.deger.empty() ? "<boş>" : token.deger;
   std::string detayliMesaj = mesaj;
+
+  std::vector<std::string> ipuclari;
   if (const auto oneri = akilliOneriBul(token, tokenlar_); oneri.has_value()) {
     detayliMesaj += " Bunu mu demek istediniz: '" + oneri.value() + "'?";
   }
+  if (const auto engIpucu = ingilizceAnahtarIpucu(token.deger);
+      engIpucu.has_value()) {
+    ipuclari.push_back(engIpucu.value());
+  }
+  const auto ogretici = sozdizimiOgreticiIpucu(mesaj);
+  ipuclari.insert(ipuclari.end(), ogretici.begin(), ogretici.end());
+
+  detayliMesaj = hataIpuclariEkle(detayliMesaj, ipuclari);
 
   throw std::runtime_error("Satır " + std::to_string(token.satir) + ", Sütun " +
                            std::to_string(token.sutun) + ": " + detayliMesaj +
