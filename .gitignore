@@ -12,3 +12,4 @@ temp_fuzz.oh
 /coverage/
 /artifacts/local/**
 !tests/cases/*.expected.txt
+!tests/benchmarks/python_compare/benchmarks.txt

@@ -8,20 +8,6 @@ from pathlib import Path
 import shlex
 
 
-BENCHES = [
-    "fib_recursive",
-    "nbody",
-    "spectral_norm",
-    "json_loads",
-    "fib_iterative",
-    "string_concat",
-    "binary_tree",
-    "method_call",
-    "matrix_mult",
-    "primes",
-]
-
-
 def timed_run(cmd: list[str], timeout: float) -> tuple[float, str]:
     start = time.perf_counter()
     proc = subprocess.run(
@@ -85,6 +71,22 @@ def resolve_python_executable(preferred: str) -> list[str]:
     raise SystemExit("Python executable not found. Use --python to provide one.")
 
 
+def load_benches(root: Path) -> list[str]:
+    manifest = root / "benchmarks.txt"
+    if not manifest.exists():
+        raise SystemExit(f"Benchmark manifest not found: {manifest}")
+    benches = [
+        line.strip()
+        for line in manifest.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    if not benches:
+        raise SystemExit(f"Benchmark manifest is empty: {manifest}")
+    if len(benches) != len(set(benches)):
+        raise SystemExit(f"Benchmark manifest contains duplicate names: {manifest}")
+    return benches
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Compare Orhun VM vs Python benchmarks")
     parser.add_argument("--orhun", default="./orhun_test", help="Orhun executable path")
@@ -96,13 +98,14 @@ def main() -> int:
     args = parser.parse_args()
 
     root = Path("tests/benchmarks/python_compare")
+    benches = load_benches(root)
     orhun_bin = Path(args.orhun)
     if not orhun_bin.exists():
         raise SystemExit(f"Orhun binary not found: {orhun_bin}")
     python_cmd = resolve_python_executable(args.python)
 
     rows = []
-    for bench in BENCHES:
+    for bench in benches:
         oh = root / f"{bench}.oh"
         py = root / f"{bench}.py"
         if not oh.exists() or not py.exists():

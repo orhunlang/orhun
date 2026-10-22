@@ -1,0 +1,11 @@
+fib_recursive
+fib_iterative
+nbody
+spectral_norm
+json_loads
+string_concat
+binary_tree
+method_call
+function_call
+matrix_mult
+primes

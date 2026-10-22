@@ -38,18 +38,17 @@ if (!(Test-Path $Output)) {
         -o $Output
 }
 
-$cases = @(
-    "tests/benchmarks/python_compare/fib_recursive.oh",
-    "tests/benchmarks/python_compare/fib_iterative.oh",
-    "tests/benchmarks/python_compare/nbody.oh",
-    "tests/benchmarks/python_compare/spectral_norm.oh",
-    "tests/benchmarks/python_compare/json_loads.oh",
-    "tests/benchmarks/python_compare/string_concat.oh",
-    "tests/benchmarks/python_compare/binary_tree.oh",
-    "tests/benchmarks/python_compare/method_call.oh",
-    "tests/benchmarks/python_compare/matrix_mult.oh",
-    "tests/benchmarks/python_compare/primes.oh"
-)
+$benchManifest = "tests/benchmarks/python_compare/benchmarks.txt"
+if (!(Test-Path $benchManifest)) {
+    throw "Benchmark manifest dosyasi bulunamadi: $benchManifest"
+}
+$cases = Get-Content $benchManifest -Encoding utf8 |
+    ForEach-Object { $_.Trim() } |
+    Where-Object { $_.Length -gt 0 -and !$_.StartsWith("#") } |
+    ForEach-Object { "tests/benchmarks/python_compare/$_.oh" }
+if ($cases.Count -eq 0) {
+    throw "Benchmark manifest dosyasi bos: $benchManifest"
+}
 
 if (Test-Path $JsonCikti) {
     Remove-Item $JsonCikti -Force

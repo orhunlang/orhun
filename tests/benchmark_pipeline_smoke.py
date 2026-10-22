@@ -51,6 +51,25 @@ def gate_args(jsonl: Path, mode: str, min_p50: float, min_p90: float) -> list[st
 
 
 def main() -> int:
+    repo = Path(__file__).resolve().parents[1]
+    bench_root = repo / "tests" / "benchmarks" / "python_compare"
+    manifest = bench_root / "benchmarks.txt"
+    require(manifest.exists(), "benchmark manifest is missing")
+    names = [
+        line.strip()
+        for line in manifest.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    require(names, "benchmark manifest is empty")
+    require(len(names) == len(set(names)), "benchmark manifest contains duplicates")
+    require("function_call" in names, "function_call workload is not retained")
+    for name in names:
+        require((bench_root / f"{name}.oh").exists(), f"missing Orhun benchmark: {name}")
+        require((bench_root / f"{name}.py").exists(), f"missing Python benchmark: {name}")
+    for script in ("benchmark.ps1", "benchmark.sh", "benchmark_python_compare.py", "benchmark_python_gate.py"):
+        text = (repo / "tests" / script).read_text(encoding="utf-8")
+        require("benchmarks.txt" in text, f"{script} must consume the benchmark manifest")
+
     with tempfile.TemporaryDirectory(prefix="orhun_bench_pipeline_") as tmp:
         jsonl = Path(tmp) / "results.jsonl"
         rows = [

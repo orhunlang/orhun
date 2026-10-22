@@ -5,18 +5,18 @@ import statistics
 from pathlib import Path
 
 
-REQUIRED_BENCHES = [
-    "fib_recursive",
-    "fib_iterative",
-    "nbody",
-    "spectral_norm",
-    "json_loads",
-    "string_concat",
-    "binary_tree",
-    "method_call",
-    "matrix_mult",
-    "primes",
-]
+def required_benches() -> list[str]:
+    manifest = Path(__file__).resolve().parent / "benchmarks" / "python_compare" / "benchmarks.txt"
+    if not manifest.exists():
+        raise RuntimeError(f"benchmark manifest not found: {manifest}")
+    names = [
+        line.strip()
+        for line in manifest.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    require(bool(names), "benchmark manifest is empty")
+    require(len(names) == len(set(names)), "benchmark manifest contains duplicate names")
+    return names
 
 
 def outputs_match(orhun_out: str, python_out: str) -> bool:
@@ -55,15 +55,16 @@ def main() -> int:
         return 3
 
     try:
+        required = required_benches()
         require(isinstance(rows, list) and rows, "benchmark json must be a non-empty list")
         by_name = {str(r.get("bench", "")): r for r in rows}
-        missing = [name for name in REQUIRED_BENCHES if name not in by_name]
+        missing = [name for name in required if name not in by_name]
         require(not missing, f"required benches missing: {', '.join(missing)}")
 
         speedups = []
         fast_cases = 0
         mismatches = []
-        for name in REQUIRED_BENCHES:
+        for name in required:
             row = by_name[name]
             s = float(row["speedup_p50_x"])
             speedups.append(s)
@@ -95,4 +96,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
