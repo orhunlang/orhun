@@ -80,22 +80,26 @@ Merhaba, Orhun
 
 ## Install
 
-One-line installers (GitHub Releases):
+One-line installers (download `v1.0.0` binaries from GitHub Releases):
 
 ```bash
 # Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/orhunlang/orhun/v1.0.0/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/orhunlang/orhun/main/install.sh | bash
 ```
 
 ```powershell
 # Windows (PowerShell)
-irm https://raw.githubusercontent.com/orhunlang/orhun/v1.0.0/install.ps1 | iex
+irm https://raw.githubusercontent.com/orhunlang/orhun/main/install.ps1 | iex
 ```
+
+Pin the installer script itself with a tag once it ships on that tag
+(for example `.../orhun/v1.0.1/install.sh`). The installed toolchain version
+is controlled by `ORHUN_VERSION` (default `1.0.0`).
 
 GitHub Actions:
 
 ```yaml
-- uses: orhunlang/orhun/setup-orhun@v1.0.0
+- uses: orhunlang/orhun/setup-orhun@main
   with:
     version: "1.0.0"
 ```
