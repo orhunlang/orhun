@@ -4552,13 +4552,19 @@ OrhunDegeri Interpreter::ikiliIslemHesapla(const IkiliIslemNode *dugum) {
   if (op == "eşit_değil") {
     return OrhunDegeri(!esittir(sol, sag));
   }
-  if (op == "büyük" || op == "küçük") {
+  if (op == "büyük" || op == "küçük" || op == ">=" || op == "<=") {
     const double a = sayiDegeri(sol, dugum->satir(), "karşılaştırma");
     const double b = sayiDegeri(sag, dugum->satir(), "karşılaştırma");
     if (op == "büyük") {
       return OrhunDegeri(a > b);
     }
-    return OrhunDegeri(a < b);
+    if (op == "küçük") {
+      return OrhunDegeri(a < b);
+    }
+    if (op == ">=") {
+      return OrhunDegeri(a >= b);
+    }
+    return OrhunDegeri(a <= b);
   }
 
   if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%") {

@@ -33,7 +33,7 @@ her oge içinde liste:
     ...
 ```
 
-Karşılaştırma: `küçük`, `büyük`, `eşit` veya ASCII ` < > == != `.
+Karşılaştırma: `küçük`, `büyük`, `eşit` veya ASCII `< > == != <= >=`.
 
 ## Collections
 

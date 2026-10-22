@@ -2,10 +2,10 @@
 
 ## ASCII Karşılaştırma Operatörleri (0.9.x → 1.0 hazırlık)
 
-- `==`, `!=`, `<`, `>` artık Türkçe `eşit`, `eşit_değil`, `büyük`, `küçük`
-  ile aynı anlama gelir. Mevcut Türkçe kod bozulmaz.
-- `<=` ve `>=` tanınır ama bu sürümde ret + öğretici ipucu üretir;
-  `küçük`/`büyük` ve `veya` ile yazın.
+- `==`, `!=`, `<`, `>`, `<=`, `>=` artık Türkçe `eşit`, `eşit_değil`, `büyük`,
+  `küçük` ile aynı anlama gelir. Mevcut Türkçe kod bozulmaz.
+- `<=` / `>=` yorumlayıcıda doğrudan, VM'de `OP_BUYUK/OP_KUCUK + OP_NOT`
+  olarak iner (a > b değil ≡ a <= b).
 - `dış_işlev` gövde oku (`->`) imzaları etkilenmez.
 
 ## Öğretici Hata İpuçları ve İngilizce Anahtar Alias'ları (0.9.0)

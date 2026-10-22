@@ -46,8 +46,14 @@ def main() -> int:
         ("neq", "yazdır 1 != 2\nyazdır 1 != 1\n", ["1", "0"]),
         ("lt", "yazdır 1 < 2\nyazdır 2 < 1\n", ["1", "0"]),
         ("gt", "yazdır 2 > 1\nyazdır 1 > 2\n", ["1", "0"]),
+        ("le", "yazdır 1 <= 2\nyazdır 2 <= 1\nyazdır 1 <= 1\n", ["1", "0", "1"]),
+        ("ge", "yazdır 2 >= 1\nyazdır 1 >= 2\nyazdır 1 >= 1\n", ["1", "0", "1"]),
         ("if", 'eğer 1 < 2 ise:\n    yaz "ok"\n', ["ok"]),
-        ("while", "i olsun 0\nsürece i < 2:\n    yaz i\n    i = i + 1\n", ["0", "1"]),
+        (
+            "while",
+            "i olsun 0\nsürece i < 2:\n    yaz i\n    i = i + 1\n",
+            ["0", "1"],
+        ),
         ("turkish", "yazdır 1 küçük 2\nyazdır 1 eşit 1\n", ["1", "1"]),
     ]
     for name, source, needles in cases:
@@ -56,15 +62,6 @@ def main() -> int:
         for needle in needles:
             require(needle in out, f"{name}: missing {needle!r} in\n{out}")
         print(f"[OK] {name}")
-
-    for name, op in (("le", "<="), ("ge", ">=")):
-        code, out = run_source(binary, f"yazdır 1 {op} 2\n")
-        require(code != 0, f"{name}: expected rejection\n{out}")
-        require(
-            "İpucu:" in out and "veya" in out,
-            f"{name}: expected teaching hint\n{out}",
-        )
-        print(f"[OK] {name}-teaches")
 
     print("ASCII comparison smoke passed.")
     return 0

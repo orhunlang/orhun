@@ -12,8 +12,7 @@ should be treated as a bug.
   collision risk).
 - Booleans print as `1` / `0` rather than `doğru` / `yanlış` in `yazdır`.
 - Comparison surface is Turkish (`küçük`, `büyük`, `eşit`); ASCII `==`, `!=`,
-  `<`, `>` are supported aliases. `<=` and `>=` are rejected with a teaching
-  hint (use `küçük`/`büyük` plus `veya`).
+  `<`, `>`, `<=`, `>=` are supported aliases.
 - Closure capture is implemented and regression-guarded, but exotic nested
   mutation edge cases may still differ between interpreter and VM until the
   next parity sweep.

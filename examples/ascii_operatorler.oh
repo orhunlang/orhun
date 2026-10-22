@@ -13,6 +13,12 @@ eğer sayi < 10 ise:
 eğer sayi > 1 ise:
     yaz "buyuk-1"
 
+eğer sayi <= 7 ise:
+    yaz "kucuk-esit"
+
+eğer sayi >= 7 ise:
+    yaz "buyuk-esit"
+
 # Türkçe biçim de aynen çalışır
 eğer sayi küçük 10 ve sayi büyük 1 ise:
     yaz "aralikta"

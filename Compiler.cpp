@@ -527,6 +527,16 @@ void Compiler::ifadeDerle(const ASTNode *dugum) {
                   ikili->satir());
         return;
       }
+      if (opEsitMi(op, ">=")) {
+        opcodeYaz((solSayi >= sagSayi) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
+      if (opEsitMi(op, "<=")) {
+        opcodeYaz((solSayi <= sagSayi) ? OpCode::OP_DOGRU : OpCode::OP_YANLIS,
+                  ikili->satir());
+        return;
+      }
     }
     if (sabitMetinCoz(ikili->sol(), &solMetin) &&
         sabitMetinCoz(ikili->sag(), &sagMetin)) {

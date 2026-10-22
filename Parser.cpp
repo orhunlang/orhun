@@ -705,11 +705,8 @@ std::unique_ptr<ASTNode> Parser::parseKarsilastirma() {
          kontrol(TokenTuru::ISLEM, "<") || kontrol(TokenTuru::ISLEM, ">") ||
          kontrol(TokenTuru::ISLEM, "<=") || kontrol(TokenTuru::ISLEM, ">=")) {
     OrhunToken op = ilerle();
-    if (op.deger == "<=" || op.deger == ">=") {
-      syntaxError(op, "Karşılaştırma operatörü '" + op.deger +
-                          "' bu sürümde desteklenmiyor.");
-    }
     // ASCII operatörler Türkçe karşılaştırma anahtarlarına eşlenir.
+    // `<=` / `>=` derleyicide `OP_BUYUK/OP_KUCUK + OP_NOT` olarak iner.
     if (op.tur == TokenTuru::ISLEM) {
       if (op.deger == "==") {
         op.deger = "eşit";
@@ -720,6 +717,7 @@ std::unique_ptr<ASTNode> Parser::parseKarsilastirma() {
       } else if (op.deger == ">") {
         op.deger = "büyük";
       }
+      // `<=` ve `>=` sembolleri derleyici/yorumlayıcıda doğrudan tanınır.
     }
     ifadeDevamDuzeniniAtla();
     std::unique_ptr<ASTNode> sag = parseToplama();
