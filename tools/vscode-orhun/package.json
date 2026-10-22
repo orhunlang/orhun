@@ -1,14 +1,31 @@
 {
   "name": "orhun-language",
   "displayName": "Orhun Language",
-  "description": "Orhun dili icin temel sozdizimi renklendirme ve dil tanimi.",
-  "version": "0.1.0",
+  "description": "Orhun 1.0 language support: Turkish-first syntax, teaching-friendly snippets, English keyword aliases, and ASCII comparison operators.",
+  "version": "1.0.0",
   "publisher": "orhun",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/orhunlang/orhun.git",
+    "directory": "tools/vscode-orhun"
+  },
+  "homepage": "https://github.com/orhunlang/orhun",
+  "bugs": {
+    "url": "https://github.com/orhunlang/orhun/issues"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "orhun",
+    "turkish",
+    "language",
+    "syntax"
   ],
   "contributes": {
     "languages": [
@@ -37,5 +54,8 @@
         "path": "./snippets/orhun.code-snippets"
       }
     ]
+  },
+  "scripts": {
+    "package": "npx --yes @vscode/vsce package --no-dependencies"
   }
 }

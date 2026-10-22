@@ -1,53 +1,29 @@
-# Orhun VS Code Eklentisi (Taslak)
+# Orhun Language (VS Code)
 
-Bu klasor Orhun dili icin temel VS Code entegrasyon taslagini icerir.
+Syntax highlighting and snippets for the [Orhun](https://github.com/orhunlang/orhun)
+programming language (v1.0).
 
-## Ozellikler
+## Features
 
-- `.oh` dosya uzantisini tanir
-- Temel sozdizimi renklendirme (anahtar kelime, yorum, metin, sayi)
-- Girinti tabanli dil icin temel editor ayarlari
-- Baslangic dostu snippet'lar (`yaz`, `oku`, `eger`, `islev`, `aralik`,
-  `her`, `numaralandir`, `eslestir`, `dil`, `lexer`, `parser`, `tani`)
+- `.oh` language id and TextMate grammar
+- Turkish-first keywords (`eğer`, `işlev`, `olsun`, …)
+- English keyword aliases (`if`, `function`, `print`, …) highlighted
+- ASCII comparison operators `== != < > <= >=` and unary `!`
+- Beginner snippets (`yaz`, `işlev`, `eğer`, `deneme`, …)
 
-## Snippet'lar
+## Install
 
-Editor icinde bu kisaltmalar kullanilabilir:
-
-- `yaz`: ekrana metin yazdirma
-- `oku`: kullanicidan satir okuma
-- `eger`: kosul blogu
-- `islev`: islev tanimi
-- `aralik`: basit aralik dongusu
-- `her`: liste uzerinde her oge icin dongu
-- `numaralandir`: koleksiyon yardimcisiyla sirali ciftler
-- `eslestir`: iki listeyi ciftler halinde eslestirme
-- `dil`: dil gelistirme yardimcilariyla token/imlec baslangici
-- `lexer`: Orhun kaynakli lexer prototipiyle kaynak ozeti
-- `parser`: Orhun kaynakli parser prototipiyle komut/tani ozeti
-- `tani`: ortak tani listesi bicimlendirme
-
-## LSP Baglantisi
-
-Orhun calistiricisi icinde resmi komut:
+From Marketplace (when published), or package locally:
 
 ```bash
-orhun lsp --stdio
+cd tools/vscode-orhun
+npm run package
+# or: npx --yes @vscode/vsce package --no-dependencies
+code --install-extension orhun-language-1.0.0.vsix
 ```
 
-Workspace koku belirtmek icin:
+## Notes
 
-```bash
-orhun lsp --stdio --workspace-root <proje_klasoru>
-```
-
-Bu komut uzerinden VS Code tarafinda Language Server baglantisi kurulabilir.
-
-## Paketleme (VSIX)
-
-```bash
-npm install
-npx vsce package
-```
-
-Olusan `.vsix` dosyasi VS Code'a kurulabilir.
+- Diagnostics / LSP use the `orhun lsp --stdio` binary from PATH when available.
+- This extension ships highlighting only; runtime behavior is defined by
+  `docs/SPEC.md` in the main repository.

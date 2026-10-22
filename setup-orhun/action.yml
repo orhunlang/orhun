@@ -1,0 +1,63 @@
+name: "Setup Orhun"
+description: "Install a verified Orhun language toolchain from GitHub Releases and add it to PATH."
+author: "Orhun Language"
+branding:
+  icon: "package"
+  color: "orange"
+
+inputs:
+  version:
+    description: "Orhun version to install (for example 1.0.0). Defaults to latest stable release."
+    required: false
+    default: "1.0.0"
+  artifact:
+    description: "Which release artifact to install: runtime or compiler."
+    required: false
+    default: "runtime"
+  token:
+    description: "Optional GitHub token for higher API rate limits when resolving releases."
+    required: false
+    default: ""
+  cache:
+    description: "If true, use actions/toolkit cache for the downloaded archive (true/false)."
+    required: false
+    default: "true"
+
+outputs:
+  orhun-path:
+    description: "Absolute path to the installed orhun executable."
+    value: ${{ steps.install.outputs.orhun-path }}
+  version:
+    description: "Installed Orhun version string (for example 1.0.0)."
+    value: ${{ steps.install.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Orhun
+      id: install
+      shell: bash
+      env:
+        ORHUN_VERSION: ${{ inputs.version }}
+        ORHUN_ARTIFACT: ${{ inputs.artifact }}
+        ORHUN_TOKEN: ${{ inputs.token }}
+        ORHUN_USE_CACHE: ${{ inputs.cache }}
+        ORHUN_REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        bash "${GITHUB_ACTION_PATH}/scripts/install.sh"
+
+        BIN="${ORHUN_BIN_DIR:-$HOME/.local/bin}"
+        if [[ -x "${BIN}/orhun" ]]; then
+          EXE="${BIN}/orhun"
+        elif [[ -x "${ORHUN_PREFIX:-$HOME/.local/share/orhun}/orhun" ]]; then
+          EXE="${ORHUN_PREFIX:-$HOME/.local/share/orhun}/orhun"
+        else
+          echo "orhun executable not found after install" >&2
+          exit 1
+        fi
+
+        echo "${BIN}" >> "${GITHUB_PATH}"
+        echo "orhun-path=${EXE}" >> "${GITHUB_OUTPUT}"
+        echo "version=$("${EXE}" surum | head -n1 | awk '{print $2}')" >> "${GITHUB_OUTPUT}"
+        "${EXE}" surum

@@ -4,6 +4,7 @@
 *.pdb
 *.ilk
 *.txt
+*.vsix
 *.py[cod]
 __pycache__/
 .pytest_cache/

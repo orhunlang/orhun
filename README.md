@@ -78,6 +78,30 @@ Merhaba, dünya
 Merhaba, Orhun
 ```
 
+## Install
+
+One-line installers (GitHub Releases):
+
+```bash
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/orhunlang/orhun/v1.0.0/install.sh | bash
+```
+
+```powershell
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/orhunlang/orhun/v1.0.0/install.ps1 | iex
+```
+
+GitHub Actions:
+
+```yaml
+- uses: orhunlang/orhun/setup-orhun@v1.0.0
+  with:
+    version: "1.0.0"
+```
+
+VS Code extension: `tools/vscode-orhun` (`npm run package` → `.vsix`).
+
 ## Build From Source
 
 Requirements:
