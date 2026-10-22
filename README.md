@@ -17,7 +17,7 @@ Repository: https://github.com/orhunlang/orhun
 
 Orhun is under active development.
 
-- Current version: `1.0.1`
+- Current version: `1.1.0`
 - Stability: 1.0 stable language contract
 - Primary implementation language: C++17
 - Source extension: `.oh`

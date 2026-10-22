@@ -6,9 +6,9 @@ language.
 
 ## Current Version
 
-- Public version: `1.0.1`
+- Public version: `1.1.0`
 - Stability: stable language contract (`docs/COMPATIBILITY_POLICY.md`)
-- README current-version line: `1.0.1`
+- README current-version line: `1.1.0`
 - Version source of truth: `VERSION`
 
 Normal development commits do not change the public version number. Version

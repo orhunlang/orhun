@@ -2,7 +2,7 @@
   "name": "orhun-language",
   "displayName": "Orhun Language",
   "description": "Orhun 1.0 language support: Turkish-first syntax, teaching-friendly snippets, English keyword aliases, and ASCII comparison operators.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "publisher": "orhun",
   "license": "MIT",
   "repository": {
