@@ -55,12 +55,18 @@ python tests/closure_capture_analysis_smoke.py ./build/orhun_test
 
 For documentation-only changes, explain that tests were not run and why.
 
-## Style
+## Style & Repository Hygiene
 
 - Keep Turkish-first language identity intact.
 - Prefer clear Turkish names in Orhun examples and standard modules.
 - Add or update tests for behavior changes.
-- Keep generated files, local build outputs, credentials, and reports out of git.
+- **No Binaries In Git:** Keep compiled executables (`*.exe`), build artifacts (`build/`), credentials, and local logs strictly out of git.
+- **Binary Distribution:** Official standalone executables are distributed exclusively through **GitHub Releases** via tagged release builds (`vMAJOR.MINOR.PATCH`), never tracked inside git history.
+- **Commit Messages:** Follow Conventional Commits (`feat:`, `fix:`, `perf:`, `test:`, `docs:`, `build:`).
+- **Windows / MinGW Build Flag:** When compiling with MinGW GCC on Windows, pass `-fuse-ld=bfd` to avoid linker discovery errors:
+  ```powershell
+  g++ -fuse-ld=bfd -std=c++17 -Wall -Wextra -pedantic -O2 -DNDEBUG main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp -o build/orhun_test.exe
+  ```
 - Update `docs/SPEC.md` when a behavior becomes part of the language contract.
 
 ## Security
