@@ -28,6 +28,9 @@ These percentages are planning estimates, not promises.
 ## What Is Already Real
 
 - Turkish-first syntax and diagnostics.
+- Teaching diagnostics with `İpucu` / `Örnek` fix lines (Compiler as a Teacher).
+- English keyword aliases in default mode and ASCII comparison operators
+  `==`, `!=`, `<`, `>`.
 - UTF-8 identifiers and Turkish keywords.
 - Interpreter and strict VM execution paths.
 - The interpreter and VM share distinct `bos`, boolean, and numeric runtime

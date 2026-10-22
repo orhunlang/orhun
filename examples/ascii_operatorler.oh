@@ -1,0 +1,18 @@
+# ASCII karşılaştırma operatörleri (Türkçe anahtarlarla aynı anlam)
+sayi olsun 7
+
+eğer sayi == 7 ise:
+    yaz "esit"
+
+eğer sayi != 0 ise:
+    yaz "sifir-degil"
+
+eğer sayi < 10 ise:
+    yaz "kucuk-10"
+
+eğer sayi > 1 ise:
+    yaz "buyuk-1"
+
+# Türkçe biçim de aynen çalışır
+eğer sayi küçük 10 ve sayi büyük 1 ise:
+    yaz "aralikta"

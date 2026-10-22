@@ -1,5 +1,13 @@
 # Orhun Migration Guide (V2)
 
+## ASCII Karşılaştırma Operatörleri (0.9.x → 1.0 hazırlık)
+
+- `==`, `!=`, `<`, `>` artık Türkçe `eşit`, `eşit_değil`, `büyük`, `küçük`
+  ile aynı anlama gelir. Mevcut Türkçe kod bozulmaz.
+- `<=` ve `>=` tanınır ama bu sürümde ret + öğretici ipucu üretir;
+  `küçük`/`büyük` ve `veya` ile yazın.
+- `dış_işlev` gövde oku (`->`) imzaları etkilenmez.
+
 ## Öğretici Hata İpuçları ve İngilizce Anahtar Alias'ları (0.9.0)
 
 - Derleyici hataları artık yalnızca "ne olduğunu" değil, `İpucu` ve `Örnek`
