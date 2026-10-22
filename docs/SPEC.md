@@ -194,6 +194,7 @@ comparison semantics (`==`→`eşit`, `!=`→`eşit_değil`, `<`→`küçük`, `
 `ve` and `veya` are short-circuit boolean operators in both runtimes. They
 return normalized boolean results and do not evaluate the right operand when
 the left operand determines the result. Logical keywords: `ve`, `veya`, `değil`.
+ASCII `!` is an alias of `değil` (unary not).
 
 Equality is type-sensitive except for the interpreter's internal integer and
 decimal number representations, which compare by numeric value. Boolean and

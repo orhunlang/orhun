@@ -185,12 +185,17 @@ std::vector<OrhunToken> Lexer::tokenize() {
       continue;
     }
 
-    // `!=` dışında tek başına `!` desteklenmez.
-    if (c == U'!' && bakIleri(1) == U'=') {
+    // `!=` dışında tek başına `!` yalnızca `değil` öneki için ISLEM olur.
+    if (c == U'!') {
       const std::size_t baslangicSutun = sutun_;
+      if (bakIleri(1) == U'=') {
+        ilerle();
+        ilerle();
+        tokenEkle(TokenTuru::ISLEM, "!=", satir_, baslangicSutun);
+        continue;
+      }
       ilerle();
-      ilerle();
-      tokenEkle(TokenTuru::ISLEM, "!=", satir_, baslangicSutun);
+      tokenEkle(TokenTuru::ISLEM, "!", satir_, baslangicSutun);
       continue;
     }
 

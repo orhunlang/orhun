@@ -55,6 +55,12 @@ def main() -> int:
             ["0", "1"],
         ),
         ("turkish", "yazdır 1 küçük 2\nyazdır 1 eşit 1\n", ["1", "1"]),
+        ("not-bang", "yazdır !doğru\nyazdır !yanlış\n", ["0", "1"]),
+        (
+            "not-word",
+            "yazdır değil doğru\nyazdır değil yanlış\n",
+            ["0", "1"],
+        ),
     ]
     for name, source, needles in cases:
         code, out = run_source(binary, source)

@@ -278,6 +278,7 @@ working across patch releases. Before calling a release `1.0.0`:
 - Version strings (`VERSION`, `ORHUN_SURUM`, README) match.
 - Release binaries exist for supported platforms (or the release is explicitly
   source-only with documented build steps).
+- Follow `docs/RELEASE_PROCESS.md` for the tag and asset checklist.
 
 ## 2.1.0 Rule
 

@@ -758,8 +758,12 @@ std::unique_ptr<ASTNode> Parser::parseCarpma() {
 }
 
 std::unique_ptr<ASTNode> Parser::parseTekli() {
-  if (kontrol(TokenTuru::ANAHTAR_KELIME, "değil")) {
-    const OrhunToken op = ilerle();
+  if (kontrol(TokenTuru::ANAHTAR_KELIME, "değil") ||
+      kontrol(TokenTuru::ISLEM, "!")) {
+    OrhunToken op = ilerle();
+    if (op.tur == TokenTuru::ISLEM && op.deger == "!") {
+      op.deger = "değil";
+    }
     ifadeDevamDuzeniniAtla();
     return std::make_unique<TekliIslemNode>(op.deger, parseTekli(), op.satir);
   }
