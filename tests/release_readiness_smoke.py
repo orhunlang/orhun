@@ -81,6 +81,7 @@ def main() -> int:
     run_py("tests/benchmark_pipeline_smoke.py")
     run_py("tests/perf_baseline_smoke.py", str(binary))
     run_py("tests/install_packaging_smoke.py")
+    run_py("tests/http_smoke.py", str(binary))
 
     print("1.0 readiness checklist smoke passed.")
     return 0

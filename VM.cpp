@@ -954,6 +954,64 @@ void VM::yerlesikNativesYukle() {
       });
   globaller_["internet"] = Value::nesne(internet);
 
+  auto *http = memory_.allocate<ObjDict>();
+  auto httpYanitiOlustur = [](VM &vm, const yerlesik::HttpYanit &yanit) -> Value {
+    auto *kayit = vm.memory_.allocate<ObjDict>();
+    auto *basliklar = vm.memory_.allocate<ObjDict>();
+    for (const auto &[ad, deger] : yanit.basliklar) {
+      basliklar->alanlar[ad] = vm.yeniString(deger);
+    }
+    kayit->alanlar["durum"] = Value::sayi(static_cast<double>(yanit.durum));
+    kayit->alanlar["govde"] = vm.yeniString(yanit.govde);
+    kayit->alanlar["basliklar"] = Value::nesne(basliklar);
+    return Value::nesne(kayit);
+  };
+  auto baslikListesiCoz = [](const Value &deger) -> yerlesik::HttpBaslikListesi {
+    yerlesik::HttpBaslikListesi sonuc;
+    if (deger.type != ValueType::NESNE || deger.as.nesne == nullptr ||
+        deger.as.nesne->type != ObjType::DICT) {
+      return sonuc;
+    }
+    const auto *sozluk = static_cast<const ObjDict *>(deger.as.nesne);
+    for (const auto &[ad, v] : sozluk->alanlar) {
+      if (v.type == ValueType::NESNE && v.as.nesne != nullptr &&
+          v.as.nesne->type == ObjType::STRING) {
+        sonuc.emplace_back(ad, static_cast<const ObjString *>(v.as.nesne)->deger);
+      }
+    }
+    return sonuc;
+  };
+  auto httpCagir = [httpYanitiOlustur, baslikListesiCoz](
+                       const char *yontem, bool govdeBekler) -> ObjNative::NativeFn {
+    return [yontem, govdeBekler, httpYanitiOlustur, baslikListesiCoz](
+               VM &vm, const std::vector<Value> &a) -> Value {
+      const std::size_t minArgs = govdeBekler ? 2 : 1;
+      const std::size_t maxArgs = govdeBekler ? 3 : 2;
+      if (a.size() < minArgs || a.size() > maxArgs) {
+        throw std::runtime_error(std::string("http.") + yontem +
+                                 " icin arguman sayisi yanlis.");
+      }
+      const std::string url = vm.metneCevir(a[0]);
+      std::string govde;
+      if (govdeBekler) {
+        govde = vm.metneCevir(a[1]);
+      }
+      yerlesik::HttpBaslikListesi basliklar;
+      if (a.size() > minArgs) {
+        basliklar = baslikListesiCoz(a[minArgs]);
+      }
+      return httpYanitiOlustur(
+          vm, yerlesik::httpIstek(yontem, url, govde, basliklar));
+    };
+  };
+  http->alanlar["get"] = nativeOlustur("http.get", -1, httpCagir("GET", false));
+  http->alanlar["post"] = nativeOlustur("http.post", -1, httpCagir("POST", true));
+  http->alanlar["put"] = nativeOlustur("http.put", -1, httpCagir("PUT", true));
+  http->alanlar["delete"] =
+      nativeOlustur("http.delete", -1, httpCagir("DELETE", false));
+  globaller_["http"] = Value::nesne(http);
+  globaller_["ag"] = Value::nesne(http);
+
   auto *json = memory_.allocate<ObjDict>();
   json->alanlar["coz"] = nativeOlustur(
       "json.coz", 1, [](VM &vm, const std::vector<Value> &a) -> Value {

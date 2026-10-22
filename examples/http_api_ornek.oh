@@ -1,0 +1,39 @@
+# Orhun HTTP API örneği
+# Yerel bir JSON uç noktaya istek atar ve yanıtı işler.
+# Gerçek internet için: http.get("http://example.com/api", {...})
+# Sunucu yoksa örnek zarifçe atlar (examples_smoke çevrimdışı çalışabilir).
+
+http_istemci olsun dahil_et "orhun/http.oh"
+
+yaz "=== HTTP API Örneği ==="
+
+deneme:
+    # 1) Basit GET + yanıt nesnesi
+    yanit olsun http.get("http://127.0.0.1:8765/merhaba")
+    yaz "durum: " + metne_cevir(yanit.durum)
+    yaz "govde: " + yanit.govde
+
+    # 2) Özel başlıklarla GET
+    yanit2 olsun http.get("http://127.0.0.1:8765/baslik", {"Accept": "application/json", "X-Orhun": "1"})
+    yaz "durum2: " + metne_cevir(yanit2.durum)
+
+    # 3) JSON POST
+    govde olsun json.yaz({"ad": "Orhun", "surum": "1.1.0"})
+    yanit3 olsun http.post("http://127.0.0.1:8765/yanki", govde, {"Content-Type": "application/json"})
+    yaz "durum3: " + metne_cevir(yanit3.durum)
+    yaz "yanki: " + yanit3.govde
+
+    # 4) PUT ve DELETE
+    yanit4 olsun http.put("http://127.0.0.1:8765/kaynak", "{\"ok\":true}", {"Content-Type": "application/json"})
+    yaz "durum4: " + metne_cevir(yanit4.durum)
+
+    yanit5 olsun http.delete("http://127.0.0.1:8765/kaynak")
+    yaz "durum5: " + metne_cevir(yanit5.durum)
+
+    # 5) StdLib kısayolu
+    yaz "modul surum: " + http_istemci.surum
+    yaz "basari mi: " + metne_cevir(http_istemci.yanit_basari_mi(yanit))
+yakala hata:
+    yaz "HTTP ornegi atlandi (sunucu yok): " + metne_cevir(hata)
+
+yaz "=== bitti ==="

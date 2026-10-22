@@ -504,6 +504,53 @@ inline std::string jsonYaz(const JsonDeger& deger, bool guzel = false,
   return jsonYazIc(deger, guzel, adim, 0);
 }
 
+
+struct HttpYanit {
+  int durum = 0;
+  std::string govde;
+  std::vector<std::pair<std::string, std::string>> basliklar;
+};
+
+using HttpBaslikListesi = std::vector<std::pair<std::string, std::string>>;
+
+inline std::string httpBasliklariniBirlestir(const HttpBaslikListesi& basliklar) {
+  std::string cikti;
+  for (const auto& b : basliklar) {
+    cikti += b.first;
+    cikti += ": ";
+    cikti += b.second;
+    cikti += "\r\n";
+  }
+  return cikti;
+}
+
+inline void httpYanitBasliklariniAyir(const std::string& hamBasliklar,
+                                     std::vector<std::pair<std::string, std::string>>& cikti) {
+  std::size_t pos = 0;
+  while (pos < hamBasliklar.size()) {
+    const std::size_t satirSonu = hamBasliklar.find("\r\n", pos);
+    const std::string satir = hamBasliklar.substr(
+        pos, satirSonu == std::string::npos ? std::string::npos : satirSonu - pos);
+    pos = satirSonu == std::string::npos ? hamBasliklar.size() : satirSonu + 2;
+    const std::size_t ikiNokta = satir.find(':');
+    if (ikiNokta == std::string::npos || ikiNokta == 0) {
+      continue;
+    }
+    std::string ad = satir.substr(0, ikiNokta);
+    std::string deger = satir.substr(ikiNokta + 1);
+    while (!deger.empty() && (deger.front() == ' ' || deger.front() == '\t')) {
+      deger.erase(deger.begin());
+    }
+    while (!ad.empty() && (ad.back() == ' ' || ad.back() == '\t')) {
+      ad.pop_back();
+    }
+    if (!ad.empty()) {
+      cikti.emplace_back(std::move(ad), std::move(deger));
+    }
+  }
+}
+
+
 #ifdef _WIN32
 inline std::wstring utf8denWstringe(const std::string& metin) {
   if (metin.empty()) {
@@ -623,9 +670,32 @@ inline WinHttpApi& winHttpApi() {
   return api;
 }
 
-inline std::string internetIcerigiGetir(const std::string& url) {
+inline std::string wstringdenUtf8e(const std::wstring& metin) {
+  if (metin.empty()) {
+    return std::string();
+  }
+  const int gerekli = WideCharToMultiByte(
+      CP_UTF8, 0, metin.c_str(), static_cast<int>(metin.size()), nullptr, 0,
+      nullptr, nullptr);
+  if (gerekli <= 0) {
+    throw std::runtime_error("UTF-16 -> UTF-8 donusumu basarisiz.");
+  }
+  std::string sonuc(static_cast<std::size_t>(gerekli), '\0');
+  const int yazilan = WideCharToMultiByte(
+      CP_UTF8, 0, metin.c_str(), static_cast<int>(metin.size()), sonuc.data(),
+      gerekli, nullptr, nullptr);
+  if (yazilan <= 0) {
+    throw std::runtime_error("UTF-16 -> UTF-8 donusumu basarisiz.");
+  }
+  return sonuc;
+}
+
+inline HttpYanit httpIstek(const std::string& yontem, const std::string& url,
+                           const std::string& govde,
+                           const HttpBaslikListesi& istekBasliklari) {
   WinHttpApi& api = winHttpApi();
   const std::wstring urlW = utf8denWstringe(url);
+  std::wstring yontemW = utf8denWstringe(yontem);
 
   URL_COMPONENTS parcalar;
   std::memset(&parcalar, 0, sizeof(parcalar));
@@ -636,14 +706,14 @@ inline std::string internetIcerigiGetir(const std::string& url) {
   parcalar.dwExtraInfoLength = static_cast<DWORD>(-1);
 
   if (!api.crackUrl(urlW.c_str(), static_cast<DWORD>(urlW.size()), 0, &parcalar)) {
-    throw std::runtime_error("URL çözümlenemedi: " +
-                             windowsHataMesaji(GetLastError()));
+    throw std::runtime_error("URL cozulenemedi: " + windowsHataMesaji(GetLastError()));
   }
 
   const std::wstring host(parcalar.lpszHostName, parcalar.dwHostNameLength);
-  std::wstring yol = parcalar.dwUrlPathLength > 0
-                         ? std::wstring(parcalar.lpszUrlPath, parcalar.dwUrlPathLength)
-                         : L"/";
+  std::wstring yol =
+      parcalar.dwUrlPathLength > 0
+          ? std::wstring(parcalar.lpszUrlPath, parcalar.dwUrlPathLength)
+          : L"/";
   if (parcalar.dwExtraInfoLength > 0) {
     yol.append(parcalar.lpszExtraInfo, parcalar.dwExtraInfoLength);
   }
@@ -651,60 +721,77 @@ inline std::string internetIcerigiGetir(const std::string& url) {
   const DWORD istekBayraklari =
       parcalar.nScheme == INTERNET_SCHEME_HTTPS ? WINHTTP_FLAG_SECURE : 0;
 
-  HINTERNET oturum = api.open(L"Orhun/2.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-                              WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+  HINTERNET oturum =
+      api.open(L"Orhun/1.1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+               WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
   if (!oturum) {
-    throw std::runtime_error("WinHttpOpen başarısız: " +
-                             windowsHataMesaji(GetLastError()));
+    throw std::runtime_error("WinHttpOpen basarisiz: " + windowsHataMesaji(GetLastError()));
   }
   HINTERNET baglanti = api.connect(oturum, host.c_str(), parcalar.nPort, 0);
   if (!baglanti) {
     const std::string hata = windowsHataMesaji(GetLastError());
     api.closeHandle(oturum);
-    throw std::runtime_error("WinHttpConnect başarısız: " + hata);
+    throw std::runtime_error("WinHttpConnect basarisiz: " + hata);
   }
-
-  HINTERNET istek =
-      api.openRequest(baglanti, L"GET", yol.c_str(), nullptr, WINHTTP_NO_REFERER,
-                      WINHTTP_DEFAULT_ACCEPT_TYPES, istekBayraklari);
+  HINTERNET istek = api.openRequest(
+      baglanti, yontemW.c_str(), yol.c_str(), nullptr, WINHTTP_NO_REFERER,
+      WINHTTP_DEFAULT_ACCEPT_TYPES, istekBayraklari);
   if (!istek) {
     const std::string hata = windowsHataMesaji(GetLastError());
     api.closeHandle(baglanti);
     api.closeHandle(oturum);
-    throw std::runtime_error("WinHttpOpenRequest başarısız: " + hata);
+    throw std::runtime_error("WinHttpOpenRequest basarisiz: " + hata);
   }
+
   api.setTimeouts(istek, 15000, 15000, 30000, 30000);
 
-  if (!api.sendRequest(istek, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                       WINHTTP_NO_REQUEST_DATA, 0, 0, 0)) {
+  std::wstring ekBasliklar = utf8denWstringe(httpBasliklariniBirlestir(istekBasliklari));
+  const bool baslikVar = !ekBasliklar.empty();
+  const bool govdeVar = !govde.empty();
+  if (!api.sendRequest(istek,
+                       baslikVar ? ekBasliklar.c_str() : WINHTTP_NO_ADDITIONAL_HEADERS,
+                       baslikVar ? static_cast<DWORD>(-1) : 0,
+                       govdeVar ? const_cast<char*>(govde.data()) : WINHTTP_NO_REQUEST_DATA,
+                       govdeVar ? static_cast<DWORD>(govde.size()) : 0,
+                       govdeVar ? static_cast<DWORD>(govde.size()) : 0, 0)) {
     const std::string hata = windowsHataMesaji(GetLastError());
     api.closeHandle(istek);
     api.closeHandle(baglanti);
     api.closeHandle(oturum);
-    throw std::runtime_error("WinHttpSendRequest başarısız: " + hata);
+    throw std::runtime_error("WinHttpSendRequest basarisiz: " + hata);
   }
   if (!api.receiveResponse(istek, nullptr)) {
     const std::string hata = windowsHataMesaji(GetLastError());
     api.closeHandle(istek);
     api.closeHandle(baglanti);
     api.closeHandle(oturum);
-    throw std::runtime_error("WinHttpReceiveResponse başarısız: " + hata);
+    throw std::runtime_error("WinHttpReceiveResponse basarisiz: " + hata);
   }
 
+  HttpYanit yanit;
   DWORD durumKodu = 0;
   DWORD durumUzunluk = sizeof(durumKodu);
   if (api.queryHeaders(istek, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
                        WINHTTP_HEADER_NAME_BY_INDEX, &durumKodu, &durumUzunluk,
                        WINHTTP_NO_HEADER_INDEX)) {
-    if (durumKodu >= 400) {
-      api.closeHandle(istek);
-      api.closeHandle(baglanti);
-      api.closeHandle(oturum);
-      throw std::runtime_error("HTTP durum kodu: " + std::to_string(durumKodu));
+    yanit.durum = static_cast<int>(durumKodu);
+  }
+
+  DWORD baslikUzunluk = 0;
+  api.queryHeaders(istek, WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX,
+                   nullptr, &baslikUzunluk, WINHTTP_NO_HEADER_INDEX);
+  if (baslikUzunluk > sizeof(wchar_t)) {
+    std::vector<wchar_t> tampon(static_cast<std::size_t>(baslikUzunluk / sizeof(wchar_t)) + 1, L'\0');
+    DWORD uz = baslikUzunluk;
+    if (api.queryHeaders(istek, WINHTTP_QUERY_RAW_HEADERS_CRLF,
+                         WINHTTP_HEADER_NAME_BY_INDEX, tampon.data(), &uz,
+                         WINHTTP_NO_HEADER_INDEX)) {
+      const std::wstring ham(tampon.data());
+      const std::string hamUtf8 = wstringdenUtf8e(ham);
+      httpYanitBasliklariniAyir(hamUtf8, yanit.basliklar);
     }
   }
 
-  std::string icerik;
   while (true) {
     DWORD mevcut = 0;
     if (!api.queryDataAvailable(istek, &mevcut)) {
@@ -712,12 +799,11 @@ inline std::string internetIcerigiGetir(const std::string& url) {
       api.closeHandle(istek);
       api.closeHandle(baglanti);
       api.closeHandle(oturum);
-      throw std::runtime_error("WinHttpQueryDataAvailable başarısız: " + hata);
+      throw std::runtime_error("WinHttpQueryDataAvailable basarisiz: " + hata);
     }
     if (mevcut == 0) {
       break;
     }
-
     std::string parca(mevcut, '\0');
     DWORD okunan = 0;
     if (!api.readData(istek, parca.data(), mevcut, &okunan)) {
@@ -725,16 +811,24 @@ inline std::string internetIcerigiGetir(const std::string& url) {
       api.closeHandle(istek);
       api.closeHandle(baglanti);
       api.closeHandle(oturum);
-      throw std::runtime_error("WinHttpReadData başarısız: " + hata);
+      throw std::runtime_error("WinHttpReadData basarisiz: " + hata);
     }
     parca.resize(okunan);
-    icerik += parca;
+    yanit.govde += parca;
   }
 
   api.closeHandle(istek);
   api.closeHandle(baglanti);
   api.closeHandle(oturum);
-  return icerik;
+  return yanit;
+}
+
+inline std::string internetIcerigiGetir(const std::string& url) {
+  const HttpYanit yanit = httpIstek("GET", url, "", {});
+  if (yanit.durum >= 400 || yanit.durum == 0) {
+    throw std::runtime_error("HTTP durum kodu: " + std::to_string(yanit.durum));
+  }
+  return yanit.govde;
 }
 
 inline std::vector<std::string> komutArgumanlarinaBol(const std::string& komut) {
@@ -986,19 +1080,19 @@ inline std::string chunkedCoz(const std::string& govde) {
   return sonuc;
 }
 
-inline std::string internetIcerigiGetir(const std::string& url) {
+inline HttpYanit httpIstek(const std::string& yontem, const std::string& url,
+                           const std::string& govde,
+                           const HttpBaslikListesi& istekBasliklari) {
   const HttpUrlParcasi parca = httpUrlCoz(url);
   struct addrinfo hints {};
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_family = AF_UNSPEC;
-
   struct addrinfo* sonuc = nullptr;
   const std::string portMetin = std::to_string(parca.port);
   const int gai = getaddrinfo(parca.host.c_str(), portMetin.c_str(), &hints, &sonuc);
   if (gai != 0 || sonuc == nullptr) {
     throw std::runtime_error("HTTP DNS cozulemedi: " + parca.host);
   }
-
   int soket = -1;
   for (struct addrinfo* it = sonuc; it != nullptr; it = it->ai_next) {
     soket = static_cast<int>(socket(it->ai_family, it->ai_socktype, it->ai_protocol));
@@ -1013,12 +1107,23 @@ inline std::string internetIcerigiGetir(const std::string& url) {
   }
   freeaddrinfo(sonuc);
   if (soket < 0) {
-    throw std::runtime_error("HTTP baglanti kurulamadı: " + parca.host);
+    throw std::runtime_error("HTTP baglanti kurulamadi: " + parca.host);
   }
 
-  const std::string istek =
-      "GET " + parca.yol + " HTTP/1.1\r\nHost: " + parca.host +
-      "\r\nUser-Agent: Orhun/2.0\r\nConnection: close\r\nAccept: */*\r\n\r\n";
+  std::string istek = yontem + " " + parca.yol + " HTTP/1.1\r\nHost: " + parca.host +
+                      "\r\nUser-Agent: Orhun/1.1.0\r\nConnection: close\r\nAccept: */*\r\n";
+  for (const auto& b : istekBasliklari) {
+    istek += b.first;
+    istek += ": ";
+    istek += b.second;
+    istek += "\r\n";
+  }
+  if (!govde.empty()) {
+    istek += "Content-Length: " + std::to_string(govde.size()) + "\r\n";
+  }
+  istek += "\r\n";
+  istek += govde;
+
   std::size_t gonderilenToplam = 0;
   while (gonderilenToplam < istek.size()) {
     const ssize_t gonderilen = send(
@@ -1051,7 +1156,9 @@ inline std::string internetIcerigiGetir(const std::string& url) {
     throw std::runtime_error("HTTP yanit basligi gecersiz.");
   }
   const std::string baslik = ham.substr(0, headerSonu);
-  std::string govde = ham.substr(headerSonu + 4);
+  HttpYanit yanit;
+  yanit.govde = ham.substr(headerSonu + 4);
+  httpYanitBasliklariniAyir(baslik, yanit.basliklar);
 
   const std::size_t satirSonu = baslik.find("\r\n");
   const std::string durumSatiri =
@@ -1060,15 +1167,21 @@ inline std::string internetIcerigiGetir(const std::string& url) {
   std::string protokol;
   int kod = 0;
   ss >> protokol >> kod;
-  if (kod >= 400 || kod == 0) {
-    throw std::runtime_error("HTTP durum kodu: " + std::to_string(kod));
-  }
+  yanit.durum = kod;
 
   const std::string baslikLc = asciiKucukYap(baslik);
   if (baslikLc.find("transfer-encoding: chunked") != std::string::npos) {
-    govde = chunkedCoz(govde);
+    yanit.govde = chunkedCoz(yanit.govde);
   }
-  return govde;
+  return yanit;
+}
+
+inline std::string internetIcerigiGetir(const std::string& url) {
+  const HttpYanit yanit = httpIstek("GET", url, "", {});
+  if (yanit.durum >= 400 || yanit.durum == 0) {
+    throw std::runtime_error("HTTP durum kodu: " + std::to_string(yanit.durum));
+  }
+  return yanit.govde;
 }
 #endif
 

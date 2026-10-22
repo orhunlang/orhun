@@ -747,7 +747,8 @@ lower it to the same `gorev.baslat_plan` contract.
 Current built-in module surfaces include:
 
 - `dosya`
-- `internet`
+- `internet` (legacy GET/download helpers)
+- `http` / `ag` (modern HTTP client: `get`/`post`/`put`/`delete` with headers)
 - `json`
 - `metin`
 - `regex`
@@ -760,6 +761,7 @@ Current built-in module surfaces include:
 - `ffi`
 - `orhun/temel.oh`
 - `orhun/sonuc.oh`
+- `orhun/http.oh`
 - `orhun/koleksiyon.oh`
 - `orhun/sozluk.oh`
 - `orhun/metin.oh`

@@ -1391,7 +1391,7 @@ WinHttpApi &winHttpApi() {
       parcalar.nScheme == INTERNET_SCHEME_HTTPS ? WINHTTP_FLAG_SECURE : 0;
 
   HINTERNET oturum =
-      api.open(L"Orhun/1.0.1", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+      api.open(L"Orhun/1.1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
   if (!oturum) {
     throw std::runtime_error("WinHttpOpen başarısız: " +
@@ -1861,6 +1861,98 @@ void Interpreter::gomuluIslevleriYukle() {
       hataFirlat(satir, "internet.indir başarısız: " + std::string(ex.what()));
     }
   };
+
+  // http.get / http.post / http.put / http.delete — zengin yanit nesnesi.
+  auto httpBasliklariniCoz = [this](const OrhunDegeri &deger,
+                                std::size_t satir) -> yerlesik::HttpBaslikListesi {
+    yerlesik::HttpBaslikListesi sonuc;
+    if (std::holds_alternative<std::monostate>(deger.veri)) {
+      return sonuc;
+    }
+    if (!std::holds_alternative<OrhunDegeri::SozlukTipi>(deger.veri)) {
+      hataFirlat(satir, "http basliklari sozluk olmalidir.");
+    }
+    const auto &sozluk = *std::get<OrhunDegeri::SozlukTipi>(deger.veri);
+    for (const auto &[ad, deger2] : sozluk) {
+      if (std::holds_alternative<std::string>(deger2.veri)) {
+        sonuc.emplace_back(ad, std::get<std::string>(deger2.veri));
+      } else if (std::holds_alternative<int>(deger2.veri)) {
+        sonuc.emplace_back(ad, std::to_string(std::get<int>(deger2.veri)));
+      } else if (std::holds_alternative<double>(deger2.veri)) {
+        sonuc.emplace_back(ad, std::to_string(std::get<double>(deger2.veri)));
+      } else if (std::holds_alternative<bool>(deger2.veri)) {
+        sonuc.emplace_back(ad, std::get<bool>(deger2.veri) ? "1" : "0");
+      }
+    }
+    return sonuc;
+  };
+
+  auto httpYanitNesnesi = [](const yerlesik::HttpYanit &yanit) -> OrhunDegeri {
+    OrhunDegeri::SozlukVeri basliklar;
+    for (const auto &[ad, deger] : yanit.basliklar) {
+      basliklar[ad] = OrhunDegeri(deger);
+    }
+    OrhunDegeri::SozlukVeri kayit;
+    kayit["durum"] = OrhunDegeri(yanit.durum);
+    kayit["govde"] = OrhunDegeri(yanit.govde);
+    kayit["basliklar"] = OrhunDegeri(std::move(basliklar));
+    return OrhunDegeri(std::move(kayit));
+  };
+
+  auto httpIstekCalistir =
+      [this, &httpBasliklariniCoz, &httpYanitNesnesi](
+          const std::string &yontem, const std::vector<OrhunDegeri> &args,
+          std::size_t govdeVarMi, std::size_t satir) -> OrhunDegeri {
+    if (args.size() < 1 + govdeVarMi || args.size() > 2 + govdeVarMi) {
+      hataFirlat(satir, "http istegi icin beklenen arguman sayisi yanlis.");
+    }
+    if (!std::holds_alternative<std::string>(args[0].veri)) {
+      hataFirlat(satir, "http istegi icin metin URL bekleniyor.");
+    }
+    const std::string url = std::get<std::string>(args[0].veri);
+    std::string govde;
+    if (govdeVarMi == 1) {
+      if (!std::holds_alternative<std::string>(args[1].veri)) {
+        hataFirlat(satir, "http istek govdesi metin olmalidir.");
+      }
+      govde = std::get<std::string>(args[1].veri);
+    }
+    yerlesik::HttpBaslikListesi basliklar;
+    if (args.size() > 1 + govdeVarMi) {
+      basliklar = httpBasliklariniCoz(args[1 + govdeVarMi], satir);
+    }
+    try {
+      return httpYanitNesnesi(
+          yerlesik::httpIstek(yontem, url, govde, basliklar));
+    } catch (const std::exception &ex) {
+      hataFirlat(satir, "http istegi basarisiz: " + std::string(ex.what()));
+    }
+  };
+
+  gomuluIslevler_["http.get"] = [httpIstekCalistir](
+                                    const std::vector<OrhunDegeri> &args,
+                                    std::size_t satir) -> OrhunDegeri {
+    return httpIstekCalistir("GET", args, 0, satir);
+  };
+  gomuluIslevler_["http.post"] = [httpIstekCalistir](
+                                     const std::vector<OrhunDegeri> &args,
+                                     std::size_t satir) -> OrhunDegeri {
+    return httpIstekCalistir("POST", args, 1, satir);
+  };
+  gomuluIslevler_["http.put"] = [httpIstekCalistir](
+                                    const std::vector<OrhunDegeri> &args,
+                                    std::size_t satir) -> OrhunDegeri {
+    return httpIstekCalistir("PUT", args, 1, satir);
+  };
+  gomuluIslevler_["http.delete"] = [httpIstekCalistir](
+                                       const std::vector<OrhunDegeri> &args,
+                                       std::size_t satir) -> OrhunDegeri {
+    return httpIstekCalistir("DELETE", args, 0, satir);
+  };
+  gomuluIslevler_["ag.get"] = gomuluIslevler_["http.get"];
+  gomuluIslevler_["ag.post"] = gomuluIslevler_["http.post"];
+  gomuluIslevler_["ag.put"] = gomuluIslevler_["http.put"];
+  gomuluIslevler_["ag.delete"] = gomuluIslevler_["http.delete"];
 
   gomuluIslevler_["json.coz"] = [this](const std::vector<OrhunDegeri> &args,
                                        std::size_t satir) -> OrhunDegeri {
@@ -3712,6 +3804,14 @@ void Interpreter::yerlesikModulleriYukle() {
   internet["getir"] = OrhunDegeri("__islev_ref__:internet.getir");
   internet["indir"] = OrhunDegeri("__islev_ref__:internet.indir");
   globalHafiza_["internet"] = OrhunDegeri(std::move(internet));
+
+  OrhunDegeri::SozlukVeri httpModulu;
+  httpModulu["get"] = OrhunDegeri("__islev_ref__:http.get");
+  httpModulu["post"] = OrhunDegeri("__islev_ref__:http.post");
+  httpModulu["put"] = OrhunDegeri("__islev_ref__:http.put");
+  httpModulu["delete"] = OrhunDegeri("__islev_ref__:http.delete");
+  globalHafiza_["http"] = OrhunDegeri(httpModulu);
+  globalHafiza_["ag"] = OrhunDegeri(std::move(httpModulu));
 
   OrhunDegeri::SozlukVeri veritabani;
   veritabani["kaydet"] = OrhunDegeri("__islev_ref__:veritabani.kaydet");

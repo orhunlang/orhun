@@ -1,0 +1,36 @@
+# orhun/http.oh — modern HTTP istemcisi sarmalayicisi
+# Çekirdek yerleşikler: http.get / http.post / http.put / http.delete
+# Ek: JSON kısayolları ve pratik yardımcılar.
+
+surum olsun "0.1.0"
+
+işlev yanit_basari_mi(yanit):
+    döndür yanit.durum >= 200 ve yanit.durum < 300
+
+işlev yanit_json(yanit):
+    döndür json.coz(yanit.govde)
+
+işlev yanit_ozeti(yanit):
+    döndür {"durum": yanit.durum, "uzunluk": uzunluk(yanit.govde)}
+
+işlev get(url, basliklar olsun {}):
+    döndür http.get(url, basliklar)
+
+işlev post(url, govde olsun "", basliklar olsun {}):
+    döndür http.post(url, govde, basliklar)
+
+işlev put(url, govde olsun "", basliklar olsun {}):
+    döndür http.put(url, govde, basliklar)
+
+işlev sil(url, basliklar olsun {}):
+    döndür http.delete(url, basliklar)
+
+işlev json_get(url, basliklar olsun {}):
+    döndür http.get(url, basliklar)
+
+işlev json_post(url, veri, basliklar olsun {}):
+    # veri metin ise doğrudan, değilse json.yaz ile gövdeye çevir.
+    döndür http.post(url, veri, basliklar)
+
+işlev bearer_get(url, jeton, basliklar olsun {}):
+    döndür http.get(url, {"Authorization": "Bearer " + jeton, "Accept": "application/json"})
