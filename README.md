@@ -33,7 +33,7 @@ For a more concrete progress snapshot and the current estimate toward `1.0` /
 
 Stability contracts: [`docs/COMPATIBILITY_POLICY.md`](docs/COMPATIBILITY_POLICY.md),
 [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md),
-[`docs/RELEASE_NOTES_1.0.1.md`](docs/RELEASE_NOTES_1.0.1.md).
+[`docs/RELEASE_NOTES_1.1.0.md`](docs/RELEASE_NOTES_1.1.0.md).
 Quick reference: [`docs/CHEATSHEET.md`](docs/CHEATSHEET.md).
 
 ## What Orhun Provides
@@ -80,26 +80,26 @@ Merhaba, Orhun
 
 ## Install
 
-One-line installers (download `v1.0.1` binaries from GitHub Releases):
+One-line installers (download `v1.1.0` binaries from GitHub Releases):
 
 ```bash
 # Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/orhunlang/orhun/v1.0.1/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/orhunlang/orhun/v1.1.0/install.sh | bash
 ```
 
 ```powershell
 # Windows (PowerShell)
-irm https://raw.githubusercontent.com/orhunlang/orhun/v1.0.1/install.ps1 | iex
+irm https://raw.githubusercontent.com/orhunlang/orhun/v1.1.0/install.ps1 | iex
 ```
 
-The installed toolchain version is controlled by `ORHUN_VERSION` (default `1.0.1`).
+The installed toolchain version is controlled by `ORHUN_VERSION` (default `1.1.0`).
 
 GitHub Actions:
 
 ```yaml
-- uses: orhunlang/orhun/setup-orhun@v1.0.1
+- uses: orhunlang/orhun/setup-orhun@v1.1.0
   with:
-    version: "1.0.1"
+    version: "1.1.0"
 ```
 
 VS Code extension: `tools/vscode-orhun` (`npm run package` → `.vsix`).

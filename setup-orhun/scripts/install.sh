@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Orhun one-line installer (Linux / macOS)
 #
-#   curl -fsSL https://raw.githubusercontent.com/orhunlang/orhun/v1.0.0/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/orhunlang/orhun/v1.1.0/install.sh | bash
 #
 # Downloads the matching GitHub Release runtime archive, verifies SHA-256,
 # installs under ~/.local/share/orhun, and links the binary into ~/.local/bin.
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 REPO="${ORHUN_REPO:-orhunlang/orhun}"
-VERSION="${ORHUN_VERSION:-1.0.1}"
+VERSION="${ORHUN_VERSION:-1.1.0}"
 PREFIX="${ORHUN_PREFIX:-${HOME}/.local/share/orhun}"
 BIN_DIR="${ORHUN_BIN_DIR:-${HOME}/.local/bin}"
 ARTIFACT="${ORHUN_ARTIFACT:-runtime}"

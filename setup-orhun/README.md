@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: orhunlang/orhun/setup-orhun@v1.0.1
+      - uses: orhunlang/orhun/setup-orhun@v1.1.0
         with:
-          version: "1.0.1"
+          version: "1.1.0"
       - run: orhun surum
       - run: orhun examples/merhaba.oh
 ```
@@ -22,7 +22,7 @@ jobs:
 
 | Name | Default | Description |
 | --- | --- | --- |
-| `version` | `1.0.0` | Orhun version tag without the leading `v` |
+| `version` | `1.1.0` | Orhun version tag without the leading `v` |
 | `artifact` | `runtime` | `runtime` or `compiler` release archive |
 | `token` | _(empty)_ | Optional GitHub token for API rate limits |
 | `cache` | `true` | Reserved for archive caching |
@@ -53,4 +53,4 @@ and links `orhun` into `~/.local/bin`.
 ## Security
 
 Release archives are checksum-verified when `SHA256SUMS` is present. Prefer
-pinned tags (`@v1.0.0`) over `@main` in production workflows.
+pinned tags (`@v1.1.0`) over `@main` in production workflows.

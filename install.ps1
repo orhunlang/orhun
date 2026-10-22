@@ -1,13 +1,13 @@
 # Orhun one-line installer (Windows)
 #
-#   irm https://raw.githubusercontent.com/orhunlang/orhun/v1.0.0/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/orhunlang/orhun/v1.1.0/install.ps1 | iex
 #
 # Downloads the matching GitHub Release runtime archive, verifies SHA-256,
 # installs under %LOCALAPPDATA%\orhun, and prepends that directory to PATH.
 
 [CmdletBinding()]
 param(
-    [string]$Version = $(if ($env:ORHUN_VERSION) { $env:ORHUN_VERSION } else { "1.0.1" }),
+    [string]$Version = $(if ($env:ORHUN_VERSION) { $env:ORHUN_VERSION } else { "1.1.0" }),
     [string]$Repo = $(if ($env:ORHUN_REPO) { $env:ORHUN_REPO } else { "orhunlang/orhun" }),
     [string]$Prefix = $(if ($env:ORHUN_PREFIX) { $env:ORHUN_PREFIX } else { Join-Path $env:LOCALAPPDATA "orhun" }),
     [ValidateSet("runtime", "compiler")]
