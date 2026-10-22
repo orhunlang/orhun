@@ -52,6 +52,18 @@ Compatibility alias:
 dis_islev
 ```
 
+English keyword aliases (default mode only; normalized to Turkish tokens):
+
+```text
+if else while for in function return print println write
+input true false and or not break continue try catch except class new
+import include
+```
+
+Examples: `if` → `eğer`, `print` → `yazdır`, `function` → `işlev`,
+`return` → `döndür`. Structural particles stay Turkish; for example
+`if true ise:` is accepted while `if true:` still requires `ise`.
+
 In Turkish strict mode, compatibility aliases are rejected.
 
 Strict mode is enabled with:

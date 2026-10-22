@@ -1,5 +1,7 @@
 #include "Lexer.h"
 
+#include "HataOneri.h"
+
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
@@ -318,6 +320,14 @@ OrhunToken Lexer::kimlikVeyaAnahtarKelime() {
   }
 
   const std::string deger = u32ToUtf8(yazi);
+  // İngilizce uyumluluk alias'ı: katı Türkçe modda yok sayılır.
+  if (!turkceKati_) {
+    if (const auto alias = ingilizceAnahtarKarsiligi(deger);
+        alias.has_value()) {
+      return {TokenTuru::ANAHTAR_KELIME, alias.value(), baslangicSatir,
+              baslangicSutun};
+    }
+  }
   if (anahtarKelimeMi(yazi)) {
     return {TokenTuru::ANAHTAR_KELIME, deger, baslangicSatir, baslangicSutun};
   }
@@ -457,7 +467,10 @@ bool Lexer::anahtarKelimeMi(const std::u32string &metin) const {
   if (turkceKati_) {
     return false;
   }
-  return aliasAnahtarKelimeler.find(metin) != aliasAnahtarKelimeler.end();
+  if (aliasAnahtarKelimeler.find(metin) != aliasAnahtarKelimeler.end()) {
+    return true;
+  }
+  return ingilizceAnahtarKarsiligi(u32ToUtf8(metin)).has_value();
 }
 
 void Lexer::yorumSatiriAtla() {

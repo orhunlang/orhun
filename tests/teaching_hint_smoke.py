@@ -14,7 +14,14 @@ def require(condition: bool, message: str) -> None:
         raise RuntimeError(message)
 
 
-def run_source(binary: Path, source: str) -> str:
+def run_source(binary: Path, source: str, strict: bool = False) -> str:
+    import os
+
+    env = os.environ.copy()
+    if strict:
+        env["ORHUN_TURKCE_KATI"] = "1"
+    else:
+        env.pop("ORHUN_TURKCE_KATI", None)
     with tempfile.TemporaryDirectory(prefix="orhun_teacher_") as tmp:
         path = Path(tmp) / "ornek.oh"
         path.write_text(source, encoding="utf-8")
@@ -26,6 +33,7 @@ def run_source(binary: Path, source: str) -> str:
             encoding="utf-8",
             errors="replace",
             timeout=15,
+            env=env,
         )
         return (proc.stdout + proc.stderr).replace("\r\n", "\n")
 
@@ -57,36 +65,40 @@ def main() -> int:
             ],
         ),
         (
-            "ingilizce-if",
-            "if true\n    yaz \"x\"\n",
+            "ingilizce-if-kati",
+            "if true ise:\n    yaz \"x\"\n",
             [
                 "Bunu mu demek istediniz: 'eğer'?",
                 "İpucu: Orhun Türkçe sözdizimi kullanır; 'if' yerine 'eğer' yazın.",
             ],
+            True,
         ),
         (
-            "ingilizce-function",
+            "ingilizce-function-kati",
             "function f():\n    döndür 1\n",
             [
                 "Bunu mu demek istediniz: 'işlev'?",
                 "İpucu: Orhun Türkçe sözdizimi kullanır; 'function' yerine 'işlev' yazın.",
             ],
+            True,
         ),
         (
-            "ingilizce-return",
+            "ingilizce-return-kati",
             "işlev f():\n    return 1\n",
             [
                 "Bunu mu demek istediniz: 'döndür'?",
                 "İpucu: Orhun Türkçe sözdizimi kullanır; 'return' yerine 'döndür' yazın.",
             ],
+            True,
         ),
         (
-            "ingilizce-print",
+            "ingilizce-print-kati",
             "print(\"merhaba\")\n",
             [
                 "Bunu mu demek istediniz: 'yazdır'?",
                 "İpucu: Orhun Türkçe sözdizimi kullanır; 'print' yerine 'yazdır' yazın.",
             ],
+            True,
         ),
         (
             "tanimsiz-degisken",
@@ -96,11 +108,14 @@ def main() -> int:
                 "İpucu: Değişkeni 'ad olsun deger' ile tanımlayın",
                 "Örnek: sayi olsun 0",
             ],
+            False,
         ),
     ]
 
-    for name, source, needles in cases:
-        out = run_source(binary, source)
+    for item in cases:
+        name, source, needles = item[0], item[1], item[2]
+        strict = item[3] if len(item) > 3 else False
+        out = run_source(binary, source, strict=strict)
         for needle in needles:
             require(
                 needle in out,
@@ -108,8 +123,16 @@ def main() -> int:
             )
         print(f"[OK] {name}")
 
-    # İngilizce 'if' artık 'ise'ye kaymamalı.
+    # Varsayılan modda İngilizce alias köprülenir; 'ise' öğretisi devreye girer.
     out = run_source(binary, "if true\n    yaz \"x\"\n")
+    require(
+        "Koşuldan sonra 'ise' bekleniyor." in out,
+        f"default mode should teach missing 'ise' after English if:\n{out}",
+    )
+    print("[OK] if-default-teaches-ise")
+
+    # Katı modda 'if' artık 'ise'ye kaymamalı.
+    out = run_source(binary, "if true ise:\n    yaz \"x\"\n", strict=True)
     require(
         "Bunu mu demek istediniz: 'ise'?" not in out,
         "English 'if' must not suggest 'ise'",

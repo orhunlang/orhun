@@ -104,6 +104,51 @@ inline std::optional<std::string> ingilizceKarsiligi(std::string_view ad) {
   return it->second;
 }
 
+// Yalnızca gerçek Orhun anahtar kelimelerine karşılık gelen İngilizce aliaslar.
+// Lexer, varsayılan modda bunları Türkçe anahtar kelimeye normalize eder.
+// Türkçe katı modda alias reddedilir.
+inline const std::unordered_map<std::string, std::string> &
+ingilizceAnahtarAliasHaritasi() {
+  static const std::unordered_map<std::string, std::string> harita = {
+      {"if", "eğer"},
+      {"else", "değilse"},
+      {"while", "sürece"},
+      {"for", "her"},
+      {"in", "içinde"},
+      {"function", "işlev"},
+      {"return", "döndür"},
+      {"print", "yazdır"},
+      {"println", "yazdır"},
+      {"write", "yazdır"},
+      {"input", "sor"},
+      {"true", "doğru"},
+      {"false", "yanlış"},
+      {"and", "ve"},
+      {"or", "veya"},
+      {"not", "değil"},
+      {"break", "kır"},
+      {"continue", "devam"},
+      {"try", "deneme"},
+      {"catch", "yakala"},
+      {"except", "yakala"},
+      {"class", "tip"},
+      {"new", "yeni"},
+      {"import", "dahil_et"},
+      {"include", "dahil_et"},
+  };
+  return harita;
+}
+
+inline std::optional<std::string>
+ingilizceAnahtarKarsiligi(std::string_view ad) {
+  const auto &harita = ingilizceAnahtarAliasHaritasi();
+  const auto it = harita.find(std::string(ad));
+  if (it == harita.end()) {
+    return std::nullopt;
+  }
+  return it->second;
+}
+
 // İngilizce köprü + dosya içi adaylar üzerinde akıllı öneri.
 // İngilizce eşleşme varsa Levenshtein'e tercih edilir.
 inline std::optional<std::string> gelismisOneriBul(
