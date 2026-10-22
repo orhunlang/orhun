@@ -1,6 +1,6 @@
 # Orhun Depo Hijyeni ve Katkı Kuralları
 
-Bu belge, Orhun projesinde çalışan tüm geliştiriciler ve yapay zeka ajanları (Antigravity, MiMo, Cline vb.) için bağlayıcı temel kuralları tanımlar.
+Bu belge, Orhun projesine katkı veren tüm geliştiriciler için temel kuralları tanımlar.
 
 ---
 
