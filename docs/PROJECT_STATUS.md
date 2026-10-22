@@ -6,9 +6,9 @@ language.
 
 ## Current Version
 
-- Public version: `0.8.0`
+- Public version: `0.9.0`
 - Stability: experimental / pre-1.0
-- README current-version line: `0.8.0`
+- README current-version line: `0.9.0`
 - Version source of truth: `VERSION`
 
 Normal development commits do not change the public version number. Version
