@@ -7044,6 +7044,40 @@ int main(int argc, char *argv[]) {
       return 0;
     }
 
+    if (komut == "yardim" || komut == "help") {
+      std::cout
+          << "Orhun v" << ORHUN_SURUM << " — komut ozeti\n"
+          << "\n"
+          << "Calistirma:\n"
+          << "  orhun dosya.oh [argumanlar]     Kaynagi VM ile calistir\n"
+          << "  orhun vm-kati dosya.oh          Katı VM yolu\n"
+          << "  orhun yorumla dosya.oh          Yalnızca yorumlayıcı\n"
+          << "  orhun                           REPL\n"
+          << "\n"
+          << "Cozumleme ve bicimlendirme:\n"
+          << "  orhun fmt dosya.oh [--check]    Biçimlendir\n"
+          << "  orhun lint dosya.oh             Statik uyarılar\n"
+          << "  orhun lex dosya.oh [--json]     Token listesi\n"
+          << "  orhun parse dosya.oh [--json]   AST özeti\n"
+          << "\n"
+          << "Derleme ve dogrulama:\n"
+          << "  orhun baytkod dosya.oh          Bytecode JSON\n"
+          << "  orhun derle dosya.oh [cikti]    Derle ve paketle\n"
+          << "  orhun obc-dogrula dosya.obc     OBC doğrula\n"
+          << "  orhun paketli-dogrula dosya     Paketli payload doğrula\n"
+          << "\n"
+          << "Paket ve bakim:\n"
+          << "  orhun paket yeni|kur|kaldir|dogrula\n"
+          << "  orhun doctor [--json]           Ortam sağlık özeti\n"
+          << "  orhun surum                     Sürüm\n"
+          << "  orhun yardim                    Bu metin\n"
+          << "\n"
+          << "Ogretici hatalar: yalnis sözdiziminde İpucu/Örnek satırları üretilir.\n"
+          << "Ingilizce anahtar alias'lari varsayılan modda calisir; ORHUN_TURKCE_KATI=1 reddeder.\n"
+          << "Ayrıntılar: docs/SPEC.md, docs/BEGINNER_GUIDE.md\n";
+      return 0;
+    }
+
     if (komut == "lint") {
       if (argc < 3) {
         throw std::runtime_error(
