@@ -34,6 +34,7 @@ For a more concrete progress snapshot and the current estimate toward `1.0` /
 Stability contracts: [`docs/COMPATIBILITY_POLICY.md`](docs/COMPATIBILITY_POLICY.md),
 [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md),
 [`docs/RELEASE_NOTES_0.9.0.md`](docs/RELEASE_NOTES_0.9.0.md).
+Quick reference: [`docs/CHEATSHEET.md`](docs/CHEATSHEET.md).
 
 ## What Orhun Provides
 

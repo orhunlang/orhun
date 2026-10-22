@@ -169,5 +169,6 @@ Bu durumda `sistem.argumanlar`, `["Yusuf", "--hizli"]` olur.
 ## Sonraki Adim
 
 - `examples/` klasorundeki ornekleri calistir.
+- `docs/CHEATSHEET.md` ile hizli referansa bak.
 - `docs/SPEC.md` ile dil sozlesmesini oku.
 - VS Code eklentisi icin `tools/vscode-orhun/` klasorune bak.
