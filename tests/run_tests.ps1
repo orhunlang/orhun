@@ -26,6 +26,9 @@ else {
     $compilerArgs = @("-std=c++17", "-Wall", "-Wextra", "-pedantic")
     if ($BuildMode -eq "release") {
         $compilerArgs += @("-O2", "-DNDEBUG")
+        if ($Compiler -match "g\+\+|gcc") {
+            $compilerArgs += @("-static", "-static-libgcc", "-static-libstdc++")
+        }
     }
     $compilerArgs += @(
         "main.cpp", "Lexer.cpp", "Parser.cpp", "Interpreter.cpp",
